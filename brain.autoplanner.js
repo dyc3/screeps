@@ -200,6 +200,48 @@ var brainAutoPlanner = {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
 			}
 		}
+
+
+		// plan structures around sources
+		sources.forEach(source => {
+			let pathingResult = PathFinder.search(
+				rootPos,
+				{ pos: source.pos, range: 2 },
+				{
+					maxRooms: 1,
+					roomCallback: function(roomName) {
+						let costMatrix = new PathFinder.CostMatrix();
+						for (let y = 0; y < 50; y++) {
+							for (let x = 0; x < 50; x++) {
+								let pos = room.getPositionAt(x, y);
+								let isPlanned = this.isPositionPlanned(pos);
+								if (isPlanned) {
+									if (isPlanned == STRUCTURE_ROAD) {
+										costMatrix.set(x, y, 0.5);
+									}
+									else {
+										costMatrix.set(x, y, Infinity);
+									}
+								}
+								else {
+									costMatrix.set(x, y, 0);
+								}
+							}
+						}
+					}
+				}
+			);
+			if (pathingResult.incomplete) {
+				console.error("FAILED TO FIND PATH from rootPos", rootPos.x, ",", rootPos.y, "to source", source.pos.x, ",", source.pos.y);
+			}
+			let pathToSource = pathingResult.path;
+			for (let pos of pathToSource) {
+				if (this.isPositionPlanned(pos)) {
+					continue;
+				}
+				room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x, y: pos.y });
+			}
+		});
 	},
 
 	/* pos is a RoomPosition object */
@@ -208,7 +250,7 @@ var brainAutoPlanner = {
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
 			for (let p of room.memory.structures[struct]) {
 				if (room.getPositionAt(p.x, p.y).isEqualTo(pos)) {
-					return true;
+					return struct;
 				}
 			}
 		}
