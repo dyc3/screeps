@@ -80,21 +80,19 @@ function printStatus() {
 
 	// print misc info
 	let infoText = "";
-	infoText += "tick: "+Game.time + "  |  "
+	infoText += "tick: "+Game.time + "  |  ";
 	if (Game.cpu.tickLimit != Infinity) {
-		infoText += "CPU: "+ Game.cpu.getUsed().toPrecision(3) +"/"+Game.cpu.tickLimit+" - "+Game.cpu.bucket.toPrecision(5)+"  |  ";
+		infoText += "CPU: " + Game.cpu.getUsed().toPrecision(3) + "/" + Game.cpu.tickLimit + " - " + Game.cpu.bucket.toPrecision(5)+"  |  ";
 	}
-	infoText += "GCL "+Game.gcl.level+", "+((Game.gcl.progress / Game.gcl.progressTotal * 100).toPrecision(4))+"% "+Math.round(Game.gcl.progress)+"/"+Math.round(Game.gcl.progressTotal) + "  |  ";
-	// let room = Game.spawns["Spawn1"].room;
+	infoText += "GCL " + Game.gcl.level + ", " + ((Game.gcl.progress / Game.gcl.progressTotal * 100).toPrecision(4)) + "% " + Math.round(Game.gcl.progress) + "/" + Math.round(Game.gcl.progressTotal) + "  |  ";
 	if (rooms.length > 1) {
 		infoText += "rooms: "+rooms.length + "  |  ";
 	}
-	// infoText += " "
 	for (let i = 0; i < rooms.length; i++) {
 		let room = rooms[i];
 		infoText += room.name + " (defcon " + room.memory.defcon + ") energy: "+room.energyAvailable+"/"+room.energyCapacityAvailable+"  ";
 	}
-	infoText += "  |  "
+	infoText += "  |  ";
 	if (Memory.expansionTarget) {
 		infoText += "expansionTarget: "+Memory.expansionTarget;
 	}
@@ -144,7 +142,7 @@ function calculateDefcon(room) {
 		}
 	}
 
-	if (defcon == 2)
+	if (defcon === 2)
 	{
 		// TODO: decide if a safe mode is needed or not
 
@@ -204,8 +202,8 @@ function doLinkTransfers(rooms) {
 }
 
 function doTowers() {
-	var towers = _.filter(Game.structures, (struct) => struct.structureType == STRUCTURE_TOWER);
-	for (var i = 0; i < towers.length; i++) { roleTower.run(towers[i]); }
+	let towers = _.filter(Game.structures, (struct) => struct.structureType === STRUCTURE_TOWER);
+	for (let i = 0; i < towers.length; i++) { roleTower.run(towers[i]); }
 }
 
 // draw the room scores in each room for easy viewing
@@ -231,12 +229,12 @@ function doFlagCommandsAndStuff() {
 
 	if (Game.flags["attack"]) {
 		try {
-			var lookStruct = Game.flags["attack"].pos.lookFor(LOOK_STRUCTURES);
+			let lookStruct = Game.flags["attack"].pos.lookFor(LOOK_STRUCTURES);
 			if (lookStruct.length > 0) {
 				Memory.attackTarget = lookStruct[0].id;
 			}
 			else {
-				var closestCreep = Game.flags["attack"].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+				let closestCreep = Game.flags["attack"].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
 				if (closestCreep) {
 					Memory.attackTarget = closestCreep.id;
 				}
@@ -250,7 +248,7 @@ function doFlagCommandsAndStuff() {
 
 		}
 	}
-	if (Game.time % 4 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket == 10000)) {
+	if (Game.time % 4 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
 		for (let f in Game.flags) {
 			let flag = Game.flags[f];
 			// check if dismantle and norepair flags have structures under them
@@ -266,17 +264,17 @@ function doFlagCommandsAndStuff() {
 			console.log("expansionTarget set:",Memory.expansionTarget);
 		}
 	}
-	if (Game.time % 100 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket == 10000)) {
+	if (Game.time % 100 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
 		// NOTE: this is probably unecessary right? considering RoomVisual exists now.
 		util.clearAllDebugFlags();
 	}
 }
 
 function main() {
-	if (Game.time % 5 == 0) {
+	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
 	}
-	var rooms = util.getOwnedRooms();
+	let rooms = util.getOwnedRooms();
 
 	// handle defcons
 	if (Game.time % 3 == 0) {
@@ -440,10 +438,10 @@ function main() {
 	}
 
 	// auto spawning
-	if (Object.keys(Game.creeps).length == 0) {
+	if (Object.keys(Game.creeps).length === 0) {
 		Memory.forceCreepSpawn = true;
 	}
-	if ((Game.time % 10 == 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn) {
+	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn) {
 		spawning:
 		for (var s = 0; s < _.values(Game.spawns).length; s++) {
 			var spawn = _.values(Game.spawns)[s];
