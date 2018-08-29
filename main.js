@@ -443,64 +443,64 @@ function main() {
 	}
 	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn) {
 		spawning:
-		for (var s = 0; s < _.values(Game.spawns).length; s++) {
-			var spawn = _.values(Game.spawns)[s];
-			// var spawn = Game.spawns["Spawn1"];
-			var countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester");
+		for (let s = 0; s < _.values(Game.spawns).length; s++) {
+			let spawn = _.values(Game.spawns)[s];
+			// let spawn = Game.spawns["Spawn1"];
+			let countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester");
 			if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable * 0.8 || countHarvester <= 1) {
-				var inventoryString = spawn.room + ": ";
-				//var haveContainer = spawn.room.find(FIND_STRUCTURES, {
+				let inventoryString = spawn.room + ": ";
+				//let haveContainer = spawn.room.find(FIND_STRUCTURES, {
 				//		filter: (structure) => {
 				//			return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE);
 				//		}
 				//	}).length > 0;
-				//var extensionCount = spawn.room.find(FIND_STRUCTURES, {
+				//let extensionCount = spawn.room.find(FIND_STRUCTURES, {
 				//		filter: (structure) => {
 				//			return (structure.structureType == STRUCTURE_EXTENSION);
 				//		}
 				//	}).length;
 
-				var alreadySetKeepAlive = false; // indicates if we have already marked a creep for death this time around
-				var r = 0;
-				for (var role in toolCreepUpgrader.roles) {
-					var creepsOfType = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+				let alreadySetKeepAlive = false; // indicates if we have already marked a creep for death this time around
+				let r = 0;
+				for (let role in toolCreepUpgrader.roles) {
+					let creepsOfType = _.filter(Game.creeps, (creep) => creep.memory.role == role);
 					inventoryString += role+': ' + creepsOfType.length+'/'+toolCreepUpgrader.roles[role].quota;
-					var m = 12; // max roles to put on one line
+					let m = 12; // max roles to put on one line
 					inventoryString += ((r % m == m - 1) ? "\n			 " : "  ");
 
 					if(creepsOfType.length < toolCreepUpgrader.roles[role].quota && !spawn.spawning) {
-						for(var name in Memory.creeps) {
+						for(let name in Memory.creeps) {
 							if(!Game.creeps[name]) {
 								console.log('Clearing non-existing creep memory:',name);
 								delete Memory.creeps[name];
 							}
 						}
 
-						var newCreepMemory = {role: role, keepAlive: true};
+						let newCreepMemory = {role: role, keepAlive: true};
 						if (role == "attacker") {
 							newCreepMemory.mode = "defend";
 						}
 						else if (role == "claimer" || role == "scout") {
 							newCreepMemory.keepAlive = false;
 						}
-						var newCreepName = role + "_" + Game.time.toString(16);
-						var hiStage = toolCreepUpgrader.getHighestStage(role, spawn);
+						let newCreepName = role + "_" + Game.time.toString(16);
+						let hiStage = toolCreepUpgrader.getHighestStage(role, spawn);
 						newCreepMemory.stage = hiStage;
 						if (hiStage >= 0) {
-							var newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
+							let newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
 							console.log('Spawning new stage',hiStage,role+':',newName);
 							break spawning; // spawn one creep per tick
 						}
 					}
 					else {
 						if (alreadySetKeepAlive == false && !creepsOfType.some((c) => !c.memory.keepAlive )) {
-							for (var c in creepsOfType) {
+							for (let c in creepsOfType) {
 								if (creepsOfType[c].memory.keepAlive == false) {
 									alreadySetKeepAlive = true;
 									break;
 								}
-								var cStage = creepsOfType[c].memory.stage;
-								//var cStage = toolCreepUpgrader.getCreepStage(creepsOfType[c]);
+								let cStage = creepsOfType[c].memory.stage;
+								//let cStage = toolCreepUpgrader.getCreepStage(creepsOfType[c]);
 								if (cStage < toolCreepUpgrader.getHighestStage(creepsOfType[c].memory.role, spawn))
 								{
 									console.log("Setting",creepsOfType[c].memory.role,creepsOfType[c].name,"keepAlive = false");
@@ -511,15 +511,15 @@ function main() {
 							}
 						}
 						else if (creepsOfType.length > 0) {
-							var markedCreeps = _.filter(creepsOfType, {
+							let markedCreeps = _.filter(creepsOfType, {
 								filter: (c) => {
 									return !c.memory.keepAlive;
 								}
 							});
 							if (markedCreeps.length > 0) {
-								for (var c in markedCreeps) {
-									var cStage = markedCreeps[c].memory.stage;
-									//var cStage = toolCreepUpgrader.getCreepStage(markedCreeps[c]);
+								for (let c in markedCreeps) {
+									let cStage = markedCreeps[c].memory.stage;
+									//let cStage = toolCreepUpgrader.getCreepStage(markedCreeps[c]);
 									if (cStage >= toolCreepUpgrader.getHighestStage(markedCreeps[c].memory.role, spawn)) {
 										console.log("Setting",markedCreeps[c].memory.role,markedCreeps[c].name,"keepAlive = true");
 										markedCreeps[c].memory.keepAlive = true;
@@ -548,12 +548,12 @@ function main() {
 
 	// auto planning
 	// place extractors when able
-	for (var r = 0; r < rooms.length; r++) {
-		var room = rooms[r];
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
 		if (room.controller.level >= 6) {
-			var minerals = room.find(FIND_MINERALS);
-			for (var m in minerals) {
-				var mineral = minerals[m];
+			let minerals = room.find(FIND_MINERALS);
+			for (let m in minerals) {
+				let mineral = minerals[m];
 				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
 					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
 						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
@@ -562,7 +562,7 @@ function main() {
 			}
 		}
 	}
-	if (Game.time % 10 == 4 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket == 10000)) {
+	if (Game.time % 10 === 4 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
 		try {
 			console.log("Planning rooms...");
 			brainAutoPlanner.run();
@@ -584,7 +584,7 @@ function main() {
 		}
 	}
 
-	if (Game.flags["forcePlan"] && Game.flags["forcePlan"].color == COLOR_WHITE) {
+	if (Game.flags["forcePlan"] && Game.flags["forcePlan"].color === COLOR_WHITE) {
 		brainAutoPlanner.planRoom(Game.flags["forcePlan"].room, true);
 		brainAutoPlanner.drawRoomPlans(Game.flags["forcePlan"].room);
 		if (Game.cpu.bucket < 9700) {
@@ -605,15 +605,15 @@ function main() {
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	if (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket == 10000) {
-		for (var r = 0; r < rooms.length; r++) {
-			var room = rooms[r];
+	if (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000) {
+		for (let r = 0; r < rooms.length; r++) {
+			let room = rooms[r];
 			if (!room.terminal) {
 				continue;
 			}
 			if (Memory.mineralsToSell && Memory.mineralsToSell.length > 0) {
-				for (var m = 0; m < Memory.mineralsToSell.length; m++) {
-					var mineral = Memory.mineralsToSell[m];
+				for (let m = 0; m < Memory.mineralsToSell.length; m++) {
+					let mineral = Memory.mineralsToSell[m];
 					if (!minimumPrice[mineral]) {
 						console.log("WARN: could not find", mineral, "in minimumPrice");
 						continue;
@@ -622,7 +622,7 @@ function main() {
 						continue;
 					}
 					if (room.terminal.store[mineral] >= 10000 && room.terminal.store[RESOURCE_ENERGY] > 0) {
-						var buyOrders = Game.market.getAllOrders(function(order){
+						let buyOrders = Game.market.getAllOrders(function(order){
 							return order.type == ORDER_BUY && order.resourceType == mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
 						});
 						if (buyOrders.length > 0) {
@@ -645,23 +645,23 @@ function main() {
 		}
 	}
 
-	if (Game.time % 30 == 6) {
+	if (Game.time % 30 === 6) {
 		// auto science
-		for (var r = 0; r < rooms.length; r++) {
-			var room = rooms[r];
+		for (let r = 0; r < rooms.length; r++) {
+			let room = rooms[r];
 			if (room.controller.level < 6) {
 				continue;
 			}
-			var labs = util.getStructures(room, STRUCTURE_LAB);
+			let labs = util.getStructures(room, STRUCTURE_LAB);
 
-			for (var l = 0; l < labs.length; l++) {
-				var workFlag = util.getWorkFlag(labs[l].pos);
+			for (let l = 0; l < labs.length; l++) {
+				let workFlag = util.getWorkFlag(labs[l].pos);
 				if (!workFlag || workFlag.secondaryColor != COLOR_GREEN) {
 					continue;
 				}
 				// console.log(workFlag)
-				var isMakingWhat = workFlag.name.split(":")[1];
-				var needsMinerals = [];
+				let isMakingWhat = workFlag.name.split(":")[1];
+				let needsMinerals = [];
 				switch (isMakingWhat) {
 					case "G":
 						needsMinerals = ["UL", "ZK"];
@@ -674,7 +674,7 @@ function main() {
 							needsMinerals = isMakingWhat.split("");
 						}
 				}
-				var sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+				let sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
 					filter: (lab) => { return _.contains(needsMinerals, lab.mineralType); }
 				});
 				// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
@@ -705,7 +705,7 @@ function main() {
 		for (let r = 0; r < rooms.length; r++)
 		{
 			let room = rooms[r];
-			let count = util.getCreeps("upgrader").filter((creep) => creep.memory.targetRoom == room.name).length;
+			let count = util.getCreeps("upgrader").filter((creep) => creep.memory.targetRoom === room.name).length;
 			let max = toolCreepUpgrader.getUpgraderQuota(room);
 
 			let text = count + "/" + max;
