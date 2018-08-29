@@ -416,6 +416,13 @@ function main() {
 						break;
 					default:
 						console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
+						console.log("Parsing role from name...");
+						let role = creep.name.split("_")[0];
+						console.log("Found role:", role);
+						creep.memory.role = role;
+						if (!creep.memory.stage) {
+							creep.memory.stage = -1;
+						}
 				}
 			}
 			catch (e) {
