@@ -35,35 +35,35 @@
 
 */
 
-var util = require('util');
+let util = require('util');
 
-var roleHarvester = require('role.harvester');
-var roleUpgrader = require('role.upgrader');
-var roleManager = require('role.manager');
-var roleBuilder = require('role.builder');
-var roleRepairer = require('role.repairer');
-var roleAttacker = require('role.attacker');
-var roleClaimer = require('role.claimer');
-var roleHealer = require('role.healer');
-// var roleMultiroomHarvester = require('role.multiroom-harvester');
-// var roleCarrier = require('role.carrier');
-var roleScout = require('role.scout');
-var roleNextRoomer = require('role.nextroomer');
-var roleMiner = require('role.miner');
-var roleScientist = require('role.scientist');
+let roleHarvester = require('role.harvester');
+let roleUpgrader = require('role.upgrader');
+let roleManager = require('role.manager');
+let roleBuilder = require('role.builder');
+let roleRepairer = require('role.repairer');
+let roleAttacker = require('role.attacker');
+let roleClaimer = require('role.claimer');
+let roleHealer = require('role.healer');
+// let roleMultiroomHarvester = require('role.multiroom-harvester');
+// let roleCarrier = require('role.carrier');
+let roleScout = require('role.scout');
+let roleNextRoomer = require('role.nextroomer');
+let roleMiner = require('role.miner');
+let roleScientist = require('role.scientist');
 
-var roleTower = require('role.tower');
+let roleTower = require('role.tower');
 
-var taskRenew = require('task.renew');
-var taskDepositMaterials = require('task.depositmaterials');
+let taskRenew = require('task.renew');
+let taskDepositMaterials = require('task.depositmaterials');
 
-var toolEnergySource = require('tool.energysource');
-var toolCreepUpgrader = require('tool.creepupgrader');
-var toolRoadPlanner = require('tool.roadplanner');
+let toolEnergySource = require('tool.energysource');
+let toolCreepUpgrader = require('tool.creepupgrader');
+let toolRoadPlanner = require('tool.roadplanner');
 
-var brainAutoPlanner = require('brain.autoplanner');
+let brainAutoPlanner = require('brain.autoplanner');
 
-var errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
+let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
 function printException(e, creep=undefined) {
 	let msg = errorMild + '<span style="color: red">ERROR: ' + e.name + ": "+e.message+"\n"+e.stack + "</span>";
@@ -76,22 +76,22 @@ function printException(e, creep=undefined) {
 }
 
 function printStatus() {
-	var rooms = util.getOwnedRooms();
+	let rooms = util.getOwnedRooms();
 
 	// print misc info
-	var infoText = "";
+	let infoText = "";
 	infoText += "tick: "+Game.time + "  |  "
 	if (Game.cpu.tickLimit != Infinity) {
 		infoText += "CPU: "+ Game.cpu.getUsed().toPrecision(3) +"/"+Game.cpu.tickLimit+" - "+Game.cpu.bucket.toPrecision(5)+"  |  ";
 	}
 	infoText += "GCL "+Game.gcl.level+", "+((Game.gcl.progress / Game.gcl.progressTotal * 100).toPrecision(4))+"% "+Math.round(Game.gcl.progress)+"/"+Math.round(Game.gcl.progressTotal) + "  |  ";
-	// var room = Game.spawns["Spawn1"].room;
+	// let room = Game.spawns["Spawn1"].room;
 	if (rooms.length > 1) {
 		infoText += "rooms: "+rooms.length + "  |  ";
 	}
 	// infoText += " "
-	for (var i = 0; i < rooms.length; i++) {
-		var room = rooms[i];
+	for (let i = 0; i < rooms.length; i++) {
+		let room = rooms[i];
 		infoText += room.name + " (defcon " + room.memory.defcon + ") energy: "+room.energyAvailable+"/"+room.energyCapacityAvailable+"  ";
 	}
 	infoText += "  |  "
