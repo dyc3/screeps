@@ -592,6 +592,13 @@ function main() {
 		}
 	}
 
+	if (Game.flags["showPlans"] && Game.flags["showPlans"].color === COLOR_WHITE) {
+		brainAutoPlanner.drawRoomPlans(Game.flags["showPlans"].room);
+		if (Game.cpu.bucket < 9700) {
+			Game.flags["showPlans"].setColor(COLOR_GREY);
+		}
+	}
+
 	// auto market
 	let minimumPrice = {};
 	minimumPrice[RESOURCE_OXYGEN] = 0.06;
