@@ -159,7 +159,6 @@ var util = {
 				if (pos.x == x && pos.y == y) {
 					continue;
 				}
-				console.log("ADJACENT TO ", pos.x, ",", pos.y, ": ", x, ",", y);
 				adjacent.push(new RoomPosition(x, y, pos.roomName));
 				// adjacent.push(pos);
 			}
