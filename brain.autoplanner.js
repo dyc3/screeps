@@ -254,6 +254,21 @@ var brainAutoPlanner = {
 				}
 				room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x, y: pos.y });
 			}
+
+			let harvestPos = pathToSource[pathToSource.length - 1];
+			let _dir = util.getOppositeDirection(harvestPos.getDirectionTo(source.pos));
+			let sourceLinkPos = util.getPositionInDirection(harvestPos, _dir);
+			room.memory.structures[STRUCTURE_LINK].push({ x: sourceLinkPos.x, y: sourceLinkPos.y });
+			let harvestAdj = util.getAdjacent(harvestPos);
+			for (let pos of harvestAdj) {
+				if (util.getTerrainAt(pos) == "wall") {
+					continue;
+				}
+
+				if (!this.isPositionPlanned(pos) && util.getStructuresAt(pos).length == 0) {
+					room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
+				}
+			}
 		}
 	},
 
