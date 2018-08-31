@@ -169,6 +169,29 @@ var util = {
 	getOppositeDirection: function(direction) {
 		return (direction + 4) % 8;
 	},
+
+	getPositionInDirection: function(pos, direction) {
+		switch (direction) {
+			case TOP:
+				return new RoomPosition(pos.x, pos.y - 1, pos.roomName);
+			case BOTTOM:
+				return new RoomPosition(pos.x, pos.y + 1, pos.roomName);
+			case LEFT:
+				return new RoomPosition(pos.x - 1, pos.y, pos.roomName);
+			case RIGHT:
+				return new RoomPosition(pos.x + 1, pos.y, pos.roomName);
+			case TOP_LEFT:
+				return new RoomPosition(pos.x - 1, pos.y - 1, pos.roomName);
+			case TOP_RIGHT:
+				return new RoomPosition(pos.x + 1, pos.y - 1, pos.roomName);
+			case BOTTOM_LEFT:
+				return new RoomPosition(pos.x - 1, pos.y + 1, pos.roomName);
+			case BOTTOM_RIGHT:
+				return new RoomPosition(pos.x + 1, pos.y + 1, pos.roomName);
+			default:
+				break;
+		}
+	}
 }
 
 module.exports = util;
