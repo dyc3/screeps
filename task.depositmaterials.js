@@ -11,10 +11,17 @@ var taskDepositMaterials = {
 	run: function(creep, exclude_energy=true) {
 		var storage = creep.pos.findClosestByRange(FIND_STRUCTURES, {
 			filter: function(struct) {
-				return 	(struct.structureType == STRUCTURE_STORAGE) ||
-						(struct.structureType == STRUCTURE_CONTAINER &&
-						(struct.pos.findInRange(FIND_STRUCTURES, 3, { filter: function(struct) {return struct.structureType == STRUCTURE_CONTROLLER} }).length == 0 &&
-						struct.pos.findInRange(FIND_SOURCES, 2).length == 0));
+				if (struct.structureType == STRUCTURE_CONTAINER) {
+					if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0) {
+						return false;
+					}
+					if (struct.pos.findInRange(FIND_STRUCTURES, 3, { filter: function(struct) { return struct.structureType == STRUCTURE_CONTROLLER || struct.structureType == STRUCTURE_SPAWN } }).length > 0) {
+						return false;
+					}
+					return true;
+				}
+
+				return struct.structureType == STRUCTURE_STORAGE;
 			}
 		});
 		if (storage) {
