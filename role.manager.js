@@ -84,7 +84,7 @@ function doAquire(creep, passively=false) {
 						// 	return false;
 						// }
 					// }
-					return !c.spawning && c.memory.role == "harvester" && !c.memory.hasDedicatedLink && c.carry[RESOURCE_ENERGY] >= c.carryCapacity * 0.85;
+					return !c.spawning && c.memory.role == "harvester" && (!c.memory.hasDedicatedLink || c.memory.stage < 5) && c.carry[RESOURCE_ENERGY] >= c.carryCapacity * 0.85;
 				}
 			});
 			if (filledHarvesters.length > 0) {
