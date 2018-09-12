@@ -6,6 +6,7 @@ function doNoJobsStuff(creep) {
 		taskDepositMaterials.run(creep, exclude_energy=true);
 	}
 	else {
+		console.log(creep.name, "pretending to be a manager");
 		var roleManager = require("role.manager");
 		roleManager.run(creep);
 	}
@@ -90,8 +91,8 @@ var roleScientist = {
 			for (var i = 0; i < _.keys(neededMinerals).length; i++) {
 				var key = _.keys(neededMinerals)[i];
 				_mineral = key;
-				console.log("checking inventory for any", key);
-				targetStorage = _.filter(Game.structures, function(struct) {
+				console.log(creep.name, "checking inventory for any", key);
+				targetStorage = _.filter(util.getStructures(room), function(struct) {
 					if (struct.id == _.values(neededMinerals)[i].id) {
 						return false;
 					}
