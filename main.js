@@ -604,7 +604,7 @@ function main() {
 	minimumPrice[RESOURCE_OXYGEN] = 0.06;
 	minimumPrice[RESOURCE_HYDROGEN] = 0.1;
 
-	minimumPrice[RESOURCE_UTRIUM] = 0.35;
+	minimumPrice[RESOURCE_UTRIUM] = 0.05;
 	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
 	minimumPrice[RESOURCE_KEANIUM] = 0.35;
 	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
@@ -613,6 +613,7 @@ function main() {
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
 	if (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000) {
+		console.log("Auto market...");
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
 			if (!room.terminal) {
