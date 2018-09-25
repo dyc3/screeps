@@ -367,7 +367,13 @@ function main() {
 								}
 							}
 							else {
-								roleUpgrader.run(creep);
+								if (taskDepositMaterials.checkForMaterials(creep, true)) {
+									creep.say("deposit");
+									taskDepositMaterials.run(creep, true);
+								}
+								else {
+									roleUpgrader.run(creep);
+								}
 							}
 							// roleRepairer.run(creep);
 							// roleScientist.run(creep);
