@@ -629,6 +629,10 @@ function main() {
 					if (room.terminal.cooldown > 0) {
 						continue;
 					}
+					if (room.storage.store[RESOURCE_ENERGY] < 10000) {
+						// ensure we have some energy in reserve
+						continue;
+					}
 					if (room.terminal.store[mineral] >= 10000 && room.terminal.store[RESOURCE_ENERGY] > 0) {
 						let buyOrders = Game.market.getAllOrders(function(order){
 							return order.type == ORDER_BUY && order.resourceType == mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
