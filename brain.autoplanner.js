@@ -38,34 +38,10 @@ var brainAutoPlanner = {
 		// r O . O . O r
 		// r O O S O O r  <= the spawn here is the "root" of the base
 		// . r r r r r .
-		// first, valid 6x6 areas
-		let goodRootPositions = [];
-		for (let y = 7; y <= 47; y++) {
-			for (let x = 4; x <= 46; x++) {
-				// check the 6x6 area
-				let valid = true;
-				for (let cY = y - 5; cY <= y + 1; cY++) {
-					for (let cX = x - 3; cX <= x + 3; cX++) {
-						let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
-						if (terrain == "wall") {
-							valid = false;
-							break;
-						}
-					}
-					if (!valid) {
-						break;
-					}
-				}
-				if (valid) {
-					goodRootPositions.push({ x: x, y: y});
-					if (debug) {
-						room.visual.circle(x, y, { stroke: "#00ff00", fill: "transparent" });
-					}
-				}
-			}
-		}
-		console.log("Found", goodRootPositions.length, "good root positions");
+		let rootPos = room.memory.rootPos;
+
 		// the best root position is one that is equidistant to the sources and the controller
+		// (this function is also used for finding the best storage module position)
 		function _getTotalDistances(point, includeMineral=false, excludeSources=false, usePaths=false) {
 			// NOTE: maybe this should the length of paths to the objects instead of ranges?
 			let pos = new RoomPosition(point.x, point.y, room.name);
@@ -84,11 +60,46 @@ var brainAutoPlanner = {
 			}
 			return total;
 		}
-		goodRootPositions.sort(function(a, b) {
-			return _getTotalDistances(a) - _getTotalDistances(b);
-		});
-		let rootPos = goodRootPositions[0];
-		console.log("Best root:", rootPos.x, ",", rootPos.y);
+
+		if (!rootPos) {
+			// first, valid 6x6 areas
+			let goodRootPositions = [];
+			for (let y = 7; y <= 47; y++) {
+				for (let x = 4; x <= 46; x++) {
+					// check the 6x6 area
+					let valid = true;
+					for (let cY = y - 5; cY <= y + 1; cY++) {
+						for (let cX = x - 3; cX <= x + 3; cX++) {
+							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
+							if (terrain == "wall") {
+								valid = false;
+								break;
+							}
+						}
+						if (!valid) {
+							break;
+						}
+					}
+					if (valid) {
+						goodRootPositions.push({ x: x, y: y});
+						if (debug) {
+							room.visual.circle(x, y, { stroke: "#00ff00", fill: "transparent" });
+						}
+					}
+				}
+			}
+			console.log("Found", goodRootPositions.length, "good root positions");
+			goodRootPositions.sort(function(a, b) {
+				return _getTotalDistances(a) - _getTotalDistances(b);
+			});
+			rootPos = goodRootPositions[0];
+			console.log("Best root:", rootPos.x, ",", rootPos.y);
+			room.memory.rootPos = rootPos;
+		}
+		else {
+			console.log("Best root (cached):", rootPos.x, ",", rootPos.y);
+		}
+
 		if (debug) {
 			room.visual.circle(rootPos.x, rootPos.y, { radius: .25, fill: "#ffff55" });
 		}
