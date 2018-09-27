@@ -10,7 +10,7 @@ let roleRelay = {
 		let assignedPos = creep.room.getPositionAt(creep.memory.assignedPos.x, creep.memory.assignedPos.y);
 		if (!creep.pos.isEqualTo(assignedPos)) {
 			let result = creep.moveTo(assignedPos);
-			console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
+			// console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			return;
 		}
 

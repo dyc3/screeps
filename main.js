@@ -312,7 +312,7 @@ function commandEnergyRelays(rooms) {
 		if (relayCreeps.length == 0) {
 			continue;
 		}
-		console.log("# of relay creeps:", relayCreeps.length);
+		// console.log("# of relay creeps:", relayCreeps.length);
 		if (_.filter(relayCreeps, (creep) => { return !creep.memory.assignedPos; }).length == 0) {
 			// all relay creeps have positions
 			continue;
@@ -712,7 +712,7 @@ function main() {
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
 	if (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000) {
-		console.log("Auto market...");
+		// console.log("Auto market...");
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
 			if (!room.terminal) {
