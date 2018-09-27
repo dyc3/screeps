@@ -728,6 +728,10 @@ function main() {
 			let text = count + "/" + max;
 			let color = count <= max ? "#11dd11" : "#dd1111";
 			room.visual.text(text, room.controller.pos, { "color": color, "font": 0.4, "stroke": "#000" });
+
+			// mark the room's rootPos, assists autoplanner debugging
+			let root = room.memory.rootPos;
+			room.visual.rect(root.x - .45, root.y - .45, .9, .9, { "fill": "#44dd44" });
 		}
 
 		drawRoomScores();
