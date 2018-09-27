@@ -174,29 +174,59 @@ function determineDefconLevels() {
 }
 
 function doLinkTransfers(rooms) {
-	for (var r = 0; r < rooms.length; r++) {
-		var room = rooms[r];
-		var links = util.getStructures(room, STRUCTURE_LINK);
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
+		let links = util.getStructures(room, STRUCTURE_LINK);
 		if (links.length > 0) {
-			if (!room.memory.destinationLink) {
-				room.memory.destinationLink = links.filter((link) => { return link.pos.inRangeTo(link.room.storage, 2); })[0].id;
+			// let sourceLinks = _.filter(links, (link) => {
+			// 	return link.pos.findInRange(FIND_SOURCES, 2).length > 0;
+			// });
+
+			if (!room.memory.rootLink) {
+				let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+				room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
 			}
-			var destinationLink = Game.getObjectById(room.memory.destinationLink);
-			if (!destinationLink) {
-				console.log("can't find destination link id: " + room.memory.destinationLink);
-				delete room.memory.destinationLink;
+			let rootLink = Game.getObjectById(room.memory.rootLink);
+			if (!rootLink) {
+				console.log("can't find root link id:", room.memory.rootLink);
+				delete room.memory.rootLink;
 				break;
 			}
-			if (destinationLink.energy < destinationLink.energyCapacity - 1) {
-				for (var i = 0; i < links.length; i++) {
-					var link = links[i];
-					if (link.id == destinationLink.id) {
+
+			if (rootLink.energy < rootLink.energyCapacity - 1) {
+				for (let i = 0; i < links.length; i++) {
+					let link = links[i];
+					if (link.id == rootLink.id) {
 						continue;
 					}
 					if (link.cooldown > 0 || link.energy == 0) {
 						continue;
 					}
-					link.transferEnergy(destinationLink);
+					link.transferEnergy(rootLink);
+				}
+				break;
+			}
+
+			if (!room.memory.storageLink) {
+				room.memory.storageLink = links.filter((link) => { return link.pos.inRangeTo(link.room.storage, 2); })[0].id;
+			}
+			let storageLink = Game.getObjectById(room.memory.storageLink);
+			if (!storageLink) {
+				console.log("can't find storage link id:", room.memory.storageLink);
+				delete room.memory.storageLink;
+				break;
+			}
+
+			if (storageLink.energy < storageLink.energyCapacity - 1) {
+				for (let i = 0; i < links.length; i++) {
+					let link = links[i];
+					if (link.id == storageLink.id || link.id == rootLink.id) {
+						continue;
+					}
+					if (link.cooldown > 0 || link.energy == 0) {
+						continue;
+					}
+					link.transferEnergy(storageLink);
 				}
 			}
 		}
