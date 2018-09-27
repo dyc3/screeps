@@ -55,6 +55,7 @@ let roleRelay = {
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
 			if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_ENOUGH_RESOURCES) {
 				creep.withdraw(storage, RESOURCE_ENERGY);
+				_linkWithdraw = false;
 			}
 		}
 
@@ -74,7 +75,9 @@ let roleRelay = {
 		}
 
 		// otherwise, fill the storage with energy from the link.
-		creep.transfer(storage, RESOURCE_ENERGY);
+		if (_linkWithdraw) {
+			creep.transfer(storage, RESOURCE_ENERGY);
+		}
 	}
 };
 
