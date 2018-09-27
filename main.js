@@ -718,14 +718,13 @@ function main() {
 	if (Game.cpu.bucket > 9950 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
 		toolEnergySource.drawAssignedCounts();
 
-		// draw upgrader quotas on controllers
 		let rooms = util.getOwnedRooms();
-		for (let r = 0; r < rooms.length; r++)
-		{
+		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
+
+			// draw upgrader quotas on controllers
 			let count = util.getCreeps("upgrader").filter((creep) => creep.memory.targetRoom === room.name).length;
 			let max = toolCreepUpgrader.getUpgraderQuota(room);
-
 			let text = count + "/" + max;
 			let color = count <= max ? "#11dd11" : "#dd1111";
 			room.visual.text(text, room.controller.pos, { "color": color, "font": 0.4, "stroke": "#000" });
