@@ -295,6 +295,14 @@ var creepUpgrader = {
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
+		"relay": {
+			name:"relay",
+			// quota:util.getOwnedRooms().length * 4,
+			quota:1,
+			stages:[
+				[CARRY,MOVE]
+			]
+		},
 	},
 
 	// getUpgraderQuota: getUpgraderQuota,

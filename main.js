@@ -16,6 +16,7 @@
 // Scouts:
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
+// Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "relay_1", {role:"relay", keepAlive:false})
 
 // Memory.mineralsToSell
 
@@ -51,6 +52,7 @@ let roleScout = require('role.scout');
 let roleNextRoomer = require('role.nextroomer');
 let roleMiner = require('role.miner');
 let roleScientist = require('role.scientist');
+let roleRelay = require('role.relay');
 
 let roleTower = require('role.tower');
 
@@ -270,6 +272,57 @@ function doFlagCommandsAndStuff() {
 	}
 }
 
+function commandEnergyRelays(rooms) {
+	for (let r = 0; r < rooms.length; r++) {
+		const room = rooms[r];
+
+		// check if there are any available relay positions
+		let relayCreeps = util.getCreeps("relay");
+		// let relayCreeps = _.filter(util.getCreeps("relay"), (creep) => { return creep.room.name == room.name; });
+		if (relayCreeps.length == 0) {
+			continue;
+		}
+		console.log("# of relay creeps:", relayCreeps.length);
+		if (_.filter(relayCreeps, (creep) => { return !creep.memory.assignedPos; }).length == 0) {
+			// all relay creeps have positions
+			continue;
+		}
+
+		let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+		let relayPositions = [
+			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
+			util.getPositionInDirection(rootLinkPos, TOP_RIGHT),
+			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
+			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
+		];
+		let availableRelayPos = _.filter(relayPositions, (pos) => {
+			for (let i = 0; i < relayCreeps.length; i++) {
+				const creep = relayCreeps[i];
+				if (!creep.memory.assignedPos) {
+					continue;
+				}
+				if (pos.isEqualTo(creep.memory.assignedPos)) {
+					return false;
+				}
+			}
+			return true;
+		});
+		if (availableRelayPos.length == 0) {
+			continue;
+		}
+		console.log("# of relay positions available:", availableRelayPos.length);
+
+		// assign an available position to a relay creep
+		for (let i = 0; i < relayCreeps.length; i++) {
+			const creep = relayCreeps[i];
+			if (!creep.memory.assignedPos) {
+				creep.memory.assignedPos = availableRelayPos[0];
+				break;
+			}
+		}
+	}
+}
+
 function main() {
 	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
@@ -418,6 +471,9 @@ function main() {
 					case 'scientist':
 						roleScientist.run(creep);
 						break;
+					case 'relay':
+						roleRelay.run(creep);
+						break;
 					default:
 						console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
 						console.log("Parsing role from name...");
@@ -438,6 +494,13 @@ function main() {
 	// do link transfers
 	try {
 		doLinkTransfers(rooms);
+	}
+	catch (e) {
+		printException(e);
+	}
+
+	try {
+		commandEnergyRelays(rooms);
 	}
 	catch (e) {
 		printException(e);
