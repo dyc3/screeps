@@ -544,21 +544,9 @@ function main() {
 		spawning:
 		for (let s = 0; s < _.values(Game.spawns).length; s++) {
 			let spawn = _.values(Game.spawns)[s];
-			// let spawn = Game.spawns["Spawn1"];
-			let countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester");
+			let countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester").length;
 			if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable * 0.8 || countHarvester <= 1) {
 				let inventoryString = spawn.room + ": ";
-				//let haveContainer = spawn.room.find(FIND_STRUCTURES, {
-				//		filter: (structure) => {
-				//			return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE);
-				//		}
-				//	}).length > 0;
-				//let extensionCount = spawn.room.find(FIND_STRUCTURES, {
-				//		filter: (structure) => {
-				//			return (structure.structureType == STRUCTURE_EXTENSION);
-				//		}
-				//	}).length;
-
 				let alreadySetKeepAlive = false; // indicates if we have already marked a creep for death this time around
 				let r = 0;
 				for (let role in toolCreepUpgrader.roles) {
@@ -599,7 +587,6 @@ function main() {
 									break;
 								}
 								let cStage = creepsOfType[c].memory.stage;
-								//let cStage = toolCreepUpgrader.getCreepStage(creepsOfType[c]);
 								if (cStage < toolCreepUpgrader.getHighestStage(creepsOfType[c].memory.role, spawn))
 								{
 									console.log("Setting",creepsOfType[c].memory.role,creepsOfType[c].name,"keepAlive = false");
@@ -618,7 +605,6 @@ function main() {
 							if (markedCreeps.length > 0) {
 								for (let c in markedCreeps) {
 									let cStage = markedCreeps[c].memory.stage;
-									//let cStage = toolCreepUpgrader.getCreepStage(markedCreeps[c]);
 									if (cStage >= toolCreepUpgrader.getHighestStage(markedCreeps[c].memory.role, spawn)) {
 										console.log("Setting",markedCreeps[c].memory.role,markedCreeps[c].name,"keepAlive = true");
 										markedCreeps[c].memory.keepAlive = true;
