@@ -575,6 +575,12 @@ function main() {
 						newCreepMemory.stage = hiStage;
 						if (hiStage >= 0) {
 							let newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
+							if (role == "relay") {
+								spawn.spawning.setDirections([TOP_LEFT, TOP_RIGHT, LEFT, RIGHT]);
+							}
+							else {
+								spawn.spawning.setDirections([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]);
+							}
 							console.log('Spawning new stage',hiStage,role+':',newName);
 							break spawning; // spawn one creep per tick
 						}
