@@ -4,14 +4,20 @@ var taskGather = require("task.gather");
 var taskRenew = {
 	/** @param {Creep} creep **/
 	checkRenew: function(creep) {
-		var spawn = util.getSpawn(creep.room);
-		if (!spawn) {
-			spawn = Game.spawns["Spawn1"]; // TODO: remove dependency on Spawn1
-		}
-		if (!creep.memory.keepAlive || creep.memory.role == "claimer")
+		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0)
 		{
 			return false;
 		}
+
+		var spawn = util.getSpawn(creep.room);
+		if (!spawn) {
+			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+		}
+		if (!spawn) {
+			// there are no spawns anyway, just keep doing your job.
+			return false;
+		}
+
 		if (creep.memory.renewing)
 		{
 			return true;
@@ -19,6 +25,9 @@ var taskRenew = {
 
 		// NOTE: this isn't really exact, treat it like a rough estimate
 		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 140 : 70);
+		if (spawn.spawning) {
+			travelTime += spawn.spawning.remainingTime;
+		}
 		return creep.ticksToLive < travelTime;
 	},
 
@@ -26,12 +35,10 @@ var taskRenew = {
 	run: function(creep) {
 		if (!creep.memory.renewTarget) {
 			var closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-				filter: (struct) => { return struct.structureType == STRUCTURE_SPAWN; }
+				filter: (struct) => { return struct.structureType == STRUCTURE_SPAWN && !struct.spawning; }
 			});
-			if (Game.spawns["Spawn1"] && !closestSpawn) { // TODO: remove dependency on Spawn1
-				closestSpawn = Game.spawns["Spawn1"];
-				creep.say("renew@Spawn1");
-				console.log("WARNING:", creep.name, "is using Spawn1 to renew");
+			if (!closestSpawn) {
+				closestSpawn = spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
 			}
 			creep.memory.renewTarget = closestSpawn.id;
 		}
