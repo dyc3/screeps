@@ -80,7 +80,7 @@ var taskRenew = {
 						creep.memory.renewing = false;
 						return;
 					}
-					break
+					break;
 				case ERR_FULL:
 					creep.memory.renewing = false;
 					break;
