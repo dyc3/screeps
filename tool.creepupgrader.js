@@ -22,7 +22,7 @@ function getUpgraderQuota(room = undefined) {
 				value = 2;
 				break;
 			case 7:
-				value = 2;
+				value = 1;
 				break;
 			case _.keys(CONTROLLER_LEVELS.length):
 			case 8:
