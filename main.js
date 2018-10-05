@@ -748,7 +748,7 @@ function main() {
 		}
 	}
 
-	if (Game.time % 30 === 6) {
+	if (Game.time % 30 === 6 && false) {
 		// auto science
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
