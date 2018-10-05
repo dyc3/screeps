@@ -653,7 +653,7 @@ function main() {
 			}
 		}
 	}
-	if (Game.time % 10 === 4 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
+	if (Game.time % 10 === 4 && ((Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
 		try {
 			console.log("Planning rooms...");
 			brainAutoPlanner.run();
@@ -703,7 +703,7 @@ function main() {
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	if (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000) {
+	if ((Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
 		// console.log("Auto market...");
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
