@@ -195,7 +195,7 @@ var roleHarvester = {
 		}
 
 		// if the normal target is out of energy, switch to another source temporarily, or go renew
-		if (harvestTarget.energy == 0 && harvestTarget.ticksToRegeneration > 10) {
+		if (harvestTarget.energy == 0 && harvestTarget.ticksToRegeneration > 10 && creep.ticksToLive <= 350) {
 		    if (creep.memory.hasDedicatedLink || creep.memory.haveManagerForRoom) {
 		        console.log(creep.name, "harvestTarget empty, renewing...")
                 creep.memory.renewing = true;
