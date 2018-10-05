@@ -115,6 +115,12 @@ function doAquire(creep, passively=false) {
 							return false; // comment this line to increase controller upgrade speed
 						}
 						if (struct.structureType == STRUCTURE_CONTAINER) {
+							let rootPos = struct.room.memory.rootPos;
+							if ((struct.pos.x == rootPos.x + 2 || struct.pos.x == rootPos.x - 2) &&
+								(struct.pos.y == rootPos.y - 2)) {
+								// these containers are in the main base module
+								return false;
+							}
 							if (struct.pos.findInRange(FIND_STRUCTURES, 3, { filter: function(struct) {return struct.structureType == STRUCTURE_CONTROLLER} }).length > 0) {
 								return false;
 							}
