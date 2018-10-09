@@ -146,51 +146,58 @@ var brainAutoPlanner = {
 		let validStoragePos = [];
 		let storageMaxRangeFromRoot = 8;
 		let sources = room.find(FIND_SOURCES);
-		for (let y = Math.max(rootPos.y - storageMaxRangeFromRoot, 3); y < Math.min(rootPos.y + storageMaxRangeFromRoot, 47); y++) {
-			for (let x = Math.max(rootPos.x - storageMaxRangeFromRoot, 3); x < Math.min(rootPos.x + storageMaxRangeFromRoot, 47); x++) {
-				if (x >= rootPos.x - 3 && x <= rootPos.x + 3 && y <= rootPos.y + 1 && y >= rootPos.y - 5) {
-					// the position is inside the main base unit
-					continue;
-				}
+		let storagePos;
+		if (!room.storage) {
+			for (let y = Math.max(rootPos.y - storageMaxRangeFromRoot, 3); y < Math.min(rootPos.y + storageMaxRangeFromRoot, 47); y++) {
+				for (let x = Math.max(rootPos.x - storageMaxRangeFromRoot, 3); x < Math.min(rootPos.x + storageMaxRangeFromRoot, 47); x++) {
+					if (x >= rootPos.x - 3 && x <= rootPos.x + 3 && y <= rootPos.y + 1 && y >= rootPos.y - 5) {
+						// the position is inside the main base unit
+						continue;
+					}
 
-				let structs = room.lookForAt(LOOK_STRUCTURES, x, y);
-				if (structs.length > 0 && structs[0].structureType != STRUCTURE_STORAGE) {
-					continue;
-				}
+					let structs = room.lookForAt(LOOK_STRUCTURES, x, y);
+					if (structs.length > 0 && structs[0].structureType != STRUCTURE_STORAGE) {
+						continue;
+					}
 
 
-				let valid = true;
-				for (let cY = y - 2; cY <= y + 2; cY++) {
-					for (let cX = x; cX <= x + 3; cX++) {
-						let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
-						if (terrain == "wall") {
+					let valid = true;
+					for (let cY = y - 2; cY <= y + 2; cY++) {
+						for (let cX = x; cX <= x + 3; cX++) {
+							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
+							if (terrain == "wall") {
+								valid = false;
+								break;
+							}
+						}
+						if (!valid) {
+							break;
+						}
+					}
+					for (let source of sources) {
+						pos = room.getPositionAt(x, y);
+						if (pos.getRangeTo(source) <= 2) {
 							valid = false;
 							break;
 						}
 					}
-					if (!valid) {
-						break;
-					}
-				}
-				for (let source of sources) {
-					pos = room.getPositionAt(x, y);
-					if (pos.getRangeTo(source) <= 2) {
-						valid = false;
-						break;
-					}
-				}
-				if (valid) {
-					validStoragePos.push({ x: x, y: y });
-					if (debug) {
-						room.visual.circle(x, y, { stroke: "#00cccc", fill: "transparent" });
+					if (valid) {
+						validStoragePos.push({ x: x, y: y });
+						if (debug) {
+							room.visual.circle(x, y, { stroke: "#00cccc", fill: "transparent" });
+						}
 					}
 				}
 			}
+			validStoragePos.sort(function(a, b) {
+				return _getTotalDistances(a, includeMineral=true, excludeSources=true, usePaths=true) - _getTotalDistances(b, includeMineral=true, excludeSources=true, usePaths=true);
+			});
+			storagePos = validStoragePos[0];
 		}
-		validStoragePos.sort(function(a, b) {
-			return _getTotalDistances(a, includeMineral=true, excludeSources=true, usePaths=true) - _getTotalDistances(b, includeMineral=true, excludeSources=true, usePaths=true);
-		});
-		let storagePos = validStoragePos[0];
+		else {
+			console.log("WARN: using existing storage as storagePos");
+			storagePos = room.storage.pos;
+		}
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
 
