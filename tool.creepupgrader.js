@@ -107,6 +107,27 @@ function getManagerQuota() {
 	return _.values(Game.rooms).filter((room) => { return room.controller && room.controller.my && room.controller.level >= 4; }).length;
 }
 
+function getRelayQuota() {
+	let count = 0;
+	let rooms = util.getOwnedRooms();
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
+		let linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
+		switch (linkCount) {
+			case 4:
+				count += 1;
+			case 3:
+				count += 1;
+			case 2:
+				count += 1;
+				break;
+			default:
+				break;
+		}
+	}
+	return count;
+}
+
 function getMinerQuota() {
 	let count = 0;
 	let rooms = util.getOwnedRooms();
@@ -298,7 +319,7 @@ var creepUpgrader = {
 		"relay": {
 			name:"relay",
 			// quota:util.getOwnedRooms().length * 4,
-			quota:1,
+			quota:getRelayQuota(),
 			stages:[
 				[CARRY,MOVE]
 			]
