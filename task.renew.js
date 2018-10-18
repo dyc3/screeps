@@ -80,6 +80,9 @@ var taskRenew = {
 						creep.memory.renewing = false;
 						return;
 					}
+					else {
+						creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
+					}
 					break;
 				case ERR_FULL:
 					creep.memory.renewing = false;
