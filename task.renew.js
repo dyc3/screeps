@@ -24,7 +24,7 @@ var taskRenew = {
 		}
 
 		// NOTE: this isn't really exact, treat it like a rough estimate
-		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 140 : 70);
+		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 160 : 70);
 		if (spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
@@ -37,8 +37,8 @@ var taskRenew = {
 			var closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
 				filter: (struct) => { return struct.structureType == STRUCTURE_SPAWN && !struct.spawning; }
 			});
-			if (!closestSpawn) {
-				closestSpawn = spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+			if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
+				closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
 			}
 			creep.memory.renewTarget = closestSpawn.id;
 		}
