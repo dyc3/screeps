@@ -73,7 +73,7 @@ var taskGather = {
     						}
     					}
 					}
-					if (!spawn || !haveContainer) {
+					if (!spawn || !haveContainer || creep.room.controller.level <= 2) {
 						var controllerHasContainerNearby = false;
 						if (creep.memory.role == "upgrader" && creep.room.controller && creep.room.controller.my) {
 							var controller = creep.room.controller;
