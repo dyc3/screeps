@@ -575,12 +575,12 @@ function main() {
 						newCreepMemory.stage = hiStage;
 						if (hiStage >= 0) {
 							let newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
-							if (role == "relay") {
-								spawn.spawning.setDirections([TOP_LEFT, TOP_RIGHT, LEFT, RIGHT]);
-							}
-							else {
-								spawn.spawning.setDirections([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]);
-							}
+				// 			if (role == "relay") {
+				// 				spawn.spawning.setDirections([TOP_LEFT, TOP_RIGHT, LEFT, RIGHT]);
+				// 			}
+				// 			else {
+				// 				spawn.spawning.setDirections([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]);
+				// 			}
 							console.log('Spawning new stage',hiStage,role+':',newName);
 							break spawning; // spawn one creep per tick
 						}
@@ -703,7 +703,7 @@ function main() {
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	if ((Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
+	if (Game.time % 20 === 6 && (Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
 		// console.log("Auto market...");
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
