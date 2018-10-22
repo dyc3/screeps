@@ -12,11 +12,15 @@
 // var sci = Game.creeps["scientist1"]; sci.withdraw(sci.room.storage, "U"); sci.transfer(sci.room.terminal, "U")
 
 // Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "scientist1", {role:"scientist", keepAlive:true})
+// Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "scientist_1", {role:"scientist", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "miner1", {role:"miner", keepAlive:true, stage:3})
 // Scouts:
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
 // Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "relay_1", {role:"relay", keepAlive:false})
+
+// Delivery creep templates
+// Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "tmpdeliver_1", {role:"tmpdeliver", keepAlive:true, stage: 0, withdrawTargetId: "", depositTargetId:"" })
 
 // Memory.mineralsToSell
 
@@ -53,6 +57,7 @@ let roleNextRoomer = require('role.nextroomer');
 let roleMiner = require('role.miner');
 let roleScientist = require('role.scientist');
 let roleRelay = require('role.relay');
+let roleTmpDeliver = require('role.tmpdeliver');
 
 let roleTower = require('role.tower');
 
@@ -503,6 +508,9 @@ function main() {
 						break;
 					case 'relay':
 						roleRelay.run(creep);
+						break;
+					case 'tmpdeliver':
+						roleTmpDeliver.run(creep);
 						break;
 					default:
 						console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
