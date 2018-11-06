@@ -16,6 +16,19 @@ let roleTmpDelivery = {
 
 		let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 		let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
+		
+		if (!withdrawTarget) {
+		    delete creep.memory.withdrawTargetId;
+		    console.log(creep.name, "Can't find withdraw target");
+		    creep.say("help");
+		    return;
+		}
+		if (!depositTarget) {
+		    delete creep.memory.depositTargetId;
+		    console.log(creep.name, "Can't find deposit target");
+		    creep.say("help");
+		    return;
+		}
 
 		if (creep.memory.delivering) {
 			if (creep.pos.isNearTo(depositTarget)) {
@@ -23,7 +36,7 @@ let roleTmpDelivery = {
 				creep.memory.delivering = false;
 			}
 			else {
-				creep.moveTo(depositTarget);
+				creep.moveTo(depositTarget, {visualizePathStyle:{}});
 			}
 		}
 		else {
@@ -32,7 +45,7 @@ let roleTmpDelivery = {
 				creep.memory.delivering = true;
 			}
 			else {
-				creep.moveTo(withdrawTarget);
+				creep.moveTo(withdrawTarget, {visualizePathStyle:{}});
 			}
 		}
 	}
