@@ -264,7 +264,7 @@ var roleManager = {
 				this.findTargetRoom(creep);
 			}
 
-			if (creep.room.name != creep.memory.targetRoom && creep.carry[RESOURCE_ENERGY] > 200) {
+			if (creep.room.name != creep.memory.targetRoom) { //  && creep.carry[RESOURCE_ENERGY] > 200
 				creep.moveTo(new RoomPosition(25, 25, creep.memory.targetRoom), {visualizePathStyle:{}});
 				return;
 			}
