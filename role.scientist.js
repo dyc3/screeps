@@ -46,6 +46,10 @@ var roleScientist = {
 			}
 			return true;
 		}
+		
+		// NOTE
+		// `targetStruct` is where we deliver the resource
+		// `targetStorage` is where we grab the resource from
 
 		var neededMinerals = [];
 		if (!creep.memory.targetStruct) {
@@ -85,6 +89,7 @@ var roleScientist = {
 			}
 		}
 
+        // look for where to grab the resource from
 		if (!creep.memory.targetStorage) {
 			var targetStorage = undefined;
 			var _mineral = undefined;
@@ -92,10 +97,13 @@ var roleScientist = {
 				var key = _.keys(neededMinerals)[i];
 				_mineral = key;
 				console.log(creep.name, "checking inventory for any", key);
-				targetStorage = _.filter(util.getStructures(room), function(struct) {
+				targetStorage = _.filter(util.getStructures(creep.room), function(struct) {
+				    // exclude structures that need a resource
 					if (struct.id == _.values(neededMinerals)[i].id) {
 						return false;
 					}
+					
+					// exclude labs if they have a fill flag, include them if they have a make flag (if enough resource is available to fill the creep)
 					if (struct.structureType == STRUCTURE_LAB) {
 						if (struct.mineralType != _mineral) {
 							return false;
@@ -108,15 +116,17 @@ var roleScientist = {
 									return false;
 								}
 								if (flag.name.includes("make") || flag.name.includes("dismantle")) {
-									return struct.mineralAmount > creep.carryCapacity;
+									return struct.mineralAmount >= creep.carryCapacity; // why?
 								}
 							}
 						}
 					}
+					
+					// exclude all structures that are not storage, terminal, or container
 					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER) {
 						return false;
 					}
-					return struct.store[key] && struct.store[key] > 0;
+					return (key in struct.store) && struct.store[key] > 0;
 				})[0];
 
 				// _.filter(Game.structures) only gets owned structures
@@ -136,7 +146,7 @@ var roleScientist = {
 			console.log(creep.name, "targetStorage =", targetStorage)
 			if (!targetStorage) {
 				console.log(creep.name, "could not find targetStorage to get minerals from.");
-				console.log(creep.name, "targetStruct:", targetStruct, "mineral:", _mineral);
+				console.log(creep.name, "targetStruct:", targetStruct, ", mineral:", _mineral);
 				delete creep.memory.targetStruct;
 				doNoJobsStuff(creep);
 				return;
