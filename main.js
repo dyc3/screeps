@@ -336,7 +336,8 @@ function commandEnergyRelays(rooms) {
 				if (!creep.memory.assignedPos) {
 					continue;
 				}
-				if (pos.isEqualTo(creep.memory.assignedPos)) {
+				let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
+				if (pos.isEqualTo(assignedPos)) {
 					return false;
 				}
 			}
