@@ -408,7 +408,7 @@ function doCreepSpawning() {
 
 					let newCreepName = role.name + "_" + Game.time.toString(16);
 					let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
-					let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
+					let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage, targetRoom: room.name };
 					if (role.name == "attacker") {
 						newCreepMemory.mode = "defend";
 					}
