@@ -723,7 +723,7 @@ function main() {
 	if (Object.keys(Game.creeps).length === 0) {
 		Memory.forceCreepSpawn = true;
 	}
-	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn) {
+	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
 		doCreepSpawning();
 		if (Memory.forceCreepSpawn) {
 			delete Memory.forceCreepSpawn;
