@@ -384,14 +384,57 @@ function commandEnergyRelays(rooms) {
 
 function doCreepSpawning() {
 	let rooms = util.getOwnedRooms();
-	for (let r = 0; r < rooms.length; r++) {
-		let room = rooms[r];
-		if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
-			continue;
+	for (let role_name in toolCreepUpgrader.roles) {
+		let role = toolCreepUpgrader.roles[role_name];
+		let creeps_of_role = _.filter(Game.creeps, (creep) => creep.memory.role === role.name);
+		if (role.quota_per_room) {
+			for (let r = 0; r < rooms.length; r++) {
+				let room = rooms[r];
+				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
+					continue;
+				}
+
+				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+				if (spawns.length == 0) {
+					continue;
+				}
+
+				let creeps_of_room = _.filter(creeps_of_role, (creep) => creep.memory.targetRoom === room.name);
+				let role_quota = role.quota(room);
+				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
+				if (creeps_of_room.length < role_quota) {
+					// spawn new creeps to fill up the quota
+					let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
+
+					let newCreepName = role.name + "_" + Game.time.toString(16);
+					let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
+					let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
+					if (role.name == "attacker") {
+						newCreepMemory.mode = "defend";
+					}
+					else if (role.name == "claimer" || role.name == "scout") {
+						newCreepMemory.keepAlive = false;
+					}
+
+					if (hiStage >= 0) {
+						target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
+						return;
+					}
+				}
+				else {
+					// check if we can upgrade any of the creeps,
+					// and if no other creeps are already marked for death,
+					// mark 1 creep for death
+				}
+			}
+		}
+		else {
+			let role_quota = role.quota();
+			console.log(role.name, creeps_of_role.length + "/" + role_quota);
 		}
 
-
 	}
+
 }
 
 function doCreepSpawning_old() {

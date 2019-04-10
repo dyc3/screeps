@@ -43,9 +43,6 @@ function getUpgraderQuota(room) {
 
 /** @param {Room} room **/
 function getScientistQuota(room) {
-	if (_.filter(Game.creeps, function(c) { return c.memory.role == "harvester" }).length < toolEnergySource.getHarvesterQuota() * 0.5) {
-		return 0;
-	}
 	if (room.controller.level >= 6 && util.getStructures(room, STRUCTURE_LAB).length > 0) {
 		return 1;
 	}
