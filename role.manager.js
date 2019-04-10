@@ -1,8 +1,9 @@
-var util = require("util");
-var energyInTerminalTarget = 50000;
+let traveler = require('traveler');
+let util = require("util");
+let energyInTerminalTarget = 75000;
 
 // NOTE: remember to modify the corresponding droppedEnergyGatherMinimum in task.gather.js
-var droppedEnergyGatherMinimum = 100; // TODO: make this a global constant somehow
+let droppedEnergyGatherMinimum = 100; // TODO: make this a global constant somehow
 
 function doAquire(creep, passively=false) {
 	var droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, (passively ? 1 : 20), {
@@ -21,11 +22,11 @@ function doAquire(creep, passively=false) {
 		}
 	});
 	if (droppedResources.length > 0) {
-		var closest = creep.pos.findClosestByPath(droppedResources);
+		let closest = creep.pos.findClosestByPath(droppedResources);
 		creep.room.visual.circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 		if (closest) {
 			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(closest, {visualizePathStyle:{}});
+				creep.travelTo(closest, {visualizePathStyle:{}});
 			}
 		}
 	}
@@ -49,34 +50,27 @@ function doAquire(creep, passively=false) {
 			tombstones = tombstones.sort((a, b) => { return _.sum(b.store) - _.sum(a.store); });
 			let target = tombstones[0];
 			creep.room.visual.circle(target.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
-			if (creep.pos.isNearTo(target))
-			{
+			if (creep.pos.isNearTo(target)) {
 				// prioritize "exotic" resources
-				for (var r = 0; r < RESOURCES_ALL.length; r++)
-				{
-					if (_.sum(creep.carry) == creep.carryCapacity)
-					{
+				for (let r = 0; r < RESOURCES_ALL.length; r++) {
+					if (_.sum(creep.carry) == creep.carryCapacity) {
 						break;
 					}
-					var resource = RESOURCES_ALL[r];
-					if (resource == RESOURCE_ENERGY)
-					{
+					let resource = RESOURCES_ALL[r];
+					if (resource == RESOURCE_ENERGY) {
 						continue;
 					}
-					if (target.store[resource] > 0)
-					{
+					if (target.store[resource] > 0) {
 						creep.withdraw(target, resource);
 					}
 				}
 				creep.withdraw(target, RESOURCE_ENERGY);
 			}
-			else
-			{
-				creep.moveTo(target, {visualizePathStyle:{}});
+			else {
+				creep.travelTo(target, {visualizePathStyle:{}});
 			}
 		}
-		else
-		{
+		else {
 			var filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, (passively ? 1 : 4), {
 				filter: function(c) {
 					// if (c.memory.role == "harvester") {
@@ -93,7 +87,7 @@ function doAquire(creep, passively=false) {
 					creep.room.visual.circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1})
 					//console.log("NEARBY FILLED HARVESTER",closest.pos,"dist =",creep.pos.getRangeTo(closest))
 					if (closest.transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest, {visualizePathStyle:{}});
+						creep.travelTo(closest, {visualizePathStyle:{}});
 					}
 				}
 				else {
@@ -172,8 +166,10 @@ function doAquire(creep, passively=false) {
 					var closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 					var amount = (closest.structureType == STRUCTURE_TERMINAL ? closest.store[RESOURCE_ENERGY] - energyInTerminalTarget : undefined);
+					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
+					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest, {visualizePathStyle:{}});
+						creep.travelTo(closest, {visualizePathStyle:{}});
 					}
 					else {
 						if (closest) {
@@ -201,7 +197,7 @@ function doAquire(creep, passively=false) {
 						var closest = storages[0];
 						new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 						if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(closest, {visualizePathStyle:{}});
+							creep.travelTo(closest, {visualizePathStyle:{}});
 						}
 						else {
 							creep.memory.lastWithdrawStructure = closest.id;
@@ -259,13 +255,17 @@ var roleManager = {
 	},
 
 	run: function(creep) {
+	    if (creep.fatigue > 0) {
+	        return;
+	    }
+	    
 		if (creep.memory.role == "manager") {
 			if (!creep.memory.targetRoom) {
 				this.findTargetRoom(creep);
 			}
 
 			if (creep.room.name != creep.memory.targetRoom) { //  && creep.carry[RESOURCE_ENERGY] > 200
-				creep.moveTo(new RoomPosition(25, 25, creep.memory.targetRoom), {visualizePathStyle:{}});
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), {visualizePathStyle:{}});
 				return;
 			}
 		}
@@ -357,7 +357,7 @@ var roleManager = {
 				if (closest) {
 					creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1})
 					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest, {visualizePathStyle:{}});
+						creep.travelTo(closest, {visualizePathStyle:{}});
 					}
 					else {
 						creep.memory.lastDepositStructure = closest.id;
@@ -384,9 +384,11 @@ var roleManager = {
 				//console.log(hungryCreeps.length);
 				if (hungryCreeps.length > 0) {
 					var closest = creep.pos.findClosestByPath(hungryCreeps);
-					creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1})
-					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest, {visualizePathStyle:{}});
+					if (closest) {
+					    creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1});
+    					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+    						creep.travelTo(closest, {visualizePathStyle:{}});
+    					}
 					}
 				}
 				else {
@@ -400,7 +402,7 @@ var roleManager = {
 					if (creep.room.energyAvailable < creep.room.energyCapacityAvailable * 0.1) {
 						delete creep.memory.lastWithdrawStructure;
 					}
-					creep.moveTo(creep.room.storage, {visualizePathStyle:{}});
+					creep.travelTo(creep.room.storage, {visualizePathStyle:{}});
 					// if (Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.name == creep.memory.targetRoom && !creep.pos.inRangeTo(Game.spawns["Spawn1"], 3)) {
 					// 	creep.moveTo(Game.spawns["Spawn1"], {visualizePathStyle:{}});
 					// }

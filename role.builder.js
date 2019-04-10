@@ -1,3 +1,4 @@
+var traveler = require('traveler');
 var taskGather = require("task.gather");
 var util = require("util");
 
@@ -44,7 +45,7 @@ var roleBuilder = {
 					target = targets[0]; // ????
 				}
 				if(creep.build(target) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(target);
+					creep.travelTo(target);
 				}
 			}
 			else{

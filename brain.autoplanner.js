@@ -193,6 +193,55 @@ var brainAutoPlanner = {
 				return _getTotalDistances(a, includeMineral=true, excludeSources=true, usePaths=true) - _getTotalDistances(b, includeMineral=true, excludeSources=true, usePaths=true);
 			});
 			storagePos = validStoragePos[0];
+
+			// TODO: plan path from root to controller
+			let _tmpIsPlanned = this.isPositionPlanned;
+			let pathToControllerResult = PathFinder.search(
+				room.controller.pos,
+				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: 2 },
+				{
+					maxRooms: 1,
+					roomCallback: function(roomName) {
+						let costMatrix = new PathFinder.CostMatrix();
+						let room = new Room(roomName);
+
+						for (let y = 0; y < 50; y++) {
+							for (let x = 0; x < 50; x++) {
+								if (x > rootPos.x - 2 && x < rootPos.x + 2) {
+									if (y >= rootPos.y - 4 && y <= rootPos.y) {
+										// this position is in the main base module
+										costMatrix.set(x, y, Infinity);
+										continue;
+									}
+								}
+
+
+								let pos = room.getPositionAt(x, y);
+								// console.log("DEBUG: ", pos);
+								let isPlanned = _tmpIsPlanned(pos);
+								if (isPlanned) {
+									if (isPlanned == STRUCTURE_ROAD) {
+										costMatrix.set(x, y, 0.5);
+									}
+									else {
+										costMatrix.set(x, y, Infinity);
+									}
+								}
+								else {
+									costMatrix.set(x, y, 0);
+								}
+							}
+						}
+					}
+				}
+			);
+			if (pathToControllerResult.incomplete) {
+				console.error("FAILED TO FIND PATH from controller to rootPos");
+				return;
+			}
+
+			let targetPathIdx = Math.round(pathToControllerResult.path.length * 0.65);
+			room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: .4, fill: "#cccc00" });
 		}
 		else {
 			console.log("WARN: using existing storage as storagePos");

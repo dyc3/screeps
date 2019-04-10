@@ -1,9 +1,21 @@
+var traveler = require('traveler');
 var toolEnergySource = require('tool.energysource');
 var USE_RUN_NEW = false;
 
 var roleHarvester = {
 	/** @param {Creep} creep **/
 	findTransferTargets: function(creep) {
+	    let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		if (harvestTarget) {
+		    let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
+    	    if (!dedicatedLink) {
+    	        dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+    					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+    				})[0];
+    	        creep.memory.dedicatedLinkId = dedicatedLink.id;
+    	    }
+		}
+	    
 		var targets = creep.room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
 				var flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -12,7 +24,7 @@ var roleHarvester = {
 						return false;
 					}
 				}
-				if (creep.memory.hasDedicatedLink && !creep.pos.inRangeTo(struct, 3)) {
+				if (creep.memory.dedicatedLinkId && !creep.pos.inRangeTo(struct, 3)) {
 					return false;
 				}
 				if (struct.structureType == STRUCTURE_LINK) {
@@ -23,15 +35,17 @@ var roleHarvester = {
 						return struct.energy < struct.energyCapacity;
 					}
 				}
-				else if (struct.structureType == STRUCTURE_EXTENSION) {
-					if (!creep.pos.inRangeTo(struct, 8)) {
-						return false;
-					}
-				}
-				else if (struct.structureType == STRUCTURE_SPAWN) {
-					if (CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 && creep.pos.inRangeTo(struct, 3)) {
-						return true;
-					}
+				else if (!(creep.getActiveBodyparts(MOVE) == 1 && creep.getActiveBodyparts(WORK) >= 5)) { // check if creep is "optimized"
+				    if (struct.structureType == STRUCTURE_EXTENSION) {
+    					if (!creep.pos.inRangeTo(struct, 8)) {
+    						return false;
+    					}
+    				}
+    				else if (struct.structureType == STRUCTURE_SPAWN) {
+    					if (CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 && creep.pos.inRangeTo(struct, 3)) {
+    						return true;
+    					}
+    				}
 				}
 				var a = (struct.structureType == STRUCTURE_EXTENSION ||
 						(struct.structureType == STRUCTURE_SPAWN && (creep.room.controller.level == 1 || creep.room.energyAvailable > 295)) ||
@@ -44,18 +58,13 @@ var roleHarvester = {
 			}
 		});
 		if (targets.length > 0) {
-			var harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+// 			var harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 			if (!creep.memory.haveManagerForRoom || Game.time % 10 == 0) {
 				creep.memory.haveManagerForRoom = _.filter(Game.creeps, function(c) {
 					if (!Game.creeps[c.name]) { // checks if the creep is alive? maybe?
 						return false;
 					}
 					return (c.memory.role == "manager") && (c.memory.targetRoom == creep.room.name);
-				}).length > 0;
-			}
-			if (harvestTarget && (!creep.memory.hasDedicatedLink || Game.time % 10 == 1)) {
-				creep.memory.hasDedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
-					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
 				}).length > 0;
 			}
 			// console.log(creep.name, "has manager in room", creep.room.name, "=", haveManagerForRoom);
@@ -76,10 +85,10 @@ var roleHarvester = {
 				structPriority[STRUCTURE_EXTENSION] = 3;
 				structPriority[STRUCTURE_TOWER] = 3;
 			}
-			if (creep.memory.hasDedicatedLink) {
+			if (creep.memory.dedicatedLinkId) {
 				targets = targets.filter((struct) => { return harvestTarget.pos.inRangeTo(struct, 3); });
 			}
-			if (creep.memory.haveManagerForRoom && creep.memory.hasDedicatedLink) {
+			if (creep.memory.haveManagerForRoom && creep.memory.dedicatedLinkId) {
 				structPriority[STRUCTURE_LINK] = 1;
 				structPriority[STRUCTURE_SPAWN] = 2;
 				structPriority[STRUCTURE_EXTENSION] = 3;
@@ -128,7 +137,7 @@ var roleHarvester = {
 		}
 	},
 
-	/** gets this creep's energy deposit mode depending on the current situation, and also sets `transferTarget` **/
+	/** gets this creep's energy deposit mode depending on the current situation **/
 	/** @param {Creep} creep **/
 	getDepositMode: function(creep) {
 		/*
@@ -152,9 +161,10 @@ var roleHarvester = {
 			return "direct";
 		}
 
-		let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, { filter: (struct) => { return struct.structureType == STRUCTURE_LINK; } });
-		if (nearbyLinks.length > 0) {
-			creep.memory.transferTarget = nearbyLinks[0].id;
+// 		let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, { filter: (struct) => { return struct.structureType == STRUCTURE_LINK; } });
+        let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
+// 		if (nearbyLinks.length > 0) {
+        if (dedicatedLink) {
 			return "link";
 		}
 
@@ -165,6 +175,17 @@ var roleHarvester = {
 		return "drop";
 	},
 
+    /** Meant to replace findTransferTargets **/
+    getTransferTarget: function(creep) {
+        if (creep.depositMode == "direct") {
+            return creep.room.storage;
+        }
+        
+        if (creep.depositMode == "link") {
+            return Game.getObjectById(creep.memory.dedicatedLinkId);
+        }
+    },
+    
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		if (USE_RUN_NEW)
@@ -210,11 +231,11 @@ var roleHarvester = {
 		if(creep.memory.harvesting) {
 			if (creep.room.name == harvestTarget.room.name) {
 				if(creep.harvest(harvestTarget) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(harvestTarget);
+					creep.travelTo(harvestTarget);
 				}
 			}
 			else {
-				creep.moveTo(new RoomPosition(25, 25, harvestTarget.room.name), {visualizePathStyle:{}});
+				creep.travelTo(new RoomPosition(25, 25, harvestTarget.room.name), {visualizePathStyle:{}});
 			}
 		}
 		else {
@@ -222,14 +243,14 @@ var roleHarvester = {
 			if(targets.length > 0) {
 				let target = targets[0];
 				if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(target, {visualizePathStyle:{}});
+					creep.travelTo(target, {visualizePathStyle:{}});
 				}
 
 				if (creep.memory.hasDedicatedLink) {
 					creep.harvest(harvestTarget);
 				}
 			}
-			else if (!creep.memory.hasDedicatedLink) {
+			else if (!creep.memory.hasDedicatedLink && !(creep.getActiveBodyparts(MOVE) == 1 && creep.getActiveBodyparts(WORK) >= 5)) { // don't move away from source if the creep is an "optimized" harvester
 				//console.log(creep.name+": Err: no structure transfer targets");
 				let hungryCreeps = creep.room.find(FIND_MY_CREEPS, {
 					filter: function(c) {
@@ -244,7 +265,7 @@ var roleHarvester = {
 				if (hungryCreeps.length > 0) {
 					let closest = creep.pos.findClosestByPath(hungryCreeps);
 					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest, {visualizePathStyle:{}});
+						creep.travelTo(closest, {visualizePathStyle:{}});
 					}
 				}
 				else {
@@ -268,47 +289,15 @@ var roleHarvester = {
 								}
 							}
 							else {
-								creep.moveTo(harvestTarget);
+								creep.moveTo(harvestTarget, {visualizePathStyle:{}});
 							}
 						}
 					}
 				}
 			}
 			else {
-				creep.moveTo(harvestTarget);
+				creep.moveTo(harvestTarget, {visualizePathStyle:{}});
 			}
-
-			// if the roads aren't finished, and we have a lot of energy, help speed up road construction
-			// if (creep.carry[RESOURCE_ENERGY] > creep.carryCapacity * 0.5 || creep.room.energyAvailable < 300) {
-			// 	var lookConstruction = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES, {
-			// 		filter: function(site) {
-			// 			var flags = site.pos.lookFor(LOOK_FLAGS);
-			// 			if (flags.length > 0) {
-			// 				if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
-			// 					return false;
-			// 				}
-			// 			}
-			// 		}
-			// 	});
-			// 	if (lookConstruction.length > 0 && (lookConstruction[0].structureType == STRUCTURE_ROAD || lookConstruction[0].structureType == STRUCTURE_CONTAINER)) {
-			// 		creep.build(lookConstruction[0]);
-			// 	}
-			// 	else {
-			// 		var lookStructures = creep.pos.lookFor(LOOK_STRUCTURES, {
-			// 			filter: function(struct) {
-			// 				var flags = struct.pos.lookFor(LOOK_FLAGS);
-			// 				if (flags.length > 0) {
-			// 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
-			// 						return false;
-			// 					}
-			// 				}
-			// 			}
-			// 		});
-			// 		if (lookStructures.length > 0 && (lookStructures[0].structureType == STRUCTURE_ROAD || lookStructures[0].structureType == STRUCTURE_CONTAINER) && lookStructures[0].hits < lookStructures[0].hitsMax * 0.45) {
-			// 			creep.repair(lookStructures[0]);
-			// 		}
-			// 	}
-			// }
 		}
 	},
 
@@ -346,11 +335,11 @@ var roleHarvester = {
 		if(creep.memory.harvesting) {
 			if (creep.room.name == harvestTarget.room.name) {
 				if(creep.harvest(harvestTarget) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(harvestTarget);
+					creep.travelTo(harvestTarget);
 				}
 			}
 			else {
-				creep.moveTo(new RoomPosition(25,25,harvestTarget.room.name), {visualizePathStyle:{}});
+				creep.travelTo(new RoomPosition(25,25,harvestTarget.room.name), {visualizePathStyle:{}});
 			}
 		}
 		else {
@@ -365,8 +354,13 @@ var roleHarvester = {
 			}
 
 			var target = Game.getObjectById(creep.memory.transferTarget);
+			if (target) {
+			    target = this.getTransferTarget(creep);
+			    creep.memory.transferTarget = target.id;
+			}
+			
 			if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(target, {visualizePathStyle:{}});
+				creep.travelTo(target, {visualizePathStyle:{}});
 			}
 		}
 	}

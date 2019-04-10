@@ -1,3 +1,4 @@
+var traveler = require('traveler');
 var taskGather = require("task.gather");
 var taskDismantle = require("task.dismantle");
 var util = require('util');
@@ -147,12 +148,11 @@ var roleRepairer = {
 			}
 
 			if ((creep.room.name != creep.memory.targetRoom || util.isOnEdge(creep.pos)) && !creep.memory.repairTarget) {
-				creep.moveTo(new RoomPosition(25,25,creep.memory.targetRoom), { visualizePathStyle:{} });
+				creep.travelTo(new RoomPosition(25,25,creep.memory.targetRoom), { visualizePathStyle:{} });
 				return;
 			}
 		}
 
-		// find a repair target if we don't have one
 		if (creep.memory.repairTarget) {
 			var repairTarget = Game.getObjectById(creep.memory.repairTarget);
 			// console.log("repairTarget:",repairTarget);
@@ -192,8 +192,13 @@ var roleRepairer = {
 				delete creep.memory.repairTarget;
 			}
 		}
-		if (!creep.memory.repairTarget) {
+		else { // find a repair target if we don't have one
 			this.findRepairTarget(creep);
+			
+			// if we don't have a lot of energy, refill before repairing
+			if (creep.carry[RESOURCE_ENERGY] <= creep.carryCapacity * 0.1) {
+			    creep.memory.repairing = false;
+			}
 		}
 
 		if(creep.memory.repairing && creep.carry.energy == 0) {

@@ -1,3 +1,4 @@
+var traveler = require('traveler');
 var util = require('util');
 
 var roleMiner = {
@@ -39,22 +40,30 @@ var roleMiner = {
 
 	run: function(creep) {
 		if (!creep.memory.mineralTarget) {
+		    if (Game.cpu.bucket <= 100) {
+    	        return;
+    	    }
 			creep.memory.mineralTarget = this.findMineralTarget(creep);
 		}
+		
+		let total_carry = _.sum(creep.carry);
 
 		let mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
 		if (!mineralTarget) {
 			console.log(creep.name, "no mineral target");
 			return;
 		}
+		if (mineralTarget.ticksToRegeneration > 0 && total_carry == 0) {
+		    return;
+		}
 
-		if (!creep.memory.mining && _.sum(creep.carry) == 0) {
+		if (!creep.memory.mining && total_carry == 0) {
 			creep.memory.mining = true;
 			creep.say("mining");
 			delete creep.memory.storageTarget;
 			delete creep.memory.materialToStore;
 		}
-		if (creep.memory.mining && (_.sum(creep.carry) == creep.carryCapacity || (mineralTarget.ticksToRegeneration > 0 && _.sum(creep.carry) > 0))) {
+		if (creep.memory.mining && (total_carry == creep.carryCapacity || (mineralTarget.ticksToRegeneration > 0 && total_carry > 0))) {
 			creep.memory.mining = false;
 			creep.say("storing");
 		}
@@ -63,7 +72,7 @@ var roleMiner = {
 			switch (creep.harvest(mineralTarget)) {
 				case ERR_NOT_IN_RANGE:
 				case ERR_NOT_ENOUGH_RESOURCES:
-					creep.moveTo(mineralTarget);
+					creep.travelTo(mineralTarget);
 					break;
 				default:
 
@@ -92,7 +101,7 @@ var roleMiner = {
 			    }
 			}
 			else {
-			    creep.moveTo(storageTarget);
+			    creep.travelTo(storageTarget);
 			}
 		}
 	}

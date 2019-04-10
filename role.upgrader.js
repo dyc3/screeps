@@ -1,3 +1,4 @@
+var traveler = require('traveler');
 var taskGather = require("task.gather");
 var util = require("util");
 var toolCreepUpgrader = require("tool.creepupgrader");
@@ -33,7 +34,7 @@ var roleUpgrader = {
 		}
 
 		if (creep.room.name != creep.memory.targetRoom) {
-			creep.moveTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+			creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
 			return;
 		}
 

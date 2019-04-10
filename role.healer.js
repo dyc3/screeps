@@ -1,10 +1,15 @@
+let traveler = require("traveler");
 var taskGather = require("task.gather");
 
 var roleHealer = {
 
 	/** @param {Creep} creep **/
 	run: function(creep) {
-		var damagedCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 20, {
+	    if (creep.fatigue > 0 || Game.cpu.bucket <= 50) {
+	        return;
+	    }
+	    
+		var damagedCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 15, {
 			filter: (mycreep) => {
 				return mycreep.hits < mycreep.hitsMax;
 			}
@@ -14,11 +19,11 @@ var roleHealer = {
 			if (creep.heal(closest) == ERR_NOT_IN_RANGE) {
 				if (Game.time % 2 == 0 || closest.hits < closest.hitsMax * 0.5) {
 					if (creep.rangedHeal() == ERR_NOT_IN_RANGE) {
-						creep.moveTo(closest);
+						creep.travelTo(closest);
 					}
 				}
 				else {
-					creep.moveTo(closest);
+					creep.travelTo(closest);
 				}
 			}
 		}
@@ -31,10 +36,10 @@ var roleHealer = {
 				}
 			}
 			if (doMoveTo != undefined) {
-				creep.moveTo(doMoveTo);
+				creep.travelTo(doMoveTo);
 			}
 			else if (attackCreeps.length == 0) {
-				creep.moveTo(Game.flags["Defend"]);
+				creep.travelTo(Game.flags["Defend"]);
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+var traveler = require('traveler');
 let util = require('util');
 
 let roleRelay = {
@@ -9,7 +10,7 @@ let roleRelay = {
 
 		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
 		if (!creep.pos.isEqualTo(assignedPos)) {
-			let result = creep.moveTo(assignedPos);
+			let result = creep.travelTo(assignedPos);
 			if (result != 0) {
 			    console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}

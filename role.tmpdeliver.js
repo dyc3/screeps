@@ -1,5 +1,7 @@
 // This is a tool creep used to set up delivery routes for energy
 
+var traveler = require('traveler');
+
 let roleTmpDelivery = {
 	run: function(creep) {
 		if (!creep.memory.withdrawTargetId) {
@@ -36,7 +38,7 @@ let roleTmpDelivery = {
 				creep.memory.delivering = false;
 			}
 			else {
-				creep.moveTo(depositTarget, {visualizePathStyle:{}});
+				creep.travelTo(depositTarget, {visualizePathStyle:{}});
 			}
 		}
 		else {
@@ -45,7 +47,7 @@ let roleTmpDelivery = {
 				creep.memory.delivering = true;
 			}
 			else {
-				creep.moveTo(withdrawTarget, {visualizePathStyle:{}});
+				creep.travelTo(withdrawTarget, {visualizePathStyle:{}});
 			}
 		}
 	}

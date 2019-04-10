@@ -49,8 +49,14 @@ var taskRenew = {
 			return;
 		}
 
-		var maxTicks = ((creep.memory.role == "multiroom-harvester" || creep.memory.role == "carrier") ? 1000 : 600);
-		if (creep.memory.role == "scout") {
+		var maxTicks = 600;
+		if (creep.memory.renew_force_amount) {
+		    maxTicks = creep.memory.renew_force_amount;
+		}
+		else if (creep.memory.role == "multiroom-harvester" || creep.memory.role == "carrier") {
+		    maxTicks = 1000;
+		}
+		else if (creep.memory.role == "scout") {
 			maxTicks = 1200;
 		}
 		else if (creep.memory.role == "nextroomer") {
@@ -93,6 +99,7 @@ var taskRenew = {
 		}
 		if (creep.ticksToLive >= maxTicks) {
 			creep.memory.renewing = false;
+			delete creep.memory.renew_force_amount;
 		}
 
 		if (!creep.memory.renewing) {

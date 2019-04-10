@@ -1,3 +1,4 @@
+let traveler = require("traveler");
 var toolFriends = require('tool.friends');
 var util = require('util');
 
@@ -5,6 +6,9 @@ var roleAttacker = {
 
 	/** @param {Creep} creep **/
 	run: function(creep) {
+	    if (creep.fatigue > 0 || Game.cpu.bucket <= 50) {
+	        return;
+	    }
 
 		if (creep.memory.mode == "defend" && Game.flags["attack"]) { // FIXME
 			creep.memory.mode = "attack";
@@ -18,6 +22,11 @@ var roleAttacker = {
 		console.log(creep.name,creep.memory.mode);
 
 		if (creep.memory.mode == "defend") {
+		    
+		    if (Game.flags["Defend"] && creep.room.name != Game.flags["Defend"].room.name) {
+		        creep.travelTo(Game.flags["Defend"]);
+		        return;
+		    }
 
 			var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
 				filter: function(c) {
@@ -27,7 +36,7 @@ var roleAttacker = {
 			if (target) {
 				//var attackCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == "attacker" || creep.memory.role == "healer");
 				if (creep.attack(target) == ERR_NOT_IN_RANGE) {
-				    creep.moveTo(target);
+				    creep.travelTo(target);
 				// 	var doMove = true;
 				// 	if (attackCreeps.length >= 4) {
 				// 		for (var i = 0; i < attackCreeps.length; i++) {
@@ -49,7 +58,7 @@ var roleAttacker = {
 				}
 			}
 			else {
-				creep.moveTo(Game.flags["Defend"]);
+				creep.travelTo(Game.flags["Defend"]);
 			}
 		}
 		else if (creep.memory.mode == "attack") {
@@ -73,7 +82,7 @@ var roleAttacker = {
 				}
 				else if (Game.flags["attack"]) {
 					console.log("moving to flag");
-					creep.moveTo(Game.flags["attack"]);
+					creep.travelTo(Game.flags["attack"]);
 				}
 				else {
 					console.log("ready for attack, waiting for target...");
@@ -81,7 +90,7 @@ var roleAttacker = {
 			}
 			else {
 				console.log("waiting for full group");
-				creep.moveTo(Game.flags["Defend"]);
+				creep.travelTo(Game.flags["Defend"]);
 			}
 		}
 	}

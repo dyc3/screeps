@@ -1,19 +1,24 @@
-var util = require("util");
-var taskDepositMaterials = require("task.depositmaterials");
+let traveler = require("traveler");
+let util = require("util");
+let taskDepositMaterials = require("task.depositmaterials");
 
 function doNoJobsStuff(creep) {
 	if (taskDepositMaterials.checkForMaterials(creep, exclude_energy=true)) {
 		taskDepositMaterials.run(creep, exclude_energy=true);
 	}
 	else {
-		console.log(creep.name, "pretending to be a manager");
-		var roleManager = require("role.manager");
+// 		console.log(creep.name, "pretending to be a manager");
+		let roleManager = require("role.manager");
 		roleManager.run(creep);
 	}
 }
 
 var roleScientist = {
 	run: function(creep) {
+	    if (creep.fatigue > 0) {
+	        return;
+	    }
+	    
 		// if (!Memory.scienceQueue) {
 			// Memory.scienceQueue = [];
 			// sample science queue item: {"target":"G","amount":5000}
@@ -51,52 +56,52 @@ var roleScientist = {
 		// `targetStruct` is where we deliver the resource
 		// `targetStorage` is where we grab the resource from
 
-		var neededMinerals = [];
+		let neededMinerals = [];
 		if (!creep.memory.targetStruct) {
-			var rooms = util.getOwnedRooms()
-			for (var r = 0; r < rooms.length; r++) {
-				var room = rooms[r];
+            // TODO: Loop over flags instead of structures, because there should be less flags than structures at any given time.
+// 			let rooms = util.getOwnedRooms();
+// 			for (let r = 0; r < rooms.length; r++) {
+// 				let room = rooms[r];
 
-				// var labs = util.getStructures(room, STRUCTURE_LAB)
-				// for (var l = 0; l < labs.length; l++) {
-				// 	var lab = labs[l];
-				// 	if (lab.mineralAmount == lab.mineralCapacity) {
-				// 		continue
-				// 	}
-				//
-				// 	var fillFlag = lab.pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("fill"))[0]
-				// 	if (fillFlag) {
-				// 		neededMinerals[fillFlag.name.split(":")[1]] = lab
-				// 	}
-				// }
+// 				let structures = util.getStructures(room);
+// 				for (let s = 0; s < structures.length; s++) {
+// 					let struct = structures[s];
+// 					if (isStructureFull(struct)) {
+// 						continue;
+// 					}
 
-                // TODO: Loop over flags instead of structures, because there should be less flags than structures at any given time.
-				var structures = util.getStructures(room);
-				for (var s = 0; s < structures.length; s++) {
-					var struct = structures[s];
-					if (isStructureFull(struct)) {
-						continue;
-					}
+// 					let fillFlags = struct.pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("fill"));
+// 					if (fillFlags.length > 0) {
+// 						for (let f = 0; f < fillFlags.length; f++) {
+// 							let fillFlag = fillFlags[f];
+// 							neededMinerals[fillFlag.name.split(":")[1]] = struct;
+// 						}
+// 					}
+// 				}
+// 			}
 
-					var fillFlags = struct.pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("fill"));
-					if (fillFlags.length > 0) {
-						for (var f = 0; f < fillFlags.length; f++) {
-							var fillFlag = fillFlags[f];
-							neededMinerals[fillFlag.name.split(":")[1]] = struct;
-						}
-					}
-				}
-			}
+            for (let f in Game.flags) {
+                if (!f.includes("fill")) {
+                    continue;
+                }
+                
+                let flag = Game.flags[f];
+                let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
+                if (isStructureFull(struct)) {
+                    continue;
+                }
+                neededMinerals[flag.name.split(":")[1]] = struct;
+            }
 		}
 
         // look for where to grab the resource from
 		if (!creep.memory.targetStorage) {
-			var targetStorage = undefined;
-			var _mineral = undefined;
-			for (var i = 0; i < _.keys(neededMinerals).length; i++) {
-				var key = _.keys(neededMinerals)[i];
+			let targetStorage = undefined;
+			let _mineral = undefined;
+			for (let i = 0; i < _.keys(neededMinerals).length; i++) {
+				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
-				console.log(creep.name, "checking inventory for any", key);
+				// console.log(creep.name, "checking inventory for any", key);
 				targetStorage = _.filter(util.getStructures(creep.room), function(struct) {
 				    // exclude structures that need a resource
 					if (struct.id == _.values(neededMinerals)[i].id) {
@@ -136,17 +141,16 @@ var roleScientist = {
 				}
 
 				if (targetStorage) {
-					console.log(creep.name, "found target storage:",targetStorage,"has",_mineral);
+				// 	console.log(creep.name, "found target storage:",targetStorage,"has",_mineral);
 					creep.memory.targetStruct = neededMinerals[_mineral].id;
 					creep.memory.targetStorage = targetStorage.id;
 					creep.memory.targetResource = _mineral;
 					break;
 				}
 			}
-			console.log(creep.name, "targetStorage =", targetStorage)
+			
 			if (!targetStorage) {
-				console.log(creep.name, "could not find targetStorage to get minerals from.");
-				console.log(creep.name, "targetStruct:", targetStruct, ", mineral:", _mineral);
+				// console.log(creep.name, "could not find targetStorage to get minerals from.");
 				delete creep.memory.targetStruct;
 				doNoJobsStuff(creep);
 				return;
@@ -159,7 +163,7 @@ var roleScientist = {
 
 		if (isStructureFull(targetStruct) || (targetStorage.store && targetStorage.store[creep.memory.targetResource] == 0) || isStructureEmpty(targetStorage)) {
 			if (creep.transfer(targetStorage, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(targetStorage);
+				creep.travelTo(targetStorage);
 			}
 			if (!creep.carry[creep.memory.targetResource] || creep.carry[creep.memory.targetResource] <= 0) {
 				delete creep.memory.targetStruct;
@@ -179,13 +183,13 @@ var roleScientist = {
 
 		if (creep.carry[creep.memory.targetResource] > 0) {
 			if (creep.transfer(targetStruct, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(targetStruct);
+				creep.travelTo(targetStruct);
 			}
 		}
 		else {
 			switch (creep.withdraw(targetStorage, creep.memory.targetResource)) {
 				case ERR_NOT_IN_RANGE:
-					creep.moveTo(targetStorage);
+					creep.travelTo(targetStorage);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
 					delete creep.memory.targetStruct;

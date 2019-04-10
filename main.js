@@ -11,9 +11,14 @@
 
 // var sci = Game.creeps["scientist1"]; sci.withdraw(sci.room.storage, "U"); sci.transfer(sci.room.terminal, "U")
 
-// Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "scientist1", {role:"scientist", keepAlive:true})
+// Prep attack group for a long journey
+// let creeps = ["", "", ""]; for (var i = 0; i < creeps.length; i++) { Game.creeps[creeps[i]].memory.renewing = true; Game.creeps[creeps[i]].memory.renew_force_amount = 1400; }
+
+// Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "scientist_1", {role:"scientist", keepAlive:true})
 // Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "scientist_1", {role:"scientist", keepAlive:false})
-// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "miner1", {role:"miner", keepAlive:true, stage:3})
+// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "miner_1", {role:"miner", keepAlive:true, stage:3})
+// Mega builder:
+// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "builder_1", {role:"builder", keepAlive:true, stage:5})
 // Scouts:
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
@@ -25,14 +30,16 @@
 // Memory.mineralsToSell
 
 // Game.creeps["upgrader_801392"].signController(Game.getObjectById("59f1a21c82100e1594f39717"), "")
-
+// Game.rooms["W16N9"].terminal.send(RESOURCE_ENERGY, 48250, "W15N8")
+// Game.rooms["W15N8"].terminal.send(RESOURCE_ENERGY, 48250, "W16N9")
 /*
 # SOME NOTES
 
 ## Misc
 
 * To manually create short roads quickly, you can place 2 flags: "planStart" and "planEnd".
-* To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source.
+* To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source (not working, needs testing).
+* To move around different chemicals, place flags on desination structures with the format "fill:MINERAL". Examples: "fill:U", "fill2:UH"
 
 ## Testing
 
@@ -133,15 +140,15 @@ function calculateDefcon(room) {
 				return creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(HEAL) + creep.getActiveBodyparts(TOUGH) + creep.getActiveBodyparts(RANGED_ATTACK) > 0;
 			}
 		});
-		console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 		if (hostileCreeps.length > 0) {
+		    console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 			defcon = 2;
 		}
 	}
 	else {
 		let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
-		console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 		if (hostileCreeps.length > 0) {
+		    console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 			defcon = 1;
 		}
 		else {
@@ -167,6 +174,11 @@ function calculateDefcon(room) {
 
 // returns highest defcon level
 function determineDefconLevels() {
+    if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
+        console.log("skipping defcon calculation to save cpu");
+        return;
+    }
+    
 	// NOTE: I don't think all this defcon stuff actually works. Redo it in a module called brain.defense
 	let rooms = util.getOwnedRooms();
 	let highestDefcon = 0;
@@ -176,9 +188,12 @@ function determineDefconLevels() {
 		highestDefcon = Math.max(defcon, highestDefcon);
 		room.memory.defcon = defcon;
 	}
+	return highestDefcon;
 }
 
 function doLinkTransfers(rooms) {
+    let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
+    
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
 		let links = util.getStructures(room, STRUCTURE_LINK);
@@ -188,8 +203,14 @@ function doLinkTransfers(rooms) {
 			// });
 
 			if (!room.memory.rootLink) {
-				let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
-				room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
+				try {
+				    let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+				    room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
+				}
+				catch(e) {
+				    console.log("WARN: no root link found in room", room.name);
+				    continue;
+				}
 			}
 			let rootLink = Game.getObjectById(room.memory.rootLink);
 			if (!rootLink) {
@@ -198,7 +219,7 @@ function doLinkTransfers(rooms) {
 				break;
 			}
 
-			if (rootLink.energy < rootLink.energyCapacity - 1) {
+			if (rootLink.energy < rootLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
 				for (let i = 0; i < links.length; i++) {
 					let link = links[i];
 					if (link.id == rootLink.id) {
@@ -208,6 +229,7 @@ function doLinkTransfers(rooms) {
 						continue;
 					}
 					link.transferEnergy(rootLink);
+					break; // only transfer energy from one link per tick
 				}
 				break;
 			}
@@ -222,7 +244,7 @@ function doLinkTransfers(rooms) {
 				break;
 			}
 
-			if (storageLink.energy < storageLink.energyCapacity - 1) {
+			if (storageLink.energy < storageLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
 				for (let i = 0; i < links.length; i++) {
 					let link = links[i];
 					if (link.id == storageLink.id || link.id == rootLink.id) {
@@ -232,6 +254,7 @@ function doLinkTransfers(rooms) {
 						continue;
 					}
 					link.transferEnergy(storageLink);
+					break; // only transfer energy from one link per tick
 				}
 			}
 		}
@@ -264,7 +287,7 @@ function doFlagCommandsAndStuff() {
 		toolRoadPlanner.clearAllPlanFlags();
 	}
 
-	if (Game.flags["attack"]) {
+	if (Game.flags["attack"] && !Memory.attackTarget) {
 		try {
 			let lookStruct = Game.flags["attack"].pos.lookFor(LOOK_STRUCTURES);
 			if (lookStruct.length > 0) {
@@ -280,7 +303,7 @@ function doFlagCommandsAndStuff() {
 				}
 			}
 		} catch (e) {
-			printException(e);
+// 			printException(e);
 		} finally {
 
 		}
@@ -360,6 +383,11 @@ function commandEnergyRelays(rooms) {
 }
 
 function main() {
+    if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
+        console.log("skipping tick to save cpu");
+        return;
+    }
+    
 	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
 	}
@@ -379,7 +407,7 @@ function main() {
 	}
 
 	// do tower stuff
-	doTowers();
+    doTowers();
 
 	// do creep stuff
 	for (let name in Memory.creeps) {
@@ -532,14 +560,14 @@ function main() {
 
 	// do link transfers
 	try {
-		doLinkTransfers(rooms);
+        doLinkTransfers(rooms);
 	}
 	catch (e) {
 		printException(e);
 	}
 
 	try {
-		commandEnergyRelays(rooms);
+	    commandEnergyRelays(rooms);
 	}
 	catch (e) {
 		printException(e);
@@ -644,24 +672,8 @@ function main() {
 		}
 	}
 
-	doFlagCommandsAndStuff();
-
 	// auto planning
 	// place extractors when able
-	for (let r = 0; r < rooms.length; r++) {
-		let room = rooms[r];
-		if (room.controller.level >= 6) {
-			let minerals = room.find(FIND_MINERALS);
-			for (let m in minerals) {
-				let mineral = minerals[m];
-				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
-					}
-				}
-			}
-		}
-	}
 	if (Game.time % 10 === 4 && ((Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
 		try {
 			console.log("Planning rooms...");
@@ -670,6 +682,23 @@ function main() {
 			printException(e);
 		}
 	}
+	if (Game.time % 30 == 6 && ((Game.cpu.getUsed() < Game.cpu.limit * 0.8 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
+    	for (let r = 0; r < rooms.length; r++) {
+    		let room = rooms[r];
+    		if (room.controller.level >= 6) {
+    			let minerals = room.find(FIND_MINERALS);
+    			for (let m in minerals) {
+    				let mineral = minerals[m];
+    				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+    					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+    						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
+    					}
+    				}
+    			}
+    		}
+    	}
+	}
+	
 	// manual testing for room planning
 	if (Game.flags["planWalls"]) {
 		if (Game.cpu.bucket > 9000) {
@@ -702,9 +731,9 @@ function main() {
 	// auto market
 	let minimumPrice = {};
 	minimumPrice[RESOURCE_OXYGEN] = 0.06;
-	minimumPrice[RESOURCE_HYDROGEN] = 0.1;
+	minimumPrice[RESOURCE_HYDROGEN] = 0.06;
 
-	minimumPrice[RESOURCE_UTRIUM] = 0.05;
+	minimumPrice[RESOURCE_UTRIUM] = 0.065;
 	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
 	minimumPrice[RESOURCE_KEANIUM] = 0.35;
 	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
@@ -805,6 +834,10 @@ function main() {
 			}
 		}
 	}
+	
+	if (Game.time % 5 == 0 || ((Game.cpu.getUsed() < Game.cpu.limit * 0.9 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
+	    doFlagCommandsAndStuff();
+    }
 
 	printStatus();
 
@@ -834,17 +867,20 @@ function main() {
 
 
 // https://github.com/screepers/screeps-profiler
-// const profiler = require('profiler');
-// profiler.registerClass(roleHarvester, 'role.harvester');
-// profiler.registerClass(roleUpgrader, 'role.upgrader');
-// profiler.registerClass(roleBuilder, 'role.builder');
-// profiler.registerClass(roleRepairer, 'role.repairer');
-// profiler.registerClass(roleManager, 'role.manager');
-// profiler.registerClass(roleScientist, 'role.scientist');
-// profiler.enable();
+const profiler = require('profiler');
+profiler.registerClass(util, 'util');
+profiler.registerClass(roleHarvester, 'role.harvester');
+profiler.registerClass(roleUpgrader, 'role.upgrader');
+profiler.registerClass(roleBuilder, 'role.builder');
+profiler.registerClass(roleRepairer, 'role.repairer');
+profiler.registerClass(roleManager, 'role.manager');
+profiler.registerClass(roleScientist, 'role.scientist');
+profiler.registerClass(roleTower, 'role.tower');
+profiler.registerClass(roleRelay, 'role.relay');
+profiler.enable();
 
 module.exports.loop = function() {
-// 	profiler.wrap(function() {
+	profiler.wrap(function() {
 		main();
-// 	});
+	});
 }
