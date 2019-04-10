@@ -172,6 +172,7 @@ var creepUpgrader = {
 		"harvester":{
 			name:"harvester",
 			quota:toolEnergySource.getHarvesterQuota(),
+			quota_per_room:true,
 			stages:[
 				[WORK,WORK,CARRY,MOVE],
 				[WORK,WORK,CARRY,MOVE,MOVE],
@@ -184,6 +185,7 @@ var creepUpgrader = {
 		"upgrader":{
 			name:"upgrader",
 			quota:getUpgraderQuota(),
+			quota_per_room:true,
 			stages:[
 				[WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
@@ -197,6 +199,7 @@ var creepUpgrader = {
 		"manager":{
 			name:"manager",
 			quota:getManagerQuota(),
+			quota_per_room:true,
 			stages:[
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -207,6 +210,7 @@ var creepUpgrader = {
 		"builder":{
 			name:"builder",
 			quota:getBuilderQuota(),
+			quotaPerRoom:false,
 			stages:[
 				[WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
@@ -221,6 +225,7 @@ var creepUpgrader = {
 		"repairer":{
 			name:"repairer",
 			quota:getRepairerQuota(),
+			quotaPerRoom:true,
 			stages:[
 				[WORK,CARRY,MOVE],
 				[WORK,WORK,CARRY,MOVE,MOVE],
@@ -234,6 +239,7 @@ var creepUpgrader = {
 		"healer":{
 			name:"healer",
 			quota:(Game.flags["Defend"] ? 1 : 0), // Memory.doAttack != undefined
+			quotaPerRoom:false,
 			stages:[
 				[HEAL,MOVE],
 				[TOUGH,HEAL,HEAL,MOVE,MOVE],
@@ -244,6 +250,7 @@ var creepUpgrader = {
 		"attacker":{
 			name:"attacker",
 			quota: getAttackerQuota(), //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
+			quotaPerRoom:false,
 			stages:[
 				[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
 				[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
@@ -254,6 +261,7 @@ var creepUpgrader = {
 		"claimer":{
 			name:"claimer",
 			quota:getClaimerQuota(),
+			quotaPerRoom:false,
 			stages:[
 				[CLAIM,MOVE],
 				[CLAIM,CLAIM,MOVE,MOVE],
@@ -264,6 +272,7 @@ var creepUpgrader = {
 		"multiroom-harvester":{
 			name:"multiroom-harvester",
 			quota:(Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.controller.level >= 4 && Game.flags["harvestme"] != undefined ? 1 : 0),
+			quotaPerRoom:false,
 			stages:[
 				[WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -274,6 +283,7 @@ var creepUpgrader = {
 		"carrier":{
 			name:"carrier",
 			quota:(Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.controller.level >= 4 && Game.flags["harvestme"] != undefined ? 1 : 0),
+			quotaPerRoom:false,
 			stages:[
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -285,6 +295,7 @@ var creepUpgrader = {
 			name:"scout",
 			// quota:((Game.spawns["Spawn1"].room.controller.level >= 5) ? 1 : 0),
 			quota:0,
+			quotaPerRoom:false,
 			stages:[
 				[MOVE],
 			],
@@ -293,6 +304,7 @@ var creepUpgrader = {
 			name:"nextroomer",
 			quota:((Memory.expansionTarget != undefined) ? 1 : 0),
 			// quota:0,
+			quotaPerRoom:false,
 			stages:[
 				// [CLAIM,MOVE],
 				[WORK,MOVE,WORK,MOVE,CARRY,MOVE,WORK,MOVE,CARRY,MOVE],
@@ -301,6 +313,7 @@ var creepUpgrader = {
 		"miner": {
 			name:"miner",
 			quota:getMinerQuota(),
+			quotaPerRoom:true,
 			stages:[
 				[WORK,WORK,WORK,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,MOVE,CARRY,MOVE,CARRY,MOVE,MOVE],
@@ -312,6 +325,7 @@ var creepUpgrader = {
 			name:"scientist",
 			quota:getScientistQuota(),
 			// quota:0,
+			quotaPerRoom:true,
 			stages:[
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
@@ -320,6 +334,7 @@ var creepUpgrader = {
 			name:"relay",
 			// quota:util.getOwnedRooms().length * 4,
 			quota:getRelayQuota(),
+			quotaPerRoom:true,
 			stages:[
 				[CARRY,MOVE]
 			]
