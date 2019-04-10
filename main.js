@@ -178,7 +178,7 @@ function determineDefconLevels() {
         console.log("skipping defcon calculation to save cpu");
         return;
     }
-    
+
 	// NOTE: I don't think all this defcon stuff actually works. Redo it in a module called brain.defense
 	let rooms = util.getOwnedRooms();
 	let highestDefcon = 0;
@@ -193,7 +193,7 @@ function determineDefconLevels() {
 
 function doLinkTransfers(rooms) {
     let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
-    
+
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
 		let links = util.getStructures(room, STRUCTURE_LINK);
@@ -387,7 +387,7 @@ function main() {
         console.log("skipping tick to save cpu");
         return;
     }
-    
+
 	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
 	}
@@ -698,7 +698,7 @@ function main() {
     		}
     	}
 	}
-	
+
 	// manual testing for room planning
 	if (Game.flags["planWalls"]) {
 		if (Game.cpu.bucket > 9000) {
@@ -834,7 +834,7 @@ function main() {
 			}
 		}
 	}
-	
+
 	if (Game.time % 5 == 0 || ((Game.cpu.getUsed() < Game.cpu.limit * 0.9 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
 	    doFlagCommandsAndStuff();
     }
