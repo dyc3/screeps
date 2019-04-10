@@ -138,9 +138,6 @@ function getMinerQuota() {
 			for (let i = 0; i < extractors.length; i++) {
 				let struct = extractors[i];
 				var mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
-				console.log(mineral);
-				console.log(mineral[0]);
-				console.log(mineral.ticksToRegeneration, " | ", mineral.amount);
 				if (mineral && mineral.amount > 0) {
 					count++;
 				}
