@@ -2,7 +2,7 @@ var toolEnergySource = require('tool.energysource');
 var util = require('util');
 
 /** @param {Room} room **/
-function getUpgraderQuota(room = undefined) {
+function getUpgraderQuota(room) {
 	// TODO: clean this up a little
 	function _getQuota(rcl){
 		var value = 2;
@@ -34,49 +34,22 @@ function getUpgraderQuota(room = undefined) {
 		}
 		return value;
 	}
-	var count = 0;
-	if (room) {
-		if (room.controller.pos.getRangeTo(room.storage) <= 5)
-		{
-			return 1;
-		}
-		return _getQuota(room.controller.level)
+	if (room.controller.pos.getRangeTo(room.storage) <= 5)
+	{
+		return 1;
 	}
-	var rooms = util.getOwnedRooms()
-	for (var r = 0; r < rooms.length; r++) {
-		var room = rooms[r]
-		if (!room.controller || !room.controller.my) {
-			continue;
-		}
-		if (room.controller.pos.getRangeTo(room.storage) <= 5)
-		{
-			count += 1;
-		}
-		else
-		{
-			count += _getQuota(room.controller.level);
-		}
-	}
-	if (_.filter(Game.creeps, function(c) { return c.memory.role == "harvester" }).length < toolEnergySource.getHarvesterQuota() * 0.5) {
-		count = 2;
-	}
-	return count;
+	return _getQuota(room.controller.level);
 }
 
 /** @param {Room} room **/
-function getScientistQuota() {
-	var count = 0;
-	var rooms = util.getOwnedRooms()
-	for (var r = 0; r < rooms.length; r++) {
-		var room = rooms[r]
-		if (room.controller.level >= 6 && util.getStructures(room, STRUCTURE_LAB).length > 0) {
-			count = 1;
-		}
-	}
+function getScientistQuota(room) {
 	if (_.filter(Game.creeps, function(c) { return c.memory.role == "harvester" }).length < toolEnergySource.getHarvesterQuota() * 0.5) {
-		count = 0;
+		return 0;
 	}
-	return count;
+	if (room.controller.level >= 6 && util.getStructures(room, STRUCTURE_LAB).length > 0) {
+		return 1;
+	}
+	return 0;
 }
 
 function getBuilderQuota() {
@@ -103,47 +76,39 @@ function getClaimerQuota() {
 	return count;
 }
 
-function getManagerQuota() {
-	return _.values(Game.rooms).filter((room) => { return room.controller && room.controller.my && room.controller.level >= 4; }).length;
+function getManagerQuota(room) {
+	if (room.controller && room.controller.my && room.controller.level >= 4) {
+		return 1;
+	}
+	return 0;
 }
 
-function getRelayQuota() {
+function getRelayQuota(room) {
 	let count = 0;
-	let rooms = util.getOwnedRooms();
-	for (let r = 0; r < rooms.length; r++) {
-		let room = rooms[r];
-		let linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
-		switch (linkCount) {
-			case 4:
-				count += 1;
-			case 3:
-				count += 1;
-			case 2:
-				count += 1;
-				break;
-			default:
-				break;
-		}
+	let linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
+	switch (linkCount) {
+		case 4:
+			count++;
+		case 3:
+			count++;
+		case 2:
+			count++;
+			break;
+		default:
+			break;
 	}
 	return count;
 }
 
-function getMinerQuota() {
+function getMinerQuota(room) {
 	let count = 0;
-	let rooms = util.getOwnedRooms();
-	for (let r = 0; r < rooms.length; r++) {
-		let room = rooms[r];
-		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller.level] > 0) {
-			let extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
-			for (let i = 0; i < extractors.length; i++) {
-				let struct = extractors[i];
-				var mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
-				console.log(mineral);
-				console.log(mineral[0]);
-				console.log(mineral.ticksToRegeneration, " | ", mineral.amount);
-				if (mineral && mineral.amount > 0) {
-					count++;
-				}
+	if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller.level] > 0) {
+		let extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
+		for (let i = 0; i < extractors.length; i++) {
+			let struct = extractors[i];
+			let mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
+			if (mineral && mineral.amount > 0) {
+				count++;
 			}
 		}
 	}
@@ -162,16 +127,18 @@ function getAttackerQuota() {
 	return count;
 }
 
-function getRepairerQuota() {
-    return ((Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.controller.level >= 6) ?
-				_.values(Game.rooms).filter(function(room) { return room.controller && room.controller.my; }).length : 0);
+function getRepairerQuota(room) {
+	if (room.controller.level >= 6) {
+		return 1;
+	}
+	return 0;
 }
 
 var creepUpgrader = {
 	roles:{
 		"harvester":{
 			name:"harvester",
-			quota:toolEnergySource.getHarvesterQuota(),
+			quota:toolEnergySource.getHarvesterQuota,
 			quota_per_room:true,
 			stages:[
 				[WORK,WORK,CARRY,MOVE],
@@ -184,7 +151,7 @@ var creepUpgrader = {
 		},
 		"upgrader":{
 			name:"upgrader",
-			quota:getUpgraderQuota(),
+			quota:getUpgraderQuota,
 			quota_per_room:true,
 			stages:[
 				[WORK,CARRY,CARRY,MOVE,MOVE],
@@ -198,7 +165,7 @@ var creepUpgrader = {
 		},
 		"manager":{
 			name:"manager",
-			quota:getManagerQuota(),
+			quota:getManagerQuota,
 			quota_per_room:true,
 			stages:[
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -209,8 +176,8 @@ var creepUpgrader = {
 		},
 		"builder":{
 			name:"builder",
-			quota:getBuilderQuota(),
-			quotaPerRoom:false,
+			quota:getBuilderQuota,
+			quota_per_room:false,
 			stages:[
 				[WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
@@ -224,8 +191,8 @@ var creepUpgrader = {
 		},
 		"repairer":{
 			name:"repairer",
-			quota:getRepairerQuota(),
-			quotaPerRoom:true,
+			quota:getRepairerQuota,
+			quota_per_room:true,
 			stages:[
 				[WORK,CARRY,MOVE],
 				[WORK,WORK,CARRY,MOVE,MOVE],
@@ -238,8 +205,8 @@ var creepUpgrader = {
 		},
 		"healer":{
 			name:"healer",
-			quota:(Game.flags["Defend"] ? 1 : 0), // Memory.doAttack != undefined
-			quotaPerRoom:false,
+			quota:function() { return 0; }, // Memory.doAttack != undefined
+			quota_per_room:false,
 			stages:[
 				[HEAL,MOVE],
 				[TOUGH,HEAL,HEAL,MOVE,MOVE],
@@ -249,8 +216,8 @@ var creepUpgrader = {
 		},
 		"attacker":{
 			name:"attacker",
-			quota: getAttackerQuota(), //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
-			quotaPerRoom:false,
+			quota: getAttackerQuota, //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
+			quota_per_room:false,
 			stages:[
 				[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
 				[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
@@ -260,8 +227,8 @@ var creepUpgrader = {
 		},
 		"claimer":{
 			name:"claimer",
-			quota:getClaimerQuota(),
-			quotaPerRoom:false,
+			quota:getClaimerQuota,
+			quota_per_room:false,
 			stages:[
 				[CLAIM,MOVE],
 				[CLAIM,CLAIM,MOVE,MOVE],
@@ -271,8 +238,8 @@ var creepUpgrader = {
 		},
 		"multiroom-harvester":{
 			name:"multiroom-harvester",
-			quota:(Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.controller.level >= 4 && Game.flags["harvestme"] != undefined ? 1 : 0),
-			quotaPerRoom:false,
+			quota:function() { return 0; },
+			quota_per_room:false,
 			stages:[
 				[WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -282,8 +249,8 @@ var creepUpgrader = {
 		},
 		"carrier":{
 			name:"carrier",
-			quota:(Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.controller.level >= 4 && Game.flags["harvestme"] != undefined ? 1 : 0),
-			quotaPerRoom:false,
+			quota:function() { return 0; },
+			quota_per_room:false,
 			stages:[
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -294,17 +261,17 @@ var creepUpgrader = {
 		"scout":{
 			name:"scout",
 			// quota:((Game.spawns["Spawn1"].room.controller.level >= 5) ? 1 : 0),
-			quota:0,
-			quotaPerRoom:false,
+			quota:function() { return 0; },
+			quota_per_room:false,
 			stages:[
 				[MOVE],
 			],
 		},
 		"nextroomer":{
 			name:"nextroomer",
-			quota:((Memory.expansionTarget != undefined) ? 1 : 0),
-			// quota:0,
-			quotaPerRoom:false,
+			//quota:((Memory.expansionTarget != undefined) ? 1 : 0),
+			quota:function() { return 0; },
+			quota_per_room:false,
 			stages:[
 				// [CLAIM,MOVE],
 				[WORK,MOVE,WORK,MOVE,CARRY,MOVE,WORK,MOVE,CARRY,MOVE],
@@ -312,8 +279,8 @@ var creepUpgrader = {
 		},
 		"miner": {
 			name:"miner",
-			quota:getMinerQuota(),
-			quotaPerRoom:true,
+			quota:getMinerQuota,
+			quota_per_room:true,
 			stages:[
 				[WORK,WORK,WORK,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,MOVE,CARRY,MOVE,CARRY,MOVE,MOVE],
@@ -323,9 +290,9 @@ var creepUpgrader = {
 		},
 		"scientist":{ // Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "scientist1", {role:"scientist", keepAlive:true})
 			name:"scientist",
-			quota:getScientistQuota(),
+			quota:getScientistQuota,
 			// quota:0,
-			quotaPerRoom:true,
+			quota_per_room:true,
 			stages:[
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
@@ -333,8 +300,8 @@ var creepUpgrader = {
 		"relay": {
 			name:"relay",
 			// quota:util.getOwnedRooms().length * 4,
-			quota:getRelayQuota(),
-			quotaPerRoom:true,
+			quota:getRelayQuota,
+			quota_per_room:true,
 			stages:[
 				[CARRY,MOVE]
 			]
