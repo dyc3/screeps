@@ -5,17 +5,25 @@ var USE_RUN_NEW = false;
 var roleHarvester = {
 	/** @param {Creep} creep **/
 	findTransferTargets: function(creep) {
-	    let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		if (harvestTarget) {
-		    let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
-    	    if (!dedicatedLink) {
-    	        dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
-    					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
-    				})[0];
-    	        creep.memory.dedicatedLinkId = dedicatedLink.id;
-    	    }
+			let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
+			if (!dedicatedLink && creep.room.level >= 5) {
+				if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
+					dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+						filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+					})[0];
+					if (dedicatedLink) {
+						creep.memory.dedicatedLinkId = dedicatedLink.id;
+					}
+					else {
+						creep.memory.last_check_for_dedicated_link = Game.time;
+					}
+				}
+
+			}
 		}
-	    
+
 		var targets = creep.room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
 				var flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -180,12 +188,12 @@ var roleHarvester = {
         if (creep.depositMode == "direct") {
             return creep.room.storage;
         }
-        
+
         if (creep.depositMode == "link") {
             return Game.getObjectById(creep.memory.dedicatedLinkId);
         }
     },
-    
+
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		if (USE_RUN_NEW)
@@ -358,7 +366,7 @@ var roleHarvester = {
 			    target = this.getTransferTarget(creep);
 			    creep.memory.transferTarget = target.id;
 			}
-			
+
 			if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 				creep.travelTo(target, {visualizePathStyle:{}});
 			}
