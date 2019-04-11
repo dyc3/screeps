@@ -52,12 +52,12 @@ var roleUpgrader = {
 				// dont get in the way of the sources while we dont need them
 				var energySources = creep.pos.findInRange(FIND_SOURCES, 1);
 				if (energySources.length > 0) {
-					creep.moveTo(creep.room.controller);
+					creep.travelTo(creep.room.controller);
 				}
 				else {
 					if (creep.room.controller.level < 8) {
 						if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(creep.room.controller);
+							creep.travelTo(creep.room.controller);
 						}
 					}
 					else {
@@ -65,16 +65,16 @@ var roleUpgrader = {
 							creep.upgradeController(creep.room.controller);
 						}
 						if (!creep.pos.inRangeTo(creep.room.controller, 3)) {
-							creep.moveTo(creep.room.controller);
+							creep.travelTo(creep.room.controller);
 						}
 					}
 					if (creep.pos.findInRange(FIND_CREEPS, 2).length > 2) {
-						creep.moveTo(creep.room.controller);
+						creep.travelTo(creep.room.controller);
 					}
 				}
 			}
 			else {
-				creep.moveTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
 			}
 		}
 		else {

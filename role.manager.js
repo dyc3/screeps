@@ -258,7 +258,7 @@ var roleManager = {
 	    if (creep.fatigue > 0) {
 	        return;
 	    }
-	    
+
 		if (creep.memory.role == "manager") {
 			if (!creep.memory.targetRoom) {
 				this.findTargetRoom(creep);
@@ -404,10 +404,10 @@ var roleManager = {
 					}
 					creep.travelTo(creep.room.storage, {visualizePathStyle:{}});
 					// if (Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.name == creep.memory.targetRoom && !creep.pos.inRangeTo(Game.spawns["Spawn1"], 3)) {
-					// 	creep.moveTo(Game.spawns["Spawn1"], {visualizePathStyle:{}});
+					// 	creep.travelTo(Game.spawns["Spawn1"], {visualizePathStyle:{}});
 					// }
 					// else {
-					// 	creep.moveTo(new RoomPosition(25, 25, creep.room.name), {visualizePathStyle:{}});
+					// 	creep.travelTo(new RoomPosition(25, 25, creep.room.name), {visualizePathStyle:{}});
 					// }
 				}
 			}

@@ -279,7 +279,7 @@ var roleHarvester = {
 				else {
 					if (creep.room.controller.my && creep.room.controller.level <= 2) {
 						if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(creep.room.controller, {visualizePathStyle:{}});
+							creep.travelTo(creep.room.controller, {visualizePathStyle:{}});
 						}
 					}
 					else {
@@ -287,24 +287,24 @@ var roleHarvester = {
 						if (constructionSites.length > 0) {
 							let closest = creep.pos.findClosestByPath(constructionSites);
 							if (creep.build(closest) == ERR_NOT_IN_RANGE) {
-								creep.moveTo(closest, {visualizePathStyle:{}});
+								creep.travelTo(closest, {visualizePathStyle:{}});
 							}
 						}
 						else {
 							if (creep.room.controller.my && creep.room.controller.level < 8) {
 								if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-									creep.moveTo(creep.room.controller, {visualizePathStyle:{}});
+									creep.travelTo(creep.room.controller, {visualizePathStyle:{}});
 								}
 							}
 							else {
-								creep.moveTo(harvestTarget, {visualizePathStyle:{}});
+								creep.travelTo(harvestTarget, {visualizePathStyle:{}});
 							}
 						}
 					}
 				}
 			}
 			else {
-				creep.moveTo(harvestTarget, {visualizePathStyle:{}});
+				creep.travelTo(harvestTarget, {visualizePathStyle:{}});
 			}
 		}
 	},

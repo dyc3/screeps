@@ -194,7 +194,7 @@ var roleRepairer = {
 		}
 		else { // find a repair target if we don't have one
 			this.findRepairTarget(creep);
-			
+
 			// if we don't have a lot of energy, refill before repairing
 			if (creep.carry[RESOURCE_ENERGY] <= creep.carryCapacity * 0.1) {
 			    creep.memory.repairing = false;
@@ -217,7 +217,7 @@ var roleRepairer = {
 			// }
 			if(repairTarget) {
 				if(creep.repair(repairTarget) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(repairTarget, { visualizePathStyle:{} });
+					creep.travelTo(repairTarget, { visualizePathStyle:{} });
 				}
 			}
 			else {
@@ -230,7 +230,7 @@ var roleRepairer = {
 					}})
 					if (constructionSite) {
 						if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(constructionSite);
+							creep.travelTo(constructionSite);
 						}
 					}
 					else {
@@ -243,7 +243,7 @@ var roleRepairer = {
 						}
 						else {
 							if (util.isDistFromEdge(creep.pos, 3)) {
-								creep.moveTo(new RoomPosition(25, 25, creep.memory.targetRoom)); // TODO: avoid pathfinding
+								creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom)); // TODO: avoid pathfinding
 							}
 						}
 					}

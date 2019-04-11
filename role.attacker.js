@@ -22,7 +22,7 @@ var roleAttacker = {
 		console.log(creep.name,creep.memory.mode);
 
 		if (creep.memory.mode == "defend") {
-		    
+
 		    if (Game.flags["Defend"] && creep.room.name != Game.flags["Defend"].room.name) {
 		        creep.travelTo(Game.flags["Defend"]);
 		        return;
@@ -50,10 +50,10 @@ var roleAttacker = {
 				// 		doMove = false;
 				// 	}
 				// 	if (doMove) {
-				// 		creep.moveTo(target);
+				// 		creep.travelTo(target);
 				// 	}
 				// 	else {
-				// 		creep.moveTo(target.pos.findClosestByPath(attackCreeps));
+				// 		creep.travelTo(target.pos.findClosestByPath(attackCreeps));
 				// 	}
 				}
 			}
@@ -76,7 +76,7 @@ var roleAttacker = {
 					if (attackTarget) {
 						console.log("attacking",attackTarget);
 						if (creep.attack(attackTarget) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(attackTarget);
+							creep.travelTo(attackTarget);
 						}
 					}
 				}
