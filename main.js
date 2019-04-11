@@ -383,6 +383,27 @@ function commandEnergyRelays(rooms) {
 }
 
 function doCreepSpawning() {
+	function spawnCreepOfRole(role) {
+
+		let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
+
+		let newCreepName = role.name + "_" + Game.time.toString(16);
+		let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
+		let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage, targetRoom: room.name };
+		if (role.name == "attacker") {
+			newCreepMemory.mode = "defend";
+		}
+		else if (role.name == "claimer" || role.name == "scout") {
+			newCreepMemory.keepAlive = false;
+		}
+
+		if (hiStage >= 0) {
+			target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
+			return true;
+		}
+		return false;
+	}
+
 	let rooms = util.getOwnedRooms();
 	for (let role_name in toolCreepUpgrader.roles) {
 		let role = toolCreepUpgrader.roles[role_name];
@@ -404,20 +425,7 @@ function doCreepSpawning() {
 				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
 				if (creeps_of_room.length < role_quota) {
 					// spawn new creeps to fill up the quota
-					let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
-
-					let newCreepName = role.name + "_" + Game.time.toString(16);
-					let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
-					let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage, targetRoom: room.name };
-					if (role.name == "attacker") {
-						newCreepMemory.mode = "defend";
-					}
-					else if (role.name == "claimer" || role.name == "scout") {
-						newCreepMemory.keepAlive = false;
-					}
-
-					if (hiStage >= 0) {
-						target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
+					if (spawnCreepOfRole(role)) { // if successful
 						return;
 					}
 				}
