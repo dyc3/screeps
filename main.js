@@ -790,7 +790,12 @@ function main() {
 		Memory.forceCreepSpawn = true;
 	}
 	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
-		doCreepSpawning();
+		try {
+			doCreepSpawning();
+		}
+		catch (e) {
+			printException(e);
+		}
 		if (Memory.forceCreepSpawn) {
 			delete Memory.forceCreepSpawn;
 		}
