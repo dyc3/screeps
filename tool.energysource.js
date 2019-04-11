@@ -44,19 +44,8 @@ var toolEnergySource = {
 		return harvestersOnSource < maxHarvestersOnSource;
 	},
 
-	getHarvesterQuota: function() {
-		var count = 0;
-		var rooms = util.getOwnedRooms();
-		for (var r = 0; r < rooms.length; r++) {
-			var room = rooms[r];
-// 			var spawn = util.getSpawn(room);
-			var sources = room.find(FIND_SOURCES);
-			for (var i = 0; i < sources.length; i++) {
-				var c = this.getMaxHarvesters(sources[i], true);
-				count += c;
-			}
-		}
-		return count;
+	getHarvesterQuota: function(room) {
+		return room.find(FIND_SOURCES).length;
 	},
 
     drawAssignedCounts: function() {

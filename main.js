@@ -382,6 +382,219 @@ function commandEnergyRelays(rooms) {
 	}
 }
 
+function doCreepSpawning() {
+	function spawnCreepOfRole(role, spawns, room=undefined) {
+		let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
+
+		let newCreepName = role.name + "_" + Game.time.toString(16);
+		let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn.room);
+		let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
+		if (role.quota_per_room) {
+			newCreepMemory.targetRoom = room.name;
+		}
+		if (role.name == "attacker") {
+			newCreepMemory.mode = "defend";
+		}
+		else if (role.name == "claimer" || role.name == "scout") {
+			newCreepMemory.keepAlive = false;
+		}
+
+		if (hiStage >= 0) {
+			console.log("Spawn new creep", newCreepName);
+			target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
+			return true;
+		}
+		return false;
+	}
+
+	function doMarkForDeath(role, creeps, quota, room) {
+		// check if we can upgrade any of the creeps,
+		// and if no other creeps are already marked for death,
+		// mark 1 creep for death
+		// console.log(role.name, creeps.length, "/" , quota, room);
+
+		if (creeps.length === 0) {
+			return;
+		}
+
+		for (let i = 0; i < creeps.length; i++) {
+			if (!creeps[i].memory.keepAlive) {
+				// already marked for death
+				return;
+			}
+		}
+
+		creeps.sort((a,b) => b.memory.stage - a.memory.stage);
+		if (creeps.length > quota) {
+			console.log("marking", creeps[0].name, "for death (above quota)");
+			creeps[0].memory.keepAlive = false;
+			return;
+		}
+
+		let hiStage = toolCreepUpgrader.getHighestStage(role.name, room=room);
+		if (hiStage < 0) {
+			return;
+		}
+
+		if (hiStage > creeps[0].memory.stage) {
+			console.log("marking", creeps[0].name, "for death (upgrading)");
+			creeps[0].memory.keepAlive = false;
+			return;
+		}
+	}
+
+	console.log("Spawning/upgrading creeps...");
+
+	let rooms = util.getOwnedRooms();
+	for (let role_name in toolCreepUpgrader.roles) {
+		let role = toolCreepUpgrader.roles[role_name];
+		let creeps_of_role = util.getCreeps(role.name);
+		if (role.quota_per_room) {
+			for (let r = 0; r < rooms.length; r++) {
+				let room = rooms[r];
+				let creeps_of_room = _.filter(creeps_of_role, (creep) => creep.memory.targetRoom === room.name);
+				let role_quota = role.quota(room);
+				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
+
+				if (creeps_of_room.length >= role_quota) {
+					doMarkForDeath(role, creeps_of_room, role_quota, room);
+					continue;
+				}
+
+				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
+					continue;
+				}
+
+				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+				if (spawns.length === 0) {
+					continue;
+				}
+
+				// spawn new creeps to fill up the quota
+				if (spawnCreepOfRole(role, spawns, room)) { // if successful
+					return;
+				}
+			}
+		}
+		else {
+			let role_quota = role.quota();
+			console.log(role.name, creeps_of_role.length + "/" + role_quota);
+
+			rooms = _.filter(rooms, room => room.energyAvailable >= room.energyCapacityAvailable * 0.8);
+			if (rooms.length === 0) {
+				continue;
+			}
+			target_room = rooms[Math.floor(Math.random() * rooms.length)];
+
+			if (creeps_of_role.length >= role_quota) {
+				doMarkForDeath(role, creeps_of_role, role_quota, target_room);
+				continue;
+			}
+
+			let spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			if (spawns.length === 0) {
+				continue;
+			}
+
+			// spawn new creeps to fill up the quota
+			if (spawnCreepOfRole(role, spawns)) { // if successful
+				return;
+			}
+		}
+	}
+}
+
+function doCreepSpawning_old() {
+	spawning:
+	for (let s = 0; s < _.values(Game.spawns).length; s++) {
+		let spawn = _.values(Game.spawns)[s];
+		let countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester").length;
+		if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable * 0.8 || countHarvester <= 1) {
+			let inventoryString = spawn.room + ": ";
+			let alreadySetKeepAlive = false; // indicates if we have already marked a creep for death this time around
+			let r = 0;
+			for (let role in toolCreepUpgrader.roles) {
+				let creepsOfType = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+				inventoryString += role+': ' + creepsOfType.length+'/'+toolCreepUpgrader.roles[role].quota;
+				let m = 12; // max roles to put on one line
+				inventoryString += ((r % m == m - 1) ? "\n			 " : "  ");
+
+				if(creepsOfType.length < toolCreepUpgrader.roles[role].quota && !spawn.spawning) {
+					for(let name in Memory.creeps) {
+						if(!Game.creeps[name]) {
+							console.log('Clearing non-existing creep memory:',name);
+							delete Memory.creeps[name];
+						}
+					}
+
+					let newCreepMemory = {role: role, keepAlive: true};
+					if (role == "attacker") {
+						newCreepMemory.mode = "defend";
+					}
+					else if (role == "claimer" || role == "scout") {
+						newCreepMemory.keepAlive = false;
+					}
+					let newCreepName = role + "_" + Game.time.toString(16);
+					let hiStage = toolCreepUpgrader.getHighestStage(role, spawn);
+					newCreepMemory.stage = hiStage;
+					if (hiStage >= 0) {
+						let newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
+			// 			if (role == "relay") {
+			// 				spawn.spawning.setDirections([TOP_LEFT, TOP_RIGHT, LEFT, RIGHT]);
+			// 			}
+			// 			else {
+			// 				spawn.spawning.setDirections([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]);
+			// 			}
+						console.log('Spawning new stage',hiStage,role+':',newName);
+						break spawning; // spawn one creep per tick
+					}
+				}
+				else {
+					if (alreadySetKeepAlive == false && !creepsOfType.some((c) => !c.memory.keepAlive )) {
+						for (let c in creepsOfType) {
+							if (creepsOfType[c].memory.keepAlive == false) {
+								alreadySetKeepAlive = true;
+								break;
+							}
+							let cStage = creepsOfType[c].memory.stage;
+							if (cStage < toolCreepUpgrader.getHighestStage(creepsOfType[c].memory.role, spawn))
+							{
+								console.log("Setting",creepsOfType[c].memory.role,creepsOfType[c].name,"keepAlive = false");
+								creepsOfType[c].memory.keepAlive = false;
+								alreadySetKeepAlive = true;
+								break;
+							}
+						}
+					}
+					else if (creepsOfType.length > 0) {
+						let markedCreeps = _.filter(creepsOfType, {
+							filter: (c) => {
+								return !c.memory.keepAlive;
+							}
+						});
+						if (markedCreeps.length > 0) {
+							for (let c in markedCreeps) {
+								let cStage = markedCreeps[c].memory.stage;
+								if (cStage >= toolCreepUpgrader.getHighestStage(markedCreeps[c].memory.role, spawn)) {
+									console.log("Setting",markedCreeps[c].memory.role,markedCreeps[c].name,"keepAlive = true");
+									markedCreeps[c].memory.keepAlive = true;
+								}
+							}
+						}
+					}
+				}
+
+				if (role == "harvester" && creepsOfType.length < 1) {
+					console.log("Not enough harvesters alive, harvester construction is prioritized");
+					break;
+				}
+				r++;
+			}
+			console.log(inventoryString);
+		}
+	}
+}
+
 function main() {
     if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
         console.log("skipping tick to save cpu");
@@ -577,96 +790,13 @@ function main() {
 	if (Object.keys(Game.creeps).length === 0) {
 		Memory.forceCreepSpawn = true;
 	}
-	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn) {
-		spawning:
-		for (let s = 0; s < _.values(Game.spawns).length; s++) {
-			let spawn = _.values(Game.spawns)[s];
-			let countHarvester = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester").length;
-			if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable * 0.8 || countHarvester <= 1) {
-				let inventoryString = spawn.room + ": ";
-				let alreadySetKeepAlive = false; // indicates if we have already marked a creep for death this time around
-				let r = 0;
-				for (let role in toolCreepUpgrader.roles) {
-					let creepsOfType = _.filter(Game.creeps, (creep) => creep.memory.role == role);
-					inventoryString += role+': ' + creepsOfType.length+'/'+toolCreepUpgrader.roles[role].quota;
-					let m = 12; // max roles to put on one line
-					inventoryString += ((r % m == m - 1) ? "\n			 " : "  ");
-
-					if(creepsOfType.length < toolCreepUpgrader.roles[role].quota && !spawn.spawning) {
-						for(let name in Memory.creeps) {
-							if(!Game.creeps[name]) {
-								console.log('Clearing non-existing creep memory:',name);
-								delete Memory.creeps[name];
-							}
-						}
-
-						let newCreepMemory = {role: role, keepAlive: true};
-						if (role == "attacker") {
-							newCreepMemory.mode = "defend";
-						}
-						else if (role == "claimer" || role == "scout") {
-							newCreepMemory.keepAlive = false;
-						}
-						let newCreepName = role + "_" + Game.time.toString(16);
-						let hiStage = toolCreepUpgrader.getHighestStage(role, spawn);
-						newCreepMemory.stage = hiStage;
-						if (hiStage >= 0) {
-							let newName = spawn.createCreep(toolCreepUpgrader.roles[role].stages[hiStage], newCreepName, newCreepMemory);
-				// 			if (role == "relay") {
-				// 				spawn.spawning.setDirections([TOP_LEFT, TOP_RIGHT, LEFT, RIGHT]);
-				// 			}
-				// 			else {
-				// 				spawn.spawning.setDirections([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]);
-				// 			}
-							console.log('Spawning new stage',hiStage,role+':',newName);
-							break spawning; // spawn one creep per tick
-						}
-					}
-					else {
-						if (alreadySetKeepAlive == false && !creepsOfType.some((c) => !c.memory.keepAlive )) {
-							for (let c in creepsOfType) {
-								if (creepsOfType[c].memory.keepAlive == false) {
-									alreadySetKeepAlive = true;
-									break;
-								}
-								let cStage = creepsOfType[c].memory.stage;
-								if (cStage < toolCreepUpgrader.getHighestStage(creepsOfType[c].memory.role, spawn))
-								{
-									console.log("Setting",creepsOfType[c].memory.role,creepsOfType[c].name,"keepAlive = false");
-									creepsOfType[c].memory.keepAlive = false;
-									alreadySetKeepAlive = true;
-									break;
-								}
-							}
-						}
-						else if (creepsOfType.length > 0) {
-							let markedCreeps = _.filter(creepsOfType, {
-								filter: (c) => {
-									return !c.memory.keepAlive;
-								}
-							});
-							if (markedCreeps.length > 0) {
-								for (let c in markedCreeps) {
-									let cStage = markedCreeps[c].memory.stage;
-									if (cStage >= toolCreepUpgrader.getHighestStage(markedCreeps[c].memory.role, spawn)) {
-										console.log("Setting",markedCreeps[c].memory.role,markedCreeps[c].name,"keepAlive = true");
-										markedCreeps[c].memory.keepAlive = true;
-									}
-								}
-							}
-						}
-					}
-
-					if (role == "harvester" && creepsOfType.length < 1) {
-						console.log("Not enough harvesters alive, harvester construction is prioritized");
-						break;
-					}
-					r++;
-				}
-				console.log(inventoryString);
-			}
+	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
+		try {
+			doCreepSpawning();
 		}
-
+		catch (e) {
+			printException(e);
+		}
 		if (Memory.forceCreepSpawn) {
 			delete Memory.forceCreepSpawn;
 		}

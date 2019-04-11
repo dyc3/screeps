@@ -175,7 +175,7 @@ var brainAutoPlanner = {
 						}
 					}
 					for (let source of sources) {
-						pos = room.getPositionAt(x, y);
+						let pos = room.getPositionAt(x, y);
 						if (pos.getRangeTo(source) <= 2) {
 							valid = false;
 							break;
