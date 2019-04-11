@@ -495,9 +495,9 @@ function doCreepSpawning() {
 				if (spawnCreepOfRole(role, spawns)) { // if successful
 					return;
 				}
-				else {
-					doMarkForDeath(role, creeps_of_role, role_quota, target_room);
-				}
+			}
+			else {
+				doMarkForDeath(role, creeps_of_role, role_quota, target_room);
 			}
 		}
 	}
