@@ -387,7 +387,7 @@ function doCreepSpawning() {
 		let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		let newCreepName = role.name + "_" + Game.time.toString(16);
-		let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
+		let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn.room);
 		let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
 		if (role.quota_per_room) {
 			newCreepMemory.targetRoom = room.name;
@@ -405,6 +405,42 @@ function doCreepSpawning() {
 			return true;
 		}
 		return false;
+	}
+
+	function doMarkForDeath(role, creeps, quota, room) {
+		// check if we can upgrade any of the creeps,
+		// and if no other creeps are already marked for death,
+		// mark 1 creep for death
+		// console.log(role.name, creeps.length, "/" , quota, room);
+
+		if (creeps.length === 0) {
+			return;
+		}
+
+		for (let i = 0; i < creeps.length; i++) {
+			if (!creeps[i].memory.keepAlive) {
+				// already marked for death
+				return;
+			}
+		}
+
+		creeps.sort((a,b) => b.memory.stage - a.memory.stage);
+		if (creeps.length > quota) {
+			console.log("marking", creeps[0].name, "for death (above quota)");
+			creeps[0].memory.keepAlive = false;
+			return;
+		}
+
+		let hiStage = toolCreepUpgrader.getHighestStage(role.name, room=room);
+		if (hiStage < 0) {
+			return;
+		}
+
+		if (hiStage > creeps[0].memory.stage) {
+			console.log("marking", creeps[0].name, "for death (upgrading)");
+			creeps[0].memory.keepAlive = false;
+			return;
+		}
 	}
 
 	console.log("Spawning/upgrading creeps...");
@@ -435,9 +471,7 @@ function doCreepSpawning() {
 					}
 				}
 				else {
-					// TODO: check if we can upgrade any of the creeps,
-					// and if no other creeps are already marked for death,
-					// mark 1 creep for death
+					doMarkForDeath(role, creeps_of_room, role_quota, room);
 				}
 			}
 		}
@@ -462,9 +496,7 @@ function doCreepSpawning() {
 					return;
 				}
 				else {
-					// TODO: check if we can upgrade any of the creeps,
-					// and if no other creeps are already marked for death,
-					// mark 1 creep for death
+					doMarkForDeath(role, creeps_of_role, role_quota, target_room);
 				}
 			}
 		}
