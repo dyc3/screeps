@@ -452,26 +452,27 @@ function doCreepSpawning() {
 		if (role.quota_per_room) {
 			for (let r = 0; r < rooms.length; r++) {
 				let room = rooms[r];
+				let creeps_of_room = _.filter(creeps_of_role, (creep) => creep.memory.targetRoom === room.name);
+				let role_quota = role.quota(room);
+				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
+
+				if (creeps_of_room.length >= role_quota) {
+					doMarkForDeath(role, creeps_of_room, role_quota, room);
+					continue;
+				}
+
 				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
 					continue;
 				}
 
 				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
-				if (spawns.length == 0) {
+				if (spawns.length === 0) {
 					continue;
 				}
 
-				let creeps_of_room = _.filter(creeps_of_role, (creep) => creep.memory.targetRoom === room.name);
-				let role_quota = role.quota(room);
-				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
-				if (creeps_of_room.length < role_quota) {
-					// spawn new creeps to fill up the quota
-					if (spawnCreepOfRole(role, spawns, room)) { // if successful
-						return;
-					}
-				}
-				else {
-					doMarkForDeath(role, creeps_of_room, role_quota, room);
+				// spawn new creeps to fill up the quota
+				if (spawnCreepOfRole(role, spawns, room)) { // if successful
+					return;
 				}
 			}
 		}
@@ -485,19 +486,19 @@ function doCreepSpawning() {
 			}
 			target_room = rooms[Math.floor(Math.random() * rooms.length)];
 
+			if (creeps_of_role.length >= role_quota) {
+				doMarkForDeath(role, creeps_of_role, role_quota, target_room);
+				continue;
+			}
+
 			let spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
 			if (spawns.length === 0) {
 				continue;
 			}
 
-			if (creeps_of_role.length < role_quota) {
-				// spawn new creeps to fill up the quota
-				if (spawnCreepOfRole(role, spawns)) { // if successful
-					return;
-				}
-			}
-			else {
-				doMarkForDeath(role, creeps_of_role, role_quota, target_room);
+			// spawn new creeps to fill up the quota
+			if (spawnCreepOfRole(role, spawns)) { // if successful
+				return;
 			}
 		}
 	}
