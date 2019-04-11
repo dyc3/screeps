@@ -386,7 +386,7 @@ function doCreepSpawning() {
 	let rooms = util.getOwnedRooms();
 	for (let role_name in toolCreepUpgrader.roles) {
 		let role = toolCreepUpgrader.roles[role_name];
-		let creeps_of_role = _.filter(Game.creeps, (creep) => creep.memory.role === role.name);
+		let creeps_of_role = util.getCreeps(role.name);
 		if (role.quota_per_room) {
 			for (let r = 0; r < rooms.length; r++) {
 				let room = rooms[r];
