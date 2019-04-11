@@ -8,7 +8,7 @@ var roleHarvester = {
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		if (harvestTarget) {
 			let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
-			if (!dedicatedLink && creep.room.level >= 5) {
+			if (!dedicatedLink && creep.room.controller.level >= 5) {
 				if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
 					dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 						filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
