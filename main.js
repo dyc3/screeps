@@ -383,13 +383,15 @@ function commandEnergyRelays(rooms) {
 }
 
 function doCreepSpawning() {
-	function spawnCreepOfRole(role) {
-
+	function spawnCreepOfRole(role, spawns, room=undefined) {
 		let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		let newCreepName = role.name + "_" + Game.time.toString(16);
 		let hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn);
-		let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage, targetRoom: room.name };
+		let newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
+		if (role.quota_per_room) {
+			newCreepMemory.targetRoom = room.name;
+		}
 		if (role.name == "attacker") {
 			newCreepMemory.mode = "defend";
 		}
@@ -398,11 +400,14 @@ function doCreepSpawning() {
 		}
 
 		if (hiStage >= 0) {
+			console.log("Spawn new creep", newCreepName);
 			target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
 			return true;
 		}
 		return false;
 	}
+
+	console.log("Spawning/upgrading creeps...");
 
 	let rooms = util.getOwnedRooms();
 	for (let role_name in toolCreepUpgrader.roles) {
@@ -425,12 +430,12 @@ function doCreepSpawning() {
 				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
 				if (creeps_of_room.length < role_quota) {
 					// spawn new creeps to fill up the quota
-					if (spawnCreepOfRole(role)) { // if successful
+					if (spawnCreepOfRole(role, spawns, room)) { // if successful
 						return;
 					}
 				}
 				else {
-					// check if we can upgrade any of the creeps,
+					// TODO: check if we can upgrade any of the creeps,
 					// and if no other creeps are already marked for death,
 					// mark 1 creep for death
 				}
@@ -439,10 +444,31 @@ function doCreepSpawning() {
 		else {
 			let role_quota = role.quota();
 			console.log(role.name, creeps_of_role.length + "/" + role_quota);
+
+			rooms = _.filter(rooms, room => room.energyAvailable >= room.energyCapacityAvailable * 0.8);
+			if (rooms.length === 0) {
+				continue;
+			}
+			target_room = rooms[Math.floor(Math.random() * rooms.length)];
+
+			let spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			if (spawns.length === 0) {
+				continue;
+			}
+
+			if (creeps_of_role.length < role_quota) {
+				// spawn new creeps to fill up the quota
+				if (spawnCreepOfRole(role, spawns)) { // if successful
+					return;
+				}
+				else {
+					// TODO: check if we can upgrade any of the creeps,
+					// and if no other creeps are already marked for death,
+					// mark 1 creep for death
+				}
+			}
 		}
-
 	}
-
 }
 
 function doCreepSpawning_old() {
