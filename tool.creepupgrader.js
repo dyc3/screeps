@@ -329,10 +329,10 @@ var creepUpgrader = {
 	// returns -1 if the specified spawn can't spawn any stage
 	/** @param {string} role **/
 	/** @param {StructureSpawn} spawn **/
-	getHighestStage: function(role, spawn) {
+	getHighestStage: function(role, room) {
 		// iterating backwards would probably be faster
 		for (var i = 0; i < this.roles[role].stages.length; i++) {
-			if (spawn.canCreateCreep(this.roles[role].stages[i]) != OK) {
+			if (room.energyAvailable < this.getCreepCost(role, i)) {
 				return i - 1;
 			}
 		}
