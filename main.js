@@ -988,7 +988,9 @@ function main() {
 
 			// mark the room's rootPos, assists autoplanner debugging
 			let root = room.memory.rootPos;
-			room.visual.rect(root.x - .45, root.y - .45, .9, .9, { "fill": "#44dd44" });
+			if (root) {
+				room.visual.rect(root.x - .45, root.y - .45, .9, .9, { "fill": "#44dd44" });
+			}
 		}
 
 		drawRoomScores();
