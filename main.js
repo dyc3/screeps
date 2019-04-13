@@ -261,11 +261,6 @@ function doLinkTransfers(rooms) {
 	}
 }
 
-function doTowers() {
-	let towers = _.filter(Game.structures, (struct) => struct.structureType === STRUCTURE_TOWER);
-	for (let i = 0; i < towers.length; i++) { roleTower.run(towers[i]); }
-}
-
 // draw the room scores in each room for easy viewing
 function drawRoomScores() {
 	for (let roomName in Memory.roomInfo) {
@@ -620,7 +615,15 @@ function main() {
 	}
 
 	// do tower stuff
-    doTowers();
+	for (let i = 0; i < rooms.length; i++) {
+		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rooms[i].controller.level] > 0) {
+			try {
+				roleTower.run(rooms[i]);
+			} catch (e) {
+				printException(e);
+			}
+		}
+	}
 
 	// do creep stuff
 	for (let name in Memory.creeps) {
