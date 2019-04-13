@@ -353,8 +353,8 @@ var creepUpgrader = {
 		return getUpgraderQuota(room);
 	},
 
-	getMinerQuota: function() {
-		return getMinerQuota();
+	getMinerQuota: function(room) {
+		return getMinerQuota(room);
 	},
 }
 
