@@ -593,6 +593,71 @@ function doCreepSpawning_old() {
 	}
 }
 
+function doAutoTrading() {
+	let rooms = util.getOwnedRooms();
+
+	let minimumPrice = {};
+	minimumPrice[RESOURCE_ENERGY] = 0.08;
+	minimumPrice[RESOURCE_OXYGEN] = 0.06;
+	minimumPrice[RESOURCE_HYDROGEN] = 0.06;
+
+	minimumPrice[RESOURCE_UTRIUM] = 0.065;
+	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
+	minimumPrice[RESOURCE_KEANIUM] = 0.35;
+	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
+	minimumPrice[RESOURCE_CATALYST] = 0.5;
+
+	minimumPrice[RESOURCE_GHODIUM] = 5;
+
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
+		if (!room.terminal) {
+			continue;
+		}
+		if (!Memory.mineralsToSell || Memory.mineralsToSell.length === 0) {
+			continue;
+		}
+
+		for (let m = 0; m < Memory.mineralsToSell.length; m++) {
+			let mineral = Memory.mineralsToSell[m];
+			if (!minimumPrice[mineral]) {
+				console.log("WARN: could not find", mineral, "in minimumPrice");
+				continue;
+			}
+			if (room.terminal.cooldown > 0) {
+				continue;
+			}
+			if (room.storage.store[RESOURCE_ENERGY] < 10000) {
+				// ensure we have some energy in reserve
+				continue;
+			}
+			if (room.terminal.store[mineral] < 10000) {
+				continue;
+			}
+
+			let buyOrders = Game.market.getAllOrders(function(order){
+				return order.type === ORDER_BUY && order.resourceType === mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
+			});
+			if (buyOrders.length === 0) {
+				continue;
+			}
+
+			let amount = Math.min(room.terminal.store[mineral], 20000);
+			// TODO: sort orders by order of credit price and energy price
+			let buy = buyOrders[0];
+			let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+			console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
+			if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
+				let result = Game.market.deal(buy.id, amount, room.name);
+				console.log("deal result:", result);
+			}
+			else {
+				console.log("WARN: Not enough energy to make deal.")
+			}
+		}
+	}
+}
+
 let jobs = {
 	"creep-spawning": {
 		name: "creep-spawning",
@@ -626,7 +691,7 @@ let jobs = {
 	},
 	"auto-trade": {
 		name: "auto-trade",
-		run: function() { }, // TODO
+		run: doAutoTrading,
 		interval: 30,
 	},
 	"work-labs": {
@@ -871,36 +936,21 @@ function main() {
 		Memory.job_last_run[job.name] = Game.time;
 	}
 
-	// // do link transfers
-	// try {
-	// 	doLinkTransfers(rooms);
-	// }
-	// catch (e) {
-	// 	printException(e);
-	// }
-
-	// try {
-	// 	commandEnergyRelays(rooms);
-	// }
-	// catch (e) {
-	// 	printException(e);
-	// }
-
 	// auto spawning
-	if (Object.keys(Game.creeps).length === 0) {
-		Memory.forceCreepSpawn = true;
-	}
-	if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
-		try {
-			doCreepSpawning();
-		}
-		catch (e) {
-			printException(e);
-		}
-		if (Memory.forceCreepSpawn) {
-			delete Memory.forceCreepSpawn;
-		}
-	}
+	// if (Object.keys(Game.creeps).length === 0) {
+	// 	Memory.forceCreepSpawn = true;
+	// }
+	// if ((Game.time % 10 === 7 && Game.cpu.bucket > 6000) || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
+	// 	try {
+	// 		doCreepSpawning();
+	// 	}
+	// 	catch (e) {
+	// 		printException(e);
+	// 	}
+	// 	if (Memory.forceCreepSpawn) {
+	// 		delete Memory.forceCreepSpawn;
+	// 	}
+	// }
 
 	// auto planning
 	// place extractors when able
@@ -959,67 +1009,67 @@ function main() {
 	}
 
 	// auto market
-	let minimumPrice = {};
-	minimumPrice[RESOURCE_ENERGY] = 0.08;
-	minimumPrice[RESOURCE_OXYGEN] = 0.06;
-	minimumPrice[RESOURCE_HYDROGEN] = 0.06;
+	// let minimumPrice = {};
+	// minimumPrice[RESOURCE_ENERGY] = 0.08;
+	// minimumPrice[RESOURCE_OXYGEN] = 0.06;
+	// minimumPrice[RESOURCE_HYDROGEN] = 0.06;
 
-	minimumPrice[RESOURCE_UTRIUM] = 0.065;
-	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
-	minimumPrice[RESOURCE_KEANIUM] = 0.35;
-	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
-	minimumPrice[RESOURCE_CATALYST] = 0.5;
+	// minimumPrice[RESOURCE_UTRIUM] = 0.065;
+	// minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
+	// minimumPrice[RESOURCE_KEANIUM] = 0.35;
+	// minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
+	// minimumPrice[RESOURCE_CATALYST] = 0.5;
 
-	minimumPrice[RESOURCE_GHODIUM] = 5;
+	// minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	if (Game.time % 20 === 6 && (Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
-		// console.log("Auto market...");
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
-			if (!room.terminal) {
-				continue;
-			}
-			if (Memory.mineralsToSell && Memory.mineralsToSell.length > 0) {
-				for (let m = 0; m < Memory.mineralsToSell.length; m++) {
-					let mineral = Memory.mineralsToSell[m];
-					if (!minimumPrice[mineral]) {
-						console.log("WARN: could not find", mineral, "in minimumPrice");
-						continue;
-					}
-					if (room.terminal.cooldown > 0) {
-						continue;
-					}
-					if (room.storage.store[RESOURCE_ENERGY] < 10000) {
-						// ensure we have some energy in reserve
-						continue;
-					}
-					if (room.terminal.store[mineral] < 10000) {
-						continue;
-					}
+	// if (Game.time % 20 === 6 && (Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
+	// 	// console.log("Auto market...");
+	// 	for (let r = 0; r < rooms.length; r++) {
+	// 		let room = rooms[r];
+	// 		if (!room.terminal) {
+	// 			continue;
+	// 		}
+	// 		if (Memory.mineralsToSell && Memory.mineralsToSell.length > 0) {
+	// 			for (let m = 0; m < Memory.mineralsToSell.length; m++) {
+	// 				let mineral = Memory.mineralsToSell[m];
+	// 				if (!minimumPrice[mineral]) {
+	// 					console.log("WARN: could not find", mineral, "in minimumPrice");
+	// 					continue;
+	// 				}
+	// 				if (room.terminal.cooldown > 0) {
+	// 					continue;
+	// 				}
+	// 				if (room.storage.store[RESOURCE_ENERGY] < 10000) {
+	// 					// ensure we have some energy in reserve
+	// 					continue;
+	// 				}
+	// 				if (room.terminal.store[mineral] < 10000) {
+	// 					continue;
+	// 				}
 
-					let buyOrders = Game.market.getAllOrders(function(order){
-						return order.type === ORDER_BUY && order.resourceType === mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
-					});
-					if (buyOrders.length === 0) {
-						continue;
-					}
+	// 				let buyOrders = Game.market.getAllOrders(function(order){
+	// 					return order.type === ORDER_BUY && order.resourceType === mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
+	// 				});
+	// 				if (buyOrders.length === 0) {
+	// 					continue;
+	// 				}
 
-					let amount = Math.min(room.terminal.store[mineral], 20000);
-					// TODO: sort orders by order of credit price and energy price
-					let buy = buyOrders[0];
-					let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
-					console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
-					if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
-						let result = Game.market.deal(buy.id, amount, room.name);
-						console.log("deal result:", result);
-					}
-					else {
-						console.log("WARN: Not enough energy to make deal.")
-					}
-				}
-			}
-		}
-	}
+	// 				let amount = Math.min(room.terminal.store[mineral], 20000);
+	// 				// TODO: sort orders by order of credit price and energy price
+	// 				let buy = buyOrders[0];
+	// 				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+	// 				console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
+	// 				if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
+	// 					let result = Game.market.deal(buy.id, amount, room.name);
+	// 					console.log("deal result:", result);
+	// 				}
+	// 				else {
+	// 					console.log("WARN: Not enough energy to make deal.")
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if (Game.time % 30 === 6 && false) {
 		// auto science
