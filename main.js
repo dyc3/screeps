@@ -946,7 +946,7 @@ function main() {
 		Memory.job_last_run[job.name] = Game.time;
 	}
 
-	// auto spawning
+	// force spawning
 	if (Object.keys(Game.creeps).length === 0 || Memory.forceCreepSpawn || Game.flags["forceSpawn"]) {
 		queueJob(jobs["creep-spawning"]);
 		if (Memory.forceCreepSpawn) {
