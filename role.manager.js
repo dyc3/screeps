@@ -23,8 +23,8 @@ function doAquire(creep, passively=false) {
 	});
 	if (droppedResources.length > 0) {
 		let closest = creep.pos.findClosestByPath(droppedResources);
-		creep.room.visual.circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 		if (closest) {
+			creep.room.visual.circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
 				creep.travelTo(closest, {visualizePathStyle:{}});
 			}
