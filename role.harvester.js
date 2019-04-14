@@ -506,8 +506,16 @@ let roleHarvester = {
 				creep.memory.transferTarget = target.id;
 			}
 
-			if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+			let transfer_result = creep.transfer(target, RESOURCE_ENERGY);
+			if (transfer_result == ERR_NOT_IN_RANGE) {
 				creep.travelTo(target, {visualizePathStyle:{}});
+			}
+			else if (transfer_result == ERR_FULL) {
+				console.log(creep.name, "failed to transfer: target full");
+				creep.memory.harvesting = true;
+			}
+			else {
+				console.log(creep.name, "failed to transfer:", transfer_result);
 			}
 		}
 	}
