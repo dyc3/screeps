@@ -26,7 +26,12 @@ let roleRelay = {
 			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {
 				return s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE;
 			}});
-			creep.memory.storageId = foundStorage[0].id;
+			if (foundStorage.length > 0) {
+				creep.memory.storageId = foundStorage[0].id;
+			}
+			else {
+				console.log(creep.name, "WARN: no found storage");
+			}
 		}
 		let link = Game.getObjectById(creep.memory.linkId);
 		let storage = Game.getObjectById(creep.memory.storageId);
