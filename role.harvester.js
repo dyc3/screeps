@@ -333,6 +333,23 @@ let roleHarvester = {
 			creep.memory.depositMode = this.getDepositMode(creep);
 		}
 
+		if (creep.memory.depositMode !== "link" && creep.memory.dedicatedLinkId) {
+			delete creep.memory.dedicatedLinkId;
+		}
+		else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
+			if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
+				let dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+				})[0];
+				if (dedicatedLink) {
+					creep.memory.dedicatedLinkId = dedicatedLink.id;
+				}
+				else {
+					creep.memory.last_check_for_dedicated_link = Game.time;
+				}
+			}
+		}
+
 		if(!creep.memory.harvesting && creep.carry.energy == 0) {
 			creep.memory.harvesting = true;
 			creep.say('harvesting');
@@ -366,6 +383,10 @@ let roleHarvester = {
 			var target = Game.getObjectById(creep.memory.transferTarget);
 			if (!target) {
 				target = this.getTransferTarget(creep);
+				if (!target) {
+					creep.memory.depositMode = this.getDepositMode(creep);
+					return;
+				}
 				creep.memory.transferTarget = target.id;
 			}
 
