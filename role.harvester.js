@@ -427,7 +427,10 @@ let roleHarvester = {
 			creep.memory.depositMode = this.getDepositMode(creep);
 		}
 
-		if (creep.memory.depositMode !== "link" && creep.memory.dedicatedLinkId) {
+		if (creep.memory.depositMode === "drop") {
+			delete creep.memory.transferTarget;
+		}
+		else if (creep.memory.depositMode !== "link" && creep.memory.dedicatedLinkId) {
 			delete creep.memory.dedicatedLinkId;
 		}
 		else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
