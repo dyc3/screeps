@@ -311,6 +311,8 @@ let roleHarvester = {
 
 	/** @param {Creep} creep **/
 	run_new: function(creep) {
+		console.log(creep.name, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "link:", creep.memory.dedicatedLinkId);
+
 		if (!creep.memory.harvestTarget) {
 			creep.memory.harvestTarget = this.findHarvestTarget(creep);
 		}
