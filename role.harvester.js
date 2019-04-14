@@ -354,7 +354,7 @@ let roleHarvester = {
 			creep.memory.harvesting = true;
 			creep.say('harvesting');
 		}
-		if(creep.memory.harvesting && (creep.carry.energy == creep.carryCapacity)) {
+		if(creep.memory.harvesting && (creep.carry.energy == creep.carryCapacity) && creep.memory.depositMode !== "drop") {
 			creep.memory.harvesting = false;
 			creep.say('transport');
 		}
