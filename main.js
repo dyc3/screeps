@@ -612,17 +612,17 @@ let jobs = {
 	"link-transfers": {
 		name: "link-transfers",
 		run: doLinkTransfers,
-		interval: 15,
+		interval: 12,
 	},
 	"command-energy-relays": {
 		name: "command-energy-relays",
 		run: commandEnergyRelays,
-		interval: 15,
+		interval: 10,
 	},
 	"plan-buildings": {
 		name: "plan-buildings",
 		run: brainAutoPlanner.run,
-		interval: 15,
+		interval: 30,
 	},
 	"auto-trade": {
 		name: "auto-trade",
@@ -632,7 +632,7 @@ let jobs = {
 	"work-labs": {
 		name: "work-labs",
 		run: function() { }, // TODO
-		interval: 15,
+		interval: 30,
 	},
 };
 
@@ -860,7 +860,13 @@ function main() {
 		let job_to_do = Memory.job_queue[0];
 		console.log("Running job:", job_to_do);
 		let job = jobs[job_to_do];
-		job.run();
+		try {
+			job.run();
+		}
+		catch (e) {
+			console.log("ERR: Job failed", job.name);
+			printException(e);
+		}
 		Memory.job_queue.shift();
 		Memory.job_last_run[job.name] = Game.time;
 	}
