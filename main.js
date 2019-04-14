@@ -590,6 +590,49 @@ function doCreepSpawning_old() {
 	}
 }
 
+let jobs = {
+	"creep-spawning": {
+		name: "creep-spawning",
+		run: doCreepSpawning,
+		interval: 15,
+	},
+	"calc-defcons": {
+		name: "calc-defcons",
+		run: determineDefconLevels,
+		interval: 3,
+	},
+	"flag-commands": {
+		name: "flag-commands",
+		run: doFlagCommandsAndStuff,
+		interval: 15,
+	},
+	"link-transfers": {
+		name: "link-transfers",
+		run: doLinkTransfers,
+		interval: 15,
+	},
+	"command-energy-relays": {
+		name: "command-energy-relays",
+		run: commandEnergyRelays,
+		interval: 15,
+	},
+	"plan-buildings": {
+		name: "plan-buildings",
+		run: brainAutoPlanner.run,
+		interval: 15,
+	},
+	"auto-trade": {
+		name: "auto-trade",
+		run: function() { }, // TODO
+		interval: 30,
+	},
+	"work-labs": {
+		name: "work-labs",
+		run: function() { }, // TODO
+		interval: 15,
+	},
+};
+
 function main() {
 	if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
 		console.log("skipping tick to save cpu");
