@@ -329,16 +329,16 @@ function doFlagCommandsAndStuff() {
 function commandEnergyRelays() {
 	let rooms = util.getOwnedRooms();
 
+	let relayCreeps = util.getCreeps("relay");
+	// console.log("# of relay creeps:", relayCreeps.length);
+	if (relayCreeps.length === 0) {
+		return;
+	}
+
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
 
 		// check if there are any available relay positions
-		let relayCreeps = util.getCreeps("relay");
-		// let relayCreeps = _.filter(util.getCreeps("relay"), (creep) => { return creep.room.name == room.name; });
-		if (relayCreeps.length == 0) {
-			continue;
-		}
-		// console.log("# of relay creeps:", relayCreeps.length);
 		if (_.filter(relayCreeps, (creep) => { return !creep.memory.assignedPos; }).length == 0) {
 			// all relay creeps have positions
 			continue;
