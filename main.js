@@ -734,6 +734,7 @@ function queueJob(job) {
 			return;
 		}
 	}
+	console.log("Adding", job.name, "to queue");
 	Memory.job_queue.push(job.name);
 }
 
@@ -760,7 +761,6 @@ function main() {
 
 		// queue up job if it needs to be run
 		if (Game.time - Memory.job_last_run[job.name] > job.interval) {
-			console.log("Adding", job.name, "to queue");
 			queueJob(job);
 		}
 	}
