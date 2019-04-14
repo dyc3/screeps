@@ -1,8 +1,8 @@
-var traveler = require('traveler');
-var toolEnergySource = require('tool.energysource');
-var USE_RUN_NEW = false;
+let traveler = require('traveler');
+let toolEnergySource = require('tool.energysource');
+let USE_RUN_NEW = false;
 
-var roleHarvester = {
+let roleHarvester = {
 	/** @param {Creep} creep **/
 	findTransferTargets: function(creep) {
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
@@ -44,16 +44,16 @@ var roleHarvester = {
 					}
 				}
 				else if (!(creep.getActiveBodyparts(MOVE) == 1 && creep.getActiveBodyparts(WORK) >= 5)) { // check if creep is "optimized"
-				    if (struct.structureType == STRUCTURE_EXTENSION) {
-    					if (!creep.pos.inRangeTo(struct, 8)) {
-    						return false;
-    					}
-    				}
-    				else if (struct.structureType == STRUCTURE_SPAWN) {
-    					if (CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 && creep.pos.inRangeTo(struct, 3)) {
-    						return true;
-    					}
-    				}
+					if (struct.structureType == STRUCTURE_EXTENSION) {
+						if (!creep.pos.inRangeTo(struct, 8)) {
+							return false;
+						}
+					}
+					else if (struct.structureType == STRUCTURE_SPAWN) {
+						if (CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 && creep.pos.inRangeTo(struct, 3)) {
+							return true;
+						}
+					}
 				}
 				var a = (struct.structureType == STRUCTURE_EXTENSION ||
 						(struct.structureType == STRUCTURE_SPAWN && (creep.room.controller.level == 1 || creep.room.energyAvailable > 295)) ||
@@ -170,9 +170,9 @@ var roleHarvester = {
 		}
 
 // 		let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, { filter: (struct) => { return struct.structureType == STRUCTURE_LINK; } });
-        let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
+		let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
 // 		if (nearbyLinks.length > 0) {
-        if (dedicatedLink) {
+		if (dedicatedLink) {
 			return "link";
 		}
 
@@ -183,16 +183,16 @@ var roleHarvester = {
 		return "drop";
 	},
 
-    /** Meant to replace findTransferTargets **/
-    getTransferTarget: function(creep) {
-        if (creep.depositMode == "direct") {
-            return creep.room.storage;
-        }
+	/** Meant to replace findTransferTargets **/
+	getTransferTarget: function(creep) {
+		if (creep.depositMode == "direct") {
+			return creep.room.storage;
+		}
 
-        if (creep.depositMode == "link") {
-            return Game.getObjectById(creep.memory.dedicatedLinkId);
-        }
-    },
+		if (creep.depositMode == "link") {
+			return Game.getObjectById(creep.memory.dedicatedLinkId);
+		}
+	},
 
 	/** @param {Creep} creep **/
 	run: function(creep) {
@@ -225,15 +225,15 @@ var roleHarvester = {
 
 		// if the normal target is out of energy, switch to another source temporarily, or go renew
 		if (harvestTarget.energy == 0 && harvestTarget.ticksToRegeneration > 10 && creep.ticksToLive <= 350) {
-		    if (creep.memory.hasDedicatedLink || creep.memory.haveManagerForRoom) {
-		        console.log(creep.name, "harvestTarget empty, renewing...")
-                creep.memory.renewing = true;
-		    }
-		    else {
-		        harvestTarget = creep.room.find(FIND_SOURCES_ACTIVE, {
-    				filter: (source) => { return source.energy > 0; }
-    			}).sort(function(a,b) { return a.ticksToRegeneration - b.ticksToRegeneration; })[0];
-		    }
+			if (creep.memory.hasDedicatedLink || creep.memory.haveManagerForRoom) {
+				console.log(creep.name, "harvestTarget empty, renewing...")
+				creep.memory.renewing = true;
+			}
+			else {
+				harvestTarget = creep.room.find(FIND_SOURCES_ACTIVE, {
+					filter: (source) => { return source.energy > 0; }
+				}).sort(function(a,b) { return a.ticksToRegeneration - b.ticksToRegeneration; })[0];
+			}
 		}
 
 		if(creep.memory.harvesting) {
@@ -363,8 +363,8 @@ var roleHarvester = {
 
 			var target = Game.getObjectById(creep.memory.transferTarget);
 			if (target) {
-			    target = this.getTransferTarget(creep);
-			    creep.memory.transferTarget = target.id;
+				target = this.getTransferTarget(creep);
+				creep.memory.transferTarget = target.id;
 			}
 
 			if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
