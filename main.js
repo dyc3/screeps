@@ -37,6 +37,7 @@
 
 ## Misc
 
+* To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
 * To manually create short roads quickly, you can place 2 flags: "planStart" and "planEnd".
 * To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source (not working, needs testing).
 * To move around different chemicals, place flags on desination structures with the format "fill:MINERAL". Examples: "fill:U", "fill2:UH"
@@ -309,6 +310,13 @@ function doFlagCommandsAndStuff() {
 		Memory.expansionTarget = Game.flags["nextroom"].pos.roomName;
 		Game.flags["nextroom"].remove();
 		console.log("expansionTarget set:",Memory.expansionTarget);
+	}
+
+	if (Game.flags["setRootPos"]) {
+		let pos = Game.flags["setRootPos"].pos;
+		console.log("force set root pos in", pos.room.name, ":", pos.x, ",", pos.y);
+		pos.room.memory.rootPos = pos;
+		Game.flags["setRootPos"].remove();
 	}
 
 	for (let f in Game.flags) {
