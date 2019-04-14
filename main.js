@@ -896,24 +896,28 @@ function main() {
 						// ensure we have some energy in reserve
 						continue;
 					}
-					if (room.terminal.store[mineral] >= 10000 && room.terminal.store[RESOURCE_ENERGY] > 0) {
-						let buyOrders = Game.market.getAllOrders(function(order){
-							return order.type == ORDER_BUY && order.resourceType == mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
-						});
-						if (buyOrders.length > 0) {
-							let amount = Math.min(room.terminal.store[mineral], 20000);
-							// TODO: sort orders by order of credit price and energy price
-							let buy = buyOrders[0];
-							let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
-							console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
-							if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
-								let result = Game.market.deal(buy.id, amount, room.name);
-								console.log("deal result:", result);
-							}
-							else {
-								console.log("WARN: Not enough energy to make deal.")
-							}
-						}
+					if (room.terminal.store[mineral] < 10000) {
+						continue;
+					}
+
+					let buyOrders = Game.market.getAllOrders(function(order){
+						return order.type === ORDER_BUY && order.resourceType === mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
+					});
+					if (buyOrders.length === 0) {
+						continue;
+					}
+
+					let amount = Math.min(room.terminal.store[mineral], 20000);
+					// TODO: sort orders by order of credit price and energy price
+					let buy = buyOrders[0];
+					let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+					console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
+					if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
+						let result = Game.market.deal(buy.id, amount, room.name);
+						console.log("deal result:", result);
+					}
+					else {
+						console.log("WARN: Not enough energy to make deal.")
 					}
 				}
 			}
