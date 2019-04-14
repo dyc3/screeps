@@ -141,14 +141,14 @@ function calculateDefcon(room) {
 			}
 		});
 		if (hostileCreeps.length > 0) {
-		    console.log(room.name, "hostile creeps: ", hostileCreeps.length);
+			console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 			defcon = 2;
 		}
 	}
 	else {
 		let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
 		if (hostileCreeps.length > 0) {
-		    console.log(room.name, "hostile creeps: ", hostileCreeps.length);
+			console.log(room.name, "hostile creeps: ", hostileCreeps.length);
 			defcon = 1;
 		}
 		else {
@@ -174,10 +174,10 @@ function calculateDefcon(room) {
 
 // returns highest defcon level
 function determineDefconLevels() {
-    if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
-        console.log("skipping defcon calculation to save cpu");
-        return;
-    }
+	if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
+		console.log("skipping defcon calculation to save cpu");
+		return;
+	}
 
 	// NOTE: I don't think all this defcon stuff actually works. Redo it in a module called brain.defense
 	let rooms = util.getOwnedRooms();
@@ -192,7 +192,7 @@ function determineDefconLevels() {
 }
 
 function doLinkTransfers(rooms) {
-    let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
+	let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -204,12 +204,12 @@ function doLinkTransfers(rooms) {
 
 			if (!room.memory.rootLink) {
 				try {
-				    let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
-				    room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
+					let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+					room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
 				}
 				catch(e) {
-				    console.log("WARN: no root link found in room", room.name);
-				    continue;
+					console.log("WARN: no root link found in room", room.name);
+					continue;
 				}
 			}
 			let rootLink = Game.getObjectById(room.memory.rootLink);
@@ -591,10 +591,10 @@ function doCreepSpawning_old() {
 }
 
 function main() {
-    if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
-        console.log("skipping tick to save cpu");
-        return;
-    }
+	if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
+		console.log("skipping tick to save cpu");
+		return;
+	}
 
 	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
@@ -776,14 +776,14 @@ function main() {
 
 	// do link transfers
 	try {
-        doLinkTransfers(rooms);
+		doLinkTransfers(rooms);
 	}
 	catch (e) {
 		printException(e);
 	}
 
 	try {
-	    commandEnergyRelays(rooms);
+		commandEnergyRelays(rooms);
 	}
 	catch (e) {
 		printException(e);
@@ -816,20 +816,20 @@ function main() {
 		}
 	}
 	if (Game.time % 30 == 6 && ((Game.cpu.getUsed() < Game.cpu.limit * 0.8 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
-    	for (let r = 0; r < rooms.length; r++) {
-    		let room = rooms[r];
-    		if (room.controller.level >= 6) {
-    			let minerals = room.find(FIND_MINERALS);
-    			for (let m in minerals) {
-    				let mineral = minerals[m];
-    				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-    					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-    						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
-    					}
-    				}
-    			}
-    		}
-    	}
+		for (let r = 0; r < rooms.length; r++) {
+			let room = rooms[r];
+			if (room.controller.level >= 6) {
+				let minerals = room.find(FIND_MINERALS);
+				for (let m in minerals) {
+					let mineral = minerals[m];
+					if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+						if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+							mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// manual testing for room planning
@@ -969,8 +969,8 @@ function main() {
 	}
 
 	if (Game.time % 5 == 0 || ((Game.cpu.getUsed() < Game.cpu.limit * 0.9 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
-	    doFlagCommandsAndStuff();
-    }
+		doFlagCommandsAndStuff();
+	}
 
 	printStatus();
 
