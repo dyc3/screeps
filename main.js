@@ -658,6 +658,33 @@ function doAutoTrading() {
 	}
 }
 
+function doAutoPlanning() {
+	let rooms = util.getOwnedRooms();
+
+	try {
+		console.log("Planning rooms...");
+		brainAutoPlanner.run();
+	} catch (e) {
+		printException(e);
+	}
+
+	// place extractors when able
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
+		if (room.controller.level >= 6) {
+			let minerals = room.find(FIND_MINERALS);
+			for (let m in minerals) {
+				let mineral = minerals[m];
+				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
+					}
+				}
+			}
+		}
+	}
+}
+
 let jobs = {
 	"creep-spawning": {
 		name: "creep-spawning",
@@ -686,7 +713,7 @@ let jobs = {
 	},
 	"plan-buildings": {
 		name: "plan-buildings",
-		run: brainAutoPlanner.run,
+		run: doAutoPlanning,
 		interval: 30,
 	},
 	"auto-trade": {
@@ -951,33 +978,6 @@ function main() {
 	// 		delete Memory.forceCreepSpawn;
 	// 	}
 	// }
-
-	// auto planning
-	// place extractors when able
-	if (Game.time % 10 === 4 && ((Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
-		try {
-			console.log("Planning rooms...");
-			brainAutoPlanner.run();
-		} catch (e) {
-			printException(e);
-		}
-	}
-	if (Game.time % 30 == 6 && ((Game.cpu.getUsed() < Game.cpu.limit * 0.8 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
-			if (room.controller.level >= 6) {
-				let minerals = room.find(FIND_MINERALS);
-				for (let m in minerals) {
-					let mineral = minerals[m];
-					if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-						if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-							mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
-						}
-					}
-				}
-			}
-		}
-	}
 
 	// manual testing for room planning
 	if (Game.flags["planWalls"]) {
