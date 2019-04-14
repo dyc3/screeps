@@ -772,19 +772,6 @@ function main() {
 	}
 	let rooms = util.getOwnedRooms();
 
-	// handle defcons
-	if (Game.time % 3 == 0) {
-		try {
-			let highestDefcon = determineDefconLevels();
-			if (highestDefcon > 0) {
-				Memory.forceCreepSpawn = true;
-			}
-		}
-		catch (e) {
-			printException(e);
-		}
-	}
-
 	// do tower stuff
 	for (let i = 0; i < rooms.length; i++) {
 		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rooms[i].controller.level] > 0) {
@@ -947,8 +934,6 @@ function main() {
 
 	// process jobs
 	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit) {
-		// break;
-
 		let job_to_do = Memory.job_queue[0];
 		console.log("Running job:", job_to_do);
 		let job = jobs[job_to_do];
@@ -1008,69 +993,6 @@ function main() {
 		}
 	}
 
-	// auto market
-	// let minimumPrice = {};
-	// minimumPrice[RESOURCE_ENERGY] = 0.08;
-	// minimumPrice[RESOURCE_OXYGEN] = 0.06;
-	// minimumPrice[RESOURCE_HYDROGEN] = 0.06;
-
-	// minimumPrice[RESOURCE_UTRIUM] = 0.065;
-	// minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
-	// minimumPrice[RESOURCE_KEANIUM] = 0.35;
-	// minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
-	// minimumPrice[RESOURCE_CATALYST] = 0.5;
-
-	// minimumPrice[RESOURCE_GHODIUM] = 5;
-
-	// if (Game.time % 20 === 6 && (Game.cpu.getUsed() < Game.cpu.limit && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000) {
-	// 	// console.log("Auto market...");
-	// 	for (let r = 0; r < rooms.length; r++) {
-	// 		let room = rooms[r];
-	// 		if (!room.terminal) {
-	// 			continue;
-	// 		}
-	// 		if (Memory.mineralsToSell && Memory.mineralsToSell.length > 0) {
-	// 			for (let m = 0; m < Memory.mineralsToSell.length; m++) {
-	// 				let mineral = Memory.mineralsToSell[m];
-	// 				if (!minimumPrice[mineral]) {
-	// 					console.log("WARN: could not find", mineral, "in minimumPrice");
-	// 					continue;
-	// 				}
-	// 				if (room.terminal.cooldown > 0) {
-	// 					continue;
-	// 				}
-	// 				if (room.storage.store[RESOURCE_ENERGY] < 10000) {
-	// 					// ensure we have some energy in reserve
-	// 					continue;
-	// 				}
-	// 				if (room.terminal.store[mineral] < 10000) {
-	// 					continue;
-	// 				}
-
-	// 				let buyOrders = Game.market.getAllOrders(function(order){
-	// 					return order.type === ORDER_BUY && order.resourceType === mineral && order.price >= minimumPrice[mineral] && order.remainingAmount > 0;
-	// 				});
-	// 				if (buyOrders.length === 0) {
-	// 					continue;
-	// 				}
-
-	// 				let amount = Math.min(room.terminal.store[mineral], 20000);
-	// 				// TODO: sort orders by order of credit price and energy price
-	// 				let buy = buyOrders[0];
-	// 				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
-	// 				console.log(buy.id, buy.roomName, buy.type, "amount:", buy.remainingAmount, "/", buy.amount, buy.resourceType, "cost:", cost);
-	// 				if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
-	// 					let result = Game.market.deal(buy.id, amount, room.name);
-	// 					console.log("deal result:", result);
-	// 				}
-	// 				else {
-	// 					console.log("WARN: Not enough energy to make deal.")
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	if (Game.time % 30 === 6 && false) {
 		// auto science
 		for (let r = 0; r < rooms.length; r++) {
@@ -1118,10 +1040,6 @@ function main() {
 				}
 			}
 		}
-	}
-
-	if (Game.time % 5 == 0 || ((Game.cpu.getUsed() < Game.cpu.limit * 0.9 && Game.cpu.bucket > 1000) || Game.cpu.bucket === 10000)) {
-		doFlagCommandsAndStuff();
 	}
 
 	printStatus();
