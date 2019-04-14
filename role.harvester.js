@@ -1,6 +1,6 @@
 let traveler = require('traveler');
 let toolEnergySource = require('tool.energysource');
-let USE_RUN_NEW = false;
+let USE_RUN_NEW = true;
 
 let roleHarvester = {
 	/** @param {Creep} creep **/
