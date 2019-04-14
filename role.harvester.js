@@ -417,6 +417,19 @@ let roleHarvester = {
 			creep.memory.depositMode = this.getDepositMode(creep);
 			if (creep.memory.depositMode == "wait") {
 				creep.say("waiting"); // makes debugging quicker
+				return;
+			}
+		}
+
+		if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
+			let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+				filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+			});
+			if (nearbyLinks.length > 0) {
+				creep.memory.dedicatedLinkId = nearbyLinks[0].id;
+			}
+			else {
+				creep.memory.last_check_for_dedicated_link = Game.time;
 			}
 		}
 
@@ -434,16 +447,14 @@ let roleHarvester = {
 			delete creep.memory.dedicatedLinkId;
 		}
 		else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
-			if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
-				let dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
-					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
-				})[0];
-				if (dedicatedLink) {
-					creep.memory.dedicatedLinkId = dedicatedLink.id;
-				}
-				else {
-					creep.memory.last_check_for_dedicated_link = Game.time;
-				}
+			let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+				filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+			});
+			if (nearbyLinks.length > 0) {
+				creep.memory.dedicatedLinkId = nearbyLinks[0].id;
+			}
+			else {
+				creep.memory.last_check_for_dedicated_link = Game.time;
 			}
 		}
 
