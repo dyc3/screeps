@@ -192,6 +192,100 @@ let roleHarvester = {
 		if (creep.depositMode == "link") {
 			return Game.getObjectById(creep.memory.dedicatedLinkId);
 		}
+
+		if (creep.depositMode === "recovery") {
+			var targets = creep.room.find(FIND_STRUCTURES, {
+				filter: (struct) => {
+					var flags = struct.pos.lookFor(LOOK_FLAGS);
+					if (flags.length > 0) {
+						if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
+							return false;
+						}
+					}
+					if (creep.memory.dedicatedLinkId && !creep.pos.inRangeTo(struct, 3)) {
+						return false;
+					}
+					if (struct.structureType == STRUCTURE_LINK) {
+						if (struct.room.storage && struct.pos.inRangeTo(struct.room.storage, 2)) {
+							return false;
+						}
+						if (creep.pos.inRangeTo(struct, 4)) {
+							return struct.energy < struct.energyCapacity;
+						}
+					}
+					else if (!(creep.getActiveBodyparts(MOVE) == 1 && creep.getActiveBodyparts(WORK) >= 5)) { // check if creep is "optimized"
+						if (struct.structureType == STRUCTURE_EXTENSION) {
+							if (!creep.pos.inRangeTo(struct, 8)) {
+								return false;
+							}
+						}
+						else if (struct.structureType == STRUCTURE_SPAWN) {
+							if (CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 && creep.pos.inRangeTo(struct, 3)) {
+								return true;
+							}
+						}
+					}
+					var a = (struct.structureType == STRUCTURE_EXTENSION ||
+							(struct.structureType == STRUCTURE_SPAWN && (creep.room.controller.level == 1 || creep.room.energyAvailable > 295)) ||
+							struct.structureType == STRUCTURE_TOWER) && struct.energy < struct.energyCapacity;
+					var b = (struct.structureType == STRUCTURE_CONTAINER ||
+							struct.structureType == STRUCTURE_STORAGE) &&
+							//_.sum(struct.store) == struct.store[RESOURCE_ENERGY] &&
+							_.sum(struct.store) < struct.storeCapacity;
+					return a || b;
+				}
+			});
+			if (targets.length > 0) {
+	// 			var harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+				if (!creep.memory.haveManagerForRoom || Game.time % 10 == 0) {
+					creep.memory.haveManagerForRoom = _.filter(Game.creeps, function(c) {
+						if (!Game.creeps[c.name]) { // checks if the creep is alive? maybe?
+							return false;
+						}
+						return (c.memory.role == "manager") && (c.memory.targetRoom == creep.room.name);
+					}).length > 0;
+				}
+				// console.log(creep.name, "has manager in room", creep.room.name, "=", haveManagerForRoom);
+				// HACK: these aren't using the STRUCTURE_* constants
+				var structPriority = {
+					"extension":1,
+					"tower":2,
+					"link":3,
+					"spawn":4,
+					"container":5,
+					"storage":6,
+				};
+				if (creep.memory.haveManagerForRoom) {
+					structPriority[STRUCTURE_LINK] = 1;
+					structPriority[STRUCTURE_CONTAINER] = 2;
+					structPriority[STRUCTURE_SPAWN] = 3;
+					structPriority[STRUCTURE_STORAGE] = 3;
+					structPriority[STRUCTURE_EXTENSION] = 3;
+					structPriority[STRUCTURE_TOWER] = 3;
+				}
+				if (creep.memory.dedicatedLinkId) {
+					targets = targets.filter((struct) => { return harvestTarget.pos.inRangeTo(struct, 3); });
+				}
+				if (creep.memory.haveManagerForRoom && creep.memory.dedicatedLinkId) {
+					structPriority[STRUCTURE_LINK] = 1;
+					structPriority[STRUCTURE_SPAWN] = 2;
+					structPriority[STRUCTURE_EXTENSION] = 3;
+					structPriority[STRUCTURE_TOWER] = 3;
+					structPriority[STRUCTURE_CONTAINER] = 5;
+					structPriority[STRUCTURE_STORAGE] = 6;
+				}
+				targets.sort(function(a, b){
+					if (a.structureType != b.structureType) {
+						return structPriority[a.structureType] - structPriority[b.structureType];
+					}
+					else {
+						return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);
+					}
+				});
+				return targets[0];
+			}
+			return;
+		}
 	},
 
 	/** @param {Creep} creep **/
