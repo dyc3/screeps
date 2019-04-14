@@ -863,6 +863,7 @@ function main() {
 
 	// auto market
 	let minimumPrice = {};
+	minimumPrice[RESOURCE_ENERGY] = 0.08;
 	minimumPrice[RESOURCE_OXYGEN] = 0.06;
 	minimumPrice[RESOURCE_HYDROGEN] = 0.06;
 
