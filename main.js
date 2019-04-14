@@ -191,8 +191,9 @@ function determineDefconLevels() {
 	return highestDefcon;
 }
 
-function doLinkTransfers(rooms) {
+function doLinkTransfers() {
 	let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
+	let rooms = util.getOwnedRooms();
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -325,7 +326,9 @@ function doFlagCommandsAndStuff() {
 	}
 }
 
-function commandEnergyRelays(rooms) {
+function commandEnergyRelays() {
+	let rooms = util.getOwnedRooms();
+
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
 
@@ -850,20 +853,32 @@ function main() {
 		}
 	}
 
-	// do link transfers
-	try {
-		doLinkTransfers(rooms);
-	}
-	catch (e) {
-		printException(e);
+	// process jobs
+	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit) {
+		// break;
+
+		let job_to_do = Memory.job_queue[0];
+		console.log("Running job:", job_to_do);
+		let job = jobs[job_to_do];
+		job.run();
+		Memory.job_queue.shift();
+		Memory.job_last_run[job.name] = Game.time;
 	}
 
-	try {
-		commandEnergyRelays(rooms);
-	}
-	catch (e) {
-		printException(e);
-	}
+	// // do link transfers
+	// try {
+	// 	doLinkTransfers(rooms);
+	// }
+	// catch (e) {
+	// 	printException(e);
+	// }
+
+	// try {
+	// 	commandEnergyRelays(rooms);
+	// }
+	// catch (e) {
+	// 	printException(e);
+	// }
 
 	// auto spawning
 	if (Object.keys(Game.creeps).length === 0) {
