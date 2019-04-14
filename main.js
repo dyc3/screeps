@@ -639,6 +639,39 @@ function main() {
 		return;
 	}
 
+	// initialize jobs
+	if (!Memory.job_last_run) {
+		Memory.job_last_run = {};
+	}
+	if (!Memory.job_queue) {
+		Memory.job_queue = [];
+	}
+	for (let j in jobs) {
+		let job = jobs[j];
+		// initialize any new jobs that have not been run yet
+		if (!Memory.job_last_run[job.name]) {
+			console.log("initialize job", job.name);
+			Memory.job_last_run[job.name] = Game.time - job.interval;
+		}
+
+		// check if job is already in queue
+		let already_queued = false;
+		for (let i = 0; i < Memory.job_queue.length; i++) {
+			if (Memory.job_queue[i].startsWith(job.name)) {
+				already_queued = true;
+			}
+		}
+		if (already_queued) {
+			continue;
+		}
+
+		// queue up job if it needs to be run
+		if (Game.time - Memory.job_last_run[job.name] > job.interval) {
+			console.log("Adding", job.name, "to queue");
+			Memory.job_queue.push(job.name)
+		}
+	}
+
 	if (Game.time % 5 === 0) {
 		delete Memory.disable_repair_search;
 	}
