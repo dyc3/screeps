@@ -304,25 +304,21 @@ function doFlagCommandsAndStuff() {
 
 		}
 	}
-	if (Game.time % 4 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
-		for (let f in Game.flags) {
-			let flag = Game.flags[f];
-			// check if dismantle and norepair flags have structures under them
-			if (flag.name.startsWith("dismantle") || flag.name.includes("norepair")) {
-				if (flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
-					flag.remove();
-				}
+
+	if (Game.flags["nextroom"]) {
+		Memory.expansionTarget = Game.flags["nextroom"].pos.roomName;
+		Game.flags["nextroom"].remove();
+		console.log("expansionTarget set:",Memory.expansionTarget);
+	}
+
+	for (let f in Game.flags) {
+		let flag = Game.flags[f];
+		// check if dismantle and norepair flags have structures under them
+		if (flag.name.startsWith("dismantle") || flag.name.includes("norepair")) {
+			if (flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
+				flag.remove();
 			}
 		}
-		if (Game.flags["nextroom"]) {
-			Memory.expansionTarget = Game.flags["nextroom"].pos.roomName;
-			Game.flags["nextroom"].remove();
-			console.log("expansionTarget set:",Memory.expansionTarget);
-		}
-	}
-	if (Game.time % 100 == 0 && (Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)) {
-		// NOTE: this is probably unecessary right? considering RoomVisual exists now.
-		util.clearAllDebugFlags();
 	}
 }
 
