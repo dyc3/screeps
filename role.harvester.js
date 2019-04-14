@@ -169,9 +169,7 @@ let roleHarvester = {
 			return "direct";
 		}
 
-// 		let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, { filter: (struct) => { return struct.structureType == STRUCTURE_LINK; } });
 		let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
-// 		if (nearbyLinks.length > 0) {
 		if (dedicatedLink) {
 			return "link";
 		}
