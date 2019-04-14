@@ -728,6 +728,15 @@ let jobs = {
 	},
 };
 
+function queueJob(job) {
+	for (let i = 0; i < Memory.job_queue.length; i++) {
+		if (Memory.job_queue[i].startsWith(job.name)) {
+			return;
+		}
+	}
+	Memory.job_queue.push(job.name);
+}
+
 function main() {
 	if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
 		console.log("skipping tick to save cpu");
@@ -749,21 +758,10 @@ function main() {
 			Memory.job_last_run[job.name] = Game.time - job.interval;
 		}
 
-		// check if job is already in queue
-		let already_queued = false;
-		for (let i = 0; i < Memory.job_queue.length; i++) {
-			if (Memory.job_queue[i].startsWith(job.name)) {
-				already_queued = true;
-			}
-		}
-		if (already_queued) {
-			continue;
-		}
-
 		// queue up job if it needs to be run
 		if (Game.time - Memory.job_last_run[job.name] > job.interval) {
 			console.log("Adding", job.name, "to queue");
-			Memory.job_queue.push(job.name)
+			queueJob(job);
 		}
 	}
 
