@@ -681,7 +681,7 @@ function main() {
 		}
 	}
 
-	if (Game.time % 5 === 0) {
+	if (Game.time % 7 === 0) {
 		delete Memory.disable_repair_search;
 	}
 	let rooms = util.getOwnedRooms();
