@@ -199,9 +199,21 @@ function doLinkTransfers() {
 	let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
 	let rooms = util.getOwnedRooms();
 
+	/**
+	 * Shuffles array in place. ES6 version
+	 * @param {Array} a items An array containing the items.
+	 */
+	function shuffle(a) {
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[a[i], a[j]] = [a[j], a[i]];
+		}
+		return a;
+	}
+
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
-		let links = util.getStructures(room, STRUCTURE_LINK);
+		let links = shuffle(util.getStructures(room, STRUCTURE_LINK));
 		if (links.length > 0) {
 			// let sourceLinks = _.filter(links, (link) => {
 			// 	return link.pos.findInRange(FIND_SOURCES, 2).length > 0;
