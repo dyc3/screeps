@@ -82,20 +82,8 @@ function getManagerQuota(room) {
 }
 
 function getRelayQuota(room) {
-	let count = 0;
 	let linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
-	switch (linkCount) {
-		case 4:
-			count++;
-		case 3:
-			count++;
-		case 2:
-			count++;
-			break;
-		default:
-			break;
-	}
-	return count;
+	return linkCount - 1;
 }
 
 function getMinerQuota(room) {
