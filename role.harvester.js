@@ -175,7 +175,7 @@ let roleHarvester = {
 			return "link";
 		}
 
-		if (Object.keys(Game.creeps).length <= 2) {
+		if (Object.keys(Game.creeps).length <= 2 || harvestTarget.room.controller.level < 4) {
 			return "recovery";
 		}
 
