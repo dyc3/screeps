@@ -1,3 +1,4 @@
+let traveler = require("traveler");
 var util = require("util");
 var taskGather = require("task.gather");
 
@@ -74,7 +75,7 @@ var taskRenew = {
 		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
-			creep.moveTo(renewTarget, {visualizePathStyle:{}});
+			creep.travelTo(renewTarget, {visualizePathStyle:{}});
 		}
 		else if (!renewTarget.spawning && creep.ticksToLive < maxTicks) {
 			switch (renewTarget.renewCreep(creep)) {
