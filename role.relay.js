@@ -41,7 +41,6 @@ let roleRelay = {
 				// _.has(result.structure, "energy") &&
 				result.structure.structureType != STRUCTURE_CONTAINER &&
 				result.structure.structureType != STRUCTURE_STORAGE &&
-				result.structure.structureType != STRUCTURE_TERMINAL &&
 				result.structure.structureType != STRUCTURE_ROAD &&
 				result.structure.structureType != STRUCTURE_LINK);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
@@ -73,6 +72,9 @@ let roleRelay = {
 		// check if all the fill targets are full.
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
 			let struct = Game.getObjectById(id);
+			if (struct.structureType == STRUCTURE_TERMINAL) {
+				return struct.store[RESOURCE_ENERGY] < 75000;
+			}
 			return struct.energy < struct.energyCapacity;
 		});
 
@@ -80,7 +82,12 @@ let roleRelay = {
 		if (targetIdsNotFull.length > 0) {
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
-				creep.transfer(target, RESOURCE_ENERGY);
+				if (target.structureType == STRUCTURE_TERMINAL && 75000 - target.store[RESOURCE_ENERGY] < creep.carryCapacity) {
+					creep.transfer(target, RESOURCE_ENERGY, 75000 - target.store[RESOURCE_ENERGY]);
+				}
+				else {
+					creep.transfer(target, RESOURCE_ENERGY);
+				}
 			}
 			return;
 		}
