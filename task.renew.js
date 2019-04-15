@@ -73,6 +73,14 @@ var taskRenew = {
 				maxTicks = 1000;
 			}
 		}
+		else if (creep.memory.role == "relay") {
+			if (renewTarget.room.energyAvailable >= 3000) {
+				maxTicks = 1400;
+			}
+			else {
+				maxTicks = 1000;
+			}
+		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
 			creep.travelTo(renewTarget, {visualizePathStyle:{}});
