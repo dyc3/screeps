@@ -404,7 +404,7 @@ let roleHarvester = {
 
 	/** @param {Creep} creep **/
 	run_new: function(creep) {
-		console.log(creep.name, "pos:", creep.memory.harvestPos, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "transferTarget:", creep.memory.transferTarget, "link:", creep.memory.dedicatedLinkId);
+		// console.log(creep.name, "pos:", creep.memory.harvestPos, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "transferTarget:", creep.memory.transferTarget, "link:", creep.memory.dedicatedLinkId);
 
 		if (!creep.memory.harvestTarget) {
 			creep.memory.harvestTarget = this.findHarvestTarget(creep);
