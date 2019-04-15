@@ -184,15 +184,15 @@ let roleHarvester = {
 
 	/** Meant to replace findTransferTargets **/
 	getTransferTarget: function(creep) {
-		if (creep.depositMode == "direct") {
+		if (creep.memory.depositMode === "direct") {
 			return creep.room.storage;
 		}
 
-		if (creep.depositMode == "link") {
+		if (creep.memory.depositMode === "link") {
 			return Game.getObjectById(creep.memory.dedicatedLinkId);
 		}
 
-		if (creep.depositMode === "recovery") {
+		if (creep.memory.depositMode === "recovery") {
 			var targets = creep.room.find(FIND_STRUCTURES, {
 				filter: (struct) => {
 					var flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -536,15 +536,15 @@ let roleHarvester = {
 			}
 		}
 		else {
-			if (!creep.memory.transferTarget) {
-				let targets = this.findTransferTargets(creep);
-				if(targets.length > 0) {
-					creep.memory.transferTarget = targets[0].id;
-				}
-				else {
-					return;
-				}
-			}
+			// if (!creep.memory.transferTarget) {
+			// 	let targets = this.findTransferTargets(creep);
+			// 	if(targets.length > 0) {
+			// 		creep.memory.transferTarget = targets[0].id;
+			// 	}
+			// 	else {
+			// 		return;
+			// 	}
+			// }
 
 			var target = Game.getObjectById(creep.memory.transferTarget);
 			if (!target) {
@@ -554,6 +554,10 @@ let roleHarvester = {
 					return;
 				}
 				creep.memory.transferTarget = target.id;
+			}
+
+			if (creep.memory.depositMode === "link" && target.structureType === STRUCTURE_CONTAINER) {
+				delete creep.memory.transferTarget;
 			}
 
 			let transfer_result = creep.transfer(target, RESOURCE_ENERGY);
