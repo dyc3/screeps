@@ -1,5 +1,6 @@
 let traveler = require('traveler');
 let toolEnergySource = require('tool.energysource');
+let util = require("util");
 let USE_RUN_NEW = true;
 
 let roleHarvester = {
@@ -403,13 +404,56 @@ let roleHarvester = {
 
 	/** @param {Creep} creep **/
 	run_new: function(creep) {
-		console.log(creep.name, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "transferTarget:", creep.memory.transferTarget, "link:", creep.memory.dedicatedLinkId);
+		console.log(creep.name, "pos:", creep.memory.harvestPos, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "transferTarget:", creep.memory.transferTarget, "link:", creep.memory.dedicatedLinkId);
 
 		if (!creep.memory.harvestTarget) {
 			creep.memory.harvestTarget = this.findHarvestTarget(creep);
 		}
 
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+
+		// TODO: harvestPos should probably be set when we plan buldings
+		if (!creep.memory.harvestPos) {
+			let brainAutoPlanner = require("brain.autoplanner");
+			let adj = util.getAdjacent(harvestTarget.pos);
+			for (let i = 0; i < adj.length; i++) {
+				// console.log(creep.name, "checking", adj[i]);
+
+				// check for building plans
+				planned = brainAutoPlanner.isPositionPlanned(adj[i]);
+				if (planned && planned !== STRUCTURE_ROAD && planned !== STRUCTURE_CONTAINER) {
+					continue;
+				}
+
+				// look for structures
+				let lookResult = adj[i].look();
+				let isValid = true;
+				for (let l = 0; l < lookResult.length; l++) {
+					let look = lookResult[l];
+					if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+						continue;
+					}
+
+					if (look.type === LOOK_TERRAIN) {
+						if (look.terrain === 'wall') {
+							isValid = false;
+							break;
+						}
+					}
+					else if (look.type === LOOK_STRUCTURES) {
+						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
+							isValid = false;
+							break;
+						}
+					}
+				}
+				if (!isValid) {
+					continue;
+				}
+
+				creep.memory.harvestPos = adj[i];
+			}
+		}
 
 		if (!creep.memory.depositMode || (creep.memory.depositMode == "wait" && Game.time % 2 == 0)) {
 			creep.memory.depositMode = this.getDepositMode(creep);
