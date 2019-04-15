@@ -620,7 +620,7 @@ let jobs = {
 	"link-transfers": {
 		name: "link-transfers",
 		run: doLinkTransfers,
-		interval: 12,
+		interval: 10,
 	},
 	"command-energy-relays": {
 		name: "command-energy-relays",
