@@ -555,6 +555,10 @@ let roleHarvester = {
 			else if (transfer_result == ERR_FULL) {
 				console.log(creep.name, "failed to transfer: target full");
 				creep.memory.harvesting = true;
+				delete creep.memory.transferTarget;
+				if (creep.memory.depositMode === "link") {
+					creep.drop(RESOURCE_ENERGY);
+				}
 			}
 			else {
 				console.log(creep.name, "failed to transfer:", transfer_result);
