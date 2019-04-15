@@ -314,7 +314,7 @@ function doFlagCommandsAndStuff() {
 
 	if (Game.flags["setRootPos"]) {
 		let pos = Game.flags["setRootPos"].pos;
-		console.log("force set root pos in", pos.room.name, ":", pos.x, ",", pos.y);
+		console.log("force set root pos in", pos.room, ":", pos.x, ",", pos.y);
 		pos.room.memory.rootPos = pos;
 		Game.flags["setRootPos"].remove();
 	}
