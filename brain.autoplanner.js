@@ -146,8 +146,8 @@ var brainAutoPlanner = {
 		let validStoragePos = [];
 		let storageMaxRangeFromRoot = 8;
 		let sources = room.find(FIND_SOURCES);
-		let storagePos;
-		if (!room.storage) {
+		let storagePos = room.memory.storagePos;
+		if (!storagePos && !room.storage) {
 			for (let y = Math.max(rootPos.y - storageMaxRangeFromRoot, 3); y < Math.min(rootPos.y + storageMaxRangeFromRoot, 47); y++) {
 				for (let x = Math.max(rootPos.x - storageMaxRangeFromRoot, 3); x < Math.min(rootPos.x + storageMaxRangeFromRoot, 47); x++) {
 					if (x >= rootPos.x - 3 && x <= rootPos.x + 3 && y <= rootPos.y + 1 && y >= rootPos.y - 5) {
@@ -193,6 +193,7 @@ var brainAutoPlanner = {
 				return _getTotalDistances(a, includeMineral=true, excludeSources=true, usePaths=true) - _getTotalDistances(b, includeMineral=true, excludeSources=true, usePaths=true);
 			});
 			storagePos = validStoragePos[0];
+			room.memory.storagePos = storagePos;
 
 			// TODO: plan path from root to controller
 			let _tmpIsPlanned = this.isPositionPlanned;
@@ -246,6 +247,7 @@ var brainAutoPlanner = {
 		else {
 			console.log("WARN: using existing storage as storagePos");
 			storagePos = room.storage.pos;
+			room.memory.storagePos = storagePos;
 		}
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
