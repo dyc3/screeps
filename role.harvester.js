@@ -184,6 +184,29 @@ let roleHarvester = {
 
 	/** Meant to replace findTransferTargets **/
 	getTransferTarget: function(creep) {
+		// check adjacent positions for empty extensions
+		if (!creep.memory.refresh_fill_targets) {
+			creep.memory.refresh_fill_targets = Game.time - 50;
+		}
+
+		if (!creep.memory.fillTargetIds || Game.time - creep.memory.refresh_fill_targets > 50) {
+			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, asArray=true), (result) => result.structure.structureType === STRUCTURE_EXTENSION);
+			let targets = [];
+			for (let i = 0; i < adjacentStructs.length; i++) {
+				const struct = adjacentStructs[i].structure;
+				targets.push(struct.id);
+			}
+			creep.memory.fillTargetIds = targets;
+			creep.memory.refresh_fill_targets = Game.time;
+		}
+		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
+			let struct = Game.getObjectById(id);
+			return struct.energy < struct.energyCapacity;
+		});
+		if (targetIdsNotFull.length > 0) {
+			return Game.getObjectById(targetIdsNotFull[0]);
+		}
+
 		if (creep.memory.depositMode === "direct") {
 			return creep.room.storage;
 		}
