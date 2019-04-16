@@ -428,14 +428,16 @@ function doCreepSpawning() {
 		// mark 1 creep for death
 		// console.log(role.name, creeps.length, "/" , quota, room);
 
+		// Returns true if a creep has keepAlive == false
+
 		if (creeps.length === 0) {
-			return;
+			return false;
 		}
 
 		for (let i = 0; i < creeps.length; i++) {
 			if (!creeps[i].memory.keepAlive) {
 				// already marked for death
-				return;
+				return true;
 			}
 		}
 
@@ -443,12 +445,12 @@ function doCreepSpawning() {
 		if (creeps.length > quota) {
 			console.log("marking", creeps[0].name, "for death (above quota)");
 			creeps[0].memory.keepAlive = false;
-			return;
+			return true;
 		}
 
 		let hiStage = toolCreepUpgrader.getHighestStage(role.name, room=room);
 		if (hiStage < 0) {
-			return;
+			return false;
 		}
 
 		if (hiStage > creeps[0].memory.stage) {
@@ -472,7 +474,9 @@ function doCreepSpawning() {
 				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
 
 				if (creeps_of_room.length >= role_quota) {
-					doMarkForDeath(role, creeps_of_room, role_quota, room);
+					if (doMarkForDeath(role, creeps_of_room, role_quota, room)) {
+						return;
+					}
 					continue;
 				}
 
@@ -502,7 +506,9 @@ function doCreepSpawning() {
 			target_room = rooms[Math.floor(Math.random() * rooms.length)];
 
 			if (creeps_of_role.length >= role_quota) {
-				doMarkForDeath(role, creeps_of_role, role_quota, target_room);
+				if (doMarkForDeath(role, creeps_of_role, role_quota, target_room)) {
+					return;
+				}
 				continue;
 			}
 
