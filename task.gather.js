@@ -1,3 +1,4 @@
+let traveler = require('traveler');
 let util = require('util');
 let toolEnergySource = require('tool.energysource');
 
@@ -31,33 +32,33 @@ let taskGather = {
 		if (droppedResources.length > 0) {
 			let closest = creep.pos.findClosestByPath(droppedResources);
 			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(closest);
+				creep.travelTo(closest);
 			}
 			return;
 		}
 
 		// Pick up resources from tombstones
 		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller.level < 6)) {
-    		let tombstones = creep.room.find(FIND_TOMBSTONES, {
-    			filter: (tomb) => {
-    				if (util.isDistFromEdge(tomb.pos, 4)) {
-    					return false;
-    				}
-    				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
-    					return false;
-    				}
+			let tombstones = creep.room.find(FIND_TOMBSTONES, {
+				filter: (tomb) => {
+					if (util.isDistFromEdge(tomb.pos, 4)) {
+						return false;
+					}
+					if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
+						return false;
+					}
 
-    				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
-    			}
-    		});
-    		if (tombstones.length > 0) {
-    			tombstones = tombstones.sort((a, b) => { return _.sum(b.store) - _.sum(a.store); });
-    			let target = tombstones[0];
-    			if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-    				creep.moveTo(target);
-    			}
-    			return;
-    		}
+					return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
+				}
+			});
+			if (tombstones.length > 0) {
+				tombstones = tombstones.sort((a, b) => { return _.sum(b.store) - _.sum(a.store); });
+				let target = tombstones[0];
+				if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					creep.travelTo(target);
+				}
+				return;
+			}
 		}
 
 		// Dismantle marked structures
@@ -74,7 +75,7 @@ let taskGather = {
 			//console.log("dismatle targets");
 			let closest = creep.pos.findClosestByPath(dismantleTargets);
 			if (creep.dismantle(closest) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(closest);
+				creep.travelTo(closest);
 			}
 			return;
 		}
@@ -89,7 +90,7 @@ let taskGather = {
 		if (targets.length > 0) {
 			let closest = creep.pos.findClosestByPath(targets);
 			if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-				creep.moveTo(closest);
+				creep.travelTo(closest);
 			}
 			return;
 		}
@@ -105,7 +106,7 @@ let taskGather = {
 			}).length > 0;
 			if (!haveContainer && spawn.energy >= spawn.energyCapacity * 0.9 && creep.pos.inRangeTo(spawn, 3)) {
 				if (creep.withdraw(spawn, RESOURCE_ENERGY, 50) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(spawn);
+					creep.travelTo(spawn);
 				}
 			}
 		}
@@ -134,7 +135,7 @@ let taskGather = {
 					}
 				});
 				if(creep.harvest(closest) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(closest);
+					creep.travelTo(closest);
 				}
 			}
 		}
