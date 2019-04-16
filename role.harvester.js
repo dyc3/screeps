@@ -275,14 +275,14 @@ let roleHarvester = {
 					"container":5,
 					"storage":6,
 				};
-				// if (creep.memory.haveManagerForRoom) {
-				// 	structPriority[STRUCTURE_LINK] = 1;
-				// 	structPriority[STRUCTURE_CONTAINER] = 2;
-				// 	structPriority[STRUCTURE_SPAWN] = 3;
-				// 	structPriority[STRUCTURE_STORAGE] = 3;
-				// 	structPriority[STRUCTURE_EXTENSION] = 3;
-				// 	structPriority[STRUCTURE_TOWER] = 3;
-				// }
+				if (creep.memory.haveManagerForRoom) {
+					structPriority[STRUCTURE_LINK] = 1;
+					structPriority[STRUCTURE_CONTAINER] = 2;
+					structPriority[STRUCTURE_SPAWN] = 3;
+					structPriority[STRUCTURE_STORAGE] = 3;
+					structPriority[STRUCTURE_EXTENSION] = 3;
+					structPriority[STRUCTURE_TOWER] = 3;
+				}
 				targets.sort(function(a, b){
 					if (a.structureType !== b.structureType) {
 						return structPriority[a.structureType] - structPriority[b.structureType];
