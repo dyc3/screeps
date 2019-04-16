@@ -1,6 +1,5 @@
 let traveler = require('traveler');
 let util = require("util");
-let energyInTerminalTarget = 75000;
 
 // NOTE: remember to modify the corresponding droppedEnergyGatherMinimum in task.gather.js
 let droppedEnergyGatherMinimum = 100; // TODO: make this a global constant somehow
@@ -125,7 +124,7 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_TERMINAL) {
-							if (struct.store[RESOURCE_ENERGY] > energyInTerminalTarget) {
+							if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
 								return true;
 							}
 						}
@@ -165,7 +164,7 @@ function doAquire(creep, passively=false) {
 					});
 					var closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
-					var amount = (closest.structureType == STRUCTURE_TERMINAL ? closest.store[RESOURCE_ENERGY] - energyInTerminalTarget : undefined);
+					var amount = (closest.structureType == STRUCTURE_TERMINAL ? closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget : undefined);
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
@@ -315,7 +314,7 @@ var roleManager = {
 
 					if (struct.structureType == STRUCTURE_TERMINAL) {
 						 if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
-							if (struct.store[RESOURCE_ENERGY] < energyInTerminalTarget) {
+							if (struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
 								return true;
 							}
 						}

@@ -73,7 +73,7 @@ let roleRelay = {
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
 			let struct = Game.getObjectById(id);
 			if (struct.structureType == STRUCTURE_TERMINAL) {
-				return struct.store[RESOURCE_ENERGY] < 75000;
+				return struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget;
 			}
 			return struct.energy < struct.energyCapacity;
 		});
@@ -82,8 +82,8 @@ let roleRelay = {
 		if (targetIdsNotFull.length > 0) {
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
-				if (target.structureType == STRUCTURE_TERMINAL && 75000 - target.store[RESOURCE_ENERGY] < creep.carryCapacity) {
-					creep.transfer(target, RESOURCE_ENERGY, 75000 - target.store[RESOURCE_ENERGY]);
+				if (target.structureType == STRUCTURE_TERMINAL && Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.carryCapacity) {
+					creep.transfer(target, RESOURCE_ENERGY, Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]);
 				}
 				else {
 					creep.transfer(target, RESOURCE_ENERGY);

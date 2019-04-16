@@ -672,6 +672,10 @@ function main() {
 		return;
 	}
 
+	if (!Memory.terminalEnergyTarget) {
+		Memory.terminalEnergyTarget = 50000;
+	}
+
 	// initialize jobs
 	if (!Memory.job_last_run) {
 		Memory.job_last_run = {};
