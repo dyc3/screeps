@@ -7,7 +7,7 @@ let taskGather = {
 	run: function(creep) {
 
 		// Pick up dropped resources
-		let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 10, {
+		let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 30, {
 			filter: (drop) => {
 				if (creep.pos.getRangeTo(drop.pos) <= 2) {
 					return true;
@@ -43,7 +43,7 @@ let taskGather = {
     				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
     					return false;
     				}
-    
+
     				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
     			}
     		});
