@@ -12,6 +12,9 @@ let taskGather = {
 				if (creep.pos.getRangeTo(drop.pos) <= 2) {
 					return true;
 				}
+				if (drop.resourceType !== RESOURCE_ENERGY) {
+					return false;
+				}
 				if (drop.amount < droppedEnergyGatherMinimum) {
 					return false;
 				}
