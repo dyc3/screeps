@@ -18,7 +18,7 @@ let taskGather = {
 				if (drop.amount < droppedEnergyGatherMinimum) {
 					return false;
 				}
-				if (util.isDistFromEdge(drop.pos, 4)) {
+				if (util.isDistFromEdge(drop.pos, 2)) {
 					return false;
 				}
 				if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {

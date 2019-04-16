@@ -143,7 +143,7 @@ var util = {
 	/** @param {RoomPosition} pos **/
 	/** @param {number} dist **/
 	isDistFromEdge: function(pos, dist) {
-		return pos.x <= Math.abs(0 - dist) || pos.y <= Math.abs(0 - dist) || pos.x >= 49 - dist || pos.y >= 49 - dist;
+		return pos.x < dist || pos.y < dist || pos.x >= 49 - dist || pos.y >= 49 - dist;
 	},
 
 	mode: function(arr) {
