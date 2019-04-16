@@ -360,8 +360,10 @@ function commandEnergyRelays() {
 		}
 
 		let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+		let storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
 		let relayPositions = [
 			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
+			util.getPositionInDirection(storagePos, RIGHT),
 			util.getPositionInDirection(rootLinkPos, TOP_RIGHT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
