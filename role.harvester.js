@@ -175,7 +175,7 @@ let roleHarvester = {
 			return "link";
 		}
 
-		if (Object.keys(Game.creeps).length <= 2 || harvestTarget.room.controller.level < 4) {
+		if (Object.keys(Game.creeps).length <= 5 || harvestTarget.room.controller.level < 4) {
 			return "recovery";
 		}
 
@@ -225,9 +225,6 @@ let roleHarvester = {
 							return false;
 						}
 					}
-					if (creep.memory.dedicatedLinkId && !creep.pos.inRangeTo(struct, 3)) {
-						return false;
-					}
 					if (struct.structureType == STRUCTURE_LINK) {
 						if (struct.room.storage && struct.pos.inRangeTo(struct.room.storage, 2)) {
 							return false;
@@ -272,33 +269,22 @@ let roleHarvester = {
 				// HACK: these aren't using the STRUCTURE_* constants
 				var structPriority = {
 					"extension":1,
+					"spawn":1,
 					"tower":2,
-					"link":3,
-					"spawn":4,
+					"link":4,
 					"container":5,
 					"storage":6,
 				};
-				if (creep.memory.haveManagerForRoom) {
-					structPriority[STRUCTURE_LINK] = 1;
-					structPriority[STRUCTURE_CONTAINER] = 2;
-					structPriority[STRUCTURE_SPAWN] = 3;
-					structPriority[STRUCTURE_STORAGE] = 3;
-					structPriority[STRUCTURE_EXTENSION] = 3;
-					structPriority[STRUCTURE_TOWER] = 3;
-				}
-				if (creep.memory.dedicatedLinkId) {
-					targets = targets.filter((struct) => { return harvestTarget.pos.inRangeTo(struct, 3); });
-				}
-				if (creep.memory.haveManagerForRoom && creep.memory.dedicatedLinkId) {
-					structPriority[STRUCTURE_LINK] = 1;
-					structPriority[STRUCTURE_SPAWN] = 2;
-					structPriority[STRUCTURE_EXTENSION] = 3;
-					structPriority[STRUCTURE_TOWER] = 3;
-					structPriority[STRUCTURE_CONTAINER] = 5;
-					structPriority[STRUCTURE_STORAGE] = 6;
-				}
+				// if (creep.memory.haveManagerForRoom) {
+				// 	structPriority[STRUCTURE_LINK] = 1;
+				// 	structPriority[STRUCTURE_CONTAINER] = 2;
+				// 	structPriority[STRUCTURE_SPAWN] = 3;
+				// 	structPriority[STRUCTURE_STORAGE] = 3;
+				// 	structPriority[STRUCTURE_EXTENSION] = 3;
+				// 	structPriority[STRUCTURE_TOWER] = 3;
+				// }
 				targets.sort(function(a, b){
-					if (a.structureType != b.structureType) {
+					if (a.structureType !== b.structureType) {
 						return structPriority[a.structureType] - structPriority[b.structureType];
 					}
 					else {
@@ -585,6 +571,9 @@ let roleHarvester = {
 			}
 
 			let transfer_result = creep.transfer(target, RESOURCE_ENERGY);
+			if (transfer_result === OK && creep.memory.depositMode === "recovery") {
+				delete creep.memory.transferTarget;
+			}
 			if (transfer_result === ERR_NOT_IN_RANGE) {
 				creep.travelTo(target, {visualizePathStyle:{}});
 			}
