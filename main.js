@@ -196,7 +196,7 @@ function determineDefconLevels() {
 }
 
 function doLinkTransfers() {
-	let LINK_ENERGY_CAPACITY_THRESHOLD = 5;
+	const LINK_ENERGY_CAPACITY_THRESHOLD = 5;
 	let rooms = util.getOwnedRooms();
 
 	/**
@@ -215,10 +215,6 @@ function doLinkTransfers() {
 		let room = rooms[r];
 		let links = shuffle(util.getStructures(room, STRUCTURE_LINK));
 		if (links.length > 0) {
-			// let sourceLinks = _.filter(links, (link) => {
-			// 	return link.pos.findInRange(FIND_SOURCES, 2).length > 0;
-			// });
-
 			if (!room.memory.rootLink) {
 				try {
 					let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
@@ -239,10 +235,10 @@ function doLinkTransfers() {
 			if (rootLink.energy < rootLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
 				for (let i = 0; i < links.length; i++) {
 					let link = links[i];
-					if (link.id == rootLink.id) {
+					if (link.id === rootLink.id) {
 						continue;
 					}
-					if (link.cooldown > 0 || link.energy == 0) {
+					if (link.cooldown > 0 || link.energy === 0) {
 						continue;
 					}
 					link.transferEnergy(rootLink);
@@ -264,10 +260,10 @@ function doLinkTransfers() {
 			if (storageLink.energy < storageLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
 				for (let i = 0; i < links.length; i++) {
 					let link = links[i];
-					if (link.id == storageLink.id || link.id == rootLink.id) {
+					if (link.id === storageLink.id || link.id === rootLink.id) {
 						continue;
 					}
-					if (link.cooldown > 0 || link.energy == 0) {
+					if (link.cooldown > 0 || link.energy === 0) {
 						continue;
 					}
 					link.transferEnergy(storageLink);
