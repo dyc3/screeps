@@ -534,6 +534,9 @@ let roleHarvester = {
 			creep.memory.harvesting = false;
 			creep.say('transport');
 		}
+		if (!creep.memory.harvesting && creep.memory.depositMode === "drop") {
+			creep.memory.harvesting = true;
+		}
 
 		if(creep.memory.harvesting) {
 			if (creep.room.name == harvestTarget.room.name) {
