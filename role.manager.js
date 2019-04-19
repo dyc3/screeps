@@ -117,6 +117,13 @@ function doAquire(creep, passively=false) {
 							if (struct.pos.findInRange(FIND_STRUCTURES, 3, { filter: function(struct) {return struct.structureType == STRUCTURE_CONTROLLER} }).length > 0) {
 								return false;
 							}
+
+							if (creep.room.storage && creep.room.controller.level > 4) {
+								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0 &&
+								struct.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+									return false;
+								}
+							}
 						}
 						else if (struct.structureType == STRUCTURE_LINK) {
 							if (struct.energy > 0 && struct.pos.inRangeTo(struct.room.storage, 2)) {
@@ -254,9 +261,9 @@ var roleManager = {
 	},
 
 	run: function(creep) {
-	    if (creep.fatigue > 0) {
-	        return;
-	    }
+		if (creep.fatigue > 0) {
+			return;
+		}
 
 		if (creep.memory.role == "manager") {
 			if (!creep.memory.targetRoom) {
@@ -371,9 +378,9 @@ var roleManager = {
 				var hungryCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 4, {
 					filter: function(c) {
 						if (c.memory.role == "builder" || c.memory.role == "upgrader" || c.memory.role == "nextroomer") {
-						    if (c.memory.role == "builder" && c.memory.mineralTarget) {
-						        return false;
-						    }
+							if (c.memory.role == "builder" && c.memory.mineralTarget) {
+								return false;
+							}
 							//console.log(c.carry[RESOURCE_ENERGY],c.carryCapacity);
 							return !c.spawning && c.carry[RESOURCE_ENERGY] < c.carryCapacity * 0.5 && !c.memory.renewing && c.memory.keepAlive;
 						}
@@ -384,10 +391,10 @@ var roleManager = {
 				if (hungryCreeps.length > 0) {
 					var closest = creep.pos.findClosestByPath(hungryCreeps);
 					if (closest) {
-					    creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1});
-    					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-    						creep.travelTo(closest, {visualizePathStyle:{}});
-    					}
+						creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1});
+						if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+							creep.travelTo(closest, {visualizePathStyle:{}});
+						}
 					}
 				}
 				else {
