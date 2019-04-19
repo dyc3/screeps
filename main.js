@@ -787,12 +787,7 @@ function main() {
 						}
 						else {
 							if (Game.time % 600 < 250) {
-								if (creep.room.controller.level >= 6) {
-									roleMiner.run(creep);
-								}
-								else {
-									roleRepairer.run(creep);
-								}
+								roleRepairer.run(creep);
 							}
 							else {
 								if (taskDepositMaterials.checkForMaterials(creep, true)) {
