@@ -32,6 +32,9 @@
 // Remove all construction sites:
 // const sites = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES); for (const site of sites) { site.remove(); }
 
+// Sell energy:
+// let order = ""; [Game.market.deal(order, 50000, "W15N8"), Game.market.deal(order, 50000, "W16N9")]
+
 // Game.creeps["upgrader_801392"].signController(Game.getObjectById("59f1a21c82100e1594f39717"), "")
 // Game.rooms["W16N9"].terminal.send(RESOURCE_ENERGY, 48250, "W15N8")
 // Game.rooms["W15N8"].terminal.send(RESOURCE_ENERGY, 48250, "W16N9")
