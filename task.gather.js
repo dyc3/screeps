@@ -83,6 +83,14 @@ let taskGather = {
 		// extract energy from storage
 		let targets = creep.room.find(FIND_STRUCTURES, {
 			filter: (structure) => {
+				if (structure.structureType !== STRUCTURE_CONTAINER && structure.structureType !== STRUCTURE_STORAGE) {
+					return false;
+				}
+
+				if (structure.structureType === STRUCTURE_STORAGE && structure.room.controller.level < 4) {
+					return false;
+				}
+
 				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType == STRUCTURE_CONTAINER) {
 					if (structure.pos.findInRange(FIND_SOURCES, 2).length > 0 &&
 						structure.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
@@ -90,8 +98,7 @@ let taskGather = {
 					}
 				}
 
-				return (structure.structureType == STRUCTURE_CONTAINER ||
-						structure.structureType == STRUCTURE_STORAGE) && structure.store[RESOURCE_ENERGY] > 0;
+				return structure.store[RESOURCE_ENERGY] > 0;
 			}
 		});
 		if (targets.length > 0) {
