@@ -444,7 +444,7 @@ function doCreepSpawning() {
 			}
 		}
 
-		creeps.sort((a,b) => b.memory.stage - a.memory.stage);
+		creeps.sort((a,b) => a.memory.stage - b.memory.stage);
 		if (creeps.length > quota) {
 			console.log("marking", creeps[0].name, "for death (above quota)");
 			creeps[0].memory.keepAlive = false;
