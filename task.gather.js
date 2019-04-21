@@ -61,23 +61,25 @@ let taskGather = {
 			}
 		}
 
-		// Dismantle marked structures
-		let dismantleTargets = creep.room.find(FIND_STRUCTURES, {
-			filter: function(struct) {
-				var flags = struct.pos.lookFor(LOOK_FLAGS);
-				if (flags.length > 0) {
-					return flags[0].name.includes("dismantle");
+		// Only builders dismantle marked structures
+		if (creep.memory.role === "builder") {
+			let dismantleTargets = creep.room.find(FIND_STRUCTURES, {
+				filter: function(struct) {
+					var flags = struct.pos.lookFor(LOOK_FLAGS);
+					if (flags.length > 0) {
+						return flags[0].name.includes("dismantle");
+					}
+					return false;
 				}
-				return false;
+			});
+			if (dismantleTargets.length > 0) {
+				//console.log("dismatle targets");
+				let closest = creep.pos.findClosestByPath(dismantleTargets);
+				if (creep.dismantle(closest) == ERR_NOT_IN_RANGE) {
+					creep.travelTo(closest);
+				}
+				return;
 			}
-		});
-		if (dismantleTargets.length > 0) {
-			//console.log("dismatle targets");
-			let closest = creep.pos.findClosestByPath(dismantleTargets);
-			if (creep.dismantle(closest) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(closest);
-			}
-			return;
 		}
 
 		// extract energy from storage
