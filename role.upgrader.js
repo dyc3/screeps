@@ -11,9 +11,9 @@ function getUpgraderCount(room) {
 var roleUpgrader = {
 	/** @param {Creep} creep **/
 	findTargetRoom: function(creep) {
-		var rooms = util.getOwnedRooms()
-		for (var i = 0; i < rooms.length; i++) {
-			var room = rooms[i]
+		let rooms = util.getOwnedRooms()
+		for (let i = 0; i < rooms.length; i++) {
+			let room = rooms[i];
 			if (!room.controller || !room.controller.my) {
 				continue;
 			}
@@ -22,6 +22,18 @@ var roleUpgrader = {
 				return room.name;
 			}
 		}
+
+		// else return the first room with rcl < 8
+		for (let i = 0; i < rooms.length; i++) {
+			let room = rooms[i];
+			if (!room.controller || !room.controller.my) {
+				continue;
+			}
+			if (room.controller.level < 8) {
+				return room.name;
+			}
+		}
+
 		// else return the first room
 		return rooms[0].name;
 	},
