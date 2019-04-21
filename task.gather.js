@@ -25,6 +25,14 @@ let taskGather = {
 				if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
 					return false;
 				}
+
+				if (creep.room.storage && creep.room.controller.level > 4) {
+					if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
+						drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+						return false;
+					}
+				}
+
 				//console.log("ENERGY DROP",drop.id,drop.amount);
 				return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
 			}
@@ -94,9 +102,9 @@ let taskGather = {
 				}
 
 				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType == STRUCTURE_CONTAINER) {
-					if (structure.pos.findInRange(FIND_SOURCES, 2).length > 0 &&
+					if (structure.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
 						structure.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
-						return structure.store[RESOURCE_ENERGY] > 100;
+						return false;
 					}
 				}
 
