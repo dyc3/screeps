@@ -30,6 +30,10 @@ var roleClaimer = {
 		var claimTarget = Game.getObjectById(creep.memory.claimTarget)
 
 		if (creep.memory.mode == "claim") {
+			if (claimTarget.reservation && claimTarget.reservation != global.WHOAMI) {
+				console.log(creep.name, "WARN: controller is already reserved by somebody else");
+			}
+
 			switch (creep.claimController(claimTarget)) {
 				case ERR_GCL_NOT_ENOUGH:
 					var reserveResult = creep.reserveController(claimTarget);

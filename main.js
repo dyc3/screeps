@@ -24,6 +24,11 @@
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
 // Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "relay_1", {role:"relay", keepAlive:false})
 
+// Game.spawns["Spawn1"].createCreep([CLAIM,WORK,WORK,CARRY,MOVE,MOVE,MOVE], "nextroomer_1", {role:"nextroomer", keepAlive:false})
+// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE], "nextroomer_2", {role:"nextroomer", keepAlive:false})
+
+// Game.spawns["Spawn1"].createCreep([CLAIM,MOVE], "claimer_1", {role:"claimer", keepAlive:false})
+
 // Delivery creep templates
 // Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "tmpdeliver_1", {role:"tmpdeliver", keepAlive:true, stage: 0, withdrawTargetId: "", depositTargetId:"" })
 
@@ -85,6 +90,8 @@ let toolRoadPlanner = require('tool.roadplanner');
 let brainAutoPlanner = require('brain.autoplanner');
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
+
+global.WHOAMI = _.find(Game.structures).owner.username;
 
 function printException(e, creep=undefined) {
 	let msg = errorMild + '<span style="color: red">ERROR: ' + e.name + ": "+e.message+"\n"+e.stack + "</span>";

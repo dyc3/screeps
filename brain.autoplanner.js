@@ -245,9 +245,14 @@ var brainAutoPlanner = {
 			room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: .4, fill: "#cccc00" });
 		}
 		else {
-			console.log("WARN: using existing storage as storagePos");
-			storagePos = room.storage.pos;
-			room.memory.storagePos = storagePos;
+			if (room.storage) {
+				console.log("WARN: using existing storage as storagePos");
+				storagePos = room.storage.pos;
+				room.memory.storagePos = storagePos;
+			}
+			else {
+				console.log("WARN: storagePos must be assigned manually maybe?");
+			}
 		}
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
