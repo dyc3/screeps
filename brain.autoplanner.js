@@ -346,6 +346,9 @@ var brainAutoPlanner = {
 	isPositionPlanned: function(pos) {
 		room = new Room(pos.roomName);
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
+			if (!(struct in room.memory.structures)) {
+				continue;
+			}
 			for (let p of room.memory.structures[struct]) {
 				if (room.getPositionAt(p.x, p.y).isEqualTo(pos)) {
 					return struct;
@@ -369,6 +372,10 @@ var brainAutoPlanner = {
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
 			let maxStructs = CONTROLLER_STRUCTURES[struct];
 			let structCount = 0;
+			if (!(struct in room.memory.structures)) {
+				console.log("[WARN] no plans for", struct, "structures found");
+				continue;
+			}
 			for (let pos of room.memory.structures[struct]) {
 				room.createConstructionSite(pos.x, pos.y, struct);
 				structCount++;

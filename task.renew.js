@@ -25,7 +25,7 @@ var taskRenew = {
 		}
 
 		// NOTE: this isn't really exact, treat it like a rough estimate
-		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 160 : 70);
+		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 160 : 80);
 		if (spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
