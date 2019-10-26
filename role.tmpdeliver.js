@@ -35,7 +35,7 @@ let roleTmpDelivery = {
 		if (creep.memory.delivering) {
 			if (creep.pos.isNearTo(depositTarget)) {
 				let transferResult = creep.transfer(depositTarget, RESOURCE_ENERGY);
-				if (transferResult !== ERR_FULL) {
+				if (transferResult !== ERR_FULL && _.sum(creep.carry) < creep.carryCapacity * 0.25) {
 					creep.memory.delivering = false;
 				}
 			}

@@ -52,12 +52,12 @@ var taskRenew = {
 
 		var maxTicks = 600;
 		if (creep.memory.renew_force_amount) {
-		    maxTicks = creep.memory.renew_force_amount;
+			maxTicks = creep.memory.renew_force_amount;
 		}
 		else if (creep.memory.role == "multiroom-harvester" || creep.memory.role == "carrier") {
-		    maxTicks = 1000;
+			maxTicks = 1000;
 		}
-		else if (creep.memory.role == "scout") {
+		else if (creep.memory.role == "scout" || creep.memory.role == "tmpdeliver") {
 			maxTicks = 1200;
 		}
 		else if (creep.memory.role == "nextroomer") {

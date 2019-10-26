@@ -30,26 +30,41 @@ var roleBuilder = {
 		}
 
 		if(creep.memory.building) {
-			// var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-			var targets = this.findTargets(creep);
-			// console.log(creep.name,"targets:",targets)
-			if(targets.length) {
-				targets.sort(function(a,b) {
-					return (a.progress / a.progressTotal) - (b.progress / b.progressTotal);
-				});
-				targets.reverse();
-				targets.splice(4, targets.length - 5);
-				// var target = creep.pos.findClosestByPath(targets);
-				var target = targets[0];
-				if (target == null) {
-					target = targets[0]; // ????
+			if (!creep.memory.buildTargetId) {
+				// var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+				var targets = this.findTargets(creep);
+				// console.log(creep.name,"targets:",targets)
+				if(targets.length) {
+					targets.sort(function(a,b) {
+						return (a.progress / a.progressTotal) - (b.progress / b.progressTotal);
+					});
+					targets.reverse();
+					targets.splice(4, targets.length - 5);
+					// var target = creep.pos.findClosestByPath(targets);
+					var target = targets[0];
+					if (target == null) {
+						target = targets[0]; // ????
+					}
+					creep.memory.buildTargetId = target.id;
 				}
-				if(creep.build(target) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(target);
+				else{
+					creep.say('ERR: No construction sites');
+				}
+			}
+
+			if (creep.memory.buildTargetId) {
+				let target = Game.getObjectById(creep.memory.buildTargetId);
+				if (target) {
+					if(creep.build(target) == ERR_NOT_IN_RANGE) {
+						creep.travelTo(target);
+					}
+				}
+				else {
+					delete creep.memory.buildTargetId;
 				}
 			}
 			else{
-				creep.say('ERR: No construction sites');
+				creep.say('ERR: No build target');
 			}
 		}
 		else {
