@@ -1,14 +1,12 @@
-var traveler = require('traveler');
-var util = require('util');
+let traveler = require('traveler');
+let util = require('util');
 
-var roleMiner = {
+let roleMiner = {
 	findMineralTarget: function(creep) {
 		let rooms = util.getOwnedRooms();
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
+		for (let room of rooms) {
 			let minerals = util.getMinerals(room);
-			for (let m = 0; m < minerals.length; m++) {
-				let mineral = minerals[m];
+			for (let mineral of minerals) {
 				let minersAssigned = util.getCreeps("miner").filter((creep) => creep.memory.mineralTarget == mineral.id);
 				if (minersAssigned < 1) {
 					return mineral.id;
@@ -17,13 +15,14 @@ var roleMiner = {
 		}
 	},
 
-	/** Returns Structure object, sets creeps memory for storage target **/
+	/**
+	 * Finds where to store minerals. Sets creeps memory for storage target.
+	 * Target must be in the same room.
+	 * @returns {Structure} The structure to store the mined minerals in.
+	 **/
 	getTargetStorage: function(creep) {
-		// Target must be in the same room
-
 		let fillFlags = _.filter(Game.flags, (flag) => { return flag.name.includes("fill") && flag.pos.roomName == creep.pos.roomName; });
-		for (let i = 0; i < fillFlags.length; i++) {
-			let flag = fillFlags[i];
+		for (let flag of fillFlags) {
 			let material = flag.name.split(":")[1];
 			if (creep.carry[material] > 0) {
 				let target = flag.pos.lookFor(LOOK_STRUCTURES).filter((struct) => { return struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_TERMINAL })[0];
@@ -92,8 +91,7 @@ var roleMiner = {
 					creep.transfer(storageTarget, creep.memory.materialToStore, creep.carry[creep.memory.materialToStore]);
 				}
 				else {
-					for (let r in RESOURCES_ALL) {
-						let resource = RESOURCES_ALL[r];
+					for (let resource of RESOURCES_ALL) {
 						if (creep.carry[resource] > 0) {
 							creep.transfer(storageTarget, resource);
 						}
