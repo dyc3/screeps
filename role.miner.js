@@ -19,33 +19,33 @@ var roleMiner = {
 
 	/** Returns Structure object, sets creeps memory for storage target **/
 	getTargetStorage: function(creep) {
-	    // Target must be in the same room
+		// Target must be in the same room
 
-	    let fillFlags = _.filter(Game.flags, (flag) => { return flag.name.includes("fill") && flag.pos.roomName == creep.pos.roomName; });
-	    for (let i = 0; i < fillFlags.length; i++) {
-	        let flag = fillFlags[i];
-	        let material = flag.name.split(":")[1];
-	        if (creep.carry[material] > 0) {
-	            let target = flag.pos.lookFor(LOOK_STRUCTURES).filter((struct) => { return struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_TERMINAL })[0];
-	            creep.memory.storageTarget = target.id;
-	            creep.memory.materialToStore = material;
-	            return target;
-	        }
-	    }
+		let fillFlags = _.filter(Game.flags, (flag) => { return flag.name.includes("fill") && flag.pos.roomName == creep.pos.roomName; });
+		for (let i = 0; i < fillFlags.length; i++) {
+			let flag = fillFlags[i];
+			let material = flag.name.split(":")[1];
+			if (creep.carry[material] > 0) {
+				let target = flag.pos.lookFor(LOOK_STRUCTURES).filter((struct) => { return struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_TERMINAL })[0];
+				creep.memory.storageTarget = target.id;
+				creep.memory.materialToStore = material;
+				return target;
+			}
+		}
 
-	    creep.memory.storageTarget = creep.room.storage.id;
-	    delete creep.memory.materialToStore;
-	    return creep.room.storage;
+		creep.memory.storageTarget = creep.room.storage.id;
+		delete creep.memory.materialToStore;
+		return creep.room.storage;
 	},
 
 	run: function(creep) {
 		if (!creep.memory.mineralTarget) {
-		    if (Game.cpu.bucket <= 100) {
-    	        return;
-    	    }
+			if (Game.cpu.bucket <= 100) {
+				return;
+			}
 			creep.memory.mineralTarget = this.findMineralTarget(creep);
 		}
-		
+
 		let total_carry = _.sum(creep.carry);
 
 		let mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
@@ -54,7 +54,7 @@ var roleMiner = {
 			return;
 		}
 		if (mineralTarget.ticksToRegeneration > 0 && total_carry == 0) {
-		    return;
+			return;
 		}
 
 		if (!creep.memory.mining && total_carry == 0) {
@@ -79,29 +79,29 @@ var roleMiner = {
 			}
 		}
 		else {
-		    let storageTarget = null;
+			let storageTarget = null;
 			if (!creep.memory.storageTarget) {
-			    storageTarget = this.getTargetStorage(creep);
+				storageTarget = this.getTargetStorage(creep);
 			}
 			else {
-			    storageTarget = Game.getObjectById(creep.memory.storageTarget);
+				storageTarget = Game.getObjectById(creep.memory.storageTarget);
 			}
 
 			if (creep.pos.isNearTo(storageTarget)) {
-			    if (creep.memory.materialToStore) {
-			        creep.transfer(storageTarget, creep.memory.materialToStore, creep.carry[creep.memory.materialToStore]);
-			    }
-			    else {
-			        for (let r in RESOURCES_ALL) {
-    					let resource = RESOURCES_ALL[r];
-    					if (creep.carry[resource] > 0) {
-    						creep.transfer(storageTarget, resource);
-    					}
-    				}
-			    }
+				if (creep.memory.materialToStore) {
+					creep.transfer(storageTarget, creep.memory.materialToStore, creep.carry[creep.memory.materialToStore]);
+				}
+				else {
+					for (let r in RESOURCES_ALL) {
+						let resource = RESOURCES_ALL[r];
+						if (creep.carry[resource] > 0) {
+							creep.transfer(storageTarget, resource);
+						}
+					}
+				}
 			}
 			else {
-			    creep.travelTo(storageTarget);
+				creep.travelTo(storageTarget);
 			}
 		}
 	}
