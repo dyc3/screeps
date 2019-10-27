@@ -365,6 +365,9 @@ var brainAutoPlanner = {
 
 	drawRoomPlans: function(room) {
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
+			if (!(struct in room.memory.structures)) {
+				continue;
+			}
 			for (let pos of room.memory.structures[struct]) {
 				if (struct === STRUCTURE_ROAD) {
 					room.visual.circle(pos.x, pos.y, { fill: "#999999" });
@@ -402,9 +405,32 @@ var brainAutoPlanner = {
 	},
 
 	/**
+	 * Manually add plans at the specified position.
+	 * @param {RoomPosition} pos The position to remove plans from
+	 * @param {string} struct The STRUCTURE_* type to remove
+	 * @example require("brain.autoplanner").addPlansAtPosition(new RoomPosition(22, 28, "W16N9"), STRUCTURE_TERMINAL)
+	 */
+	addPlansAtPosition(pos, struct) {
+		if (!pos || !struct) {
+			return;
+		}
+
+		room = new Room(pos.roomName);
+		for (let checkPos of room.memory.structures[struct]) {
+			if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
+				// plans already exist at this position
+				return;
+			}
+		}
+
+		room.memory.structures[struct].push({ x: pos.x, y: pos.y });
+	},
+
+	/**
 	 * Manually remove plans at the specified position.
 	 * @param {RoomPosition} pos The position to remove plans from
 	 * @param {string} [struct=undefined] The STRUCTURE_* type to remove
+	 * @example require("brain.autoplanner").removePlansAtPosition(new RoomPosition(22, 30, "W16N9"), STRUCTURE_TERMINAL)
 	 */
 	removePlansAtPosition(pos, struct=undefined) {
 		room = new Room(pos.roomName);
