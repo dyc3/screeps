@@ -390,6 +390,29 @@ var brainAutoPlanner = {
 			}
 		}
 	},
+	
+	/**
+	 * Manually remove plans at the specified position.
+	 * @param {RoomPosition} pos The position to remove plans from
+	 * @param {string} [struct=undefined] The STRUCTURE_* type to remove
+	 */
+	removePlansAtPosition(pos, struct=undefined) {
+	    room = new Room(pos.roomName);
+		for (let structure in CONSTRUCTION_COST) { // iterate through all structure names
+			if (!(structure in room.memory.structures)) {
+				continue;
+			}
+			if (struct !== undefined && structure !== struct) {
+			    continue;
+			}
+			for (let p = 0; p < room.memory.structures[structure].length; p++) {
+			    let checkPos = room.memory.structures[structure][p];
+				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
+					room.memory.structures[structure].splice(p, 1);
+				}
+			}
+		}
+	},
 
 	/** Plan extensions along paths from spawn to sources. **/
 	planExtensions_old: function(room, debug=false) {

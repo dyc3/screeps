@@ -23,6 +23,12 @@ var roleBuilder = {
 		if(creep.memory.building && creep.carry.energy < 5) {
 			creep.memory.building = false;
 			creep.say('gathering');
+			
+			// renew check for mega builders in rooms without enough energy to support them
+			if (false && creep.ticksToLive <= 400 && creep.memory.stage === 5 && creep.room.energyCapacityAvailable < 6000) {
+			    creep.memory.renewing = true;
+			    creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
+			}
 		}
 		else if(!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
 			creep.memory.building = true;

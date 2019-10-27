@@ -21,6 +21,10 @@ let roleRelay = {
 			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {
 				return s.structureType == STRUCTURE_LINK;
 			}});
+			if (foundLinks.length == 0) {
+			    console.log(creep.name, "ERR: no link structures found");
+			    return;
+			}
 			creep.memory.linkId = foundLinks[0].id;
 
 			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {

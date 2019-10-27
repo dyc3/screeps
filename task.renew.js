@@ -64,7 +64,10 @@ var taskRenew = {
 			maxTicks = 1000;
 		}
 		else if (creep.memory.role == "builder" || creep.memory.role == "scientist") {
-			if (renewTarget.room.energyAvailable >= 3000) {
+		    if (creep.memory.role == "builder" && creep.memory.stage === 5 && renewTarget.room.energyAvailable >= 8000) {
+				maxTicks = 1200;
+			}
+			else if (renewTarget.room.energyAvailable >= 3000) {
 				maxTicks = 900;
 			}
 		}
