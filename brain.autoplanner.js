@@ -415,7 +415,8 @@ var brainAutoPlanner = {
 			if (struct !== undefined && structure !== struct) {
 				continue;
 			}
-			for (let checkPos of room.memory.structures[structure]) {
+			for (let p = 0; p < room.memory.structures[structure].length; p++) {
+				let checkPos = room.memory.structures[structure][p];
 				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
 					room.memory.structures[structure].splice(p, 1);
 				}
