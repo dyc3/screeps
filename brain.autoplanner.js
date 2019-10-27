@@ -366,9 +366,19 @@ var brainAutoPlanner = {
 	drawRoomPlans: function(room) {
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
 			for (let pos of room.memory.structures[struct]) {
-				room.visual.circle(pos.x, pos.y, { fill: "#ffffff" });
-				let abbr = struct.substring(0, 3);
-				room.visual.text(abbr, pos.x, pos.y, { fill: "#ffffff", font: 0.25 });
+				if (struct === STRUCTURE_ROAD) {
+					room.visual.circle(pos.x, pos.y, { fill: "#999999" });
+				}
+				else if (struct === STRUCTURE_SPAWN) {
+					room.visual.circle(pos.x, pos.y, { fill: "#ffff88" });
+				}
+				else if (struct === STRUCTURE_EXTENSION) {
+					room.visual.circle(pos.x, pos.y, { fill: "#ffaa66" });
+				}
+				else {
+					room.visual.circle(pos.x, pos.y, { fill: "#ffffff" });
+				}
+				room.visual.text(struct.substring(0, 3), pos.x, pos.y, { fill: "#ffffff", font: 0.25 });
 			}
 		}
 	},
@@ -390,23 +400,22 @@ var brainAutoPlanner = {
 			}
 		}
 	},
-	
+
 	/**
 	 * Manually remove plans at the specified position.
 	 * @param {RoomPosition} pos The position to remove plans from
 	 * @param {string} [struct=undefined] The STRUCTURE_* type to remove
 	 */
 	removePlansAtPosition(pos, struct=undefined) {
-	    room = new Room(pos.roomName);
+		room = new Room(pos.roomName);
 		for (let structure in CONSTRUCTION_COST) { // iterate through all structure names
 			if (!(structure in room.memory.structures)) {
 				continue;
 			}
 			if (struct !== undefined && structure !== struct) {
-			    continue;
+				continue;
 			}
-			for (let p = 0; p < room.memory.structures[structure].length; p++) {
-			    let checkPos = room.memory.structures[structure][p];
+			for (let checkPos of room.memory.structures[structure]) {
 				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
 					room.memory.structures[structure].splice(p, 1);
 				}
