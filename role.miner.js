@@ -7,7 +7,7 @@ let roleMiner = {
 		for (let room of rooms) {
 			let minerals = util.getMinerals(room);
 			for (let mineral of minerals) {
-				let minersAssigned = util.getCreeps("miner").filter((creep) => creep.memory.mineralTarget == mineral.id);
+				let minersAssigned = util.getCreeps("miner").filter((creep) => creep.memory.mineralTarget == mineral.id || creep.memory.mineralTargetSecondary == mineral.id);
 				if (minersAssigned < 1) {
 					return mineral.id;
 				}
@@ -32,7 +32,12 @@ let roleMiner = {
 			}
 		}
 
-		creep.memory.storageTarget = creep.room.storage.id;
+		if (!creep.memory.useSecondaryRoute) {
+			creep.memory.storageTarget = creep.room.storage.id;
+		}
+		else {
+			creep.memory.storageTargetSecondary = creep.room.storage.id;
+		}
 		delete creep.memory.materialToStore;
 		return creep.room.storage;
 	},
@@ -44,15 +49,37 @@ let roleMiner = {
 			}
 			creep.memory.mineralTarget = this.findMineralTarget(creep);
 		}
+		if (!creep.memory.mineralTargetSecondary) {
+			if (Game.cpu.bucket <= 100) {
+				return;
+			}
+			creep.memory.mineralTargetSecondary = this.findMineralTarget(creep);
+		}
+		if (!creep.memory.useSecondaryRoute) {
+			creep.memory.useSecondaryRoute = false;
+		}
 
 		let total_carry = _.sum(creep.carry);
 
 		let mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
+		let mineralTargetSecondary = Game.getObjectById(creep.memory.mineralTargetSecondary);
 		if (!mineralTarget) {
 			console.log(creep.name, "no mineral target");
 			return;
 		}
-		if (mineralTarget.ticksToRegeneration > 0 && total_carry == 0) {
+		if (!mineralTargetSecondary) {
+			console.log(creep.name, "no secondary mineral target");
+			return;
+		}
+
+		if (!creep.memory.useSecondaryRoute && mineralTarget.ticksToRegeneration > 0 && total_carry == 0) {
+			creep.memory.useSecondaryRoute = true;
+			creep.say("switch->2");
+			return;
+		}
+		else if (creep.memory.useSecondaryRoute && mineralTargetSecondary.ticksToRegeneration > 0 && total_carry == 0) {
+			creep.memory.useSecondaryRoute = false;
+			creep.say("switch->1");
 			return;
 		}
 
@@ -68,10 +95,10 @@ let roleMiner = {
 		}
 
 		if (creep.memory.mining) {
-			switch (creep.harvest(mineralTarget)) {
+			switch (creep.harvest(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget)) {
 				case ERR_NOT_IN_RANGE:
 				case ERR_NOT_ENOUGH_RESOURCES:
-					creep.travelTo(mineralTarget);
+					creep.travelTo(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget);
 					break;
 				default:
 
@@ -79,11 +106,16 @@ let roleMiner = {
 		}
 		else {
 			let storageTarget = null;
-			if (!creep.memory.storageTarget) {
+			if ((!creep.memory.useSecondaryRoute && !creep.memory.storageTarget) || (creep.memory.useSecondaryRoute && !creep.memory.storageTargetSecondary)) {
 				storageTarget = this.getTargetStorage(creep);
 			}
 			else {
-				storageTarget = Game.getObjectById(creep.memory.storageTarget);
+				if (!creep.memory.useSecondaryRoute) {
+					storageTarget = Game.getObjectById(creep.memory.storageTarget);
+				}
+				else {
+					storageTarget = Game.getObjectById(creep.memory.storageTargetSecondary);
+				}
 			}
 
 			if (creep.pos.isNearTo(storageTarget)) {
