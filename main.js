@@ -1040,6 +1040,7 @@ profiler.registerClass(roleManager, 'role.manager');
 profiler.registerClass(roleScientist, 'role.scientist');
 profiler.registerClass(roleTower, 'role.tower');
 profiler.registerClass(roleRelay, 'role.relay');
+profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
 profiler.enable();
 
 module.exports.loop = function() {
