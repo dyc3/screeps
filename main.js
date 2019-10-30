@@ -567,10 +567,10 @@ function doAutoTrading() {
 
 	let minimumPrice = {};
 	minimumPrice[RESOURCE_ENERGY] = 0.08;
-	minimumPrice[RESOURCE_OXYGEN] = 0.06;
-	minimumPrice[RESOURCE_HYDROGEN] = 0.06;
+	minimumPrice[RESOURCE_OXYGEN] = 0.08;
+	minimumPrice[RESOURCE_HYDROGEN] = 0.08;
 
-	minimumPrice[RESOURCE_UTRIUM] = 0.065;
+	minimumPrice[RESOURCE_UTRIUM] = 0.08;
 	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
 	minimumPrice[RESOURCE_KEANIUM] = 0.35;
 	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
