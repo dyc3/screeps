@@ -59,7 +59,7 @@ function getBuilderQuota() {
 // 		}
 // 	}
 // 	return room.controller.level > 2 ? 2 : 1;
-    return 1;
+	return 1;
 }
 
 function getClaimerQuota() {
@@ -103,12 +103,12 @@ function getMinerQuota(room) {
 
 function getAttackerQuota() {
 	return 0;
-    let count = 0;
-    let rooms = util.getOwnedRooms();
+	let count = 0;
+	let rooms = util.getOwnedRooms();
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
 		if (room.controller.level >= 2) {
-		    count += room.memory.defcon;
+			count += room.memory.defcon;
 		}
 	}
 	return count;
@@ -121,7 +121,7 @@ function getRepairerQuota(room) {
 	return 0;
 }
 
-var creepUpgrader = {
+let creepUpgrader = {
 	roles:{
 		"harvester":{
 			name:"harvester",
@@ -186,6 +186,7 @@ var creepUpgrader = {
 				[WORK,WORK,CARRY,MOVE,MOVE],
 				[WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 				// [WORK,WORK,WORK,WORK,WORK,		WORK,WORK,WORK,WORK,WORK,		WORK,WORK,WORK,WORK,WORK,
 				// CARRY,CARRY,CARRY,CARRY,CARRY,	CARRY,CARRY,CARRY,CARRY,CARRY,	CARRY,CARRY,CARRY,CARRY,CARRY,
 				// MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE, 		MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE],

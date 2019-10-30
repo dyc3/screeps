@@ -107,7 +107,16 @@ let roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(depositTarget, {visualizePathStyle:{}});
+				if (_.sum(creep.carry) === 0) {
+					creep.memory.delivering = false;
+
+					if (this.shouldRenew(creep)) {
+						creep.memory.renewing = true;
+					}
+				}
+				else {
+					creep.travelTo(depositTarget, {visualizePathStyle:{}});
+				}
 			}
 		}
 		else {

@@ -344,7 +344,7 @@ function doFlagCommandsAndStuff() {
 	}
 
 	for (let f in Game.flags) {
-		let flag = Game.flags[f];
+		const flag = Game.flags[f];
 		// check if dismantle and norepair flags have structures under them
 		if (flag.name.startsWith("dismantle") || flag.name.includes("norepair")) {
 			if (flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
@@ -365,6 +365,11 @@ function commandEnergyRelays() {
 
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
+
+		// skip room if it's not supposed to have relays
+		if (toolCreepUpgrader.roles["relay"].quota(room) === 0) {
+			continue;
+		}
 
 		// check if there are any available relay positions
 		if (_.filter(relayCreeps, (creep) => { return !creep.memory.assignedPos; }).length == 0) {
@@ -469,7 +474,7 @@ function doCreepSpawning() {
 		if (hiStage > creeps[0].memory.stage) {
 			console.log("marking", creeps[0].name, "for death (upgrading)");
 			creeps[0].memory.keepAlive = false;
-			return;
+			return true;
 		}
 	}
 
@@ -493,13 +498,31 @@ function doCreepSpawning() {
 					continue;
 				}
 
-				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
-					continue;
-				}
-
+				let needOtherRoomSpawns = false;
 				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
 				if (spawns.length === 0) {
-					continue;
+					console.log("WARN: There are no available spawns in this room to spawn creeps");
+					needOtherRoomSpawns = true;
+				}
+
+				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
+					console.log("WARN: This room does not have enough energy to spawn creeps");
+					needOtherRoomSpawns = true;
+				}
+
+				if (needOtherRoomSpawns) {
+					console.log("Using spawns from another room to spawn creeps for", room.name);
+					let otherRooms = _.filter(rooms, r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
+					if (otherRooms.length === 0) {
+						console.log("WARN: All other rooms don't have enough energy to spawn creeps");
+						continue;
+					}
+					let target_room = rooms[Math.floor(Math.random() * rooms.length)];
+					spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+					if (spawns.length === 0) {
+						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
+						continue;
+					}
 				}
 
 				// spawn new creeps to fill up the quota
@@ -514,6 +537,7 @@ function doCreepSpawning() {
 
 			rooms = _.filter(rooms, room => room.energyAvailable >= room.energyCapacityAvailable * 0.8);
 			if (rooms.length === 0) {
+				console.log("WARN: There are no rooms available with enough energy to spawn creeps");
 				continue;
 			}
 			target_room = rooms[Math.floor(Math.random() * rooms.length)];

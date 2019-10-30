@@ -89,7 +89,7 @@ let roleMiner = {
 			delete creep.memory.storageTarget;
 			delete creep.memory.materialToStore;
 		}
-		if (creep.memory.mining && (total_carry == creep.carryCapacity || (mineralTarget.ticksToRegeneration > 0 && total_carry > 0))) {
+		if (creep.memory.mining && (total_carry == creep.carryCapacity || ((creep.memory.useSecondaryRoute ? mineralTargetSecondary.ticksToRegeneration : mineralTarget.ticksToRegeneration) > 0 && total_carry > 0))) {
 			creep.memory.mining = false;
 			creep.say("storing");
 		}

@@ -475,15 +475,17 @@ let roleHarvester = {
 			}
 		}
 
-		if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
-			let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
-				filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
-			});
-			if (nearbyLinks.length > 0) {
-				creep.memory.dedicatedLinkId = nearbyLinks[0].id;
-			}
-			else {
-				creep.memory.last_check_for_dedicated_link = Game.time;
+		if (creep.room.name === creep.memory.targetRoom && CONTROLLER_STRUCTURES[STRUCTURE_LINK][creep.room.controller.level] > 0) {
+			if (!creep.memory.last_check_for_dedicated_link || creep.memory.last_check_for_dedicated_link && Game.time - creep.memory.last_check_for_dedicated_link > 100) {
+				let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+					filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
+				});
+				if (nearbyLinks.length > 0) {
+					creep.memory.dedicatedLinkId = nearbyLinks[0].id;
+				}
+				else {
+					creep.memory.last_check_for_dedicated_link = Game.time;
+				}
 			}
 		}
 
