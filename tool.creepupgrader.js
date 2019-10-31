@@ -83,6 +83,9 @@ function getManagerQuota(room) {
 
 function getRelayQuota(room) {
 	let linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
+	if (linkCount === 0) {
+		return 0;
+	}
 	return linkCount - 1;
 }
 
