@@ -72,8 +72,8 @@ let roleRepairer = require('role.repairer');
 let roleAttacker = require('role.attacker');
 let roleClaimer = require('role.claimer');
 let roleHealer = require('role.healer');
-// let roleMultiroomHarvester = require('role.multiroom-harvester');
-// let roleCarrier = require('role.carrier');
+let roleRemoteHarvester = require('role.remoteharvester');
+let roleCarrier = require('role.carrier');
 let roleScout = require('role.scout');
 let roleNextRoomer = require('role.nextroomer');
 let roleMiner = require('role.miner');
@@ -341,6 +341,16 @@ function doFlagCommandsAndStuff() {
 		console.log("force set root pos in", pos.roomName, ":", pos.x, ",", pos.y);
 		new Room(pos.roomName).memory.rootPos = pos;
 		Game.flags["setRootPos"].remove();
+	}
+
+	if (Game.flags["harvestme"]) {
+		let pos = Game.flags["harvestme"].pos;
+		Memory.remoteMining.targets.push({
+			x: pos.x,
+			y: pos.y,
+			roomName: pos.roomName,
+		});
+		Game.flags["harvestme"].remove();
 	}
 
 	for (let f in Game.flags) {
@@ -716,6 +726,14 @@ function main() {
 	if (!Memory.terminalEnergyTarget) {
 		Memory.terminalEnergyTarget = 50000;
 	}
+	if (!Memory.remoteMining) {
+		Memory.remoteMining = {
+			targets: [],
+		};
+	}
+	if (!Memory.remoteMining.targets) {
+		Memory.remoteMining.targets = [];
+	}
 
 	// initialize jobs
 	if (!Memory.job_last_run) {
@@ -857,8 +875,8 @@ function main() {
 					case 'manager':
 						roleManager.run(creep);
 						break;
-					case 'multiroom-harvester':
-						roleMultiroomHarvester.run(creep);
+					case 'remoteharvester':
+						roleRemoteHarvester.run(creep);
 						break;
 					case 'carrier':
 						roleCarrier.run(creep);
