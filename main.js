@@ -345,11 +345,57 @@ function doFlagCommandsAndStuff() {
 
 	if (Game.flags["harvestme"]) {
 		let pos = Game.flags["harvestme"].pos;
-		Memory.remoteMining.targets.push({
+		let newTarget = {
 			x: pos.x,
 			y: pos.y,
 			roomName: pos.roomName,
-		});
+			harvestPos: {},
+			id: "",
+		};
+		let lookResult = pos.lookFor(LOOK_SOURCES);
+		if (lookResult.length > 0) {
+			newTarget.id = lookResult[0].id;
+
+			// set harvestPos
+			let adj = util.getAdjacent(pos);
+			for (let i = 0; i < adj.length; i++) {
+				// look for structures
+				let lookResult = adj[i].look();
+				let isValid = true;
+				for (let l = 0; l < lookResult.length; l++) {
+					let look = lookResult[l];
+					if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+						continue;
+					}
+
+					if (look.type === LOOK_TERRAIN) {
+						if (look.terrain === 'wall') {
+							isValid = false;
+							break;
+						}
+					}
+					else if (look.type === LOOK_STRUCTURES) {
+						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
+							isValid = false;
+							break;
+						}
+					}
+				}
+				if (!isValid) {
+					continue;
+				}
+
+				newTarget.harvestPos = { x: adj[i].x, y: adj[i].y };
+				break;
+			}
+		}
+		else {
+			// need vision
+			let observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc"); // TODO: make dynamic
+			observer.observeRoom(pos.roomName);
+			throw new Error("need vision of room to complete job");
+		}
+		Memory.remoteMining.targets.push(newTarget);
 		Game.flags["harvestme"].remove();
 	}
 
@@ -664,6 +710,69 @@ function doAutoPlanning() {
 	}
 }
 
+function commandRemoteMining() {
+	// Force job to run: Memory.job_last_run["command-remote-mining"] = 0
+	let neededHarvesters = 0, neededCarriers = 0;
+	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
+		let target = Memory.remoteMining.targets[t];
+		if (!Game.creeps[target.creepHarvester]) {
+			delete target.creepHarvester;
+		}
+		if (!Game.creeps[target.creepCarrier]) {
+			delete target.creepCarrier;
+		}
+
+		if (!target.creepHarvester || !target.creepCarrier) {
+			console.log("[remote mining]", target.id, "needs harvester or carrier");
+		}
+
+		if (!target.creepHarvester) {
+			let remoteHarvesters = util.getCreeps("remoteharvester");
+			let didAssign = false;
+			for (let creep of remoteHarvesters) {
+				if (!creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id) {
+					target.creepHarvester = creep.name;
+					creep.memory.harvestTarget = target;
+					didAssign = true;
+					break;
+				}
+			}
+			if (!didAssign) {
+				neededHarvesters++;
+			}
+		}
+
+		if (!target.creepCarrier) {
+			let carriers = util.getCreeps("carrier");
+			let didAssign = false;
+			for (let creep of carriers) {
+				if (!creep.memory.creepCarrier || creep.memory.harvestTarget.id === target.id) {
+					target.creepCarrier = creep.name;
+					creep.memory.harvestTarget = target;
+					didAssign = true;
+					break;
+				}
+			}
+			if (!didAssign) {
+				neededCarriers++;
+			}
+		}
+
+		Memory.remoteMining.targets[t] = target;
+	}
+
+	if (neededHarvesters > 0) {
+		console.log("[remote mining]", "need to spawn", neededHarvesters, "remote harvesters");
+	}
+
+	if (neededCarriers > 0) {
+		console.log("[remote mining]", "need to spawn", neededCarriers, "carrier");
+	}
+
+	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;
+	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
+}
+
 let jobs = {
 	"creep-spawning": {
 		name: "creep-spawning",
@@ -704,6 +813,11 @@ let jobs = {
 		name: "work-labs",
 		run: function() { }, // TODO
 		interval: 30,
+	},
+	"command-remote-mining": {
+		name: "command-remote-mining",
+		run: commandRemoteMining,
+		interval: 25,
 	},
 };
 
@@ -923,13 +1037,13 @@ function main() {
 		let job = jobs[job_to_do];
 		try {
 			job.run();
+			Memory.job_queue.shift();
+			Memory.job_last_run[job.name] = Game.time;
 		}
 		catch (e) {
 			console.log("ERR: Job failed", job.name);
 			printException(e);
 		}
-		Memory.job_queue.shift();
-		Memory.job_last_run[job.name] = Game.time;
 	}
 
 	// force spawning

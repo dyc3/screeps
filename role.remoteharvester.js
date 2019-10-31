@@ -4,13 +4,13 @@ let roleRemoteHarvester = {
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		// TEMP set harvest target for testing
-		creep.memory.harvestTarget = {
-			id: "55c34a6b5be41a0a6e80c5b5",
-			x: 29,
-			y: 43,
-			roomName: "W15N9",
-			harvestPos: { x: 30, y: 44 },
-		};
+		// creep.memory.harvestTarget = {
+		// 	id: "55c34a6b5be41a0a6e80c5b5",
+		// 	x: 29,
+		// 	y: 43,
+		// 	roomName: "W15N9",
+		// 	harvestPos: { x: 30, y: 44 },
+		// };
 		// let observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc");
 
 		if (!creep.memory.harvestTarget) {
