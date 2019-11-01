@@ -800,6 +800,48 @@ function commandRemoteMining() {
 	}
 }
 
+function satisfyClaimTargets() {
+	let claimers = util.getCreeps("claimer");
+	for (let t = 0; t < Memory.claimTargets.length; t++) {
+		let satisfied = false;
+		for (let creep of claimers) {
+			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
+				satisfied = true;
+				break;
+			}
+		}
+
+		if (satisfied) {
+			Memory.claimTargets.splice(t, 1);
+			t--;
+		}
+		else {
+			// spawn new claimer
+			let rooms = _.filter(util.getOwnedRooms(), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8);
+			if (rooms.length === 0) {
+				console.log("WARN: All rooms don't have enough energy to spawn creeps");
+				continue;
+			}
+			rooms.sort((a, b) => Game.map.getRoomLinearDistance(Memory.claimTargets[t].room, a.name) - Game.map.getRoomLinearDistance(Memory.claimTargets[t].room, b.name));
+			let spawnRoom = rooms[0];
+			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", Memory.claimTargets[t].room);
+			let spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			if (spawns.length === 0) {
+				console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
+				continue;
+			}
+			let targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
+			targetSpawn.spawnCreep([CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'claimer_' + Game.time.toString(16), {
+				memory: {
+					role: 'claimer',
+					targetRoom: Memory.claimTargets[t].room,
+					mode: Memory.claimTargets[t].mode,
+				}
+			});
+		}
+	}
+}
+
 let jobs = {
 	"creep-spawning": {
 		name: "creep-spawning",
@@ -846,6 +888,11 @@ let jobs = {
 		run: commandRemoteMining,
 		interval: 25,
 	},
+	"satisfy-claim-targets": {
+		name: "satisfy-claim-targets",
+		run: satisfyClaimTargets,
+		interval: 50,
+	}
 };
 
 function queueJob(job) {

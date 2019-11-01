@@ -1,7 +1,7 @@
+let traveler = require("traveler");
 
 // really shitty claimer, probably shouldn't even bother with using this
-var roleClaimer = {
-
+let roleClaimer = {
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		if (!creep.memory.claimTarget && Game.flags["claim"]) {
@@ -9,7 +9,7 @@ var roleClaimer = {
 			try {
 				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
 			} catch (e) {}
-			creep.moveTo(Game.flags[creep.memory.targetFlag]);
+			creep.travelTo(Game.flags[creep.memory.targetFlag]);
 			creep.memory.mode = "claim"
 			return;
 		}
@@ -18,12 +18,19 @@ var roleClaimer = {
 			try {
 				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
 			} catch (e) {}
-			creep.moveTo(Game.flags[creep.memory.targetFlag]);
+			creep.travelTo(Game.flags[creep.memory.targetFlag]);
 			creep.memory.mode = "reserve"
 			return;
 		}
+		if (!creep.memory.claimTarget && creep.memory.targetRoom) {
+			if (creep.room.name !== creep.memory.targetRoom) {
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+				return;
+			}
+			creep.memory.claimTarget = new Room(creep.memory.targetRoom).controller.id;
+		}
 
-		var claimTarget = Game.getObjectById(creep.memory.claimTarget)
+		let claimTarget = Game.getObjectById(creep.memory.claimTarget)
 
 		if (creep.memory.mode == "claim") {
 			if (claimTarget.reservation && claimTarget.reservation != global.WHOAMI) {
@@ -32,19 +39,19 @@ var roleClaimer = {
 
 			switch (creep.claimController(claimTarget)) {
 				case ERR_GCL_NOT_ENOUGH:
-					var reserveResult = creep.reserveController(claimTarget);
+					let reserveResult = creep.reserveController(claimTarget);
 					if (reserveResult == ERR_NOT_IN_RANGE) {
 						console.log("reserveController: NOT IN RANGE");
-						creep.moveTo(claimTarget);
+						creep.travelTo(claimTarget);
 					}
 					else {
 						console.log("CANT RESERVE: "+reserveResult);
-						creep.moveTo(Game.flags[creep.memory.targetFlag]);
+						creep.travelTo(Game.flags[creep.memory.targetFlag]);
 					}
 					break;
 				case ERR_NOT_IN_RANGE:
 					console.log("claimController: NOT IN RANGE");
-					creep.moveTo(claimTarget);
+					creep.travelTo(claimTarget);
 					break;
 				case OK:
 					Game.flags["claim"].remove()
@@ -57,7 +64,7 @@ var roleClaimer = {
 		}
 		else if (creep.memory.mode == "reserve") {
 			if (!claimTarget) {
-				creep.moveTo(Game.flags["reserve"])
+				creep.travelTo(Game.flags["reserve"])
 			}
 			switch (creep.reserveController(claimTarget)) {
 				case ERR_INVALID_TARGET:
@@ -65,14 +72,14 @@ var roleClaimer = {
 					// console.log(creep.name, "INVALID TARGET");
 					break;
 				case ERR_NOT_IN_RANGE:
-					creep.moveTo(claimTarget)
+					creep.travelTo(claimTarget)
 					// console.log(creep.name, "NOT IN RANGE");
 					break;
 				case OK:
 					break;
 				default:
 					// console.log(creep.name, "DEFAULT");
-					creep.moveTo(Game.flags["reserve"])
+					creep.travelTo(Game.flags["reserve"])
 					break;
 			}
 		}

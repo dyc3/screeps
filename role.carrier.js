@@ -61,15 +61,19 @@ let roleCarrier = {
 			}
 		}
 		else {
+			if (creep.pos.isEqualTo(harvestPos)) {
+				creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
+				return;
+			}
 			let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
 			if (!dropped) {
 				delete creep.memory.droppedEnergyId;
 			}
-			if (creep.pos.isNearTo(harvestPos) && dropped) {
-				creep.pickup(dropped);
-			}
-			else {
+			if (!creep.pos.isNearTo(harvestPos)) {
 				creep.travelTo(harvestPos);
+			}
+			else if (dropped) {
+				creep.pickup(dropped);
 			}
 		}
 	}
