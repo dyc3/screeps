@@ -28,6 +28,7 @@
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE], "nextroomer_2", {role:"nextroomer", keepAlive:false})
 
 // Game.spawns["Spawn1"].createCreep([CLAIM,MOVE], "claimer_1", {role:"claimer", keepAlive:false})
+// Game.spawns["Spawn5"].createCreep([CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,], "claimer_1", {role:"claimer", keepAlive:false, mode:"reserve", claimTarget:""})
 
 // Delivery creep templates
 // 500 capacity:

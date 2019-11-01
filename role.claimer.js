@@ -4,10 +4,6 @@ var roleClaimer = {
 
 	/** @param {Creep} creep **/
 	run: function(creep) {
-		if (!Game.flags[creep.memory.targetFlag]) {
-			console.log(creep.name, ": flag",creep.memory.targetFlag, "doesn't exist");
-			// delete creep.memory.targetFlag;
-		}
 		if (!creep.memory.claimTarget && Game.flags["claim"]) {
 			creep.memory.targetFlag = "claim"
 			try {
