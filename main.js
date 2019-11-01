@@ -771,6 +771,32 @@ function commandRemoteMining() {
 
 	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;
 	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
+
+	// handle spawning claimers
+	let targetRooms = _.uniq(Memory.remoteMining.targets.map(target => Game.getObjectById(target.id).room.name));
+	for (let room of targetRooms) {
+		if (!(new Room(room).controller)) {
+			console.log("[remote mining] WARN: no controller in room:", room);
+		}
+		if (new Room(room).controller && new Room(room).controller.reservation.ticksToEnd > 400) {
+			continue;
+		}
+
+		let alreadyTargeted = false;
+		for (let claimTarget of Memory.claimTargets) {
+			if (claimTarget.room === room) {
+				alreadyTargeted = true;
+				break;
+			}
+		}
+
+		if (!alreadyTargeted) {
+			Memory.claimTargets.push({
+				room,
+				mode: "reserve"
+			});
+		}
+	}
 }
 
 let jobs = {
@@ -847,6 +873,9 @@ function main() {
 	}
 	if (!Memory.remoteMining.targets) {
 		Memory.remoteMining.targets = [];
+	}
+	if (!Memory.claimTargets) {
+		Memory.claimTargets = [];
 	}
 
 	// initialize jobs
