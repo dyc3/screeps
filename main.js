@@ -728,7 +728,7 @@ function commandRemoteMining() {
 		}
 
 		if (!target.creepHarvester) {
-			let remoteHarvesters = util.getCreeps("remoteharvester");
+			let remoteHarvesters = util.getCreeps("remoteharvester").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
 			for (let creep of remoteHarvesters) {
 				if (!creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id) {
@@ -744,7 +744,7 @@ function commandRemoteMining() {
 		}
 
 		if (!target.creepCarrier) {
-			let carriers = util.getCreeps("carrier");
+			let carriers = util.getCreeps("carrier").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
 			for (let creep of carriers) {
 				if (!creep.memory.creepCarrier || creep.memory.harvestTarget.id === target.id) {

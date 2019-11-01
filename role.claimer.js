@@ -27,7 +27,7 @@ let roleClaimer = {
 				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
 				return;
 			}
-			creep.memory.claimTarget = new Room(creep.memory.targetRoom).controller.id;
+			creep.memory.claimTarget = creep.room.controller.id;
 		}
 
 		let claimTarget = Game.getObjectById(creep.memory.claimTarget)
