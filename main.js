@@ -716,10 +716,10 @@ function commandRemoteMining() {
 	let neededHarvesters = 0, neededCarriers = 0;
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		let target = Memory.remoteMining.targets[t];
-		if (!Game.creeps[target.creepHarvester]) {
+		if (!Game.creeps[target.creepHarvester] || !Game.creeps[target.creepHarvester].memory.harvestTarget || Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id) {
 			delete target.creepHarvester;
 		}
-		if (!Game.creeps[target.creepCarrier]) {
+		if (!Game.creeps[target.creepCarrier] || !Game.creeps[target.creepCarrier].memory.harvestTarget || Game.creeps[target.creepCarrier].memory.harvestTarget.id !== target.id) {
 			delete target.creepCarrier;
 		}
 
