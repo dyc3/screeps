@@ -1,32 +1,97 @@
+Creep.prototype.log = function(...args) {
+	console.log(this.name, args);
+};
 
-var util = {
+let util = {
 	clearAllDebugFlags: function() {
-		for (var flag in Game.flags) {
+		for (let flag in Game.flags) {
 			if (flag.includes("debug")) {
 				Game.flags[flag].remove();
 			}
 		}
 	},
 
-    /** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
-    isHighwayRoom: function(roomName) {
-        let matches = /d+/.exec(roomName);
-        return matches[0] % 10 == 0 || matches[1] % 10 == 0;
-    },
+	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
+	isHighwayRoom: function(roomName) {
+		let matches = /d+/.exec(roomName);
+		return matches[0] % 10 == 0 || matches[1] % 10 == 0;
+	},
 
-    /** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
-    isTreasureRoom: function(roomName) {
-        let matches = /d+/.exec(roomName);
-        return (matches[0] % 10 >= 4 && matches[0] % 10 <= 6) && (matches[1] % 10 >= 4 && matches[1] % 10 <= 6);
-    },
+	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
+	isTreasureRoom: function(roomName) {
+		let matches = /d+/.exec(roomName);
+		return (matches[0] % 10 >= 4 && matches[0] % 10 <= 6) && (matches[1] % 10 >= 4 && matches[1] % 10 <= 6);
+	},
 
-    /** Gets the estimated number of ticks to traverse the path. **/
-    getEta: function(creep, path) {
-        // TODO
-    },
+	/**
+	 * Gets the estimated number of ticks to traverse the path.
+	 * @param {Creep} creep The creep to estimate
+	 * @param {array} path Array of RoomPosition that the creep would travel on
+	 * @param {Boolean} assumeCarryFull Whether or not to assume that the creep has a full load.
+	 * @returns {Number} The minimum ticks for the creep to traverse the path.
+	 *
+	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
+	 */
+	calculateEta(creep, path, assumeCarryFull=false) {
+		let body = creep.body.map(b => b.type);
+		let baseFatiguePerMove = body.filter(p => p !== MOVE && (assumeCarryFull && p !== CARRY)).length;
+		let moveParts = body.filter(p => p === MOVE).length;
 
-	// gets the 2 spots on the side of the given position on a path
-	/** @param {object} pathStep **/
+		let totalFatigue = 0;
+		for (let pos of path) {
+			let fatigueMultiplier = 2;
+			if (this.getStructuresAt(pos, STRUCTURE_ROAD).length > 0) {
+				fatigueMultiplier = 1;
+			}
+			else if (this.getTerrainAt(pos) === "swamp") {
+				fatigueMultiplier = 10;
+			}
+			totalFatigue += baseFatiguePerMove * fatigueMultiplier;
+		}
+
+		return Math.ceil(totalFatigue / moveParts);
+	},
+
+	/**
+	 * Gets the cost to spawn a creep with the given body.
+	 * @param {array} body The creep's body parts
+	 * @returns {Number} The energy cost to spawn the creep.
+	 */
+	getCreepSpawnCost(body) {
+		if (body.length > 0 && typeof body[0] === "object") {
+			body = body.map(b => b.type);
+		}
+		return body.reduce((a, b) => (typeof a === "string" ? BODYPART_COST[a] : a) + BODYPART_COST[b]);
+	},
+
+	/**
+	 * Gets the number of ticks a creep's time to live will increase by when it is renewed.
+	 * @param {array} body The creep's body
+	 * @returns {Number} Amount ticksToLive will increase
+	 */
+	getRenewTickIncrease(body) {
+		if (body.length === 0) {
+			throw new Error("Invalid body");
+		}
+		return Math.floor(600 / body.length);
+	},
+
+	/**
+	 * Gets the cost to renew a creep with the given body.
+	 * @param {array} body The creep's body
+	 * @returns {Number} The energy cost to renew the creep.
+	 */
+	getRenewCost(body) {
+		if (body.length === 0) {
+			throw new Error("Invalid body");
+		}
+		return Math.ceil(this.getCreepSpawnCost(body) / 2.5 / body.length);
+	},
+
+	/**
+	 * Gets the 2 spots on the side of the given position on a path
+	 * @pram {object} pathStep
+	 */
 	getPerpendiculars: function(pathStep) {
 		var perps = [
 			{ x:pathStep.x + pathStep.dy , y:pathStep.y + pathStep.dx },
@@ -60,7 +125,7 @@ var util = {
 	/** @param {RoomPosition} pos **/
 	getConstructionAt: function(pos, type=undefined) {
 		if (type) {
-			return pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(function(site) {return site.structureType == type});
+			return pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(site => site.structureType === type);
 		}
 		else {
 			return pos.lookFor(LOOK_CONSTRUCTION_SITES);
@@ -70,7 +135,7 @@ var util = {
 	/** @param {RoomPosition} pos **/
 	getStructuresAt: function(pos, type=undefined) {
 		if (type) {
-			return pos.lookFor(LOOK_STRUCTURES).filter(function(struct) {return struct.structureType == type});
+			return pos.lookFor(LOOK_STRUCTURES).filter(struct => struct.structureType === type);
 		}
 		else {
 			return pos.lookFor(LOOK_STRUCTURES);
@@ -109,7 +174,7 @@ var util = {
 	},
 
 	getOwnedRooms: function() {
-		return _.values(Game.rooms).filter((room) => room.controller && room.controller.my)
+		return _.values(Game.rooms).filter((room) => room.controller && room.controller.my);
 	},
 
 	getMinerals: function(room, mineralType=undefined) {
@@ -123,7 +188,7 @@ var util = {
 
 	getCreeps: function(role=undefined) {
 		if (role) {
-			return _.filter(Game.creeps, (creep) => { return creep.memory.role == role; });
+			return _.filter(Game.creeps, creep => creep.memory.role === role);
 		}
 		else {
 			return Game.creeps;
@@ -146,13 +211,16 @@ var util = {
 		return pos.x < dist || pos.y < dist || pos.x >= 49 - dist || pos.y >= 49 - dist;
 	},
 
+	/**
+	 * Gets the mode of an array of numbers
+	 */
 	mode: function(arr) {
 		return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
 	},
 
 	/** @param {RoomPosition} pos **/
 	getAdjacent: function(pos) {
-	    // console.log("type of pos:", typeof pos, JSON.stringify(pos));
+		// console.log("type of pos:", typeof pos, JSON.stringify(pos));
 		let adjacent = [];
 		for (let y = pos.y - 1; y <= pos.y + 1; y++) {
 			for (let x = pos.x - 1; x <= pos.x + 1; x++) {
