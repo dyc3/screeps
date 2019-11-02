@@ -4,11 +4,26 @@ let util = require('util');
 // Game.spawns["Spawn5"].createCreep([WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE], "remoteharvester_1", {role:"remoteharvester", keepAlive:true, stage: 0 }); Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], "carrier_1", {role:"carrier", keepAlive:true, stage: 0 })
 
 let roleCarrier = {
+	findDespositTarget(creep) {
+		if (!creep.memory.harvestTarget) {
+			creep.log("Can't find despositTarget without harvestTarget");
+			return;
+		}
+
+		let rooms = _.filter(util.getOwnedRooms(), r => r.storage);
+		if (rooms.length === 0) {
+			creep.log("ERR: All rooms don't have storage");
+			return;
+		}
+		rooms.sort((a, b) => Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, a.name) - Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, b.name));
+
+		return rooms[0].storage.id;
+	},
+
 	/** @param {Creep} creep **/
 	run: function(creep) {
-		// TEMP set deposit target for testing
 		if (!creep.memory.depositTarget) {
-		    creep.memory.depositTarget = "5b843ec8f656bb71dce8978d";
+			creep.memory.depositTarget = this.findDespositTarget(creep);
 		}
 
 		if (!creep.memory.harvestTarget) {
