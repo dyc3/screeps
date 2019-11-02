@@ -1239,21 +1239,21 @@ function main() {
 
 
 // https://github.com/screepers/screeps-profiler
-const profiler = require('profiler');
-profiler.registerClass(util, 'util');
-profiler.registerClass(roleHarvester, 'role.harvester');
-profiler.registerClass(roleUpgrader, 'role.upgrader');
-profiler.registerClass(roleBuilder, 'role.builder');
-profiler.registerClass(roleRepairer, 'role.repairer');
-profiler.registerClass(roleManager, 'role.manager');
-profiler.registerClass(roleScientist, 'role.scientist');
-profiler.registerClass(roleTower, 'role.tower');
-profiler.registerClass(roleRelay, 'role.relay');
-profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
-profiler.enable();
+// const profiler = require('profiler');
+// profiler.registerClass(util, 'util');
+// profiler.registerClass(roleHarvester, 'role.harvester');
+// profiler.registerClass(roleUpgrader, 'role.upgrader');
+// profiler.registerClass(roleBuilder, 'role.builder');
+// profiler.registerClass(roleRepairer, 'role.repairer');
+// profiler.registerClass(roleManager, 'role.manager');
+// profiler.registerClass(roleScientist, 'role.scientist');
+// profiler.registerClass(roleTower, 'role.tower');
+// profiler.registerClass(roleRelay, 'role.relay');
+// profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
+// profiler.enable();
 
 module.exports.loop = function() {
-	profiler.wrap(function() {
+// 	profiler.wrap(function() {
 		main();
-	});
+// 	});
 }
