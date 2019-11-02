@@ -774,7 +774,7 @@ function commandRemoteMining() {
 	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
 
 	// handle spawning claimers
-	let targetRooms = _.uniq(Memory.remoteMining.targets.map(target => Game.getObjectById(target.id).room.name));
+	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
 	for (let room of targetRooms) {
 		if (!(new Room(room).controller)) {
 			console.log("[remote mining] WARN: no controller in room:", room);
