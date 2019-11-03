@@ -717,6 +717,55 @@ function doAutoPlanning() {
 	}
 }
 
+function doWorkLabs() {
+	let rooms = util.getOwnedRooms();
+	for (let r = 0; r < rooms.length; r++) {
+		let room = rooms[r];
+		if (room.controller.level < 6) {
+			continue;
+		}
+		let labs = util.getStructures(room, STRUCTURE_LAB);
+
+		for (let l = 0; l < labs.length; l++) {
+			let workFlag = util.getWorkFlag(labs[l].pos);
+			if (!workFlag || workFlag.secondaryColor != COLOR_GREEN) {
+				continue;
+			}
+			// console.log(workFlag)
+			let isMakingWhat = workFlag.name.split(":")[1];
+			let needsMinerals = [];
+			switch (isMakingWhat) {
+				case "G":
+					needsMinerals = ["UL", "ZK"];
+					break;
+				default:
+					if (isMakingWhat.startsWith("X")) {
+						needsMinerals = ["X",isMakingWhat.slice(1)]; // untested
+					}
+					else {
+						needsMinerals = isMakingWhat.split("");
+					}
+			}
+			let sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+				filter: (lab) => { return _.contains(needsMinerals, lab.mineralType); }
+			});
+			// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
+			try {
+				new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[0].pos);
+				new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[1].pos);
+			} catch (e) {
+
+			}
+			if (sourceLabs.length == 2) {
+				labs[l].runReaction(sourceLabs[0], sourceLabs[1]);
+			}
+			else {
+				// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
+			}
+		}
+	}
+}
+
 function commandRemoteMining() {
 	// Force job to run: Memory.job_last_run["command-remote-mining"] = 0
 	let neededHarvesters = 0, neededCarriers = 0;
@@ -887,7 +936,7 @@ let jobs = {
 	},
 	"work-labs": {
 		name: "work-labs",
-		run: function() { }, // TODO
+		run: doWorkLabs,
 		interval: 30,
 	},
 	"command-remote-mining": {
@@ -1165,55 +1214,6 @@ function main() {
 		brainAutoPlanner.drawRoomPlans(Game.flags["showPlans"].room);
 		if (Game.cpu.bucket < 9700) {
 			Game.flags["showPlans"].setColor(COLOR_GREY);
-		}
-	}
-
-	if (Game.time % 30 === 6 && false) {
-		// auto science
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
-			if (room.controller.level < 6) {
-				continue;
-			}
-			let labs = util.getStructures(room, STRUCTURE_LAB);
-
-			for (let l = 0; l < labs.length; l++) {
-				let workFlag = util.getWorkFlag(labs[l].pos);
-				if (!workFlag || workFlag.secondaryColor != COLOR_GREEN) {
-					continue;
-				}
-				// console.log(workFlag)
-				let isMakingWhat = workFlag.name.split(":")[1];
-				let needsMinerals = [];
-				switch (isMakingWhat) {
-					case "G":
-						needsMinerals = ["UL", "ZK"];
-						break;
-					default:
-						if (isMakingWhat.startsWith("X")) {
-							needsMinerals = ["X",isMakingWhat.slice(1)]; // untested
-						}
-						else {
-							needsMinerals = isMakingWhat.split("");
-						}
-				}
-				let sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: (lab) => { return _.contains(needsMinerals, lab.mineralType); }
-				});
-				// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
-				try {
-					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[0].pos);
-					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[1].pos);
-				} catch (e) {
-
-				}
-				if (sourceLabs.length == 2) {
-					labs[l].runReaction(sourceLabs[0], sourceLabs[1]);
-				}
-				else {
-					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
-				}
-			}
 		}
 	}
 
