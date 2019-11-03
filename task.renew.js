@@ -1,8 +1,8 @@
 let traveler = require("traveler");
-var util = require("util");
-var taskGather = require("task.gather");
+let util = require("util");
+let taskGather = require("task.gather");
 
-var taskRenew = {
+let taskRenew = {
 	/** @param {Creep} creep **/
 	checkRenew: function(creep) {
 		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0) {
@@ -22,12 +22,12 @@ var taskRenew = {
 			return true;
 		}
 
-		// NOTE: this isn't really exact, treat it like a rough estimate
-		var travelTime = creep.pos.findPathTo(spawn).length + ((creep.room != spawn.room) ? 160 : 80);
+		let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
+		let travelTime = util.calculateEta(creep, path);
 		if (spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
-		return creep.ticksToLive < travelTime;
+		return creep.ticksToLive < travelTime + ((creep.room != spawn.room) ? 160 : 80);
 	},
 
 	/** @param {Creep} creep **/
