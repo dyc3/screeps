@@ -50,6 +50,9 @@ let roleRelay = {
 			let targets = [];
 			for (let i = 0; i < adjacentStructs.length; i++) {
 				const struct = adjacentStructs[i].structure;
+				if (struct.structureType === STRUCTURE_STORAGE) {
+					creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
+				}
 				targets.push(struct.id);
 			}
 			creep.memory.fillTargetIds = targets;
@@ -60,10 +63,24 @@ let roleRelay = {
 			return;
 		}
 
+		let rootNeedsEnergy = false;
+		if (creep.memory.isStorageModule && creep.room.memory.rootLink) {
+			// if the root module needs energy
+			let rootLink = Game.getObjectById(creep.room.memory.rootLink);
+			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
+				rootNeedsEnergy = true;
+			}
+		}
+
 		// check if the creep is carrying energy, and pick some up if needed
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
-			if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
+			if (rootNeedsEnergy) {
 				creep.withdraw(storage, RESOURCE_ENERGY);
+			}
+			else {
+				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
+					creep.withdraw(storage, RESOURCE_ENERGY);
+				}
 			}
 		}
 
@@ -91,7 +108,13 @@ let roleRelay = {
 		}
 
 		// otherwise, fill the storage with energy from the link.
-		creep.transfer(storage, RESOURCE_ENERGY);
+		// or if the root needs energy, put it in the link
+		if (rootNeedsEnergy) {
+			creep.transfer(link, RESOURCE_ENERGY);
+		}
+		else {
+			creep.transfer(storage, RESOURCE_ENERGY);
+		}
 	}
 };
 
