@@ -86,7 +86,11 @@ function getRelayQuota(room) {
 	if (linkCount === 0) {
 		return 0;
 	}
-	return linkCount - 1;
+	let count = linkCount;
+	if (count > 5) {
+		count = 5;
+	}
+	return count;
 }
 
 function getMinerQuota(room) {

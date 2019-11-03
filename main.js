@@ -466,6 +466,10 @@ function commandEnergyRelays() {
 		// assign an available position to a relay creep
 		for (let i = 0; i < relayCreeps.length; i++) {
 			const creep = relayCreeps[i];
+			if (creep.memory.targetRoom !== room.name) {
+				// Don't assign relays that weren't made for this room
+				continue;
+			}
 			if (!creep.memory.assignedPos) {
 				creep.memory.assignedPos = availableRelayPos[0];
 				break;
