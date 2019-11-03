@@ -54,7 +54,7 @@
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
 * To manually create short roads quickly, you can place 2 flags: "planStart" and "planEnd".
-* To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source (not working, needs testing).
+* To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source (needs room vision to work)
 * To move around different chemicals, place flags on desination structures with the format "fill:MINERAL". Examples: "fill:U", "fill2:UH"
 
 ## Testing

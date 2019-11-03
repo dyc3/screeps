@@ -7,6 +7,9 @@ let roleMiner = {
 		for (let room of rooms) {
 			let minerals = util.getMinerals(room);
 			for (let mineral of minerals) {
+				if (util.getStructuresAt(mineral.pos, STRUCTURE_EXTRACTOR).length === 0) {
+					continue;
+				}
 				let minersAssigned = util.getCreeps("miner").filter((creep) => creep.memory.mineralTarget == mineral.id || creep.memory.mineralTargetSecondary == mineral.id);
 				if (minersAssigned < 1) {
 					return mineral.id;
