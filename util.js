@@ -40,12 +40,19 @@ let util = {
 		let totalFatigue = 0;
 		for (let pos of path) {
 			let fatigueMultiplier = 2;
-			if (this.getStructuresAt(pos, STRUCTURE_ROAD).length > 0) {
-				fatigueMultiplier = 1;
+			try {
+				if (this.getStructuresAt(pos, STRUCTURE_ROAD).length > 0) {
+					fatigueMultiplier = 1;
+				}
+				else if (this.getTerrainAt(pos) === "swamp") {
+					fatigueMultiplier = 10;
+				}
 			}
-			else if (this.getTerrainAt(pos) === "swamp") {
-				fatigueMultiplier = 10;
+			catch (e) {
+				// probably can't access this room, just ignore it
+				// creep.log(e);
 			}
+
 			totalFatigue += baseFatiguePerMove * fatigueMultiplier;
 		}
 
