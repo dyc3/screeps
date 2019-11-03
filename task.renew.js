@@ -5,8 +5,7 @@ var taskGather = require("task.gather");
 var taskRenew = {
 	/** @param {Creep} creep **/
 	checkRenew: function(creep) {
-		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0)
-		{
+		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0) {
 			return false;
 		}
 
@@ -19,8 +18,7 @@ var taskRenew = {
 			return false;
 		}
 
-		if (creep.memory.renewing)
-		{
+		if (creep.memory.renewing) {
 			return true;
 		}
 
@@ -54,7 +52,7 @@ var taskRenew = {
 		if (creep.memory.renew_force_amount) {
 			maxTicks = creep.memory.renew_force_amount;
 		}
-		else if (creep.memory.role == "multiroom-harvester" || creep.memory.role == "carrier") {
+		else if (creep.memory.role == "remoteharvester" || creep.memory.role == "carrier") {
 			maxTicks = 1000;
 		}
 		else if (creep.memory.role == "scout" || creep.memory.role == "tmpdeliver") {
@@ -64,7 +62,7 @@ var taskRenew = {
 			maxTicks = 1000;
 		}
 		else if (creep.memory.role == "builder" || creep.memory.role == "scientist") {
-		    if (creep.memory.role == "builder" && creep.memory.stage === 5 && renewTarget.room.energyAvailable >= 8000) {
+			if (creep.memory.role == "builder" && creep.memory.stage === 5 && renewTarget.room.energyAvailable >= 8000) {
 				maxTicks = 1200;
 			}
 			else if (renewTarget.room.energyAvailable >= 3000) {
