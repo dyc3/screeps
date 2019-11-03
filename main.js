@@ -1120,6 +1120,7 @@ function main() {
 		catch (e) {
 			console.log("ERR: Job failed", job.name);
 			printException(e);
+			break;
 		}
 	}
 
