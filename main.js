@@ -1108,7 +1108,7 @@ function main() {
 	}
 
 	// process jobs
-	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit - 0.5) {
+	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
 		let job_to_do = Memory.job_queue[0];
 		console.log("Running job:", job_to_do);
 		let job = jobs[job_to_do];
