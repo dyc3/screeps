@@ -12,7 +12,7 @@ let roleRelay = {
 		if (!creep.pos.isEqualTo(assignedPos)) {
 			let result = creep.travelTo(assignedPos);
 			if (result != 0) {
-			    console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
+				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}
 			return;
 		}
@@ -22,8 +22,8 @@ let roleRelay = {
 				return s.structureType == STRUCTURE_LINK;
 			}});
 			if (foundLinks.length == 0) {
-			    console.log(creep.name, "ERR: no link structures found");
-			    return;
+				console.log(creep.name, "ERR: no link structures found");
+				return;
 			}
 			creep.memory.linkId = foundLinks[0].id;
 
@@ -42,7 +42,6 @@ let roleRelay = {
 
 		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length == 0) {
 			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, asArray=true), (result) =>
-				// _.has(result.structure, "energy") &&
 				result.structure.structureType != STRUCTURE_CONTAINER &&
 				result.structure.structureType != STRUCTURE_STORAGE &&
 				result.structure.structureType != STRUCTURE_ROAD &&
@@ -63,15 +62,10 @@ let roleRelay = {
 
 		// check if the creep is carrying energy, and pick some up if needed
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
-			//creep.memory.lastWithdrawFromLink = true;
 			if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
 				creep.withdraw(storage, RESOURCE_ENERGY);
-				// creep.memory.lastWithdrawFromLink = false;
 			}
 		}
-		// if (storage.store[RESOURCE_ENERGY] < storage.storeCapacity) {
-		//    creep.memory.lastWithdrawFromLink = true;
-		// }
 
 		// check if all the fill targets are full.
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
@@ -97,9 +91,7 @@ let roleRelay = {
 		}
 
 		// otherwise, fill the storage with energy from the link.
-		//if (creep.memory.lastWithdrawFromLink) {
-			creep.transfer(storage, RESOURCE_ENERGY);
-		//}
+		creep.transfer(storage, RESOURCE_ENERGY);
 	}
 };
 
