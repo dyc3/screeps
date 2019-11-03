@@ -243,10 +243,11 @@ function doLinkTransfers() {
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
-				break;
+				continue;
 			}
 
 			if (rootLink.energy < rootLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
+				console.log(room.name, "[link-transfer] rootLink below threshold");
 				for (let i = 0; i < links.length; i++) {
 					let link = links[i];
 					if (link.id === rootLink.id) {
@@ -255,20 +256,21 @@ function doLinkTransfers() {
 					if (link.cooldown > 0 || link.energy === 0) {
 						continue;
 					}
+					console.log("[link-transfer] transfer from", link.pos, "to rootLink");
 					link.transferEnergy(rootLink);
 					break; // only transfer energy from one link per tick
 				}
-				break;
+				continue;
 			}
 
 			if (!room.memory.storageLink) {
-				room.memory.storageLink = links.filter((link) => { return link.pos.inRangeTo(link.room.storage, 2); })[0].id;
+				room.memory.storageLink = links.filter(link => link.pos.inRangeTo(link.room.storage, 2))[0].id;
 			}
 			let storageLink = Game.getObjectById(room.memory.storageLink);
 			if (!storageLink) {
 				console.log("can't find storage link id:", room.memory.storageLink);
 				delete room.memory.storageLink;
-				break;
+				continue;
 			}
 
 			if (storageLink.energy < storageLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
