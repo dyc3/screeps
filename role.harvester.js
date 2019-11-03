@@ -515,7 +515,7 @@ let roleHarvester = {
 		}
 
 		// for link mode, pick up energy on the ground below the harvester
-		if ((creep.memory.depositMode === "link" || creep.memory.depositMode === "recovery") && creep.memory.harvesting) {
+		if (((creep.memory.depositMode === "link" && Game.getObjectById(creep.memory.dedicatedLinkId).store[RESOURCE_ENERGY] < LINK_CAPACITY) || creep.memory.depositMode === "recovery") && creep.memory.harvesting) {
 			let dropped = creep.pos.lookFor(LOOK_ENERGY);
 			if (dropped.length > 0) {
 				creep.pickup(dropped[0]);
