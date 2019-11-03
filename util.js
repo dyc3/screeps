@@ -24,7 +24,7 @@ let util = {
 	},
 
 	/**
-	 * Gets the estimated number of ticks to traverse the path.
+	 * Gets the estimated number of ticks to traverse the path. (Not tested, but should kinda work?)
 	 * @param {Creep} creep The creep to estimate
 	 * @param {array} path Array of RoomPosition that the creep would travel on
 	 * @param {Boolean} assumeCarryFull Whether or not to assume that the creep has a full load.
