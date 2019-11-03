@@ -105,7 +105,7 @@ function getMinerQuota(room) {
 }
 
 function getAttackerQuota() {
-	return 0;
+	return 2;
 	let count = 0;
 	let rooms = util.getOwnedRooms();
 	for (let r = 0; r < rooms.length; r++) {
@@ -214,20 +214,20 @@ let creepUpgrader = {
 				[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
 				[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
 				[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
-				[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
+				[TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
 			],
 		},
-		"claimer":{
-			name:"claimer",
-			quota:getClaimerQuota,
-			quota_per_room:false,
-			stages:[
-				[CLAIM,MOVE],
-				[CLAIM,CLAIM,MOVE,MOVE],
-				[CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE],
-				// [CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE],
-			],
-		},
+		// "claimer":{
+		// 	name:"claimer",
+		// 	quota:getClaimerQuota,
+		// 	quota_per_room:false,
+		// 	stages:[
+		// 		[CLAIM,MOVE],
+		// 		[CLAIM,CLAIM,MOVE,MOVE],
+		// 		[CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE],
+		// 		// [CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE],
+		// 	],
+		// },
 		"remoteharvester":{
 			name:"remoteharvester",
 			quota:function() { return Memory.remoteMining.needHarvesterCount; },

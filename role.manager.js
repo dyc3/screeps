@@ -119,9 +119,13 @@ function doAquire(creep, passively=false) {
 							}
 
 							if (creep.room.storage && creep.room.controller.level > 4) {
-								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0 &&
-								struct.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
-									return false;
+								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0) {
+									if (struct.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
+										return false;
+									}
+									else if (struct.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+										return false;
+									}
 								}
 							}
 						}

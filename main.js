@@ -776,10 +776,11 @@ function commandRemoteMining() {
 	// handle spawning claimers
 	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
 	for (let room of targetRooms) {
-		if (!(new Room(room).controller)) {
-			console.log("[remote mining] WARN: no controller in room:", room);
+		let controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
+		if (!controller) {
+			console.log("ERR: can't find controller");
 		}
-		if (new Room(room).controller && new Room(room).controller.reservation.ticksToEnd > 400) {
+		if (controller && controller.reservation.ticksToEnd > 400) {
 			continue;
 		}
 
@@ -861,7 +862,7 @@ let jobs = {
 	"link-transfers": {
 		name: "link-transfers",
 		run: doLinkTransfers,
-		interval: 5,
+		interval: 4,
 	},
 	"command-energy-relays": {
 		name: "command-energy-relays",

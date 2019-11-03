@@ -101,10 +101,14 @@ let taskGather = {
 					return false;
 				}
 
-				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType == STRUCTURE_CONTAINER) {
-					if (structure.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
-						structure.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
-						return false;
+				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType === STRUCTURE_CONTAINER) {
+					if (structure.pos.findInRange(FIND_SOURCES, 1).length > 0) {
+						if (structure.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
+							return false;
+						}
+						else if (structure.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+							return false;
+						}
 					}
 				}
 
