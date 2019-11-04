@@ -445,6 +445,7 @@ function commandEnergyRelays() {
 			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
 		];
+		relayPositions.splice(toolCreepUpgrader.roles["relay"].quota(room));
 		let availableRelayPos = _.filter(relayPositions, (pos) => {
 			for (let i = 0; i < relayCreeps.length; i++) {
 				const creep = relayCreeps[i];
@@ -466,10 +467,6 @@ function commandEnergyRelays() {
 		// assign an available position to a relay creep
 		for (let i = 0; i < relayCreeps.length; i++) {
 			const creep = relayCreeps[i];
-			if (creep.memory.targetRoom !== room.name) {
-				// Don't assign relays that weren't made for this room
-				continue;
-			}
 			if (!creep.memory.assignedPos) {
 				creep.memory.assignedPos = availableRelayPos[0];
 				break;
@@ -1038,7 +1035,6 @@ function main() {
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
 		}
 
-		//  && creep.memory.role != "multiroom-harvester"
 		try {
 			if (taskRenew.checkRenew(creep)) {
 				creep.memory.renewing = true;
@@ -1060,13 +1056,6 @@ function main() {
 			try {
 				switch (creep.memory.role) {
 					case 'harvester':
-						// FIXME: really hacky way to speed up early game. THIS NEEDS TO BE CHANGED LATER.
-						// if (creep.room.controller.level <= 1) {
-						//     roleUpgrader.run(creep)
-						// }
-						// else {
-						  //  roleHarvester.run(creep);
-						// }
 						roleHarvester.run(creep);
 						break;
 					case 'upgrader':
