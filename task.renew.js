@@ -2,6 +2,8 @@ let traveler = require("traveler");
 let util = require("util");
 let taskGather = require("task.gather");
 
+// FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
+
 let taskRenew = {
 	/** @param {Creep} creep **/
 	checkRenew: function(creep) {
@@ -10,6 +12,13 @@ let taskRenew = {
 		}
 
 		var spawn = util.getSpawn(creep.room);
+		if (!spawn) {
+		    if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
+		        creep.memory.renewTarget = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id
+		        creep.memory._lastCheckForCloseSpawn = Game.time;
+		    }
+		    spawn = Game.getObjectById(creep.memory.renewTarget);
+		}
 		if (!spawn) {
 			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
 		}

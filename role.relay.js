@@ -59,7 +59,7 @@ let roleRelay = {
 		}
 
 		if (creep.memory.fillTargetIds.length == 0) {
-			console.log(creep.name, "can't find adjacent targets.");
+			creep.log("can't find adjacent targets.");
 			return;
 		}
 
@@ -70,6 +70,7 @@ let roleRelay = {
 			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
 				rootNeedsEnergy = true;
 			}
+		    //creep.log("rootNeedsEnergy:", rootNeedsEnergy);
 		}
 
 		// check if the creep is carrying energy, and pick some up if needed
@@ -82,6 +83,12 @@ let roleRelay = {
 					creep.withdraw(storage, RESOURCE_ENERGY);
 				}
 			}
+		}
+		
+		// if the root needs energy, put it in the link
+		if (rootNeedsEnergy) {
+			creep.transfer(link, RESOURCE_ENERGY);
+			return;
 		}
 
 		// check if all the fill targets are full.
@@ -108,13 +115,7 @@ let roleRelay = {
 		}
 
 		// otherwise, fill the storage with energy from the link.
-		// or if the root needs energy, put it in the link
-		if (rootNeedsEnergy) {
-			creep.transfer(link, RESOURCE_ENERGY);
-		}
-		else {
-			creep.transfer(storage, RESOURCE_ENERGY);
-		}
+		creep.transfer(storage, RESOURCE_ENERGY);
 	}
 };
 

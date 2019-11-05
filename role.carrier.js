@@ -10,12 +10,17 @@ let roleCarrier = {
 			return;
 		}
 
-		let rooms = _.filter(util.getOwnedRooms(), r => r.storage);
-		if (rooms.length === 0) {
+// 		let rooms = _.filter(util.getOwnedRooms(), r => r.storage);
+// 		if (rooms.length === 0) {
+// 			creep.log("ERR: All rooms don't have storage");
+// 			return;
+// 		}
+// 		rooms.sort((a, b) => Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, a.name) - Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, b.name));
+        let rooms = _.filter(util.findClosestOwnedRooms(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName)), r => r.storage);
+        if (rooms.length === 0) {
 			creep.log("ERR: All rooms don't have storage");
 			return;
 		}
-		rooms.sort((a, b) => Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, a.name) - Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, b.name));
 
 		return rooms[0].storage.id;
 	},

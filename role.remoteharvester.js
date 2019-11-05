@@ -11,7 +11,6 @@ let roleRemoteHarvester = {
 		// 	roomName: "W15N9",
 		// 	harvestPos: { x: 30, y: 44 },
 		// };
-		// let observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc");
 
 		if (!creep.memory.harvestTarget) {
 			console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");

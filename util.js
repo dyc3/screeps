@@ -3,6 +3,37 @@ Creep.prototype.log = function(...args) {
 };
 
 let util = {
+    /**
+     * Sorts owned rooms using the distance to the specified RoomPosition in accending order.
+     * WARNING: VERY CPU HEAVY!
+     * @param {RoomPosition} targetPos The reference position.
+     * @returns {array} Array of rooms, the first one being the closest to the reference posiiton
+     * 
+     * @example require("util").findClosestOwnedRooms(new RoomPosition(29, 43, "W15N9"))
+     * @example require("util").findClosestOwnedRooms(new RoomPosition(8, 15, "W15N9"))
+     */
+    findClosestOwnedRooms(targetPos) {
+        let rooms = this.getOwnedRooms();
+        rooms.sort((a, b) => {
+            let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, a.name) - Game.map.getRoomLinearDistance(targetPos.roomName, b.name);
+            if (roomDistance !== 0) {
+                return roomDistance;
+            }
+            let roomPathA = Game.map.findRoute(targetPos.roomName, a.name);
+            let roomPathB = Game.map.findRoute(targetPos.roomName, b.name);
+            let roomPathDistance = roomPathA.length - roomPathB.length;
+            if (roomPathDistance !== 0) {
+                return roomPathDistance;
+            }
+            if (roomPathA[0].room === roomPathB[0].room) {
+                return 0;
+            }
+            
+            return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length;
+        });
+        return rooms;
+    },
+    
 	clearAllDebugFlags: function() {
 		for (let flag in Game.flags) {
 			if (flag.includes("debug")) {
@@ -168,7 +199,8 @@ let util = {
 	},
 
 	getSpawn: function(room) {
-		return this.getStructures(room, STRUCTURE_SPAWN)[0];
+	    let spawns = this.getStructures(room, STRUCTURE_SPAWN);
+		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 
 	getConstruction: function(room, type=undefined) {

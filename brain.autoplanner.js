@@ -199,7 +199,7 @@ var brainAutoPlanner = {
 			let _tmpIsPlanned = this.isPositionPlanned;
 			let pathToControllerResult = PathFinder.search(
 				room.controller.pos,
-				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: 2 },
+				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: global.CONTROLLER_UPGRADE_RANGE },
 				{
 					maxRooms: 1,
 					roomCallback: function(roomName) {

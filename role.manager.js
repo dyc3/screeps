@@ -16,6 +16,13 @@ function doAquire(creep, passively=false) {
 			if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
 				return false;
 			}
+			if (!passively) {
+			    if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0) {
+					if (drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+						return false;
+					}
+				}
+			}
 			//console.log("ENERGY DROP",drop.id,drop.amount);
 			return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
 		}
@@ -335,6 +342,20 @@ var roleManager = {
 						if (struct.structureType == STRUCTURE_EXTENSION && struct.energy < struct.energyCapacity) {
 							return true;
 						}
+					}
+					
+					if (struct.structureType === STRUCTURE_EXTENSION || struct.structureType === STRUCTURE_SPAWN) {
+					    let relayCreeps = _.filter(util.getCreeps("relay"), c => c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
+					    let isNearRelay = false;
+					    for (let relay of relayCreeps) {
+					        if (struct.pos.isNearTo(relay)) {
+					            isNearRelay = true;
+					            break;
+					        }
+					    }
+					    if (isNearRelay) {
+					        return false;
+					    }
 					}
 
 					if (struct.structureType == STRUCTURE_TOWER && struct.energy < struct.energyCapacity * 0.5) {
