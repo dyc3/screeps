@@ -885,7 +885,11 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			let targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-			targetSpawn.spawnCreep([CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'claimer_' + Game.time.toString(16), {
+			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+			if (Memory.claimTarget[t].mode === "claim") {
+				claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
+			}
+			targetSpawn.spawnCreep(claimerBody, 'claimer_' + Game.time.toString(16), {
 				memory: {
 					role: 'claimer',
 					targetRoom: Memory.claimTargets[t].room,
