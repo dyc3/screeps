@@ -1,6 +1,6 @@
 let traveler = require("traveler");
 
-// really shitty claimer, probably shouldn't even bother with using this
+// TODO: clean up all this extra junk that's not used anymore
 let roleClaimer = {
 	/** @param {Creep} creep **/
 	run: function(creep) {

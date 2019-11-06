@@ -19,6 +19,7 @@
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "miner_1", {role:"miner", keepAlive:true, stage:3})
 // Mega builder:
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "builder_1", {role:"builder", keepAlive:true, stage:5})
+// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "upgrader_1", {role:"upgrader", keepAlive:true, stage:5, targetRoom:"W13N11"})
 // Scouts:
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
@@ -56,6 +57,7 @@
 * To manually create short roads quickly, you can place 2 flags: "planStart" and "planEnd".
 * To harvest a remote room (only 1 at a time), place a flag "harvestme" on target energy source (needs room vision to work)
 * To move around different chemicals, place flags on desination structures with the format "fill:MINERAL". Examples: "fill:U", "fill2:UH"
+* To set a rampart's public status quickly, place a flag with the name "setPublic" and set the color to green for true, and red for false. Other colors will be ignored.
 
 ## Testing
 
@@ -132,22 +134,24 @@ function printStatus() {
 	console.log(infoText);
 }
 
+/**
+ * Calculates the defcon level for a given room.
+ * If we have no towers, and a foriegn player enters a room, defcon 1.
+ * If we have towers, and a foriegn player enters a room with a scouting creep, defcon 0.
+ * If we have towers, and foriegn creeps with attack/tough/heal/ranged attack, defcon 2.
+ *
+ * Defcon levels:
+ * 0 - Safe, No threat
+ * 1 - Warning, spawn a little defense (if no towers yet).
+ * 2 - Under attack, determine if current defense can handle attack.
+ *
+ * @param {Room} room The target room
+ *
+ */
 function calculateDefcon(room) {
 	console.log("calculating defcon:", room.name);
-	/* This determines if there is a threat to the colony, and sets defcon levels per room.
-	If we have no towers, and a foriegn player enters a room, defcon 1.
-	If we have towers, and a foriegn player enters a room with a scouting creep, defcon 0.
-	If we have towers, and foriegn creeps with attack/tough/heal/ranged attack, defcon 2.
-	*/
 
-	/*
-	Defcon levels:
-	0 - Safe, No threat
-	1 - Warning, spawn a little defense (if no towers yet).
-	2 - Under attack, determine if current defense can handle attack.
-	*/
 	let defcon = 0;
-
 	if (room.controller.safeMode > 650) {
 		console.log("safe mode is active, defcon 0");
 		return 0;
@@ -191,7 +195,10 @@ function calculateDefcon(room) {
 	return defcon;
 }
 
-// returns highest defcon level
+/**
+ * Determines defcon levels for all rooms.
+ * @returns Number The highest defcon level in all of the rooms
+ */
 function determineDefconLevels() {
 	if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
 		console.log("skipping defcon calculation to save cpu");
@@ -291,7 +298,9 @@ function doLinkTransfers() {
 	}
 }
 
-// draw the room scores in each room for easy viewing
+/**
+ * Draw the room scores in each room for easy viewing
+ */
 function drawRoomScores() {
 	for (let roomName in Memory.roomInfo) {
 		let scoretext = "Score: " + Memory.roomInfo[roomName].score;
@@ -356,51 +365,73 @@ function doFlagCommandsAndStuff() {
 			harvestPos: {},
 			id: "",
 		};
-		let lookResult = pos.lookFor(LOOK_SOURCES);
-		if (lookResult.length > 0) {
-			newTarget.id = lookResult[0].id;
+		try {
+			let lookResult = pos.lookFor(LOOK_SOURCES);
+			if (lookResult.length > 0) {
+				newTarget.id = lookResult[0].id;
 
-			// set harvestPos
-			let adj = util.getAdjacent(pos);
-			for (let i = 0; i < adj.length; i++) {
-				// look for structures
-				let lookResult = adj[i].look();
-				let isValid = true;
-				for (let l = 0; l < lookResult.length; l++) {
-					let look = lookResult[l];
-					if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+				// set harvestPos
+				let adj = util.getAdjacent(pos);
+				for (let i = 0; i < adj.length; i++) {
+					// look for structures
+					let lookResult = adj[i].look();
+					let isValid = true;
+					for (let l = 0; l < lookResult.length; l++) {
+						let look = lookResult[l];
+						if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+							continue;
+						}
+
+						if (look.type === LOOK_TERRAIN) {
+							if (look.terrain === 'wall') {
+								isValid = false;
+								break;
+							}
+						}
+						else if (look.type === LOOK_STRUCTURES) {
+							if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
+								isValid = false;
+								break;
+							}
+						}
+					}
+					if (!isValid) {
 						continue;
 					}
 
-					if (look.type === LOOK_TERRAIN) {
-						if (look.terrain === 'wall') {
-							isValid = false;
-							break;
-						}
-					}
-					else if (look.type === LOOK_STRUCTURES) {
-						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
-							isValid = false;
-							break;
-						}
-					}
+					newTarget.harvestPos = { x: adj[i].x, y: adj[i].y };
+					break;
 				}
-				if (!isValid) {
-					continue;
-				}
-
-				newTarget.harvestPos = { x: adj[i].x, y: adj[i].y };
-				break;
+			}
+			else {
+				console.log("no source found");
+				Game.flags["harvestme"].remove();
+				return;
 			}
 		}
-		else {
+		catch {
 			// need vision
 			let observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc"); // TODO: make dynamic
 			observer.observeRoom(pos.roomName);
 			throw new Error("need vision of room to complete job");
 		}
+		console.log("adding new target to remote mining:", newTarget.id);
 		Memory.remoteMining.targets.push(newTarget);
 		Game.flags["harvestme"].remove();
+	}
+
+	if (Game.flags["setPublic"]) {
+		let lookResult = _.filter(Game.flags["setPublic"].pos.lookFor(LOOK_STRUCTURES), struct => struct.structureType === STRUCTURE_RAMPART);
+		if (lookResult.length > 0) {
+			let rampart = lookResult[0];
+			if (Game.flags["setPublic"].color === COLOR_GREEN || Game.flags["setPublic"].color === COLOR_RED) {
+				rampart.setPublic(Game.flags["setPublic"].color === COLOR_GREEN);
+			}
+			Game.flags["setPublic"].remove();
+		}
+		else {
+			Game.flags["setPublic"].remove();
+		}
 	}
 
 	for (let f in Game.flags) {
@@ -833,7 +864,7 @@ function commandRemoteMining() {
 		if (!controller) {
 			console.log("ERR: can't find controller");
 		}
-		if (controller && controller.reservation.ticksToEnd > 400) {
+		if (controller && controller.reservation && controller.reservation.ticksToEnd > 400) {
 			continue;
 		}
 
@@ -886,7 +917,7 @@ function satisfyClaimTargets() {
 			}
 			let targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
 			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-			if (Memory.claimTarget[t].mode === "claim") {
+			if (Memory.claimTargets[t].mode === "claim") {
 				claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
 			}
 			targetSpawn.spawnCreep(claimerBody, 'claimer_' + Game.time.toString(16), {
@@ -914,7 +945,7 @@ let jobs = {
 	"flag-commands": {
 		name: "flag-commands",
 		run: doFlagCommandsAndStuff,
-		interval: 15,
+		interval: 4,
 	},
 	"link-transfers": {
 		name: "link-transfers",
@@ -1035,6 +1066,11 @@ function main() {
 			continue;
 		}
 
+		if (creep.memory.renewing) {
+			creep.say("renewing");
+			continue;
+		}
+
 		if (creep.memory.stage < 0) {
 			creep.memory.stage = toolCreepUpgrader.getCreepStage(creep);
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
@@ -1043,10 +1079,6 @@ function main() {
 		try {
 			if (taskRenew.checkRenew(creep)) {
 				creep.memory.renewing = true;
-				taskRenew.run(creep);
-				if (creep.memory.renewing) {
-					creep.say("renewing");
-				}
 			}
 			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder") && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
@@ -1057,104 +1089,108 @@ function main() {
 			printException(e);
 		}
 
-		if (!creep.memory.renewing) {
-			try {
-				switch (creep.memory.role) {
-					case 'harvester':
-						roleHarvester.run(creep);
-						break;
-					case 'upgrader':
-						roleUpgrader.run(creep);
-						break;
-					case 'builder':
-						// If there is something to build, go build it
-						// otherwise, do repairs
-						if (roleBuilder.findTargets(creep).length > 0) {
+		try {
+			switch (creep.memory.role) {
+				case 'harvester':
+					roleHarvester.run(creep);
+					break;
+				case 'upgrader':
+					roleUpgrader.run(creep);
+					break;
+				case 'builder':
+					// If there is something to build, go build it
+					// otherwise, do repairs
+					if (roleBuilder.findTargets(creep).length > 0) {
+						if (taskDepositMaterials.checkForMaterials(creep, true)) {
+							creep.say("deposit");
+							taskDepositMaterials.run(creep, true);
+						}
+						else {
+							roleBuilder.run(creep);
+						}
+					}
+					else {
+						if (Game.time % 600 < 250) {
+							roleRepairer.run(creep);
+						}
+						else {
 							if (taskDepositMaterials.checkForMaterials(creep, true)) {
 								creep.say("deposit");
 								taskDepositMaterials.run(creep, true);
 							}
 							else {
-								roleBuilder.run(creep);
+								roleUpgrader.run(creep);
 							}
 						}
-						else {
-							if (Game.time % 600 < 250) {
-								roleRepairer.run(creep);
-							}
-							else {
-								if (taskDepositMaterials.checkForMaterials(creep, true)) {
-									creep.say("deposit");
-									taskDepositMaterials.run(creep, true);
-								}
-								else {
-									roleUpgrader.run(creep);
-								}
-							}
-							// roleRepairer.run(creep);
-							// roleScientist.run(creep);
-							// roleUpgrader.run(creep);
-							// roleManager.run(creep);
-							// roleMiner.run(creep);
-						}
-						break;
-					case 'repairer':
-						roleRepairer.run(creep);
-						// roleBuilder.run(creep);
+						// roleRepairer.run(creep);
+						// roleScientist.run(creep);
 						// roleUpgrader.run(creep);
+						// roleManager.run(creep);
 						// roleMiner.run(creep);
-						break;
-					case 'attacker':
-						roleAttacker.run(creep);
-						break;
-					case 'healer':
-						roleHealer.run(creep);
-						break;
-					case 'claimer':
-						roleClaimer.run(creep);
-						break;
-					case 'manager':
-						roleManager.run(creep);
-						break;
-					case 'remoteharvester':
-						roleRemoteHarvester.run(creep);
-						break;
-					case 'carrier':
-						roleCarrier.run(creep);
-						break;
-					case 'scout':
-						roleScout.run(creep);
-						break;
-					case 'nextroomer':
-						roleNextRoomer.run(creep);
-						break;
-					case 'miner':
-						roleMiner.run(creep);
-						break;
-					case 'scientist':
-						roleScientist.run(creep);
-						break;
-					case 'relay':
-						roleRelay.run(creep);
-						break;
-					case 'tmpdeliver':
-						roleTmpDeliver.run(creep);
-						break;
-					default:
-						console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
-						console.log("Parsing role from name...");
-						let role = creep.name.split("_")[0];
-						console.log("Found role:", role);
-						creep.memory.role = role;
-						if (!creep.memory.stage) {
-							creep.memory.stage = -1;
-						}
-				}
-			}
-			catch (e) {
-				printException(e, creep=creep);
+					}
+					break;
+				case 'repairer':
+					roleRepairer.run(creep);
+					// roleBuilder.run(creep);
+					// roleUpgrader.run(creep);
+					// roleMiner.run(creep);
+					break;
+				case 'attacker':
+					roleAttacker.run(creep);
+					break;
+				case 'healer':
+					roleHealer.run(creep);
+					break;
+				case 'claimer':
+					roleClaimer.run(creep);
+					break;
+				case 'manager':
+					roleManager.run(creep);
+					break;
+				case 'remoteharvester':
+					roleRemoteHarvester.run(creep);
+					break;
+				case 'carrier':
+					roleCarrier.run(creep);
+					break;
+				case 'scout':
+					roleScout.run(creep);
+					break;
+				case 'nextroomer':
+					roleNextRoomer.run(creep);
+					break;
+				case 'miner':
+					roleMiner.run(creep);
+					break;
+				case 'scientist':
+					roleScientist.run(creep);
+					break;
+				case 'relay':
+					roleRelay.run(creep);
+					break;
+				case 'tmpdeliver':
+					roleTmpDeliver.run(creep);
+					break;
+				default:
+					console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
+					console.log("Parsing role from name...");
+					let role = creep.name.split("_")[0];
+					console.log("Found role:", role);
+					creep.memory.role = role;
+					if (!creep.memory.stage) {
+						creep.memory.stage = -1;
+					}
 			}
 		}
+		catch (e) {
+			printException(e, creep=creep);
+		}
+	}
+
+	let renewingCreeps = _.filter(_.values(Game.creeps), c => c.memory.renewing);
+	renewingCreeps.sort((a, b) => a.ticksToLive - b.ticksToLive);
+	for (let creep of renewingCreeps) {
+		taskRenew.run(creep);
 	}
 
 	// process jobs

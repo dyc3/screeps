@@ -161,7 +161,7 @@ var roleScientist = {
 
 		console.log(creep.name, "transfer", creep.memory.targetResource, "from", targetStorage, "=>", targetStruct);
 
-		if (isStructureFull(targetStruct) || (targetStorage.store && targetStorage.store[creep.memory.targetResource] == 0) || isStructureEmpty(targetStorage)) {
+		if (creep.store[creep.memory.targetResource] === 0 && (isStructureFull(targetStruct) || (targetStorage.store && targetStorage.store[creep.memory.targetResource] == 0) || isStructureEmpty(targetStorage))) {
 			if (creep.transfer(targetStorage, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
 				creep.travelTo(targetStorage);
 			}
@@ -175,13 +175,13 @@ var roleScientist = {
 		}
 
 		// make sure we don't have any energy on us
-		if (creep.carry[RESOURCE_ENERGY] > 0) {
+		if (creep.store[RESOURCE_ENERGY] > 0) {
 			taskDepositMaterials.run(creep, exclude_energy=false);
 		}
 
 		// console.log(creep.name, targetStruct, targetStorage, creep.memory.targetResource)
 
-		if (creep.carry[creep.memory.targetResource] > 0) {
+		if (creep.store[creep.memory.targetResource] > 0 || _.sum(creep.store) > 0) {
 			if (creep.transfer(targetStruct, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
 				creep.travelTo(targetStruct);
 			}
@@ -192,6 +192,7 @@ var roleScientist = {
 					creep.travelTo(targetStorage);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
+				    creep.log("withdraw: NOT ENOUGH RESOURCES");
 					delete creep.memory.targetStruct;
 					delete creep.memory.targetStorage;
 					delete creep.memory.targetResource;
