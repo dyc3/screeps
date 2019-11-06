@@ -36,7 +36,7 @@ let taskRenew = {
 		if (spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
-		return creep.ticksToLive < travelTime + ((creep.room != spawn.room) ? 160 : 80);
+		return creep.ticksToLive < travelTime + ((creep.room != spawn.room) ? 100 : 40);
 	},
 
 	/** @param {Creep} creep **/
