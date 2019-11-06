@@ -10,19 +10,33 @@ let roleCarrier = {
 			return;
 		}
 
-// 		let rooms = _.filter(util.getOwnedRooms(), r => r.storage);
-// 		if (rooms.length === 0) {
-// 			creep.log("ERR: All rooms don't have storage");
-// 			return;
-// 		}
-// 		rooms.sort((a, b) => Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, a.name) - Game.map.getRoomLinearDistance(creep.memory.harvestTarget.roomName, b.name));
-        let rooms = _.filter(util.findClosestOwnedRooms(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName)), r => r.storage);
-        if (rooms.length === 0) {
+		let rooms = _.filter(util.findClosestOwnedRooms(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName)), r => r.storage);
+		if (rooms.length === 0) {
 			creep.log("ERR: All rooms don't have storage");
 			return;
 		}
 
 		return rooms[0].storage.id;
+	},
+
+	passiveMaintainRoads(creep) {
+		if (creep.store[RESOURCE_ENERGY] === 0) {
+			return;
+		}
+
+		let lookResult = creep.pos.look();
+		for (let result of lookResult) {
+			if (result.type === LOOK_CONSTRUCTION_SITES) {
+				creep.build(result.constructionSite);
+				return;
+			}
+			else if (result.type === LOOK_STRUCTURES) {
+				if (result.structure.hits < result.structure.hitsMax) {
+					creep.repair(result.structure);
+				}
+				return;
+			}
+		}
 	},
 
 	/** @param {Creep} creep **/
@@ -59,10 +73,10 @@ let roleCarrier = {
 			return;
 		}
 
-		if (creep.memory.delivering && _.sum(creep.carry) == 0) {
+		if (creep.memory.delivering && _.sum(creep.store) == 0) {
 			creep.memory.delivering = false;
 		}
-		else if (!creep.memory.delivering && _.sum(creep.carry) == creep.carryCapacity) {
+		else if (!creep.memory.delivering && _.sum(creep.store) == creep.carryCapacity) {
 			creep.memory.delivering = true;
 		}
 
@@ -91,6 +105,8 @@ let roleCarrier = {
 				creep.pickup(dropped);
 			}
 		}
+
+		this.passiveMaintainRoads(creep);
 	}
 }
 
