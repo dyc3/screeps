@@ -1079,6 +1079,7 @@ function main() {
 		try {
 			if (taskRenew.checkRenew(creep)) {
 				creep.memory.renewing = true;
+				continue;
 			}
 			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder") && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
@@ -1188,7 +1189,8 @@ function main() {
 	}
 
 	let renewingCreeps = _.filter(_.values(Game.creeps), c => c.memory.renewing);
-	renewingCreeps.sort((a, b) => a.ticksToLive - b.ticksToLive);
+	// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
+	renewingCreeps.sort((a, b) => a.ticksToLive <= 100 ? b.ticksToLive - a.ticksToLive : 0);
 	for (let creep of renewingCreeps) {
 		taskRenew.run(creep);
 	}

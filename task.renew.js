@@ -65,7 +65,12 @@ let taskRenew = {
 			maxTicks = 1000;
 		}
 		else if (creep.memory.role == "scout" || creep.memory.role == "tmpdeliver") {
-			maxTicks = 1200;
+			if (renewTarget.room.energyAvailable >= 1200) {
+				maxTicks = 1200;
+			}
+			else {
+				maxTicks = 800;
+			}
 		}
 		else if (creep.memory.role == "nextroomer") {
 			maxTicks = 1000;
