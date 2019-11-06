@@ -86,7 +86,7 @@ let util = {
 
 			let fatigue = baseFatiguePerMove * fatigueMultiplier;
 			while (fatigue > 0) {
-				fatigue -= moveParts;
+				fatigue -= moveParts * 2;
 				totalSteps++;
 			}
 		}
