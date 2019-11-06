@@ -11,13 +11,13 @@ let taskRenew = {
 			return false;
 		}
 
-		var spawn = util.getSpawn(creep.room);
+		let spawn = util.getSpawn(creep.room);
 		if (!spawn) {
-		    if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
-		        creep.memory.renewTarget = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id
-		        creep.memory._lastCheckForCloseSpawn = Game.time;
-		    }
-		    spawn = Game.getObjectById(creep.memory.renewTarget);
+			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
+				creep.memory.renewTarget = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id
+				creep.memory._lastCheckForCloseSpawn = Game.time;
+			}
+			spawn = Game.getObjectById(creep.memory.renewTarget);
 		}
 		if (!spawn) {
 			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
@@ -42,7 +42,7 @@ let taskRenew = {
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		if (!creep.memory.renewTarget) {
-			var closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+			let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
 				filter: (struct) => { return struct.structureType == STRUCTURE_SPAWN && !struct.spawning; }
 			});
 			if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
@@ -57,7 +57,7 @@ let taskRenew = {
 			return;
 		}
 
-		var maxTicks = 600;
+		let maxTicks = 600;
 		if (creep.memory.renew_force_amount) {
 			maxTicks = creep.memory.renew_force_amount;
 		}
@@ -97,13 +97,17 @@ let taskRenew = {
 			}
 		}
 
+		let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
+		let totalRenewCost = util.getRenewCost(creep.body) * countRenewsRequired;
+		creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
+
 		if (!creep.pos.isNearTo(renewTarget)) {
 			creep.travelTo(renewTarget, {visualizePathStyle:{}});
 		}
 		else if (!renewTarget.spawning && creep.ticksToLive < maxTicks) {
 			switch (renewTarget.renewCreep(creep)) {
 				case ERR_NOT_ENOUGH_ENERGY:
-					if (creep.carry[RESOURCE_ENERGY] > 0) {
+					if (creep.store[RESOURCE_ENERGY] > 0) {
 						creep.transfer(renewTarget, RESOURCE_ENERGY);
 					}
 					else if (creep.ticksToLive > 220) {

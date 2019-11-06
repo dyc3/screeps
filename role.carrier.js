@@ -28,9 +28,6 @@ let roleCarrier = {
 		for (let result of lookResult) {
 			if (result.type === LOOK_CONSTRUCTION_SITES) {
 				creep.build(result.constructionSite);
-				if (Game.time % 2 === 0) {
-					creep.cancelOrder("moveTo");
-				}
 				return;
 			}
 			else if (result.type === LOOK_STRUCTURES) {
