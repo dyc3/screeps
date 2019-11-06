@@ -17,7 +17,7 @@ function doAquire(creep, passively=false) {
 				return false;
 			}
 			if (!passively) {
-			    if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0) {
+				if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0) {
 					if (drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
 						return false;
 					}
@@ -84,7 +84,10 @@ function doAquire(creep, passively=false) {
 						// 	return false;
 						// }
 					// }
-					return !c.spawning && c.memory.role == "harvester" && (!c.memory.hasDedicatedLink || c.memory.stage < 5) && c.carry[RESOURCE_ENERGY] >= c.carryCapacity * 0.85;
+					if (c.memory.role === "carrier") {
+						return !c.spawning && c.store[RESOURCE_ENERGY] > 0;
+					}
+					return !c.spawning && c.memory.role == "harvester" && (!c.memory.hasDedicatedLink || c.memory.stage < 5) && c.store[RESOURCE_ENERGY] >= c.carryCapacity * 0.85;
 				}
 			});
 			if (filledHarvesters.length > 0) {
@@ -343,19 +346,19 @@ var roleManager = {
 							return true;
 						}
 					}
-					
+
 					if (struct.structureType === STRUCTURE_EXTENSION || struct.structureType === STRUCTURE_SPAWN) {
-					    let relayCreeps = _.filter(util.getCreeps("relay"), c => c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
-					    let isNearRelay = false;
-					    for (let relay of relayCreeps) {
-					        if (struct.pos.isNearTo(relay)) {
-					            isNearRelay = true;
-					            break;
-					        }
-					    }
-					    if (isNearRelay) {
-					        return false;
-					    }
+						let relayCreeps = _.filter(util.getCreeps("relay"), c => c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
+						let isNearRelay = false;
+						for (let relay of relayCreeps) {
+							if (struct.pos.isNearTo(relay)) {
+								isNearRelay = true;
+								break;
+							}
+						}
+						if (isNearRelay) {
+							return false;
+						}
 					}
 
 					if (struct.structureType == STRUCTURE_TOWER && struct.energy < struct.energyCapacity * 0.5) {

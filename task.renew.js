@@ -7,6 +7,9 @@ let taskGather = require("task.gather");
 let taskRenew = {
 	/** @param {Creep} creep **/
 	checkRenew: function(creep) {
+		if (creep.memory.renewing) {
+			return true;
+		}
 		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0) {
 			return false;
 		}
@@ -27,15 +30,17 @@ let taskRenew = {
 			return false;
 		}
 
-		if (creep.memory.renewing) {
-			return true;
+		let travelTime = creep.memory._renewTravelTime;
+		if (!creep.memory._renewTravelTime || !creep.memory._lastCheckTravelTime || Game.time - creep.memory._lastCheckTravelTime > 8) {
+			let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
+			travelTime = util.calculateEta(creep, path);
+			creep.memory._renewTravelTime = travelTime;
+			creep.memory._lastCheckTravelTime = Game.time;
 		}
-
-		let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
-		let travelTime = util.calculateEta(creep, path);
 		if (spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
+
 		return creep.ticksToLive < travelTime + ((creep.room != spawn.room) ? 100 : 40);
 	},
 

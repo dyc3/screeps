@@ -1290,6 +1290,9 @@ function main() {
 // profiler.registerClass(roleTower, 'role.tower');
 // profiler.registerClass(roleRelay, 'role.relay');
 // profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
+// profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
+// profiler.registerClass(roleCarrier, 'role.carrier');
+// profiler.registerClass(taskRenew, 'task.renew');
 // profiler.enable();
 
 module.exports.loop = function() {
