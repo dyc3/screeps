@@ -10,7 +10,15 @@ let roleCarrier = {
 			return;
 		}
 
-		let rooms = _.filter(util.findClosestOwnedRooms(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName)), r => r.storage);
+		let pos = creep.pos;
+		if (creep.memory.mode === "remote-mining") {
+			pos = new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName);
+		}
+		else if (creep.memory.mode === "invader-core-harvesting") {
+			pos = new RoomPosition(25, 25, creep.memory.targetRoom);
+		}
+
+		let rooms = _.filter(util.findClosestOwnedRooms(pos), r => r.storage);
 		if (rooms.length === 0) {
 			creep.log("ERR: All rooms don't have storage");
 			return;
@@ -39,74 +47,140 @@ let roleCarrier = {
 		}
 	},
 
-	/** @param {Creep} creep **/
-	run: function(creep) {
-		if (!creep.memory.depositTarget) {
-			creep.memory.depositTarget = this.findDespositTarget(creep);
-		}
-
-		if (!creep.memory.harvestTarget) {
-			console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
-			return;
-		}
-		if (!creep.memory.depositTarget) {
-			console.log(creep.name, "ERR: need deposit target");
-			return;
-		}
-
-		if (!creep.memory.delivering && creep.room.name !== creep.memory.harvestTarget.roomName) {
-			creep.travelTo(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName));
-			return;
-		}
-		let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
-
-		if (!creep.memory.droppedEnergyId) {
-			let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
-			if (lookResult.length > 0) {
-				creep.memory.droppedEnergyId = lookResult[0].id;
+	modes: {
+		"remote-mining"(roleCarrier, creep) {
+			if (!creep.memory.depositTarget) {
+				creep.memory.depositTarget = roleCarrier.findDespositTarget(creep);
 			}
-		}
 
-		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget.id);
-		if (!harvestTarget) {
-			console.log(creep.name, "CRITICAL: Unable to access harvest target");
-			return;
-		}
-
-		if (creep.memory.delivering && _.sum(creep.store) == 0) {
-			creep.memory.delivering = false;
-		}
-		else if (!creep.memory.delivering && _.sum(creep.store) == creep.carryCapacity) {
-			creep.memory.delivering = true;
-		}
-
-		if (creep.memory.delivering) {
-			let depositTarget = Game.getObjectById(creep.memory.depositTarget);
-			if (creep.pos.isNearTo(depositTarget)) {
-				creep.transfer(depositTarget, RESOURCE_ENERGY);
-			}
-			else {
-				creep.travelTo(depositTarget);
-			}
-		}
-		else {
-			if (creep.pos.isEqualTo(harvestPos)) {
-				creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
+			if (!creep.memory.harvestTarget) {
+				console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
 				return;
 			}
-			let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
-			if (!dropped) {
-				delete creep.memory.droppedEnergyId;
+			if (!creep.memory.depositTarget) {
+				console.log(creep.name, "ERR: need deposit target");
+				return;
 			}
-			if (!creep.pos.isNearTo(harvestPos)) {
-				creep.travelTo(harvestPos);
+
+			if (!creep.memory.delivering && creep.room.name !== creep.memory.harvestTarget.roomName) {
+				creep.travelTo(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName));
+				return;
 			}
-			else if (dropped) {
-				creep.pickup(dropped);
+			let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
+
+			if (!creep.memory.droppedEnergyId) {
+				let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
+				if (lookResult.length > 0) {
+					creep.memory.droppedEnergyId = lookResult[0].id;
+				}
 			}
+
+			let harvestTarget = Game.getObjectById(creep.memory.harvestTarget.id);
+			if (!harvestTarget) {
+				console.log(creep.name, "CRITICAL: Unable to access harvest target");
+				return;
+			}
+
+			if (creep.memory.delivering && _.sum(creep.store) == 0) {
+				creep.memory.delivering = false;
+			}
+			else if (!creep.memory.delivering && _.sum(creep.store) == creep.carryCapacity) {
+				creep.memory.delivering = true;
+			}
+
+			if (creep.memory.delivering) {
+				let depositTarget = Game.getObjectById(creep.memory.depositTarget);
+				if (creep.pos.isNearTo(depositTarget)) {
+					creep.transfer(depositTarget, RESOURCE_ENERGY);
+				}
+				else {
+					creep.travelTo(depositTarget);
+				}
+			}
+			else {
+				if (creep.pos.isEqualTo(harvestPos)) {
+					creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
+					return;
+				}
+				let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
+				if (!dropped) {
+					delete creep.memory.droppedEnergyId;
+				}
+				if (!creep.pos.isNearTo(harvestPos)) {
+					creep.travelTo(harvestPos);
+				}
+				else if (dropped) {
+					creep.pickup(dropped);
+				}
+			}
+
+			roleCarrier.passiveMaintainRoads(creep);
+		},
+		"invader-core-harvesting"(roleCarrier, creep) {
+			if (!creep.memory.targetRoom) {
+				creep.log("needs targetRoom to be set externally");
+				return;
+			}
+
+			if (!creep.memory.depositTarget) {
+				creep.memory.depositTarget = roleCarrier.findDespositTarget(creep);
+			}
+
+			if (creep.memory.delivering && _.sum(creep.store) === 0) {
+				creep.memory.delivering = false;
+			}
+			else if (!creep.memory.delivering && _.sum(creep.store) >= creep.getCapacity()) {
+				creep.memory.delivering = true;
+			}
+
+			if (creep.memory.delivering) {
+				// take resources back to deposit target
+				let depositTarget = Game.getObjectById(creep.memory.depositTarget);
+				if (creep.pos.isNearTo(depositTarget)) {
+					for (let resource of RESOURCES_ALL) {
+						if (creep.store[resource] > 0) {
+							creep.transfer(storage, resource);
+						}
+					}
+				}
+				else {
+					creep.travelTo(depositTarget);
+				}
+			}
+			else {
+				if (creep.room.name !== creep.memory.targetRoom) {
+					creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+					return;
+				}
+
+				let containers = util.getStructures(creep.room, STRUCTURE_CONTAINER);
+				if (containers.length > 0) {
+					let target = containers[0];
+					if (creep.pos.isNearTo(target)) {
+						for (const resource of target.store) {
+							creep.withdraw(target, resource);
+						}
+					}
+					else {
+						creep.travelTo(target);
+					}
+				}
+				else {
+					creep.say("help");
+					creep.log("no containers found");
+				}
+			}
+		},
+	},
+
+	/** @param {Creep} creep **/
+	run: function(creep) {
+		if (!creep.memory.mode) {
+			creep.memory.mode = "remote-mining";
 		}
 
-		this.passiveMaintainRoads(creep);
+		// run different code for different modes
+		this.modes[creep.memory.mode](this, creep);
 	}
 }
 
