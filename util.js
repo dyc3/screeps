@@ -1,5 +1,5 @@
 Creep.prototype.log = function(...args) {
-	console.log(this.name, args);
+	console.log(this.name, ...args);
 };
 
 let util = {

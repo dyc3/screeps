@@ -5,7 +5,7 @@ let util = require('util');
 
 let roleCarrier = {
 	findDespositTarget(creep) {
-		if (!creep.memory.harvestTarget) {
+		if (creep.memory.mode === "remote-mining" && !creep.memory.harvestTarget) {
 			creep.log("Can't find despositTarget without harvestTarget");
 			return;
 		}
@@ -129,7 +129,7 @@ let roleCarrier = {
 			if (creep.memory.delivering && _.sum(creep.store) === 0) {
 				creep.memory.delivering = false;
 			}
-			else if (!creep.memory.delivering && _.sum(creep.store) >= creep.getCapacity()) {
+			else if (!creep.memory.delivering && _.sum(creep.store) >= creep.store.getCapacity()) {
 				creep.memory.delivering = true;
 			}
 
@@ -139,7 +139,7 @@ let roleCarrier = {
 				if (creep.pos.isNearTo(depositTarget)) {
 					for (let resource of RESOURCES_ALL) {
 						if (creep.store[resource] > 0) {
-							creep.transfer(storage, resource);
+							creep.transfer(depositTarget, resource);
 						}
 					}
 				}
@@ -153,11 +153,13 @@ let roleCarrier = {
 					return;
 				}
 
-				let containers = util.getStructures(creep.room, STRUCTURE_CONTAINER);
+				let containers = creep.room.find(FIND_RUINS).concat(util.getStructures(creep.room, STRUCTURE_CONTAINER));
+				containers = _.filter(containers, s => _.sum(s.store) > 0);
 				if (containers.length > 0) {
 					let target = containers[0];
+					creep.log("target: ", target);
 					if (creep.pos.isNearTo(target)) {
-						for (const resource of target.store) {
+						for (const resource of RESOURCES_ALL) {
 							creep.withdraw(target, resource);
 						}
 					}

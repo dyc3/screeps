@@ -37,6 +37,9 @@
 // 1000 capacity:
 // Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "tmpdeliver_1", {role:"tmpdeliver", keepAlive:true, stage: 0, withdrawTargetId: "", depositTargetId:"" })
 
+// invader harvester carrier:
+// Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "carrier_1", {role:"carrier", keepAlive:true, stage: 2, mode: "invader-core-harvesting", targetRoom:"" })
+
 // Memory.mineralsToSell
 
 // Remove all construction sites:
@@ -1081,7 +1084,7 @@ function main() {
 				creep.memory.renewing = true;
 				continue;
 			}
-			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder") && taskDepositMaterials.checkForMaterials(creep, true)) {
+			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder" && creep.memory.role != "carrier") && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
 				taskDepositMaterials.run(creep, true);
 			}
@@ -1171,6 +1174,9 @@ function main() {
 					break;
 				case 'tmpdeliver':
 					roleTmpDeliver.run(creep);
+					break;
+				case 'invaderdestroyer':
+					require("role.invaderdestroyer").run(creep);
 					break;
 				default:
 					console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
