@@ -332,6 +332,7 @@ var brainAutoPlanner = {
 			let harvestPos = pathToSource[pathToSource.length - 1];
 			let _dir = util.getOppositeDirection(harvestPos.getDirectionTo(source.pos));
 			let sourceLinkPos = util.getPositionInDirection(harvestPos, _dir);
+			console.log("source link dir", _dir, "sourceLinkPos:", sourceLinkPos);
 			room.memory.structures[STRUCTURE_LINK].push({ x: sourceLinkPos.x, y: sourceLinkPos.y });
 			let harvestAdj = util.getAdjacent(harvestPos);
 			for (let pos of harvestAdj) {
