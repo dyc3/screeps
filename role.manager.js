@@ -149,6 +149,11 @@ function doAquire(creep, passively=false) {
 								return true;
 							}
 						}
+						else if (struct.structureType == STRUCTURE_FACTORY) {
+							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
+								return true;
+							}
+						}
 						return (struct.structureType == STRUCTURE_STORAGE && struct.store[RESOURCE_ENERGY] > creep.carryCapacity) ||
 							(struct.structureType == STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0);
 					}
@@ -185,7 +190,13 @@ function doAquire(creep, passively=false) {
 					});
 					var closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
-					var amount = (closest.structureType == STRUCTURE_TERMINAL ? closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget : undefined);
+					var amount = undefined;
+					if (closest.structureType === STRUCTURE_TERMINAL) {
+						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
+					}
+					else if (closest.structureType === STRUCTURE_FACTORY) {
+						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
+					}
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
@@ -310,6 +321,7 @@ var roleManager = {
 			structPriority[STRUCTURE_CONTAINER] = 9;
 			structPriority[STRUCTURE_STORAGE] = 9;
 			structPriority[STRUCTURE_TERMINAL] = 9;
+			structPriority[STRUCTURE_FACTORY] = 9;
 
 			// console.log("Can't transfer to last withdraw:",Game.getObjectById(creep.memory.lastWithdrawStructure))
 			var hungryStructures = creep.room.find(FIND_STRUCTURES, {
@@ -334,8 +346,16 @@ var roleManager = {
 					}
 
 					if (struct.structureType == STRUCTURE_TERMINAL) {
-						 if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
+						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
 							if (struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
+								return true;
+							}
+						}
+					}
+
+					if (struct.structureType == STRUCTURE_FACTORY) {
+						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
+							if (struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget) {
 								return true;
 							}
 						}
