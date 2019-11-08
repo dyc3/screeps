@@ -75,12 +75,13 @@ let roleMiner = {
 			return;
 		}
 
-		if (!creep.memory.useSecondaryRoute && mineralTarget.ticksToRegeneration > mineralTargetSecondary.ticksToRegeneration && total_carry == 0) {
+		// HACK: If a mineral can be mined, then ticksToRegeneration is actually undefined instead of 0
+		if (!creep.memory.useSecondaryRoute && (mineralTargetSecondary.ticksToRegeneration === undefined || mineralTarget.ticksToRegeneration > mineralTargetSecondary.ticksToRegeneration) && total_carry == 0) {
 			creep.memory.useSecondaryRoute = true;
 			creep.say("switch->2");
 			return;
 		}
-		else if (creep.memory.useSecondaryRoute && mineralTargetSecondary.ticksToRegeneration > mineralTarget.ticksToRegeneration && total_carry == 0) {
+		else if (creep.memory.useSecondaryRoute && (mineralTarget.ticksToRegeneration === undefined || mineralTargetSecondary.ticksToRegeneration > mineralTarget.ticksToRegeneration) && total_carry == 0) {
 			creep.memory.useSecondaryRoute = false;
 			creep.say("switch->1");
 			return;
