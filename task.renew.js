@@ -32,7 +32,8 @@ let taskRenew = {
 
 		let travelTime = creep.memory._renewTravelTime;
 		if (!creep.memory._renewTravelTime || !creep.memory._lastCheckTravelTime || Game.time - creep.memory._lastCheckTravelTime > 8) {
-			let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
+ 			// let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
+			let path = traveler.Traveler.findTravelPath(creep.pos, spawn.pos, { range: 1, ignoreCreeps: true }).path;
 			travelTime = util.calculateEta(creep, path);
 			creep.memory._renewTravelTime = travelTime;
 			creep.memory._lastCheckTravelTime = Game.time;
