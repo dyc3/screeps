@@ -1244,15 +1244,28 @@ function main() {
 	}
 
 	if (Game.flags["forcePlan"] && Game.flags["forcePlan"].color === COLOR_WHITE) {
-		brainAutoPlanner.planRoom(Game.flags["forcePlan"].room, true);
-		brainAutoPlanner.drawRoomPlans(Game.flags["forcePlan"].room);
+		try {
+			brainAutoPlanner.planRoom(Game.flags["forcePlan"].room, true);
+			brainAutoPlanner.drawRoomPlans(Game.flags["forcePlan"].room);
+		}
+		catch (e) {
+			printException(e);
+		}
 		if (Game.cpu.bucket < 9700) {
 			Game.flags["forcePlan"].setColor(COLOR_GREY);
 		}
 	}
 
 	if (Game.flags["showPlans"] && Game.flags["showPlans"].color === COLOR_WHITE) {
-		brainAutoPlanner.drawRoomPlans(Game.flags["showPlans"].room);
+		try {
+			brainAutoPlanner.drawRoomPlans(Game.flags["showPlans"].room);
+		}
+		catch (e) {
+			printException(e);
+		}
+		if (Game.cpu.bucket < 9700) {
+			Game.flags["forcePlan"].setColor(COLOR_GREY);
+		}
 		if (Game.cpu.bucket < 9700) {
 			Game.flags["showPlans"].setColor(COLOR_GREY);
 		}
