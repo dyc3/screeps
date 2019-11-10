@@ -76,7 +76,12 @@ let roleRelay = {
 		// check if the creep is carrying energy, and pick some up if needed
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
 			if (rootNeedsEnergy) {
-				creep.withdraw(storage, RESOURCE_ENERGY);
+			    if (creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
+			        creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
+			    }
+			    else {
+			        creep.withdraw(storage, RESOURCE_ENERGY);
+			    }
 			}
 			else {
 				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {

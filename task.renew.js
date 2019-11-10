@@ -104,16 +104,17 @@ let taskRenew = {
 		}
 
 		let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
-		let totalRenewCost = util.getRenewCost(creep.body) * countRenewsRequired;
+		let renewCost = util.getRenewCost(creep.body);
+		let totalRenewCost = renewCost * countRenewsRequired;
 		creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
 
 		if (!creep.pos.isNearTo(renewTarget)) {
 			creep.travelTo(renewTarget, {visualizePathStyle:{}});
 		}
-		else if (!renewTarget.spawning && creep.ticksToLive < maxTicks) {
+		else if (creep.ticksToLive < maxTicks) {
 			switch (renewTarget.renewCreep(creep)) {
 				case ERR_NOT_ENOUGH_ENERGY:
-					if (creep.store[RESOURCE_ENERGY] > 0) {
+					if (renewTarget.room.energyAvailable + creep.store[RESOURCE_ENERGY] >= renewCost) {
 						creep.transfer(renewTarget, RESOURCE_ENERGY);
 					}
 					else if (creep.ticksToLive > 220) {
@@ -127,6 +128,8 @@ let taskRenew = {
 				case ERR_FULL:
 					creep.memory.renewing = false;
 					break;
+				case ERR_BUSY:
+				    delete creep.memory.renewTarget;
 				default:
 					break;
 			}

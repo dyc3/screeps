@@ -51,6 +51,8 @@
 // Game.creeps["upgrader_801392"].signController(Game.getObjectById("59f1a21c82100e1594f39717"), "")
 // Game.rooms["W16N9"].terminal.send(RESOURCE_ENERGY, 48250, "W15N8")
 // Game.rooms["W15N8"].terminal.send(RESOURCE_ENERGY, 48250, "W16N9")
+// Game.rooms["W16N9"].terminal.send(RESOURCE_ENERGY, 75000, "W13N11")
+// Game.rooms["W15N8"].terminal.send(RESOURCE_ENERGY, 75000, "W13N11")
 /*
 # SOME NOTES
 
@@ -934,6 +936,41 @@ function satisfyClaimTargets() {
 	}
 }
 
+function doWorkFactories() {
+    let rooms = util.getOwnedRooms();
+    for (let room of rooms) {
+        let factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
+        
+        if (!factory) {
+            continue;
+        }
+        
+        // FIXME: make this more dynamic
+        // right now, everything is hard coded
+        
+        // RESOURCE_UTRIUM_BAR
+        // RESOURCE_REDUCTANT
+        const productionTarget = RESOURCE_REDUCTANT;
+        
+        // determine if the factory has enough resources to produce the given target
+        let canProduce = true;
+        for (let component in COMMODITIES[productionTarget].components) {
+            if (!factory.store.hasOwnProperty(component)) {
+                canProduce = false;
+                break;
+            }
+            if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
+                canProduce = false;
+                break;
+            }
+        }
+        
+        if (canProduce) {
+            factory.produce(productionTarget);
+        }
+    }
+}
+
 let jobs = {
 	"creep-spawning": {
 		name: "creep-spawning",
@@ -984,7 +1021,12 @@ let jobs = {
 		name: "satisfy-claim-targets",
 		run: satisfyClaimTargets,
 		interval: 50,
-	}
+	},
+	"work-factories": {
+		name: "work-factories",
+		run: doWorkFactories,
+		interval: 40,
+	},
 };
 
 function queueJob(job) {

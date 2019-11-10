@@ -87,25 +87,29 @@ function getRelayQuota(room) {
 		return 0;
 	}
 	let count = linkCount;
-	if (count > 5) {
+	if (count == 2) {
+	    count = 3;
+	}
+	else if (count > 5) {
 		count = 5;
 	}
 	return count;
 }
 
-function getMinerQuota(room) {
-	let count = 0;
-	if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller.level] > 0) {
-		let extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
-		for (let i = 0; i < extractors.length; i++) {
-			let struct = extractors[i];
-			let mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
-			if (mineral && mineral.amount > 0) {
-				count++;
-			}
-		}
-	}
-	return count;
+function getMinerQuota() {
+// 	let count = 0;
+// 	if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller.level] > 0) {
+// 		let extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
+// 		for (let i = 0; i < extractors.length; i++) {
+// 			let struct = extractors[i];
+// 			let mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
+// 			if (mineral) {
+// 				count++;
+// 			}
+// 		}
+// 	}
+// 	return count;
+    return 2;
 }
 
 function getAttackerQuota() {
@@ -142,6 +146,15 @@ let creepUpgrader = {
 				[WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]
 			],
+			/**
+			 * Builds the optimal body for this role
+			 * 
+			 * @param {Room} spawningRoom The room the creep will be spawned in
+			 * @param {Room} targetRoom The room that the creep will go to
+			 */
+			buildBestBody(spawningRoom, targetRoom) {
+			    // TODO
+			},
 		},
 		"upgrader":{
 			name:"upgrader",
@@ -275,7 +288,7 @@ let creepUpgrader = {
 		"miner": {
 			name:"miner",
 			quota:getMinerQuota,
-			quota_per_room:true,
+			quota_per_room:false,
 			stages:[
 				[WORK,WORK,WORK,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,MOVE,CARRY,MOVE,CARRY,MOVE,MOVE],

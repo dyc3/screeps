@@ -100,6 +100,10 @@ let taskGather = {
 				if (structure.structureType === STRUCTURE_STORAGE && structure.room.controller.level < 4) {
 					return false;
 				}
+				
+				if (creep.memory.role === "builder" && structure.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+				    return false;
+				}
 
 				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType === STRUCTURE_CONTAINER) {
 					if (structure.pos.findInRange(FIND_SOURCES, 1).length > 0) {
