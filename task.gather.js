@@ -44,6 +44,19 @@ let taskGather = {
 			}
 			return;
 		}
+		
+		let ruins = creep.pos.findInRange(FIND_RUINS, 40, {
+			filter: (ruin) => {
+				return ruin.store[RESOURCE_ENERGY] > 0
+			}
+		});
+		if (ruins.length > 0) {
+			let closest = creep.pos.findClosestByPath(ruins);
+			if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+				creep.travelTo(closest);
+			}
+			return;
+		}
 
 		// Pick up resources from tombstones
 		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller.level < 6)) {
