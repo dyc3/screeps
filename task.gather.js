@@ -44,7 +44,7 @@ let taskGather = {
 			}
 			return;
 		}
-		
+
 		let ruins = creep.pos.findInRange(FIND_RUINS, 40, {
 			filter: (ruin) => {
 				return ruin.store[RESOURCE_ENERGY] > 0
@@ -110,12 +110,17 @@ let taskGather = {
 					return false;
 				}
 
-				if (structure.structureType === STRUCTURE_STORAGE && structure.room.controller.level < 4) {
-					return false;
+				if (structure.structureType === STRUCTURE_STORAGE) {
+					if (structure.owner.username !== global.WHOAMI) {
+						return structure.store[RESOURCE_ENERGY] > 0;
+					}
+					else {
+						return structure.room.controller.level >= 4;
+					}
 				}
-				
+
 				if (creep.memory.role === "builder" && structure.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
-				    return false;
+					return false;
 				}
 
 				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType === STRUCTURE_CONTAINER) {
