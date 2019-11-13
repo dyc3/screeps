@@ -62,6 +62,7 @@ class Traveler {
         }
         if (state.stuckCount >= options.stuckValue && Math.random() > .5) {
             options.ignoreCreeps = false;
+            options.ignoreCreepsRange = 8;
             options.freshMatrix = true;
             delete travelData.path;
         }
@@ -212,6 +213,7 @@ class Traveler {
     static findTravelPath(origin, destination, options = {}) {
         _.defaults(options, {
             ignoreCreeps: true,
+            ignoreCreepsRange: Infinity,
             maxOps: DEFAULT_MAXOPS,
             range: 1,
         });
@@ -249,14 +251,24 @@ class Traveler {
                 if (options.ignoreStructures) {
                     matrix = new PathFinder.CostMatrix();
                     if (!options.ignoreCreeps) {
-                        Traveler.addCreepsToMatrix(room, matrix);
+                        if (options.ignoreCreepsRange !== Infinity) {
+                            Traveler.addCreepsToMatrix(room, matrix, origin, options.ignoreCreepsRange);
+                        }
+                        else {
+                            Traveler.addCreepsToMatrix(room, matrix);
+                        }
                     }
                 }
                 else if (options.ignoreCreeps || roomName !== originRoomName) {
                     matrix = this.getStructureMatrix(room, options.freshMatrix);
                 }
                 else {
-                    matrix = this.getCreepMatrix(room);
+                    if (options.ignoreCreepsRange !== Infinity) {
+                        matrix = this.getCreepMatrix(room, origin, options.ignoreCreepsRange);
+                    }
+                    else {
+                        matrix = this.getCreepMatrix(room);
+                    }
                 }
                 if (options.obstacles) {
                     matrix = matrix.clone();
@@ -410,10 +422,15 @@ class Traveler {
      * @param room
      * @returns {any}
      */
-    static getCreepMatrix(room) {
+    static getCreepMatrix(room, pos=undefined, range=Infinity) {
         if (!this.creepMatrixCache[room.name] || Game.time !== this.creepMatrixTick) {
             this.creepMatrixTick = Game.time;
-            this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room, true).clone());
+            if (pos) {
+                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room, true).clone(), pos, range);
+            }
+            else {
+                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room, true).clone());
+            }
         }
         return this.creepMatrixCache[room.name];
     }
@@ -460,8 +477,13 @@ class Traveler {
      * @param matrix
      * @returns {CostMatrix}
      */
-    static addCreepsToMatrix(room, matrix) {
-        room.find(FIND_CREEPS).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
+    static addCreepsToMatrix(room, matrix, pos=undefined, range=Infinity) {
+        if (pos) {
+            pos.findInRange(FIND_CREEPS, range).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
+        }
+        else {
+            room.find(FIND_CREEPS).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
+        }
         return matrix;
     }
     /**
