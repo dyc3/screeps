@@ -149,7 +149,7 @@ let creepUpgrader = {
 			],
 			/**
 			 * Builds the optimal body for this role
-			 * 
+			 *
 			 * @param {Room} spawningRoom The room the creep will be spawned in
 			 * @param {Room} targetRoom The room that the creep will go to
 			 */
@@ -312,7 +312,7 @@ let creepUpgrader = {
 			quota:getRelayQuota,
 			quota_per_room:true,
 			stages:[
-				[CARRY,MOVE]
+				[CARRY,CARRY,CARRY,CARRY,MOVE]
 			]
 		},
 	},
