@@ -42,6 +42,9 @@ let roleCarrier = {
 				if (result.structure.hits < result.structure.hitsMax) {
 					creep.repair(result.structure);
 				}
+				if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
+				    creep.cancelOrder("move");
+				}
 				return;
 			}
 		}

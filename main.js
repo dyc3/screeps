@@ -19,7 +19,7 @@
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "miner_1", {role:"miner", keepAlive:true, stage:3})
 // Mega builder:
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "builder_1", {role:"builder", keepAlive:true, stage:5})
-// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "upgrader_1", {role:"upgrader", keepAlive:true, stage:5, targetRoom:"W13N11"})
+// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "upgrader_1", {role:"upgrader", keepAlive:true, stage:5, targetRoom:"W13N11"})
 // Scouts:
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
@@ -674,6 +674,10 @@ function doAutoTrading() {
 	minimumPrice[RESOURCE_CATALYST] = 0.5;
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
+	
+	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.3;
+	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.3;
+	minimumPrice[RESOURCE_REDUCTANT] = 0.65;
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -950,21 +954,28 @@ function doWorkFactories() {
         
         // RESOURCE_UTRIUM_BAR
         // RESOURCE_REDUCTANT
-        const productionTarget = RESOURCE_REDUCTANT;
+        // RESOURCE_ZYNTHIUM_BAR
+        const productionTarget = RESOURCE_UTRIUM_BAR;
+        console.log(`[work-factories] production target: ${productionTarget}`);
         
         // determine if the factory has enough resources to produce the given target
         let canProduce = true;
         for (let component in COMMODITIES[productionTarget].components) {
+            console.log(`[work-factories] factory has component ${component}?`);
             if (!factory.store.hasOwnProperty(component)) {
+                console.log(`[work-factories] no ${component} found`);
                 canProduce = false;
                 break;
             }
+            console.log(`[work-factories] found ${factory.store[component]} ${component}`);
             if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
+                console.log(`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`);
                 canProduce = false;
                 break;
             }
         }
         
+        console.log(`[work-factories] production target: ${productionTarget}, can produce: ${canProduce}`);
         if (canProduce) {
             factory.produce(productionTarget);
         }
@@ -1341,7 +1352,6 @@ function main() {
 	}
 }
 
-
 // https://github.com/screepers/screeps-profiler
 // const profiler = require('profiler');
 // profiler.registerClass(util, 'util');
@@ -1359,8 +1369,10 @@ function main() {
 // profiler.registerClass(taskRenew, 'task.renew');
 // profiler.enable();
 
-module.exports.loop = function() {
-// 	profiler.wrap(function() {
-		main();
-// 	});
+module.exports = {
+    loop() {
+    // 	profiler.wrap(function() {
+    		main();
+    // 	});
+    },
 }

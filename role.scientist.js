@@ -31,6 +31,7 @@ var roleScientist = {
 				case STRUCTURE_TERMINAL:
 				case STRUCTURE_CONTAINER:
 				case STRUCTURE_STORAGE:
+				case STRUCTURE_FACTORY:
 					return _.sum(struct.store) >= struct.storeCapacity;
 				case STRUCTURE_NUKER:
 					return struct.ghodium >= struct.ghodiumCapacity;
@@ -45,6 +46,7 @@ var roleScientist = {
 				case STRUCTURE_TERMINAL:
 				case STRUCTURE_CONTAINER:
 				case STRUCTURE_STORAGE:
+				case STRUCTURE_FACTORY:
 					return _.sum(struct.store) == 0;
 				case STRUCTURE_NUKER:
 					return struct.ghodium == 0;
@@ -102,7 +104,7 @@ var roleScientist = {
 				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
 				// console.log(creep.name, "checking inventory for any", key);
-				targetStorage = _.filter(util.getStructures(creep.room), function(struct) {
+				targetStorage = _.filter(util.getStructures(creep.room), struct => {
 				    // exclude structures that need a resource
 					if (struct.id == _.values(neededMinerals)[i].id) {
 						return false;
@@ -128,7 +130,7 @@ var roleScientist = {
 					}
 					
 					// exclude all structures that are not storage, terminal, or container
-					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER) {
+					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER && struct.structureType != STRUCTURE_FACTORY) {
 						return false;
 					}
 					return (key in struct.store) && struct.store[key] > 0;

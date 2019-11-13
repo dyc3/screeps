@@ -72,16 +72,16 @@ let roleMiner = {
 		}
 		if (!mineralTargetSecondary) {
 			console.log(creep.name, "no secondary mineral target");
-			return;
+			// return;
 		}
 
 		// HACK: If a mineral can be mined, then ticksToRegeneration is actually undefined instead of 0
-		if (!creep.memory.useSecondaryRoute && (mineralTargetSecondary.ticksToRegeneration === undefined || mineralTarget.ticksToRegeneration > mineralTargetSecondary.ticksToRegeneration) && total_carry == 0) {
+		if (mineralTargetSecondary && !creep.memory.useSecondaryRoute && mineralTarget.ticksToRegeneration > 0 && (mineralTargetSecondary.ticksToRegeneration === undefined || mineralTarget.ticksToRegeneration > mineralTargetSecondary.ticksToRegeneration) && total_carry == 0) {
 			creep.memory.useSecondaryRoute = true;
 			creep.say("switch->2");
 			return;
 		}
-		else if (creep.memory.useSecondaryRoute && (mineralTarget.ticksToRegeneration === undefined || mineralTargetSecondary.ticksToRegeneration > mineralTarget.ticksToRegeneration) && total_carry == 0) {
+		else if (creep.memory.useSecondaryRoute && mineralTargetSecondary.ticksToRegeneration > 0 && (mineralTarget.ticksToRegeneration === undefined || mineralTargetSecondary.ticksToRegeneration > mineralTarget.ticksToRegeneration) && total_carry == 0) {
 			creep.memory.useSecondaryRoute = false;
 			creep.say("switch->1");
 			return;

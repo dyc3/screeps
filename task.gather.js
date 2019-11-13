@@ -59,7 +59,7 @@ let taskGather = {
 		}
 
 		// Pick up resources from tombstones
-		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller.level < 6)) {
+		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller && creep.room.controller.level < 6)) {
 			let tombstones = creep.room.find(FIND_TOMBSTONES, {
 				filter: (tomb) => {
 					if (util.isDistFromEdge(tomb.pos, 4)) {

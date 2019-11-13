@@ -245,7 +245,7 @@ var brainAutoPlanner = {
 			room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: .4, fill: "#cccc00" });
 		}
 		else {
-			if (room.storage) {
+			if (room.storage && room.storage.owner.username === global.WHOAMI) {
 				console.log("WARN: using existing storage as storagePos");
 				storagePos = room.storage.pos;
 				room.memory.storagePos = storagePos;
@@ -777,6 +777,11 @@ var brainAutoPlanner = {
 			}
 		}
 	},
-}
+};
+
+global.autoPlanner = {
+    addPlans: brainAutoPlanner.addPlansAtPosition,
+    removePlans: brainAutoPlanner.removePlansAtPosition,
+};
 
 module.exports = brainAutoPlanner;

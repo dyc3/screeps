@@ -145,7 +145,10 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_TERMINAL) {
-							if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
+						    if (struct.owner.username !== global.WHOAMI) {
+						        return true;
+						    }
+						    else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
 								return true;
 							}
 						}
@@ -191,10 +194,10 @@ function doAquire(creep, passively=false) {
 					var closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 					var amount = undefined;
-					if (closest.structureType === STRUCTURE_TERMINAL) {
+					if (closest.structureType === STRUCTURE_TERMINAL && closest.owner.username === global.WHOAMI) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
 					}
-					else if (closest.structureType === STRUCTURE_FACTORY) {
+					else if (closest.structureType === STRUCTURE_FACTORY && closest.owner.username === global.WHOAMI) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
 					}
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
@@ -235,7 +238,7 @@ function doAquire(creep, passively=false) {
 						}
 					}
 					else {
-						// creep.say("help me out")
+						creep.say("help me out")
 					}
 				}
 			}
@@ -346,6 +349,9 @@ var roleManager = {
 					}
 
 					if (struct.structureType == STRUCTURE_TERMINAL) {
+					    if (struct.owner.username !== global.WHOAMI) {
+					        return false;
+					    }
 						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
 							if (struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
 								return true;
@@ -381,7 +387,7 @@ var roleManager = {
 						}
 					}
 
-					if (struct.structureType == STRUCTURE_TOWER && struct.energy < struct.energyCapacity * 0.5) {
+					if (struct.structureType == STRUCTURE_TOWER && struct.energy < struct.energyCapacity * (struct.room.memory.defcon > 0 ? 0.5 : 0.4)) {
 						structPriority[STRUCTURE_TOWER] = 1;
 						structPriority[STRUCTURE_SPAWN] = 2;
 						structPriority[STRUCTURE_EXTENSION] = 2;
