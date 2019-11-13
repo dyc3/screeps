@@ -26,6 +26,9 @@ var roleRepairer = {
 		}
 		var targets = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
+			    if (struct.owner && struct.owner.username !== global.WHOAMI) {
+			        return false;
+			    }
 				var flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
@@ -62,6 +65,9 @@ var roleRepairer = {
 		if (targets.length == 0) {
 			targets = creep.room.find(FIND_STRUCTURES, {
 				filter: (struct) => {
+				    if (struct.owner && struct.owner.username !== global.WHOAMI) {
+			            return false;
+			        }
 					var flags = struct.pos.lookFor(LOOK_FLAGS);
 					if (flags.length > 0) {
 						if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
@@ -127,7 +133,7 @@ var roleRepairer = {
 			creep.memory.repairTarget = targets[0].id;
 		}
 		else {
-			console.log(creep.name, "WARN: no repair targets found");
+			creep.log("WARN: no repair targets found");
 			Memory.disable_repair_search = true;
 		}
 	},

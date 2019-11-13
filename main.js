@@ -609,12 +609,13 @@ function doCreepSpawning() {
 
 				if (needOtherRoomSpawns) {
 					console.log("Using spawns from another room to spawn creeps for", room.name);
-					let otherRooms = _.filter(rooms, r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
+					let otherRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, room.name), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
 					if (otherRooms.length === 0) {
 						console.log("WARN: All other rooms don't have enough energy to spawn creeps");
 						continue;
 					}
-					let target_room = rooms[Math.floor(Math.random() * rooms.length)];
+				// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
+					let target_room = otherRooms[0];
 					spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
 					if (spawns.length === 0) {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
@@ -694,15 +695,22 @@ function doAutoTrading() {
 				console.log("WARN: could not find", mineral, "in minimumPrice");
 				continue;
 			}
-			if (room.terminal.cooldown > 0) {
+			if (room.terminal.cooldown > 0 || room.terminal.owner.username !== global.WHOAMI) {
 				continue;
 			}
-			if (room.storage.store[RESOURCE_ENERGY] < 10000) {
+			if (room.storage && room.storage.store[RESOURCE_ENERGY] < 10000 || !room.storage) {
 				// ensure we have some energy in reserve
 				continue;
 			}
-			if (room.terminal.store[mineral] < 10000) {
-				continue;
+			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR) {
+			    if (room.terminal.store[mineral] < 3000) {
+    				continue;
+    			}
+			}
+			else {
+			    if (room.terminal.store[mineral] < 10000) {
+    				continue;
+    			}
 			}
 
 			let buyOrders = Game.market.getAllOrders(function(order){

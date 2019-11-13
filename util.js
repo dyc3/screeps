@@ -12,8 +12,9 @@ let util = {
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(29, 43, "W15N9"))
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(8, 15, "W15N9"))
 	 */
-	findClosestOwnedRooms(targetPos) {
+	findClosestOwnedRooms(targetPos, filterCallback=room => true) {
 		let rooms = this.getOwnedRooms();
+		rooms = _.filter(rooms, filterCallback);
 		rooms.sort((a, b) => {
 			let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, a.name) - Game.map.getRoomLinearDistance(targetPos.roomName, b.name);
 			if (roomDistance !== 0) {

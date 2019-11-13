@@ -126,7 +126,8 @@ function getAttackerQuota() {
 }
 
 function getRepairerQuota(room) {
-	if (room.controller.level >= 6) {
+    let rooms = util.getOwnedRooms();
+	if (room.controller.level >= (rooms.length > 1 ? 4 : 6)) {
 		return 1;
 	}
 	return 0;

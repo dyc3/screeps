@@ -10,11 +10,11 @@ let taskGather = {
 		// Pick up dropped resources
 		let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 30, {
 			filter: (drop) => {
+				if (creep.memory.role !== "manager" && creep.memory.role !== "scientist" && drop.resourceType !== RESOURCE_ENERGY) {
+					return false;
+				}
 				if (creep.pos.getRangeTo(drop.pos) <= 2) {
 					return true;
-				}
-				if (drop.resourceType !== RESOURCE_ENERGY) {
-					return false;
 				}
 				if (drop.amount < droppedEnergyGatherMinimum) {
 					return false;
@@ -67,6 +67,9 @@ let taskGather = {
 					}
 					if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
 						return false;
+					}
+					if (tomb.store[RESOURCE_ENERGY] < 10) {
+					    return false;
 					}
 
 					return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;

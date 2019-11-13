@@ -45,6 +45,9 @@ function doAquire(creep, passively=false) {
 				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
 					return false;
 				}
+				if (tomb.store[RESOURCE_ENERGY] < droppedEnergyGatherMinimum) {
+				    return false;
+				}
 
 				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
 			}
@@ -153,6 +156,9 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_FACTORY) {
+						    if (struct.owner.username !== global.WHOAMI) {
+						        return true;
+						    }
 							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
 								return true;
 							}
@@ -304,11 +310,11 @@ var roleManager = {
 			}
 		}
 
-		if (!creep.memory.transporting && creep.carry[RESOURCE_ENERGY] > 0) {
+		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > 0) {
 			creep.memory.transporting = true;
 			creep.say("transport");
 		}
-		if (creep.memory.transporting && creep.carry[RESOURCE_ENERGY] <= 0) {
+		if (creep.memory.transporting && creep.store[RESOURCE_ENERGY] <= 0) {
 			creep.memory.transporting = false;
 			creep.say("aquiring");
 		}

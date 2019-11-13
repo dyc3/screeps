@@ -39,33 +39,16 @@ let roleTmpDelivery = {
 	 */
 	shouldRenew(creep) {
 		if (this.haveSettingsChanged(creep)) {
-			delete creep.memory._multiRoomDistance;
-			delete creep.memory._routeDistanceRough;
+			delete creep.memory._routeDistance;
+		}
+		
+		if (!creep.memory._routeDistance) {
+		    let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
+		    let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
+			creep.memory._routeDistance = util.calculateEta(creep, traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path, true);
 		}
 
-		if (!creep.memory._multiRoomDistance) {
-			// _multiRoomDistance is the number of rooms on the route
-
-			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
-			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
-
-			if (withdrawTarget.room.name !== depositTarget.room.name) {
-				let multiRoomRoute = Game.map.findRoute(withdrawTarget.room, depositTarget.room);
-				creep.memory._multiRoomDistance = multiRoomRoute.length;
-			}
-			else {
-				creep.memory._multiRoomDistance = 1;
-			}
-		}
-
-		if (!creep.memory._routeDistanceRough) {
-			// This is an EXTREMELY rough estimate. Technically, it doesn't have to be cached because
-			// it's so computationally simple, but setting it up like this will make it easier to do something
-			// more accurate later.
-			creep.memory._routeDistanceRough = creep.memory._multiRoomDistance * 60 + 20;
-		}
-
-		return creep.ticksToLive <= creep._routeDistanceRough;
+		return creep.ticksToLive <= creep._routeDistance;
 	},
 	run: function(creep) {
 		if (!creep.memory.withdrawTargetId) {

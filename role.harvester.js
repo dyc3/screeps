@@ -297,6 +297,26 @@ let roleHarvester = {
 		}
 	},
 
+    passiveMaintainContainer(creep) {
+		if (creep.store[RESOURCE_ENERGY] === 0) {
+			return;
+		}
+
+		let lookResult = creep.pos.look();
+		for (let result of lookResult) {
+			if (result.type === LOOK_CONSTRUCTION_SITES) {
+				creep.build(result.constructionSite);
+				return;
+			}
+			else if (result.type === LOOK_STRUCTURES) {
+				if (result.structure.hits < result.structure.hitsMax) {
+					creep.repair(result.structure);
+				}
+				return;
+			}
+		}
+	},
+    
 	/** @param {Creep} creep **/
 	run: function(creep) {
 		if (USE_RUN_NEW)
@@ -551,17 +571,7 @@ let roleHarvester = {
 			}
 		}
 		else {
-			// if (!creep.memory.transferTarget) {
-			// 	let targets = this.findTransferTargets(creep);
-			// 	if(targets.length > 0) {
-			// 		creep.memory.transferTarget = targets[0].id;
-			// 	}
-			// 	else {
-			// 		return;
-			// 	}
-			// }
-
-			var target = Game.getObjectById(creep.memory.transferTarget);
+			let target = Game.getObjectById(creep.memory.transferTarget);
 			if (!target) {
 				target = this.getTransferTarget(creep);
 				if (!target) {
@@ -579,7 +589,7 @@ let roleHarvester = {
 			if (transfer_result === OK && creep.memory.depositMode === "recovery") {
 				delete creep.memory.transferTarget;
 			}
-			if (transfer_result === ERR_NOT_IN_RANGE) {
+			else if (transfer_result === ERR_NOT_IN_RANGE) {
 				creep.travelTo(target, {visualizePathStyle:{}});
 			}
 			else if (transfer_result === ERR_FULL) {
@@ -593,6 +603,10 @@ let roleHarvester = {
 			else if (transfer_result !== OK) {
 				console.log(creep.name, "failed to transfer:", transfer_result);
 			}
+		}
+		
+		if (creep.memory.depositMode !== "recovery" && creep.store[RESOURCE_ENERGY] > 0 && Game.time % 6 == 0 && creep.pos.lookFor(LOOK_ENERGY).length > 0) {
+		    this.passiveMaintainContainer(creep);
 		}
 	}
 };
