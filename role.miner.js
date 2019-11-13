@@ -28,7 +28,7 @@ let roleMiner = {
 		for (let flag of fillFlags) {
 			let material = flag.name.split(":")[1];
 			if (creep.carry[material] > 0) {
-				let target = flag.pos.lookFor(LOOK_STRUCTURES).filter((struct) => { return struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_TERMINAL })[0];
+				let target = flag.pos.lookFor(LOOK_STRUCTURES).filter(struct =>  struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_TERMINAL || struct.structureType == STRUCTURE_FACTORY )[0];
 				creep.memory.storageTarget = target.id;
 				creep.memory.materialToStore = material;
 				return target;
