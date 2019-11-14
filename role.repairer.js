@@ -10,13 +10,6 @@ function getRepairerCount(room) {
 
 var roleRepairer = {
 	findRepairTarget: function(creep) {
-		if (Memory.disable_repair_search) {
-			return;
-		}
-
-		// if (creep.memory.role == "repairer") {
-		//	console.log(creep.name,"finding new target");
-		// }
 		var room = undefined;
 		if (Game.rooms[creep.memory.targetRoom]) {
 			room = Game.rooms[creep.memory.targetRoom];
@@ -134,7 +127,6 @@ var roleRepairer = {
 		}
 		else {
 			creep.log("WARN: no repair targets found");
-			Memory.disable_repair_search = true;
 		}
 	},
 

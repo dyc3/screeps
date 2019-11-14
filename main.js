@@ -675,7 +675,7 @@ function doAutoTrading() {
 	minimumPrice[RESOURCE_CATALYST] = 0.5;
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
-	
+
 	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.3;
 	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.3;
 	minimumPrice[RESOURCE_REDUCTANT] = 0.65;
@@ -952,20 +952,20 @@ function doWorkFactories() {
     let rooms = util.getOwnedRooms();
     for (let room of rooms) {
         let factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
-        
+
         if (!factory) {
             continue;
         }
-        
+
         // FIXME: make this more dynamic
         // right now, everything is hard coded
-        
+
         // RESOURCE_UTRIUM_BAR
         // RESOURCE_REDUCTANT
         // RESOURCE_ZYNTHIUM_BAR
         const productionTarget = RESOURCE_UTRIUM_BAR;
         console.log(`[work-factories] production target: ${productionTarget}`);
-        
+
         // determine if the factory has enough resources to produce the given target
         let canProduce = true;
         for (let component in COMMODITIES[productionTarget].components) {
@@ -982,7 +982,7 @@ function doWorkFactories() {
                 break;
             }
         }
-        
+
         console.log(`[work-factories] production target: ${productionTarget}, can produce: ${canProduce}`);
         if (canProduce) {
             factory.produce(productionTarget);
@@ -1103,9 +1103,6 @@ function main() {
 		}
 	}
 
-	if (Game.time % 7 === 0) {
-		delete Memory.disable_repair_search;
-	}
 	let rooms = util.getOwnedRooms();
 
 	// do tower stuff
