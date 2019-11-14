@@ -380,7 +380,7 @@ var roleManager = {
 					}
 
 					if (struct.structureType === STRUCTURE_EXTENSION || struct.structureType === STRUCTURE_SPAWN) {
-						let relayCreeps = _.filter(util.getCreeps("relay"), c => c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
+						let relayCreeps = _.filter(util.getCreeps("relay"), c => !c.spawning && c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
 						let isNearRelay = false;
 						for (let relay of relayCreeps) {
 							if (struct.pos.isNearTo(relay)) {
