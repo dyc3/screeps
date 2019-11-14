@@ -10,9 +10,9 @@ function getRepairerCount(room) {
 
 var roleRepairer = {
 	findRepairTarget: function(creep) {
-	    if (Memory.disable_repair_search) {
-	        return;
-	    }
+		if (Memory.disable_repair_search) {
+			return;
+		}
 
 		// if (creep.memory.role == "repairer") {
 		//	console.log(creep.name,"finding new target");
@@ -26,9 +26,9 @@ var roleRepairer = {
 		}
 		var targets = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
-			    if (struct.owner && struct.owner.username !== global.WHOAMI) {
-			        return false;
-			    }
+				if (struct.owner && struct.owner.username !== global.WHOAMI) {
+					return false;
+				}
 				var flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
@@ -65,9 +65,9 @@ var roleRepairer = {
 		if (targets.length == 0) {
 			targets = creep.room.find(FIND_STRUCTURES, {
 				filter: (struct) => {
-				    if (struct.owner && struct.owner.username !== global.WHOAMI) {
-			            return false;
-			        }
+					if (struct.owner && struct.owner.username !== global.WHOAMI) {
+						return false;
+					}
 					var flags = struct.pos.lookFor(LOOK_FLAGS);
 					if (flags.length > 0) {
 						if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
@@ -203,7 +203,7 @@ var roleRepairer = {
 
 			// if we don't have a lot of energy, refill before repairing
 			if (creep.carry[RESOURCE_ENERGY] <= creep.carryCapacity * 0.1) {
-			    creep.memory.repairing = false;
+				creep.memory.repairing = false;
 			}
 		}
 
