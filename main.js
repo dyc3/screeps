@@ -679,6 +679,7 @@ function doAutoTrading() {
 	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.3;
 	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.3;
 	minimumPrice[RESOURCE_REDUCTANT] = 0.65;
+	minimumPrice[RESOURCE_BATTERY] = 0.05;
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -703,14 +704,14 @@ function doAutoTrading() {
 				continue;
 			}
 			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR) {
-			    if (room.terminal.store[mineral] < 3000) {
-    				continue;
-    			}
+				if (room.terminal.store[mineral] < 3000) {
+					continue;
+				}
 			}
 			else {
-			    if (room.terminal.store[mineral] < 10000) {
-    				continue;
-    			}
+				if (room.terminal.store[mineral] < 10000) {
+					continue;
+				}
 			}
 
 			let buyOrders = Game.market.getAllOrders(function(order){
@@ -949,45 +950,54 @@ function satisfyClaimTargets() {
 }
 
 function doWorkFactories() {
-    let rooms = util.getOwnedRooms();
-    for (let room of rooms) {
-        let factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
+	let rooms = util.getOwnedRooms();
+	for (let room of rooms) {
+		let factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
 
-        if (!factory) {
-            continue;
-        }
+		if (!factory || factory.cooldown > 0) {
+			continue;
+		}
 
-        // FIXME: make this more dynamic
-        // right now, everything is hard coded
+		// FIXME: make this more dynamic
+		// right now, everything is hard coded
 
-        // RESOURCE_UTRIUM_BAR
-        // RESOURCE_REDUCTANT
-        // RESOURCE_ZYNTHIUM_BAR
-        const productionTarget = RESOURCE_UTRIUM_BAR;
-        console.log(`[work-factories] production target: ${productionTarget}`);
+		let productionTargets = [RESOURCE_UTRIUM_BAR, RESOURCE_ZYNTHIUM_BAR, RESOURCE_REDUCTANT];
 
-        // determine if the factory has enough resources to produce the given target
-        let canProduce = true;
-        for (let component in COMMODITIES[productionTarget].components) {
-            console.log(`[work-factories] factory has component ${component}?`);
-            if (!factory.store.hasOwnProperty(component)) {
-                console.log(`[work-factories] no ${component} found`);
-                canProduce = false;
-                break;
-            }
-            console.log(`[work-factories] found ${factory.store[component]} ${component}`);
-            if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
-                console.log(`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`);
-                canProduce = false;
-                break;
-            }
-        }
+		if (room.storage) {
+			if (room.storage.store[RESOURCE_ENERGY] > 800000 && factory.store[RESOURCE_BATTERY] < 5000) {
+				productionTargets.push(RESOURCE_BATTERY);
+			}
+			else if (room.storage.store[RESOURCE_ENERGY] < 200000) {
+				productionTargets.push(RESOURCE_ENERGY);
+			}
+		}
 
-        console.log(`[work-factories] production target: ${productionTarget}, can produce: ${canProduce}`);
-        if (canProduce) {
-            factory.produce(productionTarget);
-        }
-    }
+
+		for (let productionTarget of productionTargets) {
+			console.log(`[work-factories] production target: ${productionTarget}`);
+			let canProduce = true;
+			for (let component in COMMODITIES[productionTarget].components) {
+				console.log(`[work-factories] factory has component ${component}?`);
+				if (!factory.store.hasOwnProperty(component)) {
+					console.log(`[work-factories] no ${component} found`);
+					canProduce = false;
+					break;
+				}
+				console.log(`[work-factories] found ${factory.store[component]} ${component}`);
+				if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
+					console.log(`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`);
+					canProduce = false;
+					break;
+				}
+			}
+
+			console.log(`[work-factories] production target: ${productionTarget}, can produce: ${canProduce}`);
+			if (canProduce) {
+				factory.produce(productionTarget);
+				break;
+			}
+		}
+	}
 }
 
 let jobs = {
@@ -1375,9 +1385,9 @@ function main() {
 // profiler.enable();
 
 module.exports = {
-    loop() {
-    // 	profiler.wrap(function() {
-    		main();
-    // 	});
-    },
+	loop() {
+	// 	profiler.wrap(function() {
+			main();
+	// 	});
+	},
 }
