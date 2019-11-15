@@ -5,6 +5,56 @@ let util = require("util");
 let droppedEnergyGatherMinimum = 100; // TODO: make this a global constant somehow
 
 function doAquire(creep, passively=false) {
+	if (creep.memory.aquireTarget && !passively) {
+		let aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
+		if (aquireTarget) {
+			creep.room.visual.circle(aquireTarget.pos, {stroke:"#ff0000", fill:"transparent", radius: 0.8});
+			if (creep.pos.isNearTo(aquireTarget)) {
+				// duck typing to figure out what method to use
+				if (aquireTarget.store) {
+					// has a store
+
+					if (aquireTarget instanceof Tombstone || aquireTarget instanceof Ruin) {
+						// prioritize "exotic" resources
+						for (let r = 0; r < RESOURCES_ALL.length; r++) {
+							if (_.sum(creep.store) == creep.carryCapacity) {
+								break;
+							}
+							let resource = RESOURCES_ALL[r];
+							if (resource == RESOURCE_ENERGY) {
+								continue;
+							}
+							if (aquireTarget.store[resource] > 0) {
+								creep.withdraw(target, resource);
+							}
+						}
+					}
+
+					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+
+					if (aquireTarget.store[RESOURCE_ENERGY] == 0) {
+						delete creep.memory.aquireTarget;
+					}
+				}
+				else if (aquireTarget instanceof Resource) {
+					// dropped resource
+					creep.pickup(aquireTarget);
+				}
+				else {
+					creep.say("help");
+					creep.log("ERR: I don't know how to withdraw from", aquireTarget);
+				}
+			}
+			else {
+				creep.travelTo(aquireTarget, {visualizePathStyle:{}});
+			}
+			return;
+		}
+		else {
+			delete creep.memory.aquireTarget;
+		}
+	}
+
 	var droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, (passively ? 1 : 20), {
 		filter: (drop) => {
 			if (!creep.pos.isNearTo(drop) && drop.amount < droppedEnergyGatherMinimum) {
@@ -32,6 +82,7 @@ function doAquire(creep, passively=false) {
 		if (closest) {
 			creep.room.visual.circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
+				creep.memory.aquireTarget = closest.id;
 				creep.travelTo(closest, {visualizePathStyle:{}});
 			}
 		}
@@ -46,19 +97,19 @@ function doAquire(creep, passively=false) {
 					return false;
 				}
 				if (tomb.store[RESOURCE_ENERGY] < droppedEnergyGatherMinimum) {
-				    return false;
+					return false;
 				}
 
 				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
 			}
 		});
-		if (tombstones.length > 0)
-		{
+		if (tombstones.length > 0) {
 			// NOTE: it might be better to prioritize tombs that will decay sooner (TOMBSTONE_DECAY_PER_PART * [# of creep parts])
 			// prioritize tombs with more resources
 			tombstones = tombstones.sort((a, b) => { return _.sum(b.store) - _.sum(a.store); });
 			let target = tombstones[0];
 			creep.room.visual.circle(target.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
+			creep.memory.aquireTarget = target.id;
 			if (creep.pos.isNearTo(target)) {
 				// prioritize "exotic" resources
 				for (let r = 0; r < RESOURCES_ALL.length; r++) {
@@ -148,17 +199,17 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_TERMINAL) {
-						    if (struct.owner.username !== global.WHOAMI) {
-						        return true;
-						    }
-						    else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
+							if (struct.owner.username !== global.WHOAMI) {
+								return true;
+							}
+							else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
 								return true;
 							}
 						}
 						else if (struct.structureType == STRUCTURE_FACTORY) {
-						    if (struct.owner.username !== global.WHOAMI) {
-						        return true;
-						    }
+							if (struct.owner.username !== global.WHOAMI) {
+								return true;
+							}
 							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
 								return true;
 							}
@@ -310,6 +361,13 @@ var roleManager = {
 			}
 		}
 
+		if (creep.memory.transporting) {
+			delete creep.memory.aquireTarget;
+		}
+		else {
+			delete creep.memory.transportTarget;
+		}
+
 		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > 0) {
 			creep.memory.transporting = true;
 			creep.say("transport");
@@ -355,9 +413,9 @@ var roleManager = {
 					}
 
 					if (struct.structureType == STRUCTURE_TERMINAL) {
-					    if (struct.owner.username !== global.WHOAMI) {
-					        return false;
-					    }
+						if (struct.owner.username !== global.WHOAMI) {
+							return false;
+						}
 						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
 							if (struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
 								return true;

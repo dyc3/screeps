@@ -43,7 +43,7 @@ let roleCarrier = {
 					creep.repair(result.structure);
 				}
 				if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
-				    creep.cancelOrder("move");
+					creep.cancelOrder("move");
 				}
 				return;
 			}
@@ -72,9 +72,14 @@ let roleCarrier = {
 			let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
 
 			if (!creep.memory.droppedEnergyId) {
-				let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
-				if (lookResult.length > 0) {
-					creep.memory.droppedEnergyId = lookResult[0].id;
+				try {
+					let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
+					if (lookResult.length > 0) {
+						creep.memory.droppedEnergyId = lookResult[0].id;
+					}
+				}
+				catch {
+					creep.log("ERR: don't have vision for room at", harvestPos);
 				}
 			}
 

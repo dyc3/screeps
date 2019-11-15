@@ -12,12 +12,10 @@ function getUpgraderQuota(room) {
 				break;
 			case 2:
 			case 3:
-				value = 2;
-				break;
 			case 4:
-				value = 2;
-				break;
 			case 5:
+				value = util.getOwnedRooms().length > 1 ? 4 : 2;
+				break;
 			case 6:
 				value = 2;
 				break;
@@ -34,8 +32,7 @@ function getUpgraderQuota(room) {
 		}
 		return value;
 	}
-	if (room.controller.pos.getRangeTo(room.storage) <= 5)
-	{
+	if (room.controller.pos.getRangeTo(room.storage) <= 5) {
 		return 1;
 	}
 	return _getQuota(room.controller.level);
@@ -43,7 +40,6 @@ function getUpgraderQuota(room) {
 
 /** @param {Room} room **/
 function getScientistQuota(room) {
-	return 0;
 	if (room.controller.level >= 6 && util.getStructures(room, STRUCTURE_LAB).length > 0) {
 		return 1;
 	}
@@ -88,7 +84,7 @@ function getRelayQuota(room) {
 	}
 	let count = linkCount;
 	if (count == 2) {
-	    count = 3;
+		count = 3;
 	}
 	else if (count > 5) {
 		count = 5;
@@ -109,7 +105,7 @@ function getMinerQuota() {
 // 		}
 // 	}
 // 	return count;
-    return 2;
+	return 2;
 }
 
 function getAttackerQuota() {
@@ -126,7 +122,7 @@ function getAttackerQuota() {
 }
 
 function getRepairerQuota(room) {
-    let rooms = util.getOwnedRooms();
+	let rooms = util.getOwnedRooms();
 	if (room.controller.level >= (rooms.length > 1 ? 4 : 6)) {
 		return 1;
 	}
@@ -154,7 +150,7 @@ let creepUpgrader = {
 			 * @param {Room} targetRoom The room that the creep will go to
 			 */
 			buildBestBody(spawningRoom, targetRoom) {
-			    // TODO
+				// TODO
 			},
 		},
 		"upgrader":{

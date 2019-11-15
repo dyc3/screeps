@@ -7,56 +7,59 @@ let droppedEnergyGatherMinimum = 50;
 let taskGather = {
 	run: function(creep) {
 
-		// Pick up dropped resources
-		let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 30, {
-			filter: (drop) => {
-				if (creep.memory.role !== "manager" && creep.memory.role !== "scientist" && drop.resourceType !== RESOURCE_ENERGY) {
-					return false;
-				}
-				if (creep.pos.getRangeTo(drop.pos) <= 2) {
-					return true;
-				}
-				if (drop.amount < droppedEnergyGatherMinimum) {
-					return false;
-				}
-				if (util.isDistFromEdge(drop.pos, 2)) {
-					return false;
-				}
-				if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
-					return false;
-				}
-
-				if (creep.room.storage && creep.room.controller.level > 4) {
-					if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
-						drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+		if (!creep.room.storage || (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] < 100000)) {
+			// Pick up dropped resources
+			let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 30, {
+				filter: (drop) => {
+					if (creep.memory.role !== "manager" && creep.memory.role !== "scientist" && drop.resourceType !== RESOURCE_ENERGY) {
 						return false;
 					}
+					if (creep.pos.getRangeTo(drop.pos) <= 2) {
+						return true;
+					}
+					if (drop.amount < droppedEnergyGatherMinimum) {
+						return false;
+					}
+					if (util.isDistFromEdge(drop.pos, 2)) {
+						return false;
+					}
+					if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
+						return false;
+					}
+
+					if (creep.room.storage && creep.room.controller.level > 4) {
+						if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
+							drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+							return false;
+						}
+					}
+
+					//console.log("ENERGY DROP",drop.id,drop.amount);
+					return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
 				}
+			});
+			if (droppedResources.length > 0) {
+				let closest = creep.pos.findClosestByPath(droppedResources);
+				if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
+					creep.travelTo(closest);
+				}
+				return;
+			}
 
-				//console.log("ENERGY DROP",drop.id,drop.amount);
-				return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
+			let ruins = creep.pos.findInRange(FIND_RUINS, 40, {
+				filter: (ruin) => {
+					return ruin.store[RESOURCE_ENERGY] > 0
+				}
+			});
+			if (ruins.length > 0) {
+				let closest = creep.pos.findClosestByPath(ruins);
+				if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					creep.travelTo(closest);
+				}
+				return;
 			}
-		});
-		if (droppedResources.length > 0) {
-			let closest = creep.pos.findClosestByPath(droppedResources);
-			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(closest);
-			}
-			return;
 		}
 
-		let ruins = creep.pos.findInRange(FIND_RUINS, 40, {
-			filter: (ruin) => {
-				return ruin.store[RESOURCE_ENERGY] > 0
-			}
-		});
-		if (ruins.length > 0) {
-			let closest = creep.pos.findClosestByPath(ruins);
-			if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(closest);
-			}
-			return;
-		}
 
 		// Pick up resources from tombstones
 		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller && creep.room.controller.level < 6)) {
@@ -69,7 +72,7 @@ let taskGather = {
 						return false;
 					}
 					if (tomb.store[RESOURCE_ENERGY] < 10) {
-					    return false;
+						return false;
 					}
 
 					return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;

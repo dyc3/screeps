@@ -41,10 +41,10 @@ let roleTmpDelivery = {
 		if (this.haveSettingsChanged(creep)) {
 			delete creep.memory._routeDistance;
 		}
-		
+
 		if (!creep.memory._routeDistance) {
-		    let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
-		    let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
+			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
+			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 			creep.memory._routeDistance = util.calculateEta(creep, traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path, true);
 		}
 
@@ -81,7 +81,18 @@ let roleTmpDelivery = {
 
 		if (creep.memory.delivering) {
 			if (creep.pos.isNearTo(depositTarget)) {
-				let transferResult = creep.transfer(depositTarget, RESOURCE_ENERGY);
+				let transferResult;
+				if (creep.memory.transportOther) {
+					for (let resource of RESOURCES_ALL) {
+						if (creep.store[resource] > 0) {
+							transferResult = creep.transfer(depositTarget, resource);
+							break;
+						}
+					}
+				}
+				else {
+					transferResult = creep.transfer(depositTarget, RESOURCE_ENERGY);
+				}
 				if (transferResult !== ERR_FULL && _.sum(creep.carry) < creep.carryCapacity * 0.25) {
 					creep.memory.delivering = false;
 
@@ -105,7 +116,20 @@ let roleTmpDelivery = {
 		}
 		else {
 			if (creep.pos.isNearTo(withdrawTarget)) {
-				creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
+				if (creep.memory.transportOther) {
+					for (let resource of RESOURCES_ALL) {
+						if (_.sum(creep.store) == creep.carryCapacity) {
+							break;
+						}
+						if (resource == RESOURCE_ENERGY) {
+							continue;
+						}
+						creep.withdraw(withdrawTarget, resource);
+					}
+				}
+				else {
+					creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
+				}
 				if (_.sum(creep.carry) < creep.carryCapacity * 0.75) {
 					creep.memory.delivering = true;
 

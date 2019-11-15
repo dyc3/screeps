@@ -70,18 +70,18 @@ let roleRelay = {
 			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
 				rootNeedsEnergy = true;
 			}
-		    //creep.log("rootNeedsEnergy:", rootNeedsEnergy);
+			//creep.log("rootNeedsEnergy:", rootNeedsEnergy);
 		}
 
 		// check if the creep is carrying energy, and pick some up if needed
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
 			if (rootNeedsEnergy) {
-			    if (creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
-			        creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
-			    }
-			    else {
-			        creep.withdraw(storage, RESOURCE_ENERGY);
-			    }
+				if (creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
+					creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
+				}
+				else {
+					creep.withdraw(storage, RESOURCE_ENERGY);
+				}
 			}
 			else {
 				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
@@ -99,6 +99,10 @@ let roleRelay = {
 		// check if all the fill targets are full.
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
 			let struct = Game.getObjectById(id);
+			if (!struct) {
+				creep.log("WARN: structure with id", id, "no longer exists!");
+				return false;
+			}
 			if (struct.structureType == STRUCTURE_TERMINAL) {
 				return struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget;
 			}
