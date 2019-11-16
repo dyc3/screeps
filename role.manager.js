@@ -194,6 +194,17 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_LINK) {
+							let relayCreeps = _.filter(util.getCreeps("relay"), c => !c.spawning && c.memory.assignedPos.roomName === creep.memory.targetRoom && c.pos.isEqualTo(new RoomPosition(c.memory.assignedPos.x, c.memory.assignedPos.y, c.memory.assignedPos.roomName)));
+							let isNearRelay = false;
+							for (let relay of relayCreeps) {
+								if (struct.pos.isNearTo(relay)) {
+									isNearRelay = true;
+									break;
+								}
+							}
+							if (isNearRelay) {
+								return false;
+							}
 							if (struct.energy > 0 && struct.pos.inRangeTo(struct.room.storage, 2)) {
 								return true;
 							}
