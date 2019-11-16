@@ -35,10 +35,10 @@ let roleInvaderDestroyer = {
 		}
 		if (Memory.attack.currentTarget) {
 			let target = Game.getObjectById(Memory.attack.currentTarget);
-			if (target.structureType === STRUCTURE_KEEPER_LAIR) {
-				creep.log("WARN: current attack target is a keeper lair, which is invalid.");
-			}
 			if (target) {
+				if (target.structureType === STRUCTURE_KEEPER_LAIR) {
+					creep.log("WARN: current attack target is a keeper lair, which is invalid.");
+				}
 				return target;
 			}
 			else {
@@ -97,7 +97,7 @@ let roleInvaderDestroyer = {
 				creep.rangedAttack(currentTarget);
 			}
 			else {
-				creep.travelTo(currentTarget);
+				creep.travelTo(currentTarget, { range: 3 });
 			}
 		}
 		else if (creep.memory.mode === "heal") {

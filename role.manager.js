@@ -25,7 +25,7 @@ function doAquire(creep, passively=false) {
 								continue;
 							}
 							if (aquireTarget.store[resource] > 0) {
-								creep.withdraw(target, resource);
+								creep.withdraw(aquireTarget, resource);
 							}
 						}
 					}
@@ -394,6 +394,11 @@ var roleManager = {
 			if (creep.memory.transportTarget) {
 				let transportTarget = Game.getObjectById(creep.memory.transportTarget);
 				if (transportTarget) {
+					if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
+						delete creep.memory.transportTarget;
+						return;
+					}
+
 					creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
 					if (creep.pos.isNearTo(transportTarget)) {
 						// duck typing to figure out what method to use

@@ -168,6 +168,9 @@ let roleCarrier = {
 					creep.log("target: ", target);
 					if (creep.pos.isNearTo(target)) {
 						for (const resource of RESOURCES_ALL) {
+							if (target.store[resource] == 0) {
+								continue;
+							}
 							let withdrawResult = creep.withdraw(target, resource);
 							if (withdrawResult !== OK) {
 								creep.log("ERR: can't withdraw from target", target, "error", withdrawResult);
