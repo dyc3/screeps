@@ -1078,7 +1078,7 @@ function main() {
 		Memory.terminalEnergyTarget = 50000;
 	}
 	if (!Memory.factoryEnergyTarget) {
-		Memory.factoryEnergyTarget = 8000;
+		Memory.factoryEnergyTarget = 5000;
 	}
 	if (!Memory.remoteMining) {
 		Memory.remoteMining = {

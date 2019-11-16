@@ -30,8 +30,8 @@ let roleRemoteHarvester = {
 		}
 
 		// TODO: cache path to harvest target
-		if (!creep.pos.isNearTo(harvestTarget)) {
-			let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
+		let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
+		if (!creep.pos.isEqualTo(harvestPos)) {
 			creep.travelTo(harvestPos);
 			return;
 		}
