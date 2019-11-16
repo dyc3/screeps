@@ -977,13 +977,13 @@ function doWorkFactories() {
 			console.log(`[work-factories] production target: ${productionTarget}`);
 			let canProduce = true;
 			for (let component in COMMODITIES[productionTarget].components) {
-				console.log(`[work-factories] factory has component ${component}?`);
+				// console.log(`[work-factories] factory has component ${component}?`);
 				if (!factory.store.hasOwnProperty(component)) {
 					console.log(`[work-factories] no ${component} found`);
 					canProduce = false;
 					break;
 				}
-				console.log(`[work-factories] found ${factory.store[component]} ${component}`);
+				// console.log(`[work-factories] found ${factory.store[component]} ${component}`);
 				if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
 					console.log(`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`);
 					canProduce = false;
