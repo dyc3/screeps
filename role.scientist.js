@@ -15,10 +15,10 @@ function doNoJobsStuff(creep) {
 
 var roleScientist = {
 	run: function(creep) {
-	    if (creep.fatigue > 0) {
-	        return;
-	    }
-	    
+		if (creep.fatigue > 0) {
+			return;
+		}
+
 		// if (!Memory.scienceQueue) {
 			// Memory.scienceQueue = [];
 			// sample science queue item: {"target":"G","amount":5000}
@@ -53,50 +53,28 @@ var roleScientist = {
 			}
 			return true;
 		}
-		
+
 		// NOTE
 		// `targetStruct` is where we deliver the resource
 		// `targetStorage` is where we grab the resource from
 
 		let neededMinerals = [];
 		if (!creep.memory.targetStruct) {
-            // TODO: Loop over flags instead of structures, because there should be less flags than structures at any given time.
-// 			let rooms = util.getOwnedRooms();
-// 			for (let r = 0; r < rooms.length; r++) {
-// 				let room = rooms[r];
+			for (let f in Game.flags) {
+				if (!f.includes("fill")) {
+					continue;
+				}
 
-// 				let structures = util.getStructures(room);
-// 				for (let s = 0; s < structures.length; s++) {
-// 					let struct = structures[s];
-// 					if (isStructureFull(struct)) {
-// 						continue;
-// 					}
-
-// 					let fillFlags = struct.pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("fill"));
-// 					if (fillFlags.length > 0) {
-// 						for (let f = 0; f < fillFlags.length; f++) {
-// 							let fillFlag = fillFlags[f];
-// 							neededMinerals[fillFlag.name.split(":")[1]] = struct;
-// 						}
-// 					}
-// 				}
-// 			}
-
-            for (let f in Game.flags) {
-                if (!f.includes("fill")) {
-                    continue;
-                }
-                
-                let flag = Game.flags[f];
-                let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
-                if (isStructureFull(struct)) {
-                    continue;
-                }
-                neededMinerals[flag.name.split(":")[1]] = struct;
-            }
+				let flag = Game.flags[f];
+				let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
+				if (isStructureFull(struct)) {
+					continue;
+				}
+				neededMinerals[flag.name.split(":")[1]] = struct;
+			}
 		}
 
-        // look for where to grab the resource from
+		// look for where to grab the resource from
 		if (!creep.memory.targetStorage) {
 			let targetStorage = undefined;
 			let _mineral = undefined;
@@ -105,11 +83,11 @@ var roleScientist = {
 				_mineral = key;
 				// console.log(creep.name, "checking inventory for any", key);
 				targetStorage = _.filter(util.getStructures(creep.room), struct => {
-				    // exclude structures that need a resource
+					// exclude structures that need a resource
 					if (struct.id == _.values(neededMinerals)[i].id) {
 						return false;
 					}
-					
+
 					// exclude labs if they have a fill flag, include them if they have a make flag (if enough resource is available to fill the creep)
 					if (struct.structureType == STRUCTURE_LAB) {
 						if (struct.mineralType != _mineral) {
@@ -128,7 +106,7 @@ var roleScientist = {
 							}
 						}
 					}
-					
+
 					// exclude all structures that are not storage, terminal, or container
 					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER && struct.structureType != STRUCTURE_FACTORY) {
 						return false;
@@ -150,7 +128,7 @@ var roleScientist = {
 					break;
 				}
 			}
-			
+
 			if (!targetStorage) {
 				// console.log(creep.name, "could not find targetStorage to get minerals from.");
 				delete creep.memory.targetStruct;
@@ -194,7 +172,7 @@ var roleScientist = {
 					creep.travelTo(targetStorage);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
-				    creep.log("withdraw: NOT ENOUGH RESOURCES");
+					creep.log("withdraw: NOT ENOUGH RESOURCES");
 					delete creep.memory.targetStruct;
 					delete creep.memory.targetStorage;
 					delete creep.memory.targetResource;
