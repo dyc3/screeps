@@ -676,9 +676,9 @@ function doAutoTrading() {
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.3;
-	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.3;
-	minimumPrice[RESOURCE_REDUCTANT] = 0.65;
+	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.32;
+	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.32;
+	minimumPrice[RESOURCE_REDUCTANT] = 0.64;
 	minimumPrice[RESOURCE_BATTERY] = 0.05;
 
 	for (let r = 0; r < rooms.length; r++) {
@@ -703,7 +703,7 @@ function doAutoTrading() {
 				// ensure we have some energy in reserve
 				continue;
 			}
-			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR) {
+			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR || mineral === RESOURCE_REDUCTANT) {
 				if (room.terminal.store[mineral] < 3000) {
 					continue;
 				}
