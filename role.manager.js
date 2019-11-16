@@ -30,7 +30,9 @@ function doAquire(creep, passively=false) {
 						}
 					}
 
-					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) == OK) {
+						creep.memory.lastWithdrawStructure = aquireTarget.id;
+					}
 
 					if (aquireTarget.store[RESOURCE_ENERGY] == 0) {
 						delete creep.memory.aquireTarget;
@@ -398,6 +400,10 @@ var roleManager = {
 						if (transportTarget.store) {
 							// has a store
 							let transferResult = creep.transfer(transportTarget, RESOURCE_ENERGY);
+
+							if (transferResult == OK) {
+								creep.memory.lastDepositStructure = transportTarget.id;
+							}
 
 							if (transferResult == ERR_FULL || _.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
 								delete creep.memory.transportTarget;
