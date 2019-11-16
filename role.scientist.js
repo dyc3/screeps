@@ -58,7 +58,7 @@ var roleScientist = {
 		// `targetStruct` is where we deliver the resource
 		// `targetStorage` is where we grab the resource from
 
-		let neededMinerals = [];
+		let neededMinerals = {};
 		if (!creep.memory.targetStruct) {
 			for (let f in Game.flags) {
 				if (!f.includes("fill")) {
@@ -70,19 +70,24 @@ var roleScientist = {
 				if (isStructureFull(struct)) {
 					continue;
 				}
-				neededMinerals[flag.name.split(":")[1]] = struct;
+				neededMinerals[flag.name.split(":")[1].split("_")[0]] = struct;
 			}
 		}
 
 		// look for where to grab the resource from
 		if (!creep.memory.targetStorage) {
+			creep.log("looking for target storage");
 			let targetStorage = undefined;
 			let _mineral = undefined;
 			for (let i = 0; i < _.keys(neededMinerals).length; i++) {
 				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
 				// console.log(creep.name, "checking inventory for any", key);
-				targetStorage = _.filter(util.getStructures(creep.room), struct => {
+				let structures = Game.structures;
+				for (let room of util.getOwnedRooms()) {
+					structures = structures.concat(util.getStructures(room, STRUCTURE_CONTAINER));
+				}
+				targetStorage = _.filter(structures, struct => {
 					// exclude structures that need a resource
 					if (struct.id == _.values(neededMinerals)[i].id) {
 						return false;
@@ -136,8 +141,8 @@ var roleScientist = {
 				return;
 			}
 		}
-		var targetStruct = Game.getObjectById(creep.memory.targetStruct);
-		var targetStorage = Game.getObjectById(creep.memory.targetStorage);
+		let targetStruct = Game.getObjectById(creep.memory.targetStruct);
+		let targetStorage = Game.getObjectById(creep.memory.targetStorage);
 
 		console.log(creep.name, "transfer", creep.memory.targetResource, "from", targetStorage, "=>", targetStruct);
 
