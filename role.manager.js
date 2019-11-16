@@ -389,6 +389,35 @@ var roleManager = {
 		}
 
 		if (creep.memory.transporting) {
+			if (creep.memory.transportTarget) {
+				let transportTarget = Game.getObjectById(creep.memory.transportTarget);
+				if (transportTarget) {
+					creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
+					if (creep.pos.isNearTo(transportTarget)) {
+						// duck typing to figure out what method to use
+						if (transportTarget.store) {
+							// has a store
+							let transferResult = creep.transfer(transportTarget, RESOURCE_ENERGY);
+
+							if (transferResult == ERR_FULL || _.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
+								delete creep.memory.transportTarget;
+							}
+						}
+						else {
+							creep.say("help");
+							creep.log("ERR: I don't know how to transfer to", transportTarget);
+						}
+					}
+					else {
+						creep.travelTo(transportTarget, {visualizePathStyle:{}});
+					}
+					return;
+				}
+				else {
+					delete creep.memory.transportTarget;
+				}
+			}
+
 			var structPriority = {};
 			structPriority[STRUCTURE_EXTENSION] = 1;
 			structPriority[STRUCTURE_SPAWN] = 1;
@@ -485,10 +514,8 @@ var roleManager = {
 						return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);
 					}
 				});
-				// console.log(creep.name, "hungryStructures:",hungryStructures);
-				// creep.say("GIVE")
-				// var closest = creep.pos.findClosestByPath(hungryStructures); // NOTE: may sometimes be null
-				var closest = hungryStructures[0]
+				let closest = hungryStructures[0];
+				creep.memory.transportTarget = closest.id;
 				if (closest) {
 					creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1})
 					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -511,14 +538,15 @@ var roleManager = {
 								return false;
 							}
 							//console.log(c.carry[RESOURCE_ENERGY],c.carryCapacity);
-							return !c.spawning && c.carry[RESOURCE_ENERGY] < c.carryCapacity * 0.5 && !c.memory.renewing && c.memory.keepAlive;
+							return !c.spawning && c.store[RESOURCE_ENERGY] < c.store.getCapacity() * 0.5 && !c.memory.renewing && c.memory.keepAlive;
 						}
 						return false;
 					}
 				});
 				//console.log(hungryCreeps.length);
 				if (hungryCreeps.length > 0) {
-					var closest = creep.pos.findClosestByPath(hungryCreeps);
+					let closest = creep.pos.findClosestByPath(hungryCreeps);
+					creep.memory.transportTarget = closest.id;
 					if (closest) {
 						creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1});
 						if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -538,17 +566,11 @@ var roleManager = {
 						delete creep.memory.lastWithdrawStructure;
 					}
 					creep.travelTo(creep.room.storage, {visualizePathStyle:{}});
-					// if (Game.spawns["Spawn1"] && Game.spawns["Spawn1"].room.name == creep.memory.targetRoom && !creep.pos.inRangeTo(Game.spawns["Spawn1"], 3)) {
-					// 	creep.travelTo(Game.spawns["Spawn1"], {visualizePathStyle:{}});
-					// }
-					// else {
-					// 	creep.travelTo(new RoomPosition(25, 25, creep.room.name), {visualizePathStyle:{}});
-					// }
 				}
 			}
 
 			// passively aquire if not full
-			if (_.sum(creep.carry) < creep.carryCapacity) {
+			if (_.sum(creep.store) < creep.store.getCapacity()) {
 				doAquire(creep, true);
 			}
 		}
