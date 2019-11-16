@@ -35,6 +35,9 @@ let roleInvaderDestroyer = {
 		}
 		if (Memory.attack.currentTarget) {
 			let target = Game.getObjectById(Memory.attack.currentTarget);
+			if (target.structureType === STRUCTURE_KEEPER_LAIR) {
+				creep.log("WARN: current attack target is a keeper lair, which is invalid.");
+			}
 			if (target) {
 				return target;
 			}
@@ -45,7 +48,7 @@ let roleInvaderDestroyer = {
 
 		if (!Memory.attack.currentTarget) {
 			let hostileTargets = new Room(Memory.attack.targetRoom).find(FIND_HOSTILE_STRUCTURES);
-			hostileTargets.filter(struct => {
+			hostileTargets = hostileTargets.filter(struct => {
 				return struct.structureType !== STRUCTURE_KEEPER_LAIR;
 			})
 			hostileTargets.sort((a, b) => {
