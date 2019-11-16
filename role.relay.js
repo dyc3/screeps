@@ -43,7 +43,7 @@ let roleRelay = {
 			creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
 		}
 
-		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length == 0) {
+		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length == 0 || creep.memory._needFillTargetRefresh) {
 			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, asArray=true), (result) =>
 				result.structure.structureType != STRUCTURE_CONTAINER &&
 				result.structure.structureType != STRUCTURE_STORAGE &&
@@ -56,6 +56,7 @@ let roleRelay = {
 				targets.push(struct.id);
 			}
 			creep.memory.fillTargetIds = targets;
+			delete creep.memory._needFillTargetRefresh;
 		}
 
 		if (creep.memory.fillTargetIds.length == 0) {
@@ -101,10 +102,14 @@ let roleRelay = {
 			let struct = Game.getObjectById(id);
 			if (!struct) {
 				creep.log("WARN: structure with id", id, "no longer exists!");
+				creep.memory._needFillTargetRefresh = true;
 				return false;
 			}
 			if (struct.structureType == STRUCTURE_TERMINAL) {
 				return struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget;
+			}
+			if (struct.structureType == STRUCTURE_FACTORY) {
+				return struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget;
 			}
 			return struct.energy < struct.energyCapacity;
 		});
