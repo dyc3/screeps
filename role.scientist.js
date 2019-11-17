@@ -83,7 +83,7 @@ var roleScientist = {
 				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
 				// console.log(creep.name, "checking inventory for any", key);
-				let structures = Game.structures;
+				let structures = _.values(Game.structures);
 				for (let room of util.getOwnedRooms()) {
 					structures = structures.concat(util.getStructures(room, STRUCTURE_CONTAINER));
 				}
