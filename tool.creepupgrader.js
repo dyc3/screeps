@@ -40,7 +40,7 @@ function getUpgraderQuota(room) {
 
 /** @param {Room} room **/
 function getScientistQuota(room) {
-	if (room.controller.level >= 6 && util.getStructures(room, STRUCTURE_LAB).length > 0) {
+	if (room.controller.level >= 6 && (util.getStructures(room, STRUCTURE_LAB).length > 0 || util.getStructures(room, STRUCTURE_FACTORY).length > 0)) {
 		return 1;
 	}
 	return 0;
