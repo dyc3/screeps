@@ -558,8 +558,8 @@ var roleManager = {
 				//console.log(hungryCreeps.length);
 				if (hungryCreeps.length > 0) {
 					let closest = creep.pos.findClosestByPath(hungryCreeps);
-					creep.memory.transportTarget = closest.id;
 					if (closest) {
+						creep.memory.transportTarget = closest.id;
 						creep.room.visual.circle(closest.pos, {stroke:"#00ff00", fill:"transparent", radius:1});
 						if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 							creep.travelTo(closest, {visualizePathStyle:{}});
