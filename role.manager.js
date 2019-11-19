@@ -513,7 +513,7 @@ var roleManager = {
 							struct.structureType == STRUCTURE_LAB || struct.structureType == STRUCTURE_POWER_SPAWN ||
 							struct.structureType == STRUCTURE_TOWER || struct.structureType == STRUCTURE_NUKER)
 							&& struct.energy < struct.energyCapacity) ||
-							(struct.structureType == STRUCTURE_STORAGE && _.sum(struct.store) < struct.storeCapacity);
+							(struct.structureType == STRUCTURE_STORAGE && _.sum(struct.store) < struct.store.getCapacity());
 				}
 			});
 			// creep.say("structs="+hungryStructures.length);
