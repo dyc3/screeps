@@ -32,7 +32,7 @@ var roleScientist = {
 				case STRUCTURE_CONTAINER:
 				case STRUCTURE_STORAGE:
 				case STRUCTURE_FACTORY:
-					return _.sum(struct.store) >= struct.storeCapacity;
+					return _.sum(struct.store) >= struct.store.getCapacity();
 				case STRUCTURE_NUKER:
 					return struct.ghodium >= struct.ghodiumCapacity;
 			}

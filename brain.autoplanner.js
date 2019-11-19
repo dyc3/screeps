@@ -2,9 +2,9 @@ var util = require('util');
 
 var brainAutoPlanner = {
 	run: function() {
-		var rooms = util.getOwnedRooms();
-		for (var r = 0; r < rooms.length; r++) {
-			var room = rooms[r];
+		let rooms = util.getOwnedRooms();
+		for (let r = 0; r < rooms.length; r++) {
+			let room = rooms[r];
 			if (!Memory.rooms[room.name]) {
 				Memory.rooms[room.name] = {};
 			}

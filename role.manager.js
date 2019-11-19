@@ -418,7 +418,8 @@ var roleManager = {
 						creep.travelTo(transportTarget, {visualizePathStyle:{}});
 					}
 
-					if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
+				 	// if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
+				    if (transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
 						delete creep.memory.transportTarget;
 						return;
 					}
@@ -435,11 +436,11 @@ var roleManager = {
 			structPriority[STRUCTURE_TOWER] = 2;
 			structPriority[STRUCTURE_POWER_SPAWN] = 4;
 			structPriority[STRUCTURE_LAB] = 5;
+			structPriority[STRUCTURE_FACTORY] = 5;
 			structPriority[STRUCTURE_NUKER] = 6;
 			structPriority[STRUCTURE_CONTAINER] = 9;
 			structPriority[STRUCTURE_STORAGE] = 9;
 			structPriority[STRUCTURE_TERMINAL] = 9;
-			structPriority[STRUCTURE_FACTORY] = 9;
 
 			// console.log("Can't transfer to last withdraw:",Game.getObjectById(creep.memory.lastWithdrawStructure))
 			var hungryStructures = creep.room.find(FIND_STRUCTURES, {

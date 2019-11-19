@@ -4,11 +4,11 @@ var util = require("util");
 
 var roleBuilder = {
 	findTargets: function(creep) {
-		var targets = [];
-		var rooms = util.getOwnedRooms();
-		for (var r = 0; r < rooms.length; r++) {
-			var room = rooms[r];
-			var sites = room.find(FIND_CONSTRUCTION_SITES);
+		let targets = [];
+		let rooms = util.getOwnedRooms();
+		for (let r = 0; r < rooms.length; r++) {
+			let room = rooms[r];
+			let sites = room.find(FIND_CONSTRUCTION_SITES);
 			if (sites.length == 0) {
 				continue;
 			}
@@ -23,12 +23,6 @@ var roleBuilder = {
 		if(creep.memory.building && creep.carry.energy < 5) {
 			creep.memory.building = false;
 			creep.say('gathering');
-			
-			// renew check for mega builders in rooms without enough energy to support them
-			if (false && creep.ticksToLive <= 400 && creep.memory.stage === 5 && creep.room.energyCapacityAvailable < 6000) {
-			    creep.memory.renewing = true;
-			    creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
-			}
 		}
 		else if(!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
 			creep.memory.building = true;
@@ -38,7 +32,7 @@ var roleBuilder = {
 		if(creep.memory.building) {
 			if (!creep.memory.buildTargetId) {
 				// var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-				var targets = this.findTargets(creep);
+				let targets = this.findTargets(creep);
 				// console.log(creep.name,"targets:",targets)
 				if(targets.length) {
 					targets.sort(function(a,b) {
@@ -47,7 +41,7 @@ var roleBuilder = {
 					targets.reverse();
 					targets.splice(4, targets.length - 5);
 					// var target = creep.pos.findClosestByPath(targets);
-					var target = targets[0];
+					let target = targets[0];
 					if (target == null) {
 						target = targets[0]; // ????
 					}

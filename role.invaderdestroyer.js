@@ -24,6 +24,10 @@ let roleInvaderDestroyer = {
 				MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE
 			];
 		}
+		else {
+		    console.log("[invaderdestroyer] Unknown body type: ", destroyerType);
+		    return null;
+		}
 	},
 
 	/**
