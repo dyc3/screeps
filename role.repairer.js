@@ -79,7 +79,7 @@ var roleRepairer = {
 					if (struct.structureType == STRUCTURE_WALL && struct.hits >= 100000) {
 						return false;
 					}
-					if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= 105000) {
+					if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= 110000) {
 						return false;
 					}
 					return struct.hits < struct.hitsMax;
@@ -166,12 +166,12 @@ var roleRepairer = {
 				}
 				else if (repairTarget.structureType == STRUCTURE_WALL && ((repairTarget.hits >= 70000 && repairTarget.hits <= 75000) ||
 						(repairTarget.hits >= 100000 && repairTarget.hits <= 105000) || (repairTarget.hits >= 200000))) {
-					if (Game.time % 4 == 0)
+					if (Game.time % 10 == 0)
 						delete creep.memory.repairTarget;
 				}
 				else if (repairTarget.structureType == STRUCTURE_RAMPART && ((repairTarget.hits >= 80000 && repairTarget.hits <= 85000) ||
 						(repairTarget.hits >= 105000 && repairTarget.hits <= 110000) || (repairTarget.hits >= 200000))) {
-					if (Game.time % 4 == 0)
+					if (Game.time % 18 == 0)
 						delete creep.memory.repairTarget;
 				}
 				else {
