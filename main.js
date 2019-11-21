@@ -99,6 +99,7 @@ let toolCreepUpgrader = require('tool.creepupgrader');
 let toolRoadPlanner = require('tool.roadplanner');
 
 let brainAutoPlanner = require('brain.autoplanner');
+let brainGuard = require("brain.guard");
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
@@ -1056,6 +1057,17 @@ let jobs = {
 		run: doWorkFactories,
 		interval: 40,
 	},
+	"op-guard": {
+		name: "op-guard",
+		run() {
+			brainGuard.init();
+			brainGuard.updateGuardTasks();
+			brainGuard.assignGuardTasks();
+			brainGuard.runTasks();
+			brainGuard.finalize();
+		},
+		interval: 5,
+	}
 };
 
 function queueJob(job) {
