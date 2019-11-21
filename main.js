@@ -114,6 +114,7 @@ function printException(e, creep=undefined) {
 	else {
 		console.log(msg);
 	}
+	Game.notify(msg);
 }
 
 function printStatus() {
