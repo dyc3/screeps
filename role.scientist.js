@@ -70,7 +70,7 @@ var roleScientist = {
 				if (isStructureFull(struct)) {
 					continue;
 				}
-				neededMinerals[flag.name.split(":")[1].split("_")[0]] = struct;
+				neededMinerals[flag.name.split(":")[1]] = struct;
 			}
 		}
 
@@ -82,7 +82,7 @@ var roleScientist = {
 			for (let i = 0; i < _.keys(neededMinerals).length; i++) {
 				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
-				// console.log(creep.name, "checking inventory for any", key);
+				// creep.log("checking inventory for any", _mineral);
 				let structures = _.values(Game.structures);
 				for (let room of util.getOwnedRooms()) {
 					structures = structures.concat(util.getStructures(room, STRUCTURE_CONTAINER));
@@ -116,7 +116,7 @@ var roleScientist = {
 					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER && struct.structureType != STRUCTURE_FACTORY) {
 						return false;
 					}
-					return (key in struct.store) && struct.store[key] > 0;
+					return struct.store.getUsedCapacity(_mineral) > 0;
 				})[0];
 
 				// _.filter(Game.structures) only gets owned structures
