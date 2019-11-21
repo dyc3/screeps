@@ -50,10 +50,20 @@ module.exports = {
 
 	init() {
 		if (!Memory.guard) {
-			Memory.guard = { tasks: [] };
+			Memory.guard = {
+			    tasks: [],
+			    tasksMade: 0,
+			    guardiansSpawned: 0,
+			};
 		}
 		if (!Memory.guard.tasks) {
 			Memory.guard.tasks = [];
+		}
+		if (!Memory.guard.tasksMade) {
+			Memory.guard.tasksMade = 0;
+		}
+		if (!Memory.guard.guardiansSpawned) {
+			Memory.guard.guardiansSpawned = 0;
 		}
 		for (let task of Memory.guard.tasks) {
 			this.tasks.push(new GuardTask().deserialize(task));
@@ -84,7 +94,7 @@ module.exports = {
 	updateGuardTasks() {
 		// search unguarded rooms and create new guard tasks
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
-		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => guardedRooms.includes(miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), roomName => new Room(roomName));
+		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !guardedRooms.includes(miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
 			let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
 			if (hostiles.length === 0) {
@@ -94,6 +104,7 @@ module.exports = {
 			let newTask = new GuardTask();
 			newTask._targetRoom = room.name;
 			this.tasks.push(newTask);
+			Memory.guard.tasksMade++;
 		}
 
 		// remove completed guard tasks
@@ -150,6 +161,7 @@ module.exports = {
 				let creepName = `guardian_${Game.time.toString(32)}`;
 				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: { role: "guardian", stage: 0, keepAlive: false, renewing: false, taskId: task.id } }) === OK) {
 					task.assignedCreeps.push(creepName);
+					Memory.guard.guardiansSpawned++;
 				}
 				else {
 					console.log("[guardians] Failed to spawn guardian creep for unknown reasons");
@@ -181,12 +193,24 @@ module.exports = {
 				task.complete = true;
 				continue;
 			}
+			else if (hostiles && hostiles.length > 0) {
+			    if (!task.currentTarget) {
+			        delete task._currentTarget;
+			    }
+			    task._currentTarget = hostiles[0].id;
+			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
 				if (!hostiles && creep.room.name !== task._targetRoom) {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
+				}
+				
+				if (task.currentTarget) {
+				    if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
+				        creep.travelTo(task.currentTarget);
+				    }
 				}
 			}
 		}
