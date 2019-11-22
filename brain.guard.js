@@ -181,22 +181,29 @@ module.exports = {
 	runTasks() {
 		for (let task of this.tasks) {
 			console.log("[guard] running task", task.id);
-			let hostiles = Game.rooms[task._targetRoom] ? task.targetRoom.find(FIND_HOSTILE_CREEPS) : null;
-
-			if (hostiles && hostiles.length == 0) {
-				task.complete = true;
-				continue;
+			if (task._currentTarget && !task.currentTarget) {
+				delete task._currentTarget;
 			}
-			else if (hostiles && hostiles.length > 0) {
-				if (!task.currentTarget) {
-					delete task._currentTarget;
+
+			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
+				let hostiles = Game.rooms[task._targetRoom] ? task.targetRoom.find(FIND_HOSTILE_CREEPS) : null;
+
+				if (hostiles && hostiles.length == 0) {
+					task.complete = true;
+					console.log("[guard] task", task.id, "completed");
+					continue;
 				}
-				task._currentTarget = hostiles[0].id;
+				else if (hostiles && hostiles.length > 0) {
+					if (!task.currentTarget) {
+						delete task._currentTarget;
+					}
+					task._currentTarget = hostiles[0].id;
+				}
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
-				if (!hostiles && creep.room.name !== task._targetRoom) {
+				if (!task.currentTarget && creep.room.name !== task._targetRoom) {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
 				}

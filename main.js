@@ -879,7 +879,7 @@ function commandRemoteMining() {
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
-	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room.name));
+	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room));
 	for (let room of targetRooms) {
 		let controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
 		if (!controller) {
@@ -910,6 +910,9 @@ function satisfyClaimTargets() {
 	let claimers = util.getCreeps("claimer");
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
 		let satisfied = false;
+		if (util.isTreasureRoom(Memory.claimTargets[t].room)) {
+			satisfied = true;
+		}
 		for (let creep of claimers) {
 			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
 				satisfied = true;
@@ -1063,7 +1066,6 @@ let jobs = {
 		name: "op-guard",
 		run() {
 			brainGuard.updateGuardTasks();
-			brainGuard.assignGuardTasks();
 		},
 		interval: 5,
 	},
@@ -1356,6 +1358,7 @@ function main() {
 		}
 	}
 
+	brainGuard.assignGuardTasks();
 	brainGuard.runTasks();
 	brainGuard.finalize();
 
