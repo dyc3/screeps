@@ -610,11 +610,16 @@ function doCreepSpawning() {
 				}
 
 				if (needOtherRoomSpawns) {
-					console.log("Using spawns from another room to spawn creeps for", room.name);
+					console.log(`Using spawns from another room to spawn ${role.name} creep for${room.name}`);
 					let otherRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, room.name), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
 					if (otherRooms.length === 0) {
-						console.log("WARN: All other rooms don't have enough energy to spawn creeps");
-						continue;
+						console.log("WARN: No rooms are above energy threshold. Falling back to use any energy available.");
+						otherRooms = _.filter(util.getOwnedRooms(), room => room.energyAvailable >= 200); // TODO: get minimum possible energy to spawn creep of this role
+						if (otherRooms.length === 0) {
+							console.log("CRITICAL: Unable to spawn creeps! We are all gonna die!");
+							Game.notify("CRITICAL: Unable to spawn creeps! We are all gonna die!");
+						}
+						otherRooms = [_.max(otherRooms, room => room.energyAvailable)];
 					}
 				// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
 					let target_room = otherRooms[0];
