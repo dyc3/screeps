@@ -2,8 +2,6 @@ let traveler = require('traveler');
 let util = require('util');
 let toolEnergySource = require('tool.energysource');
 
-let droppedEnergyGatherMinimum = 50;
-
 let taskGather = {
 	run: function(creep) {
 
@@ -17,7 +15,7 @@ let taskGather = {
 					if (creep.pos.getRangeTo(drop.pos) <= 2) {
 						return true;
 					}
-					if (drop.amount < droppedEnergyGatherMinimum) {
+					if (drop.amount < global.DROPPED_ENERGY_GATHER_MINIMUM) {
 						return false;
 					}
 					if (util.isDistFromEdge(drop.pos, 2)) {
@@ -35,7 +33,7 @@ let taskGather = {
 					}
 
 					//console.log("ENERGY DROP",drop.id,drop.amount);
-					return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
+					return creep.pos.findPathTo(drop).length < drop.amount - global.DROPPED_ENERGY_GATHER_MINIMUM;
 				}
 			});
 			if (droppedResources.length > 0) {

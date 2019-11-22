@@ -105,6 +105,7 @@ let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" aut
 
 global.WHOAMI = _.find(Game.structures).owner.username;
 global.CONTROLLER_UPGRADE_RANGE = 3;
+global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
 function printException(e, creep=undefined) {
 	let msg = errorMild + '<span style="color: red">ERROR: ' + e.name + ": "+e.message+"\n"+e.stack + "</span>";

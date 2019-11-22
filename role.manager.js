@@ -1,9 +1,6 @@
 let traveler = require('traveler');
 let util = require("util");
 
-// NOTE: remember to modify the corresponding droppedEnergyGatherMinimum in task.gather.js
-let droppedEnergyGatherMinimum = 100; // TODO: make this a global constant somehow
-
 function doAquire(creep, passively=false) {
 	if (creep.memory.aquireTarget && !passively) {
 		let aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
@@ -60,9 +57,9 @@ function doAquire(creep, passively=false) {
 		}
 	}
 
-	var droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, (passively ? 1 : 20), {
+	let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, (passively ? 1 : 20), {
 		filter: (drop) => {
-			if (!creep.pos.isNearTo(drop) && drop.amount < droppedEnergyGatherMinimum) {
+			if (!creep.pos.isNearTo(drop) && drop.amount < global.DROPPED_ENERGY_GATHER_MINIMUM) {
 				return false;
 			}
 			if (util.isDistFromEdge(drop.pos, 2)) {
@@ -79,7 +76,7 @@ function doAquire(creep, passively=false) {
 				}
 			}
 			//console.log("ENERGY DROP",drop.id,drop.amount);
-			return creep.pos.findPathTo(drop).length < drop.amount - droppedEnergyGatherMinimum;
+			return creep.pos.findPathTo(drop).length < drop.amount - global.DROPPED_ENERGY_GATHER_MINIMUM;
 		}
 	});
 	if (droppedResources.length > 0) {
@@ -101,7 +98,7 @@ function doAquire(creep, passively=false) {
 				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
 					return false;
 				}
-				if (tomb.store[RESOURCE_ENERGY] < droppedEnergyGatherMinimum) {
+				if (tomb.store[RESOURCE_ENERGY] < global.DROPPED_ENERGY_GATHER_MINIMUM) {
 					return false;
 				}
 
