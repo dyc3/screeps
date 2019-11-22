@@ -884,12 +884,12 @@ function commandRemoteMining() {
 	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
 
 	// handle spawning claimers
-	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
-	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room) || util.isHighwayRoom(room));
+	let targetRooms = _.uniq(_.filter(Memory.remoteMining.targets, target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
+	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
 	for (let room of targetRooms) {
 		let controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
 		if (!controller) {
-			console.log("ERR: can't find controller");
+			console.log("[remote mining] ERR: can't find controller");
 		}
 		if (controller && controller.reservation && controller.reservation.ticksToEnd > 400) {
 			continue;
@@ -917,6 +917,7 @@ function satisfyClaimTargets() {
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
 		let satisfied = false;
 		if (util.isTreasureRoom(Memory.claimTargets[t].room) || util.isHighwayRoom(Memory.claimTargets[t].room)) {
+			console.log("[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (Treasure/Highway room detected)");
 			satisfied = true;
 		}
 		for (let creep of claimers) {
