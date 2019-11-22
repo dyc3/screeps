@@ -32,6 +32,9 @@ function doAquire(creep, passively=false) {
 
 					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) == OK) {
 						creep.memory.lastWithdrawStructure = aquireTarget.id;
+						if (aquireTarget.structureType === STRUCTURE_STORAGE) {
+							delete creep.memory.aquireTarget;
+						}
 					}
 
 					if (aquireTarget.store[RESOURCE_ENERGY] == 0) {
@@ -162,9 +165,9 @@ function doAquire(creep, passively=false) {
 			else {
 				// console.log("Can't withdraw from last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
 				// console.log("last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
-				var containers = creep.pos.findInRange(FIND_STRUCTURES, (passively ? 1 : 50), {
+				let containers = creep.pos.findInRange(FIND_STRUCTURES, (passively ? 1 : 50), {
 					filter: function(struct) {
-						var flags = struct.pos.lookFor(LOOK_FLAGS);
+						let flags = struct.pos.lookFor(LOOK_FLAGS);
 						if (flags.length > 0) {
 							if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 								return false;
@@ -232,7 +235,6 @@ function doAquire(creep, passively=false) {
 					}
 				});
 				if (containers.length > 0) {
-					// var closest = creep.pos.findClosestByPath(containers);
 					containers.sort(function(a, b) {
 						if (a.structureType != b.structureType) {
 							if (a.structureType == STRUCTURE_STORAGE) {
@@ -261,9 +263,9 @@ function doAquire(creep, passively=false) {
 
 						return bEnergy - aEnergy; // sort descending, highest energy first
 					});
-					var closest = containers[0];
+					let closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
-					var amount = undefined;
+					let amount = undefined;
 					if (closest.structureType === STRUCTURE_TERMINAL && closest.owner.username === global.WHOAMI) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
 					}
@@ -273,6 +275,7 @@ function doAquire(creep, passively=false) {
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
+						creep.memory.aquireTarget = closest.id;
 						creep.travelTo(closest, {visualizePathStyle:{}});
 					}
 					else {
@@ -298,9 +301,10 @@ function doAquire(creep, passively=false) {
 						return struct.structureType == STRUCTURE_STORAGE && struct.store[RESOURCE_ENERGY] > 500000;
 					});
 					if (storages.length > 0) {
-						var closest = storages[0];
+						let closest = storages[0];
 						new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 						if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+							creep.memory.aquireTarget = closest.id;
 							creep.travelTo(closest, {visualizePathStyle:{}});
 						}
 						else {
@@ -308,7 +312,7 @@ function doAquire(creep, passively=false) {
 						}
 					}
 					else {
-						creep.say("help me out")
+						creep.say("help me out");
 					}
 				}
 			}
