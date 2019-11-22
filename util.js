@@ -51,7 +51,8 @@ let util = {
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
 	isTreasureRoom: function(roomName) {
-		let matches = /d+/.exec(roomName);
+		let matches = /\d+/.exec(roomName);
+		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
 		return (matches[0] % 10 >= 4 && matches[0] % 10 <= 6) && (matches[1] % 10 >= 4 && matches[1] % 10 <= 6);
 	},
 
