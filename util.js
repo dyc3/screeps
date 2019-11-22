@@ -45,7 +45,7 @@ let util = {
 
 	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
 	isHighwayRoom: function(roomName) {
-		let matches = /d+/.exec(roomName);
+		let matches = /\d+/.exec(roomName);
 		return matches[0] % 10 == 0 || matches[1] % 10 == 0;
 	},
 

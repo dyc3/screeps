@@ -879,7 +879,7 @@ function commandRemoteMining() {
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
-	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room));
+	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room) || util.isHighwayRoom(room));
 	for (let room of targetRooms) {
 		let controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
 		if (!controller) {
@@ -910,7 +910,7 @@ function satisfyClaimTargets() {
 	let claimers = util.getCreeps("claimer");
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
 		let satisfied = false;
-		if (util.isTreasureRoom(Memory.claimTargets[t].room)) {
+		if (util.isTreasureRoom(Memory.claimTargets[t].room) || util.isHighwayRoom(Memory.claimTargets[t].room)) {
 			satisfied = true;
 		}
 		for (let creep of claimers) {
