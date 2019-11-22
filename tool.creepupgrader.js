@@ -156,6 +156,14 @@ let creepUpgrader = {
 				//[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
+		"relay": {
+			name:"relay",
+			quota:getRelayQuota,
+			quota_per_room:true,
+			stages:[
+				[CARRY,CARRY,CARRY,CARRY,MOVE]
+			]
+		},
 		"upgrader":{
 			name:"upgrader",
 			quota:getUpgraderQuota,
@@ -169,14 +177,6 @@ let creepUpgrader = {
 				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
-		},
-		"relay": {
-			name:"relay",
-			quota:getRelayQuota,
-			quota_per_room:true,
-			stages:[
-				[CARRY,CARRY,CARRY,CARRY,MOVE]
-			]
 		},
 		"builder":{
 			name:"builder",
