@@ -1068,7 +1068,7 @@ let jobs = {
 			brainGuard.finalize();
 		},
 		interval: 5,
-	}
+	},
 };
 
 function queueJob(job) {
@@ -1155,6 +1155,10 @@ function main() {
 
 		if (creep.memory.renewing) {
 			creep.say("renewing");
+			continue;
+		}
+
+		if (creep.memory.role === "guardian") {
 			continue;
 		}
 

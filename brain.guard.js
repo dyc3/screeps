@@ -51,9 +51,9 @@ module.exports = {
 	init() {
 		if (!Memory.guard) {
 			Memory.guard = {
-			    tasks: [],
-			    tasksMade: 0,
-			    guardiansSpawned: 0,
+				tasks: [],
+				tasksMade: 0,
+				guardiansSpawned: 0,
 			};
 		}
 		if (!Memory.guard.tasks) {
@@ -94,7 +94,7 @@ module.exports = {
 	updateGuardTasks() {
 		// search unguarded rooms and create new guard tasks
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
-		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !guardedRooms.includes(miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
+		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
 			let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
 			if (hostiles.length === 0) {
@@ -195,10 +195,10 @@ module.exports = {
 				continue;
 			}
 			else if (hostiles && hostiles.length > 0) {
-			    if (!task.currentTarget) {
-			        delete task._currentTarget;
-			    }
-			    task._currentTarget = hostiles[0].id;
+				if (!task.currentTarget) {
+					delete task._currentTarget;
+				}
+				task._currentTarget = hostiles[0].id;
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
@@ -209,9 +209,9 @@ module.exports = {
 				}
 
 				if (task.currentTarget) {
-				    if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
-				        creep.travelTo(task.currentTarget);
-				    }
+					if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
+						creep.travelTo(task.currentTarget);
+					}
 				}
 			}
 		}

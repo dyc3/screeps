@@ -319,6 +319,9 @@ let creepUpgrader = {
 	// returns -1 if stage not found
 	/** @param {Creep} creep **/
 	getCreepStage: function(creep) {
+		if (creep.memory.role == "guardian") {
+			return 0;
+		}
 		for (var s = 0; s < this.roles[creep.memory.role].stages.length; s++) {
 			var isMatch = true;
 			for (var b = 0; b < creep.body.length; b++) {
