@@ -922,7 +922,7 @@ function satisfyClaimTargets() {
 		}
 		else {
 			// spawn new claimer
-			let rooms = _.filter(util.getOwnedRooms(), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8);
+			let rooms = _.filter(util.getOwnedRooms(), r => r.energyCapacityAvailable > 2600 && r.energyAvailable >= r.energyCapacityAvailable * 0.8);
 			if (rooms.length === 0) {
 				console.log("WARN: All rooms don't have enough energy to spawn creeps");
 				continue;
