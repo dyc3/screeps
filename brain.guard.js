@@ -147,11 +147,12 @@ module.exports = {
 				let targetSpawnRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, task._targetRoom), room => room.energyAvailable >= room.energyCapacityAvailable * 0.8 && room.energyAvailable >= util.getCreepSpawnCost(creepBody));
 				let targetSpawn = null;
 				for (let room of targetSpawnRooms) {
-					let spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
+					let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
 					if (spawns.length == 0) {
 						continue;
 					}
 					targetSpawn = spawns[0];
+					break;
 				}
 
 				if (!targetSpawn) {
@@ -206,7 +207,7 @@ module.exports = {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
 				}
-				
+
 				if (task.currentTarget) {
 				    if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
 				        creep.travelTo(task.currentTarget);
