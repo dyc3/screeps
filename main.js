@@ -879,6 +879,7 @@ function commandRemoteMining() {
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(Memory.remoteMining.targets.filter(target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
+	targetRooms = _.reject(targetRooms, room => util.isTreasureRoom(room.name));
 	for (let room of targetRooms) {
 		let controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
 		if (!controller) {
@@ -1061,11 +1062,8 @@ let jobs = {
 	"op-guard": {
 		name: "op-guard",
 		run() {
-			brainGuard.init();
 			brainGuard.updateGuardTasks();
 			brainGuard.assignGuardTasks();
-			brainGuard.runTasks();
-			brainGuard.finalize();
 		},
 		interval: 5,
 	},
@@ -1125,6 +1123,8 @@ function main() {
 			queueJob(job);
 		}
 	}
+
+	brainGuard.init();
 
 	let rooms = util.getOwnedRooms();
 
@@ -1355,6 +1355,9 @@ function main() {
 			Game.flags["showPlans"].setColor(COLOR_GREY);
 		}
 	}
+
+	brainGuard.runTasks();
+	brainGuard.finalize();
 
 	printStatus();
 

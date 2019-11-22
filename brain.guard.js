@@ -65,19 +65,11 @@ module.exports = {
 		if (!Memory.guard.guardiansSpawned) {
 			Memory.guard.guardiansSpawned = 0;
 		}
-		for (let task of Memory.guard.tasks) {
-			this.tasks.push(new GuardTask().deserialize(task));
-		}
+		Memory.guard.tasks = _.map(this.tasks, task => new GuardTask().deserialize(task));
 	},
 
 	finalize() {
-		let serialized = {
-			tasks: [],
-		};
-		for (let task of this.tasks) {
-			serialized.tasks.push(task.serialize());
-		}
-		Memory.guard = serialized;
+		Memory.guard.tasks = _.map(this.tasks, task => task.serialize());
 	},
 
 	getTasks() {
@@ -188,6 +180,7 @@ module.exports = {
 
 	runTasks() {
 		for (let task of this.tasks) {
+			console.log("[guard] running task", task.id);
 			let hostiles = Game.rooms[task._targetRoom] ? task.targetRoom.find(FIND_HOSTILE_CREEPS) : null;
 
 			if (hostiles && hostiles.length == 0) {
