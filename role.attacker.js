@@ -23,7 +23,7 @@ var roleAttacker = {
 
 		if (creep.memory.mode == "defend") {
 
-		    if (Game.flags["Defend"] && creep.room.name != Game.flags["Defend"].room.name) {
+		    if (Game.flags["Defend"] && (!Game.flags["Defend"].room || creep.room.name != Game.flags["Defend"].room.name)) {
 		        creep.travelTo(Game.flags["Defend"]);
 		        return;
 		    }

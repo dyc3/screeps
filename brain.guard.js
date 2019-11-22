@@ -180,20 +180,23 @@ module.exports = {
 
 	runTasks() {
 		for (let task of this.tasks) {
+			if (task.complete) {
+				continue;
+			}
 			console.log("[guard] running task", task.id);
 			if (task._currentTarget && !task.currentTarget) {
 				delete task._currentTarget;
 			}
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
-				let hostiles = Game.rooms[task._targetRoom] ? task.targetRoom.find(FIND_HOSTILE_CREEPS) : null;
+				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
-				if (hostiles && hostiles.length == 0) {
+				if (hostiles.length == 0) {
 					task.complete = true;
 					console.log("[guard] task", task.id, "completed");
 					continue;
 				}
-				else if (hostiles && hostiles.length > 0) {
+				else {
 					if (!task.currentTarget) {
 						delete task._currentTarget;
 					}

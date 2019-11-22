@@ -1365,8 +1365,14 @@ function main() {
 		}
 	}
 
-	brainGuard.assignGuardTasks();
-	brainGuard.runTasks();
+	try {
+		brainGuard.assignGuardTasks();
+		brainGuard.runTasks();
+	}
+	catch (e) {
+		console.log("ERR: brain.guard tasks failed");
+		printException(e);
+	}
 	brainGuard.finalize();
 
 	printStatus();
