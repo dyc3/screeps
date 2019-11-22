@@ -143,15 +143,18 @@ let creepUpgrader = {
 				[WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE]
 			],
-			/**
-			 * Builds the optimal body for this role
-			 *
-			 * @param {Room} spawningRoom The room the creep will be spawned in
-			 * @param {Room} targetRoom The room that the creep will go to
-			 */
-			buildBestBody(spawningRoom, targetRoom) {
-				// TODO
-			},
+		},
+		"manager":{
+			name:"manager",
+			quota:getManagerQuota,
+			quota_per_room:true,
+			stages:[
+				[CARRY,CARRY,MOVE,MOVE],
+				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+				//[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+				//[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+			],
 		},
 		"upgrader":{
 			name:"upgrader",
@@ -167,17 +170,13 @@ let creepUpgrader = {
 				[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
-		"manager":{
-			name:"manager",
-			quota:getManagerQuota,
+		"relay": {
+			name:"relay",
+			quota:getRelayQuota,
 			quota_per_room:true,
 			stages:[
-				[CARRY,CARRY,MOVE,MOVE],
-				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-				//[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-				//[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-			],
+				[CARRY,CARRY,CARRY,CARRY,MOVE]
+			]
 		},
 		"builder":{
 			name:"builder",
@@ -233,17 +232,6 @@ let creepUpgrader = {
 				[TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
 			],
 		},
-		// "claimer":{
-		// 	name:"claimer",
-		// 	quota:getClaimerQuota,
-		// 	quota_per_room:false,
-		// 	stages:[
-		// 		[CLAIM,MOVE],
-		// 		[CLAIM,CLAIM,MOVE,MOVE],
-		// 		[CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE],
-		// 		// [CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE],
-		// 	],
-		// },
 		"remoteharvester":{
 			name:"remoteharvester",
 			quota:function() { return Memory.remoteMining.needHarvesterCount; },
@@ -302,15 +290,6 @@ let creepUpgrader = {
 			stages:[
 				[CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
-		},
-		"relay": {
-			name:"relay",
-			// quota:util.getOwnedRooms().length * 4,
-			quota:getRelayQuota,
-			quota_per_room:true,
-			stages:[
-				[CARRY,CARRY,CARRY,CARRY,MOVE]
-			]
 		},
 	},
 
