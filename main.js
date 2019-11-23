@@ -1167,11 +1167,7 @@ function main() {
 			continue;
 		}
 
-		if (creep.memory.role === "guardian") {
-			continue;
-		}
-
-		if (creep.memory.stage < 0) {
+		if (creep.memory.role !== "guardian" && creep.memory.stage < 0) {
 			creep.memory.stage = toolCreepUpgrader.getCreepStage(creep);
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
 		}
@@ -1188,6 +1184,10 @@ function main() {
 		}
 		catch (e) {
 			printException(e);
+		}
+
+		if (creep.memory.role === "guardian") {
+			continue;
 		}
 
 		try {
