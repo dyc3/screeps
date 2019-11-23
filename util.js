@@ -45,15 +45,19 @@ let util = {
 
 	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
 	isHighwayRoom: function(roomName) {
-		let matches = /\d+/.exec(roomName);
-		return matches[0] % 10 == 0 || matches[1] % 10 == 0;
+		let matches = roomName.match(/\d+/g);
+		let x = parseInt(matches[0]);
+		let y = parseInt(matches[1]);
+		return x % 10 == 0 || y % 10 == 0;
 	},
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
 	isTreasureRoom: function(roomName) {
-		let matches = /\d+/.exec(roomName);
+		let matches = roomName.match(/\d+/g);
 		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
-		return (matches[0] % 10 >= 4 && matches[0] % 10 <= 6) && (matches[1] % 10 >= 4 && matches[1] % 10 <= 6);
+		let x = parseInt(matches[0]);
+		let y = parseInt(matches[1]);
+		return (x % 10 >= 4 && x % 10 <= 6) && (y % 10 >= 4 && y % 10 <= 6);
 	},
 
 	/**
