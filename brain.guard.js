@@ -174,7 +174,7 @@ module.exports = {
 			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
 		}
 		else if (guardType == "treasure") {
-			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,HEAL];
+			return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,MOVE];
 		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
@@ -240,10 +240,14 @@ module.exports = {
 					continue;
 				}
 
+				if (creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) > 0) {
+					creep.heal(creep);
+				}
+
 				if (task.currentTarget) {
 					if (task.guardType == "treasure") {
 						if (task.currentTarget instanceof Creep) {
-							if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
+							if (creep.rangedAttack(task.currentTarget) == ERR_NOT_IN_RANGE) {
 								creep.travelTo(task.currentTarget);
 							}
 						}
