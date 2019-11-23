@@ -258,8 +258,9 @@ module.exports = {
 							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
 								creep.rangedAttack(task.currentTarget);
 							}
-							else {
-								creep.travelTo(task.currentTarget, { range: creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 3 : 1 });
+
+							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
+								creep.travelTo(task.currentTarget, { range: creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1 });
 							}
 						}
 						else if (task.currentTarget instanceof StructureKeeperLair) {

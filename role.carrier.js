@@ -116,6 +116,12 @@ let roleCarrier = {
 						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
 						return;
 					}
+
+					let lairs = harvestTarget.pos.findInRange(FIND_HOSTILE_STRUCTURES, 7).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
+					if (lairs.length > 0 && lairs[0].ticksToLive < 20) {
+						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
+						return;
+					}
 				}
 				let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
 				if (!dropped) {
