@@ -12,6 +12,7 @@ class GuardTask {
 		this.guardType = "default";
 		this.complete = false;
 		this.assignedCreeps = [];
+		this.neededCreeps = 1;
 		this._currentTarget = null;
 	}
 
@@ -30,6 +31,7 @@ class GuardTask {
 			guardType: this.guardType,
 			complete: this.complete,
 			assignedCreeps: this.assignedCreeps,
+			neededCreeps: this.neededCreeps,
 			currentTarget: this._currentTarget,
 		};
 	}
@@ -41,6 +43,7 @@ class GuardTask {
 		this.complete = mem.complete;
 		this.assignedCreeps = mem.assignedCreeps;
 		this._currentTarget = mem.currentTarget;
+		this.neededCreeps = mem.neededCreeps;
 		return this;
 	}
 };
@@ -99,6 +102,7 @@ module.exports = {
 			newTask._targetRoom = room.name;
 			if (util.isTreasureRoom(room.name)) {
 				newTask.guardType = "treasure";
+				newTask.neededCreeps = 2;
 			}
 			this.tasks.push(newTask);
 			Memory.guard.tasksMade++;
@@ -131,7 +135,7 @@ module.exports = {
 		}
 
 		// assign guardians to tasks
-		let unfulfilledTasks = _.filter(this.tasks, task => !task.complete && task.assignedCreeps.length === 0);
+		let unfulfilledTasks = _.filter(this.tasks, task => !task.complete && task.assignedCreeps.length < task.neededCreeps);
 		for (let task of unfulfilledTasks) {
 			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId && guardian.memory.guardType == task.guardType);
 
@@ -157,7 +161,18 @@ module.exports = {
 					break;
 				}
 				let creepName = `guardian_${Game.time.toString(32)}`;
-				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: { role: "guardian", stage: 0, keepAlive: false, renewing: false, taskId: task.id, guardType: task.guardType } }) === OK) {
+				let newCreepMem = {
+					role: "guardian",
+					stage: 0,
+					keepAlive: false,
+					renewing: false,
+					taskId: task.id,
+					guardType: task.guardType
+				};
+				if (task.guardType === "treasure") {
+					newCreepMem.keepAlive = true;
+				}
+				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: newCreepMem }) === OK) {
 					task.assignedCreeps.push(creepName);
 					Memory.guard.guardiansSpawned++;
 				}
@@ -197,7 +212,7 @@ module.exports = {
 			}
 
 			if (task.currentTarget) {
-				console.log(`[guard] [${task.id}] currentTarget: ${task.currentTarget}`);
+				console.log(`[guard] [${task.id}] currentTarget: ${task.currentTarget} at ${task.currentTarget.pos}`);
 			}
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
@@ -239,6 +254,10 @@ module.exports = {
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
+				if (creep.spawning) {
+					continue;
+				}
+
 				if (!task.currentTarget && creep.room.name !== task._targetRoom) {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
