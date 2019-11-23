@@ -110,6 +110,13 @@ let roleCarrier = {
 					creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
 					return;
 				}
+				if (util.isTreasureRoom(harvestTarget.room.name)) {
+					let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
+					if (hostiles.length > 0) {
+						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
+						return;
+					}
+				}
 				let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
 				if (!dropped) {
 					delete creep.memory.droppedEnergyId;

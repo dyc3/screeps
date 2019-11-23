@@ -1,4 +1,5 @@
 let traveler = require('traveler');
+let util = require('util');
 
 let roleRemoteHarvester = {
 	/** @param {Creep} creep **/
@@ -31,6 +32,14 @@ let roleRemoteHarvester = {
 
 		// TODO: cache path to harvest target
 		let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
+		if (util.isTreasureRoom(harvestTarget.room.name)) {
+			let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
+			if (hostiles.length > 0) {
+				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarrier]);
+				return;
+			}
+		}
+
 		if (!creep.pos.isEqualTo(harvestPos)) {
 			creep.travelTo(harvestPos);
 			return;
