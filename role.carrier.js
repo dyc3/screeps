@@ -122,6 +122,14 @@ let roleCarrier = {
 						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
 						return;
 					}
+
+					if (creep.pos.isNearTo(harvestPos)) {
+						let tombstones = harvestPos.findInRange(FIND_TOMBSTONES, 2);
+						if (tombstones.length > 0 && tombstones[0].store[RESOURCE_ENERGY] > 0) {
+							creep.withdraw(tombstones[0], RESOURCE_ENERGY);
+							return;
+						}
+					}
 				}
 				let dropped = Game.getObjectById(creep.memory.droppedEnergyId);
 				if (!dropped) {
