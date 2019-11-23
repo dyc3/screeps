@@ -16,7 +16,7 @@ class GuardTask {
 	}
 
 	get targetRoom() {
-		return new Room(this._targetRoom);
+		return Game.rooms[this._targetRoom];
 	}
 
 	get currentTarget() {
@@ -196,6 +196,10 @@ module.exports = {
 				delete task._currentTarget;
 			}
 
+			if (task.currentTarget) {
+				console.log(`[guard] [${task.id}] currentTarget: ${task.currentTarget}`);
+			}
+
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
 				if (task.guardType == "treasure") {
 					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
@@ -235,7 +239,7 @@ module.exports = {
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
-				if (!task.currentTarget && creep.room.name !== task._targetRoom) {
+				if (creep.room.name !== task._targetRoom) {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
 				}
@@ -247,14 +251,25 @@ module.exports = {
 				if (task.currentTarget) {
 					if (task.guardType == "treasure") {
 						if (task.currentTarget instanceof Creep) {
-							if (creep.rangedAttack(task.currentTarget) == ERR_NOT_IN_RANGE) {
-								creep.travelTo(task.currentTarget);
+							console.log("[guard] attacking creep");
+							if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 3)) {
+								creep.rangedAttack(task.currentTarget);
+							}
+							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
+								creep.rangedAttack(task.currentTarget);
+							}
+							else {
+								creep.travelTo(task.currentTarget, { range: creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 3 : 1 });
 							}
 						}
 						else if (task.currentTarget instanceof StructureKeeperLair) {
+							console.log("[guard] waiting by keeper lair");
 							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
 								creep.travelTo(task.currentTarget);
 							}
+						}
+						else {
+							console.log("[guard] ERR: unknown current target");
 						}
 					}
 					else {
