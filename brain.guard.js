@@ -65,7 +65,7 @@ module.exports = {
 		if (!Memory.guard.guardiansSpawned) {
 			Memory.guard.guardiansSpawned = 0;
 		}
-		Memory.guard.tasks = _.map(this.tasks, task => new GuardTask().deserialize(task));
+		this.tasks = _.map(Memory.guard.tasks, task => new GuardTask().deserialize(task));
 	},
 
 	finalize() {
@@ -133,7 +133,7 @@ module.exports = {
 		// assign guardians to tasks
 		let unfulfilledTasks = _.filter(this.tasks, task => !task.complete && task.assignedCreeps.length === 0);
 		for (let task of unfulfilledTasks) {
-			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId);
+			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId && guardian.memory.guardType == task.guardType);
 
 			if (idleGuardians.length > 0) {
 				idleGuardians[0].memory.taskId = task.id;
@@ -157,7 +157,7 @@ module.exports = {
 					break;
 				}
 				let creepName = `guardian_${Game.time.toString(32)}`;
-				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: { role: "guardian", stage: 0, keepAlive: false, renewing: false, taskId: task.id } }) === OK) {
+				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: { role: "guardian", stage: 0, keepAlive: false, renewing: false, taskId: task.id, guardType: task.guardType } }) === OK) {
 					task.assignedCreeps.push(creepName);
 					Memory.guard.guardiansSpawned++;
 				}
