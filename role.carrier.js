@@ -114,12 +114,18 @@ let roleCarrier = {
 					let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
 					if (hostiles.length > 0) {
 						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
+						if (creep.store[RESOURCE_ENERGY] > 0) {
+							creep.memory.delivering = true;
+						}
 						return;
 					}
 
 					let lairs = harvestTarget.pos.findInRange(FIND_HOSTILE_STRUCTURES, 7).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
 					if (lairs.length > 0 && lairs[0].ticksToLive < 20) {
 						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
+						if (creep.store[RESOURCE_ENERGY] > 0) {
+							creep.memory.delivering = true;
+						}
 						return;
 					}
 
