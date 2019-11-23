@@ -173,6 +173,7 @@ module.exports = {
 					newCreepMem.keepAlive = true;
 				}
 				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: newCreepMem }) === OK) {
+					console.log(`[guardians] Spawned new ${task.guardType} guardian for ${task.id}`);
 					task.assignedCreeps.push(creepName);
 					Memory.guard.guardiansSpawned++;
 				}
@@ -206,7 +207,7 @@ module.exports = {
 			if (task.complete) {
 				continue;
 			}
-			console.log("[guard] running task", task.id);
+			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps}`);
 			if (task._currentTarget && !task.currentTarget) {
 				delete task._currentTarget;
 			}
@@ -263,8 +264,26 @@ module.exports = {
 					continue;
 				}
 
-				if (creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) > 0) {
-					creep.heal(creep);
+				if (creep.getActiveBodyparts(HEAL) > 0) {
+					if (creep.hits < creep.hitsMax) {
+						creep.heal(creep);
+					}
+					else {
+						let creepsNeedHeal = _.filter(creeps, c => {
+							if (c.name === creep.name) {
+								return false;
+							}
+							return c.hits < c.hitsMax && creep.pos.inRangeTo(c, 3);
+						});
+						if (creepsNeedHeal.length > 0) {
+							if (creep.pos.isNearTo(creepsNeedHeal[0])) {
+								creep.heal(creepsNeedHeal[0]);
+							}
+							else {
+								creep.rangedHeal(creepsNeedHeal[0]);
+							}
+						}
+					}
 				}
 
 				if (task.currentTarget) {
