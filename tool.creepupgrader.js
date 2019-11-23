@@ -238,7 +238,7 @@ let creepUpgrader = {
 			quota_per_room:false,
 			stages:[
 				[WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE],
-				[WORK,WORK,WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+				[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
 		"carrier":{
