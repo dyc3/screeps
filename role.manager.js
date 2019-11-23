@@ -382,7 +382,7 @@ var roleManager = {
 			delete creep.memory.transportTarget;
 		}
 
-		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > 0) {
+		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75) {
 			creep.memory.transporting = true;
 			creep.say("transport");
 		}
