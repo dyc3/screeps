@@ -109,7 +109,7 @@ function getMinerQuota() {
 }
 
 function getAttackerQuota() {
-	return 2;
+	return 0;
 	let count = 0;
 	let rooms = util.getOwnedRooms();
 	for (let r = 0; r < rooms.length; r++) {
