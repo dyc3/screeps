@@ -239,7 +239,7 @@ module.exports = {
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
-				if (creep.room.name !== task._targetRoom) {
+				if (!task.currentTarget && creep.room.name !== task._targetRoom) {
 					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
 					continue;
 				}
