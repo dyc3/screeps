@@ -255,7 +255,8 @@ module.exports = {
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			for (let creep of creeps) {
-				if (creep.spawning) {
+				if (creep.spawning || creep.memory.renewing) {
+					creep.memory.renew_force_amount = 1400;
 					continue;
 				}
 
