@@ -214,6 +214,18 @@ module.exports = {
 
 			if (task.currentTarget) {
 				console.log(`[guard] [${task.id}] currentTarget: ${task.currentTarget} at ${task.currentTarget.pos}`);
+				const offset = .7;
+				new RoomVisual(task.currentTarget.pos.roomName).poly([
+					[task.currentTarget.pos.x, task.currentTarget.pos.y - offset],
+					[task.currentTarget.pos.x + offset, task.currentTarget.pos.y],
+					[task.currentTarget.pos.x, task.currentTarget.pos.y + offset],
+					[task.currentTarget.pos.x - offset, task.currentTarget.pos.y],
+					[task.currentTarget.pos.x, task.currentTarget.pos.y - offset]
+				], {
+					stroke: '#ffff00',
+					strokeWidth: .07,
+					opacity: .5,
+				});
 			}
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
