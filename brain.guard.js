@@ -236,7 +236,7 @@ module.exports = {
 						task._currentTarget = hostiles[0].id;
 					}
 					else {
-						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_LAIR);
+						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
 						keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
 						task._currentTarget = keeperLairs[0].id;
 					}
@@ -259,7 +259,7 @@ module.exports = {
 			}
 
 			if (task.guardType == "treasure" && task.currentTarget instanceof StructureKeeperLair && !task.currentTarget.ticksToSpawn) {
-				let hostiles = task.targetRoom.findInRange(FIND_HOSTILE_CREEPS, 8);
+				let hostiles = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
 				if (hostiles.length > 0) {
 					task._currentTarget = hostiles[0].id;
 				}
