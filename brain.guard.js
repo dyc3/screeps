@@ -281,7 +281,7 @@ module.exports = {
 					if (creep.hits < creep.hitsMax) {
 						creep.heal(creep);
 					}
-					else {
+					else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
 						let creepsNeedHeal = _.filter(creeps, c => {
 							if (c.name === creep.name) {
 								return false;
