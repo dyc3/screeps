@@ -88,13 +88,18 @@ module.exports = {
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
 		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
-			let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
-			if (hostiles.length === 0) {
-				continue;
+			if (!util.isTreasureRoom(room.name)) {
+				let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
+				if (hostiles.length === 0) {
+					continue;
+				}
 			}
 
 			let newTask = new GuardTask();
 			newTask._targetRoom = room.name;
+			if (util.isTreasureRoom(room.name)) {
+				newTask.guardType = "treasure";
+			}
 			this.tasks.push(newTask);
 			Memory.guard.tasksMade++;
 		}
@@ -168,6 +173,9 @@ module.exports = {
 			// TODO: build the biggest creep possible
 			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
 		}
+		else if (guardType == "treasure") {
+			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,HEAL];
+		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
 				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
@@ -189,17 +197,38 @@ module.exports = {
 			}
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
-				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+				if (task.guardType == "treasure") {
+					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
-				if (hostiles.length == 0) {
-					task.complete = true;
-					console.log("[guard] task", task.id, "completed");
-					continue;
+					if (hostiles.length > 0) {
+						task._currentTarget = hostiles[0].id;
+					}
+					else {
+						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_LAIR);
+						keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
+						task._currentTarget = keeperLairs[0].id;
+					}
 				}
 				else {
-					if (!task.currentTarget) {
-						delete task._currentTarget;
+					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+
+					if (hostiles.length == 0) {
+						task.complete = true;
+						console.log("[guard] task", task.id, "completed");
+						continue;
 					}
+					else {
+						if (!task.currentTarget) {
+							delete task._currentTarget;
+						}
+						task._currentTarget = hostiles[0].id;
+					}
+				}
+			}
+
+			if (task.guardType == "treasure" && task.currentTarget instanceof StructureKeeperLair && !task.currentTarget.ticksToSpawn) {
+				let hostiles = task.targetRoom.findInRange(FIND_HOSTILE_CREEPS, 8);
+				if (hostiles.length > 0) {
 					task._currentTarget = hostiles[0].id;
 				}
 			}
@@ -212,8 +241,22 @@ module.exports = {
 				}
 
 				if (task.currentTarget) {
-					if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
-						creep.travelTo(task.currentTarget);
+					if (task.guardType == "treasure") {
+						if (task.currentTarget instanceof Creep) {
+							if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
+								creep.travelTo(task.currentTarget);
+							}
+						}
+						else if (task.currentTarget instanceof StructureKeeperLair) {
+							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
+								creep.travelTo(task.currentTarget);
+							}
+						}
+					}
+					else {
+						if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
+							creep.travelTo(task.currentTarget);
+						}
 					}
 				}
 			}
