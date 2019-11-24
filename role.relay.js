@@ -17,6 +17,10 @@ let roleRelay = {
 			return;
 		}
 
+		if (assignedPos.roomName !== creep.memory.targetRoom) {
+			creep.memory.targetRoom = assignedPos.roomName;
+		}
+
 		if (!creep.memory.linkId || !creep.memory.storageId) {
 			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {
 				return s.structureType == STRUCTURE_LINK;
