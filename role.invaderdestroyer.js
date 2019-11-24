@@ -1,8 +1,13 @@
 let traveler = require("traveler");
 let util = require("util");
 
-// command to spawn invader destroyers
-// let targetRoom = "", _spawns = ["Spawn1", "Spawn2"]; Memory.attack.targetRoom = targetRoom; let des = require("role.invaderdestroyer"); [Game.spawns[_spawns[0]].spawnCreep(des.getBodyFor("damage"), "invaderdestroyer_damage1", { memory: { role: "invaderdestroyer", targetRoom, mode: "damage" } }), Game.spawns[_spawns[1]].spawnCreep(des.getBodyFor("heal"), "invaderdestroyer_heal1", { memory: { role: "invaderdestroyer", targetRoom, mode: "heal" } })]
+/*
+command to spawn invader destroyers:
+let targetRoom = "", _spawns = ["Spawn1", "Spawn2"]; Memory.attack.targetRoom = targetRoom; let des = require("role.invaderdestroyer"); [Game.spawns[_spawns[0]].spawnCreep(des.getBodyFor("damage"), "invaderdestroyer_damage1", { memory: { role: "invaderdestroyer", targetRoom, mode: "damage" } }), Game.spawns[_spawns[1]].spawnCreep(des.getBodyFor("heal"), "invaderdestroyer_heal1", { memory: { role: "invaderdestroyer", targetRoom, mode: "heal" } })]
+
+command to let them start attacking:
+let creeps = require("util").getCreeps("invaderdestroyer"); for (let creep of creeps) { creep.memory.attacking = true; }
+*/
 
 let roleInvaderDestroyer = {
 	getBodyFor(destroyerType) {
@@ -25,8 +30,8 @@ let roleInvaderDestroyer = {
 			];
 		}
 		else {
-		    console.log("[invaderdestroyer] Unknown body type: ", destroyerType);
-		    return null;
+			console.log("[invaderdestroyer] Unknown body type: ", destroyerType);
+			return null;
 		}
 	},
 
