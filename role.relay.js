@@ -1,4 +1,4 @@
-var traveler = require('traveler');
+let traveler = require('traveler');
 let util = require('util');
 
 let roleRelay = {
@@ -77,7 +77,7 @@ let roleRelay = {
 		// check if the creep is carrying energy, and pick some up if needed
 		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
 			if (rootNeedsEnergy) {
-			    // HACK: in the future, don't reference the terminal using this shortcut
+				// HACK: in the future, don't reference the terminal using this shortcut
 				if (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
 					creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
 				}
