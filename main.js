@@ -1175,6 +1175,9 @@ function main() {
 		try {
 			if (taskRenew.checkRenew(creep)) {
 				creep.memory.renewing = true;
+				if (creep.memory.role === "harvester" && creep.memory.depositMode !== "recovery" && creep.store[RESOURCE_ENERGY] > 0) {
+					creep.drop(RESOURCE_ENERGY);
+				}
 				continue;
 			}
 			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder" && creep.memory.role != "carrier") && taskDepositMaterials.checkForMaterials(creep, true)) {

@@ -161,7 +161,7 @@ let roleHarvester = {
 		*/
 
 		if (!creep.memory.harvestTarget) {
-			console.log(creep.name, "Can't determine harvest mode without harvestTarget");
+			creep.log("Can't determine harvest mode without harvestTarget");
 			return "wait";
 		}
 
@@ -297,7 +297,7 @@ let roleHarvester = {
 		}
 	},
 
-    passiveMaintainContainer(creep) {
+	passiveMaintainContainer(creep) {
 		if (creep.store[RESOURCE_ENERGY] === 0) {
 			return;
 		}
@@ -316,11 +316,10 @@ let roleHarvester = {
 			}
 		}
 	},
-    
+
 	/** @param {Creep} creep **/
 	run: function(creep) {
-		if (USE_RUN_NEW)
-		{
+		if (USE_RUN_NEW) {
 			this.run_new(creep);
 			return;
 		}
@@ -604,9 +603,9 @@ let roleHarvester = {
 				console.log(creep.name, "failed to transfer:", transfer_result);
 			}
 		}
-		
+
 		if (creep.memory.depositMode !== "recovery" && creep.store[RESOURCE_ENERGY] > 0 && Game.time % 6 == 0 && creep.pos.lookFor(LOOK_ENERGY).length > 0) {
-		    this.passiveMaintainContainer(creep);
+			this.passiveMaintainContainer(creep);
 		}
 	}
 };
