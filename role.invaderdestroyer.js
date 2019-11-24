@@ -117,8 +117,13 @@ let roleInvaderDestroyer = {
 				return a.hits - b.hits;
 			});
 
-			if (damageCreeps[0].hits < damageCreeps[0].hitsMax) {
-				creep.heal(damageCreeps[0]);
+			if (damageCreeps.length > 0 && damageCreeps[0].hits < damageCreeps[0].hitsMax) {
+				if (creep.pos.isNearTo(damageCreeps[0])) {
+					creep.heal(damageCreeps[0]);
+				}
+				else if (creep.pos.inRangeTo(damageCreeps[0], 3)) {
+					creep.rangedHeal(damageCreeps[0]);
+				}
 			}
 			else if (creep.hits < creep.hitsMax) {
 				creep.heal(creep);
