@@ -486,6 +486,10 @@ let roleHarvester = {
 
 		let harvestPos = new RoomPosition(creep.memory.harvestPos.x, creep.memory.harvestPos.y, creep.memory.harvestPos.roomName);
 
+		if (harvestPos.roomName !== creep.memory.targetRoom) {
+			creep.memory.targetRoom = harvestPos.roomName;
+		}
+
 		if (!creep.memory.depositMode || (creep.memory.depositMode == "wait" && Game.time % 2 == 0)) {
 			creep.memory.depositMode = this.getDepositMode(creep);
 			if (creep.memory.depositMode == "wait") {
