@@ -48,6 +48,10 @@ let roleCarrier = {
 				return;
 			}
 		}
+
+		if (creep.room.name === creep.memory.harvestTarget.roomName) {
+			creep.pos.createConstructionSite(STRUCTURE_ROAD);
+		}
 	},
 
 	modes: {
