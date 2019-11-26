@@ -55,7 +55,7 @@ let roleRemoteHarvester = {
 			creep.harvest(harvestTarget);
 		}
 		else {
-			if (harvestTarget.ticksToRegenerate > 50 && creep.ticksToLive < 150) {
+			if (harvestTarget.ticksToRegenerate > 30 && creep.ticksToLive < 300) {
 				creep.memory.renewing = true;
 			}
 		}
