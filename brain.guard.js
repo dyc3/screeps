@@ -91,14 +91,16 @@ module.exports = {
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
 		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
+			let newTask = new GuardTask();
 			if (!util.isTreasureRoom(room.name)) {
 				let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
 				if (hostiles.length === 0) {
 					continue;
 				}
+
+				newTask.neededCreeps = hostiles.length;
 			}
 
-			let newTask = new GuardTask();
 			newTask._targetRoom = room.name;
 			if (util.isTreasureRoom(room.name)) {
 				newTask.guardType = "treasure";
@@ -194,7 +196,7 @@ module.exports = {
 		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
-				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
 			}
 			else {
 				return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
@@ -308,7 +310,7 @@ module.exports = {
 								creep.rangedAttack(task.currentTarget);
 							}
 							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
-								creep.rangedAttack(task.currentTarget);
+								creep.attack(task.currentTarget);
 							}
 
 							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
@@ -326,8 +328,16 @@ module.exports = {
 						}
 					}
 					else {
-						if (creep.attack(task.currentTarget) == ERR_NOT_IN_RANGE) {
-							creep.travelTo(task.currentTarget);
+						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 3)) {
+							creep.rangedAttack(task.currentTarget);
+						}
+						else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
+							creep.attack(task.currentTarget);
+							creep.move(creep.pos.getDirectionTo(task.currentTarget));
+						}
+
+						if (!creep.pos.inRangeTo(task.currentTarget, 1)) {
+							creep.travelTo(task.currentTarget, { ignoreCreeps: false, movingTarget: Game.time % 5 !== 0 });
 						}
 					}
 				}

@@ -373,6 +373,13 @@ function doFlagCommandsAndStuff() {
 			harvestPos: {},
 			id: "",
 		};
+		// check if we are already harvesting this target
+		if (_.find(Memory.remoteMining.targets, { x: newTarget.x, y: newTarget.y, roomName: newTarget.roomName })) {
+			console.log("ERR: already harvesting this target");
+			Game.flags["harvestme"].remove();
+			return;
+		}
+
 		try {
 			let lookResult = pos.lookFor(LOOK_SOURCES);
 			if (lookResult.length > 0) {
@@ -1407,26 +1414,27 @@ function main() {
 }
 
 // https://github.com/screepers/screeps-profiler
-// const profiler = require('profiler');
-// profiler.registerClass(util, 'util');
-// profiler.registerClass(roleHarvester, 'role.harvester');
-// profiler.registerClass(roleUpgrader, 'role.upgrader');
-// profiler.registerClass(roleBuilder, 'role.builder');
-// profiler.registerClass(roleRepairer, 'role.repairer');
-// profiler.registerClass(roleManager, 'role.manager');
-// profiler.registerClass(roleScientist, 'role.scientist');
-// profiler.registerClass(roleTower, 'role.tower');
-// profiler.registerClass(roleRelay, 'role.relay');
-// profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
-// profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
-// profiler.registerClass(roleCarrier, 'role.carrier');
-// profiler.registerClass(taskRenew, 'task.renew');
-// profiler.enable();
+const profiler = require('profiler');
+profiler.registerClass(util, 'util');
+profiler.registerClass(roleHarvester, 'role.harvester');
+profiler.registerClass(roleUpgrader, 'role.upgrader');
+profiler.registerClass(roleBuilder, 'role.builder');
+profiler.registerClass(roleRepairer, 'role.repairer');
+profiler.registerClass(roleManager, 'role.manager');
+profiler.registerClass(roleScientist, 'role.scientist');
+profiler.registerClass(roleTower, 'role.tower');
+profiler.registerClass(roleRelay, 'role.relay');
+profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
+profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
+profiler.registerClass(roleCarrier, 'role.carrier');
+profiler.registerClass(taskRenew, 'task.renew');
+profiler.registerClass(brainGuard, 'brain.guard');
+profiler.enable();
 
 module.exports = {
 	loop() {
-	// 	profiler.wrap(function() {
+		profiler.wrap(function() {
 			main();
-	// 	});
+		});
 	},
 }
