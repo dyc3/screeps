@@ -49,7 +49,7 @@ let roleCarrier = {
 			}
 		}
 
-		if (creep.room.name === creep.memory.harvestTarget.roomName) {
+		if (creep.memory.depositTarget && creep.room.name !== Game.getObjectById(creep.memory.depositTarget).room.name) {
 			creep.pos.createConstructionSite(STRUCTURE_ROAD);
 		}
 	},
