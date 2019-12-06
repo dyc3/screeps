@@ -112,6 +112,25 @@ module.exports = {
 
 		// remove completed guard tasks
 		this.tasks = _.reject(this.tasks, task => task.complete);
+
+		// update neededCreeps for existing tasks
+		for (let task of this.tasks) {
+			if (!task.room) {
+				// can't access room, don't update
+				continue;
+			}
+
+			if (task.guardType === "treasure") {
+				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+				let invaders = _.filter(hostiles, c => c.owner.username === "Invader");
+				if (invaders.length > 0) {
+					newTask.neededCreeps = 3;
+				}
+				else {
+					newTask.neededCreeps = 2;
+				}
+			}
+		}
 	},
 
 	/**
@@ -196,7 +215,7 @@ module.exports = {
 		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
-				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
+				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
 			}
 			else {
 				return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
@@ -228,6 +247,12 @@ module.exports = {
 					strokeWidth: .07,
 					opacity: .5,
 				});
+			}
+
+			// FIXME: store all hostile ids in memory as `allTargets`
+			let hostiles = [];
+			if (task.targetRoom) {
+				hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 			}
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
@@ -306,15 +331,21 @@ module.exports = {
 					if (task.guardType == "treasure") {
 						if (task.currentTarget instanceof Creep) {
 							console.log("[guard] attacking creep");
-							if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 3)) {
-								creep.rangedAttack(task.currentTarget);
+							if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+								if (_.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3)).length > 2) {
+									creep.rangedMassAttack();
+								}
+								else if (creep.pos.inRangeTo(task.currentTarget, 3)) {
+									creep.rangedAttack(task.currentTarget);
+								}
 							}
 							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
 								creep.attack(task.currentTarget);
 							}
 
-							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-								creep.travelTo(task.currentTarget, { range: creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1 });
+							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
+							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
+								creep.travelTo(task.currentTarget, { range: minRange });
 							}
 						}
 						else if (task.currentTarget instanceof StructureKeeperLair) {
@@ -328,8 +359,13 @@ module.exports = {
 						}
 					}
 					else {
-						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 3)) {
-							creep.rangedAttack(task.currentTarget);
+						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+							if (_.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3)).length > 2) {
+								creep.rangedMassAttack();
+							}
+							else if (creep.pos.inRangeTo(task.currentTarget, 3)) {
+								creep.rangedAttack(task.currentTarget);
+							}
 						}
 						else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
 							creep.attack(task.currentTarget);

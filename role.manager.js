@@ -4,6 +4,7 @@ let util = require("util");
 function doAquire(creep, passively=false) {
 	if (creep.memory.aquireTarget && !passively) {
 		let aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
+		creep.log("aquireTarget:", aquireTarget);
 		if (aquireTarget) {
 			creep.room.visual.circle(aquireTarget.pos, {stroke:"#ff0000", fill:"transparent", radius: 0.8});
 			if (creep.pos.isNearTo(aquireTarget)) {
@@ -420,7 +421,7 @@ var roleManager = {
 					}
 
 				 	// if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
-				    if (transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+					if (transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
 						delete creep.memory.transportTarget;
 						return;
 					}

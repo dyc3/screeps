@@ -1413,28 +1413,90 @@ function main() {
 	}
 }
 
+global.market = {
+	/**
+	 * Utility function to sell excess energy on the market.
+	 * Should ONLY be manually called by the user in the console.
+	 *
+	 * @returns String indicating the amount of energy sold, energy used for transation costs, and total energy spent.
+	 */
+	quickSellEnergy() {
+		let buyOrders = Game.market.getAllOrders(order => {
+			return order.type === ORDER_BUY && order.resourceType === RESOURCE_ENERGY && order.remainingAmount > 0;
+		});
+
+		if (buyOrders.length == 0) {
+			return "No energy buy orders.";
+		}
+
+		let rooms = util.getOwnedRooms();
+		let totalEnergySold = 0;
+		let totalEnergyCost = 0;
+		let totalDeals = 0;
+
+		for (let room of rooms) {
+			if (!room.storage || !room.terminal) {
+				continue;
+			}
+
+			if (room.terminal.cooldown > 0 || room.terminal.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
+				continue;
+			}
+
+			if (room.storage.store[RESOURCE_ENERGY] < 700000) {
+				continue;
+			}
+
+
+			let result = null;
+			let attempts = 0;
+			do {
+				let buy = buyOrders[0];
+				let amount = Math.min(buy.remainingAmount, room.terminal.store[RESOURCE_ENERGY] / 2);
+				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+				result = Game.market.deal(buy.id, amount, room.name);
+				if (result == OK) {
+					totalEnergySold += amount;
+					totalEnergyCost += cost;
+					totalDeals++;
+				}
+				else {
+					buyOrders.splice(0, 1);
+					attempts++;
+				}
+			} while (result != OK && attempts < 5);
+		}
+
+		return `Made ${totalDeals} deals. Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${totalEnergySold + totalEnergyCost} spent.`;
+	},
+};
+
+global.logistics = {
+	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
+};
+
 // https://github.com/screepers/screeps-profiler
-const profiler = require('profiler');
-profiler.registerClass(util, 'util');
-profiler.registerClass(roleHarvester, 'role.harvester');
-profiler.registerClass(roleUpgrader, 'role.upgrader');
-profiler.registerClass(roleBuilder, 'role.builder');
-profiler.registerClass(roleRepairer, 'role.repairer');
-profiler.registerClass(roleManager, 'role.manager');
-profiler.registerClass(roleScientist, 'role.scientist');
-profiler.registerClass(roleTower, 'role.tower');
-profiler.registerClass(roleRelay, 'role.relay');
-profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
-profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
-profiler.registerClass(roleCarrier, 'role.carrier');
-profiler.registerClass(taskRenew, 'task.renew');
-profiler.registerClass(brainGuard, 'brain.guard');
-profiler.enable();
+// const profiler = require('profiler');
+// profiler.registerClass(util, 'util');
+// profiler.registerClass(roleHarvester, 'role.harvester');
+// profiler.registerClass(roleUpgrader, 'role.upgrader');
+// profiler.registerClass(roleBuilder, 'role.builder');
+// profiler.registerClass(roleRepairer, 'role.repairer');
+// profiler.registerClass(roleManager, 'role.manager');
+// profiler.registerClass(roleScientist, 'role.scientist');
+// profiler.registerClass(roleTower, 'role.tower');
+// profiler.registerClass(roleRelay, 'role.relay');
+// profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
+// profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
+// profiler.registerClass(roleCarrier, 'role.carrier');
+// profiler.registerClass(taskRenew, 'task.renew');
+// profiler.registerClass(brainGuard, 'brain.guard');
+// profiler.enable();
 
 module.exports = {
 	loop() {
-		profiler.wrap(function() {
+// 		profiler.wrap(function() {
 			main();
-		});
+// 		});
 	},
 }

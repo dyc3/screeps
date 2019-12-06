@@ -1,6 +1,8 @@
 let traveler = require('traveler');
 let util = require('util');
 
+// FIXME: When new structures are built around relays, fillTargetIds does not get updated
+
 let roleRelay = {
 	run: function(creep) {
 		if (!creep.memory.assignedPos) {

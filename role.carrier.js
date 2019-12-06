@@ -49,9 +49,10 @@ let roleCarrier = {
 			}
 		}
 
-		if (creep.memory.depositTarget && creep.room.name !== Game.getObjectById(creep.memory.depositTarget).room.name) {
-			creep.pos.createConstructionSite(STRUCTURE_ROAD);
-		}
+		// FIXME: This gets really messy, we should plan the roads ahead of time.
+// 		if (creep.memory.depositTarget && creep.room.name !== Game.getObjectById(creep.memory.depositTarget).room.name) {
+// 			creep.pos.createConstructionSite(STRUCTURE_ROAD);
+// 		}
 	},
 
 	modes: {
