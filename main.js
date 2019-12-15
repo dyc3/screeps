@@ -1,5 +1,3 @@
-// Enemies: Quadrat1c, BarryOSeven
-
 // https://wiki.screepspl.us/index.php/Private_Server_Common_Tasks
 // https://lodash.com/
 
