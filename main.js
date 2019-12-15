@@ -1295,7 +1295,12 @@ function main() {
 	// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
 	renewingCreeps.sort((a, b) => a.ticksToLive <= 100 ? b.ticksToLive - a.ticksToLive : 0);
 	for (let creep of renewingCreeps) {
-		taskRenew.run(creep);
+		try {
+			taskRenew.run(creep);
+		}
+		catch (e) {
+			printException(e, creep=creep);
+		}
 	}
 
 	// process jobs
