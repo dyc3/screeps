@@ -1179,6 +1179,7 @@ function main() {
 			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder" && creep.memory.role != "carrier") && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
 				taskDepositMaterials.run(creep, true);
+				break;
 			}
 		}
 		catch (e) {
