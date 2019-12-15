@@ -1292,8 +1292,25 @@ function main() {
 	}
 
 	let renewingCreeps = _.filter(_.values(Game.creeps), c => c.memory.renewing);
-	// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
-	renewingCreeps.sort((a, b) => a.ticksToLive <= 100 ? b.ticksToLive - a.ticksToLive : 0);
+	const CREEP_RENEW_PRIORITY = {
+		"_default": 5,
+		"harvester": 1,
+		"manager": 1,
+		"remoteharvester": 8,
+		"carrier": 8,
+		"scientist": 9,
+		"guardian": 9,
+	}
+	renewingCreeps.sort((a, b) => {
+		// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
+		if (a.ticksToLive <= 100) {
+			return b.ticksToLive - a.ticksToLive;
+		}
+		// priortize creeps based on role, lowest number has highest priority
+		let pA = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, a.memory.role) ? CREEP_RENEW_PRIORITY[a.memory.role] : CREEP_RENEW_PRIORITY["_default"];
+		let pB = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, b.memory.role) ? CREEP_RENEW_PRIORITY[b.memory.role] : CREEP_RENEW_PRIORITY["_default"];
+		return pB - pA;
+	});
 	for (let creep of renewingCreeps) {
 		try {
 			taskRenew.run(creep);
