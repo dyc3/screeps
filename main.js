@@ -1,11 +1,5 @@
 // https://wiki.screepspl.us/index.php/Private_Server_Common_Tasks
-// https://lodash.com/
-
-// Game.market.deal("871ef5078aaeb4c", 50, "W9N7") // buy L
-// Game.market.deal("fc07f2fc9b05219", 50, "W9N7") // buy Z
-// Game.market.deal("c12df6fc3647a67", 300, "W9N7") // sell U
-// Game.getObjectById("20d85648a0e1570") // storage in room W9N7
-// Game.getObjectById("79b4eab8d806a4c") // terminal in room W9N7
+// https://lodash.com/docs/3.10.1
 
 // var sci = Game.creeps["scientist1"]; sci.withdraw(sci.room.storage, "U"); sci.transfer(sci.room.terminal, "U")
 
@@ -22,9 +16,6 @@
 // Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
 // Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "relay_1", {role:"relay", keepAlive:false})
-
-// Game.spawns["Spawn1"].createCreep([CLAIM,WORK,WORK,CARRY,MOVE,MOVE,MOVE], "nextroomer_1", {role:"nextroomer", keepAlive:false})
-// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE], "nextroomer_2", {role:"nextroomer", keepAlive:false})
 
 // Game.spawns["Spawn1"].createCreep([CLAIM,MOVE], "claimer_1", {role:"claimer", keepAlive:false})
 // Game.spawns["Spawn5"].createCreep([CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,], "claimer_1", {role:"claimer", keepAlive:false, mode:"reserve", claimTarget:""})
