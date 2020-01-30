@@ -49,7 +49,11 @@ function doAquire(creep, passively=false) {
 				}
 			}
 			else {
-				creep.travelTo(aquireTarget, {visualizePathStyle:{}});
+				let travelResult = creep.travelTo(aquireTarget, {visualizePathStyle:{}});
+				if (travelResult.incomplete) {
+					creep.log("Path to aquireTarget is incomplete, skipping...");
+					delete creep.memory.aquireTarget;
+				}
 			}
 			return;
 		}
@@ -319,6 +323,7 @@ function doAquire(creep, passively=false) {
 }
 
 function passivelyWithdrawOtherResources(creep, structure) {
+	return;
 	// passively withdraw other resources from containers
 	if (structure.structureType == STRUCTURE_CONTAINER && (structure.pos.isNearTo(structure.room.controller) || structure.pos.inRangeTo(FIND_SOURCES, 2).length > 0)) {
 		console.log(creep.name,"passively withdrawing other resources from",structure)
@@ -417,11 +422,20 @@ var roleManager = {
 						}
 					}
 					else {
-						creep.travelTo(transportTarget, {visualizePathStyle:{}});
+						let travelResult = creep.travelTo(transportTarget, {visualizePathStyle:{}});
+						if (travelResult.incomplete) {
+							creep.log("Path to transportTarget is incomplete, skipping...");
+							delete creep.memory.transportTarget;
+						}
 					}
 
 				 	// if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
 					if (transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+						delete creep.memory.transportTarget;
+						return;
+					}
+
+					if (transportTarget instanceof StructureTower && transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) <= TOWER_ENERGY_COST * 2) {
 						delete creep.memory.transportTarget;
 						return;
 					}
@@ -505,10 +519,16 @@ var roleManager = {
 						}
 					}
 
-					if (struct.structureType == STRUCTURE_TOWER && struct.energy < struct.energyCapacity * (struct.room.memory.defcon > 0 ? 0.5 : 0.4)) {
-						structPriority[STRUCTURE_TOWER] = 1;
-						structPriority[STRUCTURE_SPAWN] = 2;
-						structPriority[STRUCTURE_EXTENSION] = 2;
+					if (struct.structureType == STRUCTURE_TOWER) {
+						if (struct.store.getFreeCapacity(RESOURCE_ENERGY) <= TOWER_ENERGY_COST * 2) {
+							return false;
+						}
+
+						if (struct.energy < struct.energyCapacity * (struct.room.memory.defcon > 0 ? 0.5 : 0.4)) {
+							structPriority[STRUCTURE_TOWER] = 1;
+							structPriority[STRUCTURE_SPAWN] = 2;
+							structPriority[STRUCTURE_EXTENSION] = 2;
+						}
 					}
 
 					return ((struct.structureType == STRUCTURE_SPAWN || struct.structureType == STRUCTURE_EXTENSION ||
@@ -585,7 +605,7 @@ var roleManager = {
 
 			// passively aquire if not full
 			if (_.sum(creep.store) < creep.store.getCapacity()) {
-				doAquire(creep, true);
+				// doAquire(creep, true);
 			}
 		}
 		// aquire resources
