@@ -1,0 +1,23 @@
+{
+  "name": "screeps",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dyc3/screeps.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dyc3/screeps/issues"
+  },
+  "homepage": "https://github.com/dyc3/screeps#readme",
+  "dependencies": {
+    "grunt": "^1.0.4",
+    "grunt-screeps": "^1.4.0"
+  }
+}
