@@ -17,13 +17,13 @@ let taskRenew = {
 		let spawn = util.getSpawn(creep.room);
 		if (!spawn) {
 			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
-			    let closestRooms = util.findClosestOwnedRooms(creep.pos);
-			    try {
-			        creep.memory.renewTarget = util.getSpawn(closestRooms[0]).id
-			    }
-			    catch {
-			        creep.memory.renewTarget = util.getSpawn(closestRooms[1]).id
-			    }
+				let closestRooms = util.findClosestOwnedRooms(creep.pos);
+				try {
+					creep.memory.renewTarget = util.getSpawn(closestRooms[0]).id
+				}
+				catch {
+					creep.memory.renewTarget = util.getSpawn(closestRooms[1]).id
+				}
 				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
 			spawn = Game.getObjectById(creep.memory.renewTarget);
@@ -135,7 +135,7 @@ let taskRenew = {
 					creep.memory.renewing = false;
 					break;
 				case ERR_BUSY:
-				    delete creep.memory.renewTarget;
+					delete creep.memory.renewTarget;
 				default:
 					break;
 			}
