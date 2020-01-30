@@ -4,6 +4,61 @@ let util = require('util');
 // FIXME: When new structures are built around relays, fillTargetIds does not get updated
 
 let roleRelay = {
+	/**
+	 * Draw visuals that show the relay creep's current state.
+	 * Eg. Assigned position, fill targets, storage, and link
+	 * @param {Creep} creep Relay creep
+	 */
+	visualizeState(creep) {
+		if (!creep.memory.assignedPos) {
+			creep.log("ERROR: Can't visualize state because this creep does not have an assigned position");
+			return;
+		}
+		let vis = creep.room.visual;
+		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
+
+		// draw lines to storage and link
+		let storage = Game.getObjectById(creep.memory.storageId);
+		let link = Game.getObjectById(creep.memory.linkId);
+		vis.line(assignedPos, storage.pos, {
+			color: "#fa0",
+			opacity: 1,
+		});
+		vis.line(assignedPos, link.pos, {
+			color: "#ff0",
+			opacity: 1,
+		});
+
+		// draw lines to fill targets
+		for (let targetId of creep.memory.fillTargetIds) {
+			let target = Game.getObjectById(targetId);
+			if (!target) {
+				creep.log("WARN: target", targetId, "does not exist");
+				continue;
+			}
+
+			vis.line(assignedPos, target.pos, {
+				color: "#00f",
+				opacity: 1,
+			});
+		}
+
+		// draw assigned position on top
+		if (creep.pos.isEqualTo(assignedPos)) {
+			vis.circle(assignedPos, {
+				radius: 0.3,
+				stroke: "#0f0",
+				fill: "#0f0",
+			});
+		}
+		else {
+			vis.rect(assignedPos.x - 0.3, assignedPos.y - 0.3, 0.6, 0.6, {
+				stroke: "#f00",
+				fill: "#f00",
+			});
+		}
+	},
+
 	run: function(creep) {
 		if (!creep.memory.assignedPos) {
 			creep.say("needs pos");
