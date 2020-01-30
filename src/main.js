@@ -1421,6 +1421,51 @@ function main() {
 			}
 		}
 
+		if (Game.flags["primary"]) {
+			// draw information about creep quotas
+
+			try {
+				let baseX = 3;
+				let baseY = 5;
+				let vis = new RoomVisual(Game.flags["primary"].pos.roomName);
+				let row = 0;
+				for (let role of _.values(toolCreepUpgrader.roles)) {
+					let count = util.getCreeps(role.name).length;
+					let quota = !role.quota_per_room ? role.quota() : 0;
+					if (role.quota_per_room) {
+						for (let room of rooms) {
+							quota += role.quota(room);
+						}
+					}
+					let percentQuota = count / quota;
+
+					vis.text(role.name, baseX, baseY + row, {
+						align: "left",
+						font: 0.5,
+					});
+					vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
+						fill: "#0084f0",
+					});
+					vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
+						fill: "transparent",
+						stroke: "#ffffff",
+						strokeWidth: 0.08,
+						opacity: 1,
+					});
+
+					vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
+						align: "center",
+						font: 0.5,
+					});
+
+					row++;
+				}
+			}
+			catch (e) {
+				printException(e);
+			}
+		}
+
 		drawRoomScores();
 	}
 }
