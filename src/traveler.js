@@ -83,6 +83,7 @@ class Traveler {
         }
         // pathfinding
         let newPath = false;
+        let incompletePath = false;
         if (!travelData.path) {
             newPath = true;
             if (creep.spawning) {
@@ -98,6 +99,7 @@ class Traveler {
                 console.log(`TRAVELER: heavy cpu use: ${creep.name}, cpu: ${state.cpu} origin: ${creep.pos}, dest: ${destination}`);
             }
             let color = "orange";
+            incompletePath = ret.incomplete;
             if (ret.incomplete) {
                 // uncommenting this is a great way to diagnose creep behavior issues
                 // console.log(`TRAVELER: incomplete path for ${creep.name}`);
@@ -128,7 +130,10 @@ class Traveler {
             options.returnData.state = state;
             options.returnData.path = travelData.path;
         }
-        return creep.move(nextDirection);
+        return {
+            result: creep.move(nextDirection),
+            incomplete: incompletePath,
+        };
     }
     /**
      * make position objects consistent so that either can be used as an argument
