@@ -45,7 +45,11 @@ let roleRelay = {
 		}
 		let link = Game.getObjectById(creep.memory.linkId);
 		let storage = Game.getObjectById(creep.memory.storageId);
-		if (storage.structureType === STRUCTURE_STORAGE) {
+		if (!storage) {
+			creep.log("Storage no longer exists");
+			delete creep.memory.storageId;
+		}
+		if (storage && storage.structureType === STRUCTURE_STORAGE) {
 			creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
 		}
 
