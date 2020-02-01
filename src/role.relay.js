@@ -253,7 +253,7 @@ let roleRelay = {
 			}
 		}
 
-		this.visualizeState(creep);
+		// this.visualizeState(creep);
 	}
 };
 

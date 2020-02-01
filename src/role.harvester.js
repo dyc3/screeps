@@ -631,7 +631,7 @@ let roleHarvester = {
 			this.passiveMaintainContainer(creep);
 		}
 
-		this.visualizeState(creep);
+		// this.visualizeState(creep);
 	},
 
 	visualizeState(creep) {
