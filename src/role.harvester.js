@@ -442,6 +442,7 @@ let roleHarvester = {
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 
 		// TODO: harvestPos should probably be set when we plan buldings
+		// TODO: this flow to find harvestPos is weird. Should be rewritten
 		if (!creep.memory.harvestPos) {
 			let brainAutoPlanner = require("brain.autoplanner");
 			let adj = util.getAdjacent(harvestTarget.pos);
@@ -451,12 +452,13 @@ let roleHarvester = {
 				// check for building plans
 				planned = brainAutoPlanner.isPositionPlanned(adj[i]);
 				if (planned) {
-					if (planned !== STRUCTURE_ROAD) {
-						continue;
-					}
-					else if (planned === STRUCTURE_CONTAINER) {
+					if (planned === STRUCTURE_CONTAINER) {
+						creep.log("Found container planned, setting harvest position to container position:", JSON.stringify(adj[i]));
 						creep.memory.harvestPos = adj[i];
 						break;
+					}
+					else if (planned !== STRUCTURE_ROAD) {
+						continue;
 					}
 				}
 
@@ -476,12 +478,12 @@ let roleHarvester = {
 						}
 					}
 					else if (look.type === LOOK_STRUCTURES) {
-						if (look.structure.structureType !== STRUCTURE_ROAD) {
+						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
 							isValid = false;
-							break;
-						}
-						else if (look.structure.structureType === STRUCTURE_CONTAINER) {
-							creep.memory.harvestPos = adj[i];
+							if (look.structure.structureType === STRUCTURE_CONTAINER) {
+								creep.log("Found container built, setting harvest position to container position:", JSON.stringify(adj[i]));
+								creep.memory.harvestPos = adj[i];
+							}
 							break;
 						}
 					}
@@ -490,7 +492,9 @@ let roleHarvester = {
 					continue;
 				}
 
+				creep.log("Setting harvestPos:", JSON.stringify(adj[i]));
 				creep.memory.harvestPos = adj[i];
+				break;
 			}
 		}
 
