@@ -611,6 +611,53 @@ let roleHarvester = {
 		if (creep.memory.depositMode !== "recovery" && creep.store[RESOURCE_ENERGY] > 0 && Game.time % 6 == 0 && creep.pos.lookFor(LOOK_ENERGY).length > 0) {
 			this.passiveMaintainContainer(creep);
 		}
+
+		this.visualizeState(creep);
+	},
+
+	visualizeState(creep) {
+		let vis = creep.room.visual;
+		let harvestPos = new RoomPosition(creep.memory.harvestPos.x, creep.memory.harvestPos.y, creep.memory.harvestPos.roomName);
+
+		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		let link = Game.getObjectById(creep.memory.dedicatedLinkId);
+		vis.line(harvestPos, harvestTarget.pos, {
+			color: "#ff0",
+			opacity: 1,
+		});
+		vis.line(harvestPos, link.pos, {
+			color: "#ff0",
+			opacity: 1,
+		});
+
+		// draw lines to fill targets
+		for (let targetId of creep.memory.fillTargetIds) {
+			let target = Game.getObjectById(targetId);
+			if (!target) {
+				creep.log("WARN: target", targetId, "does not exist");
+				continue;
+			}
+
+			vis.line(harvestPos, target.pos, {
+				color: target.id == creep.memory.transferTarget ? "#f0a" : "#00f",
+				opacity: 1,
+			});
+		}
+
+		// draw harvest position on top
+		if (creep.pos.isEqualTo(harvestPos)) {
+			vis.circle(harvestPos, {
+				radius: 0.3,
+				stroke: "#0f0",
+				fill: "#0f0",
+			});
+		}
+		else {
+			vis.rect(harvestPos.x - 0.3, harvestPos.y - 0.3, 0.6, 0.6, {
+				stroke: "#f00",
+				fill: "#f00",
+			});
+		}
 	}
 };
 
