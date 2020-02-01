@@ -584,7 +584,7 @@ let roleHarvester = {
 				creep.memory.transferTarget = target.id;
 			}
 
-			if (creep.memory.depositMode === "link" && target.structureType === STRUCTURE_CONTAINER) {
+			if (creep.memory.depositMode === "link" && (target.structureType === STRUCTURE_CONTAINER || target.structureType === STRUCTURE_LINK)) {
 				delete creep.memory.transferTarget;
 			}
 
