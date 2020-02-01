@@ -1401,6 +1401,8 @@ function main() {
 	try {
 		let sinks = brainLogistics.findResourceSinks();
 		console.log(JSON.stringify(sinks));
+		let sources = brainLogistics.findResourceSources();
+		console.log(JSON.stringify(sources));
 	}
 	catch (e) {
 		console.log("ERR: brain.logistics tasks failed");

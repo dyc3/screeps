@@ -104,5 +104,40 @@ module.exports = {
 		}
 
 		return sinks;
+	},
+
+	findResourceSources() {
+		let sources = [];
+
+		let rooms = util.getOwnedRooms();
+		for (let room of rooms) {
+			let sourceStructures = room.find(FIND_STRUCTURES, {
+				filter: struct => {
+					return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY].includes(struct.structureType) && struct.store;
+				}
+			});
+
+			for (let struct of sourceStructures) {
+				for (let resource in struct.store) {
+					let amount = struct.store.getUsedCapacity(resource);
+
+					if (struct.structureType === STRUCTURE_TERMINAL && resource === RESOURCE_ENERGY) {
+						amount = Math.max(struct.store.getUsedCapacity(resource) - Memory.terminalEnergyTarget, 0);
+					}
+					else if (struct.structureType === STRUCTURE_FACTORY && resource === RESOURCE_ENERGY) {
+						amount = Math.max(struct.store.getUsedCapacity(resource) - Memory.factoryEnergyTarget, 0);
+					}
+
+					let source = new ResourceSource({
+						resource,
+						objectId: struct.id,
+						amount,
+					});
+					sources.push(source);
+				}
+			}
+		}
+
+		return sources;
 	}
 }
