@@ -89,6 +89,7 @@ let toolRoadPlanner = require('tool.roadplanner');
 
 let brainAutoPlanner = require('brain.autoplanner');
 let brainGuard = require("brain.guard");
+let brainLogistics = require("brain.logistics");
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
@@ -1396,6 +1397,15 @@ function main() {
 		printException(e);
 	}
 	brainGuard.finalize();
+
+	try {
+		let sinks = brainLogistics.findResourceSinks();
+		console.log(JSON.stringify(sinks));
+	}
+	catch (e) {
+		console.log("ERR: brain.logistics tasks failed");
+		printException(e);
+	}
 
 	printStatus();
 
