@@ -14,18 +14,45 @@ let roleRelay = {
 			creep.log("ERROR: Can't visualize state because this creep does not have an assigned position");
 			return;
 		}
+		const colorWithdraw = "#0ff";
+		const colorDeposit = "#0f0";
+		const colorBadTransfer = "#f00"; // used when last withdraw id is the same as last deposit id
 		let vis = creep.room.visual;
 		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
 
 		// draw lines to storage and link
 		let storage = Game.getObjectById(creep.memory.storageId);
 		let link = Game.getObjectById(creep.memory.linkId);
+
+		// FIXME: lots of repeated code here to find the correct colors
+		let storageColor = "#fa0";
+		if (creep.memory._lastWithdrawId === storage.id) {
+			storageColor = colorWithdraw;
+			if (creep.memory._lastDepositId === storage.id) {
+				storageColor = colorBadTransfer;
+			}
+		}
+		else if (creep.memory._lastDepositId === storage.id) {
+			storageColor = colorDeposit;
+		}
+
+		let linkColor = "#ff0";
+		if (creep.memory._lastWithdrawId === link.id) {
+			linkColor = colorWithdraw;
+			if (creep.memory._lastDepositId === link.id) {
+				linkColor = colorBadTransfer;
+			}
+		}
+		else if (creep.memory._lastDepositId === link.id) {
+			linkColor = colorDeposit;
+		}
+
 		vis.line(assignedPos, storage.pos, {
-			color: "#fa0",
+			color: storageColor,
 			opacity: 0.7,
 		});
 		vis.line(assignedPos, link.pos, {
-			color: "#ff0",
+			color: linkColor,
 			opacity: 0.7,
 		});
 
@@ -37,8 +64,19 @@ let roleRelay = {
 				continue;
 			}
 
+			let color = "#00f";
+			if (creep.memory._lastWithdrawId === target.id) {
+				color = colorWithdraw;
+				if (creep.memory._lastDepositId === target.id) {
+					color = colorBadTransfer;
+				}
+			}
+			else if (creep.memory._lastDepositId === target.id) {
+				color = colorDeposit;
+			}
+
 			vis.line(assignedPos, target.pos, {
-				color: "#00f",
+				color: color,
 				opacity: 0.7,
 			});
 		}
@@ -57,6 +95,9 @@ let roleRelay = {
 				fill: "#f00",
 			});
 		}
+
+		delete creep.memory._lastWithdrawId;
+		delete creep.memory._lastDepositId;
 	},
 
 	run: function(creep) {
@@ -145,14 +186,20 @@ let roleRelay = {
 				// HACK: in the future, don't reference the terminal using this shortcut
 				if (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
 					creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = creep.room.terminal.id; // used for visualizeState
 				}
 				else {
 					creep.withdraw(storage, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
 				}
 			}
 			else {
 				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
 					creep.withdraw(storage, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+				}
+				else {
+					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
 			}
 		}
@@ -160,6 +207,7 @@ let roleRelay = {
 		// if the root needs energy, put it in the link
 		if (rootNeedsEnergy) {
 			creep.transfer(link, RESOURCE_ENERGY);
+			creep.memory._lastDepositId = target.id; // used for visualizeState
 			return;
 		}
 
@@ -180,7 +228,7 @@ let roleRelay = {
 			return struct.energy < struct.energyCapacity;
 		});
 
-		// if they aren't, fill them, then return
+		// if they aren't, fill them
 		if (targetIdsNotFull.length > 0) {
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
@@ -190,12 +238,16 @@ let roleRelay = {
 				else {
 					creep.transfer(target, RESOURCE_ENERGY);
 				}
+				creep.memory._lastDepositId = target.id; // used for visualizeState
 			}
-			return;
+		}
+		else {
+			// otherwise, fill the storage with energy from the link.
+			creep.transfer(storage, RESOURCE_ENERGY);
+			creep.memory._lastDepositId = storage.id; // used for visualizeState
 		}
 
-		// otherwise, fill the storage with energy from the link.
-		creep.transfer(storage, RESOURCE_ENERGY);
+		this.visualizeState(creep);
 	}
 };
 
