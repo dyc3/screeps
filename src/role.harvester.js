@@ -575,7 +575,10 @@ let roleHarvester = {
 
 		if(creep.memory.harvesting) {
 			if (creep.room.name == harvestTarget.room.name) {
-				if(creep.harvest(harvestTarget) == ERR_NOT_IN_RANGE) {
+				if (creep.pos.isEqualTo(harvestPos)) {
+					creep.harvest(harvestTarget);
+				}
+				else {
 					creep.travelTo(harvestPos);
 				}
 			}
