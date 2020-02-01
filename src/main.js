@@ -682,7 +682,7 @@ function doAutoTrading() {
 
 	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.32;
 	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.32;
-	minimumPrice[RESOURCE_REDUCTANT] = 0.64;
+	minimumPrice[RESOURCE_REDUCTANT] = 0.45;
 	minimumPrice[RESOURCE_BATTERY] = 0.05;
 
 	for (let r = 0; r < rooms.length; r++) {
