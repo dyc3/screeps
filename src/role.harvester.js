@@ -647,13 +647,13 @@ let roleHarvester = {
 		if (harvestTarget) {
 			vis.line(harvestPos, harvestTarget.pos, {
 				color: "#ff0",
-				opacity: 1,
+				opacity: 0.7,
 			});
 		}
 		if (link) {
 			vis.line(harvestPos, link.pos, {
 				color: link.id == creep.memory.transferTarget ? "#f0a" : "#ff0",
-				opacity: 1,
+				opacity: 0.7,
 			});
 		}
 
@@ -668,7 +668,7 @@ let roleHarvester = {
 
 				vis.line(harvestPos, target.pos, {
 					color: target.id == creep.memory.transferTarget ? "#f0a" : "#00f",
-					opacity: 1,
+					opacity: 0.7,
 				});
 			}
 		}

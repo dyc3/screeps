@@ -22,11 +22,11 @@ let roleRelay = {
 		let link = Game.getObjectById(creep.memory.linkId);
 		vis.line(assignedPos, storage.pos, {
 			color: "#fa0",
-			opacity: 1,
+			opacity: 0.7,
 		});
 		vis.line(assignedPos, link.pos, {
 			color: "#ff0",
-			opacity: 1,
+			opacity: 0.7,
 		});
 
 		// draw lines to fill targets
@@ -39,7 +39,7 @@ let roleRelay = {
 
 			vis.line(assignedPos, target.pos, {
 				color: "#00f",
-				opacity: 1,
+				opacity: 0.7,
 			});
 		}
 
