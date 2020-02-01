@@ -180,37 +180,6 @@ let roleRelay = {
 			//creep.log("rootNeedsEnergy:", rootNeedsEnergy);
 		}
 
-		// check if the creep is carrying energy, and pick some up if needed
-		if (creep.carry[RESOURCE_ENERGY] < creep.carryCapacity) {
-			if (rootNeedsEnergy) {
-				// HACK: in the future, don't reference the terminal using this shortcut
-				if (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
-					creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
-					creep.memory._lastWithdrawId = creep.room.terminal.id; // used for visualizeState
-				}
-				else {
-					creep.withdraw(storage, RESOURCE_ENERGY);
-					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
-				}
-			}
-			else {
-				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
-					creep.withdraw(storage, RESOURCE_ENERGY);
-					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
-				}
-				else {
-					creep.memory._lastWithdrawId = link.id; // used for visualizeState
-				}
-			}
-		}
-
-		// if the root needs energy, put it in the link
-		if (rootNeedsEnergy) {
-			creep.transfer(link, RESOURCE_ENERGY);
-			creep.memory._lastDepositId = target.id; // used for visualizeState
-			return;
-		}
-
 		// check if all the fill targets are full.
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
 			let struct = Game.getObjectById(id);
@@ -225,14 +194,43 @@ let roleRelay = {
 			if (struct.structureType == STRUCTURE_FACTORY) {
 				return struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget;
 			}
-			return struct.energy < struct.energyCapacity;
+			return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 		});
 
-		// if they aren't, fill them
-		if (targetIdsNotFull.length > 0) {
+		// if the root needs energy, put it in the link
+		if (rootNeedsEnergy) {
+			// check if the creep is carrying energy, and pick some up if needed
+			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+				// HACK: in the future, don't reference the terminal using this shortcut
+				if (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget && creep.room.terminal.store[RESOURCE_ENERGY] > storage.store[RESOURCE_ENERGY]) {
+					creep.withdraw(creep.room.terminal, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = creep.room.terminal.id; // used for visualizeState
+				}
+				else {
+					creep.withdraw(storage, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+				}
+			}
+
+			creep.transfer(link, RESOURCE_ENERGY);
+			creep.memory._lastDepositId = link.id; // used for visualizeState
+		}
+		// if fill targets aren't filled, fill them
+		else if (targetIdsNotFull.length > 0) {
+			// check if the creep is carrying energy, and pick some up if needed
+			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
+					creep.withdraw(storage, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+				}
+				else {
+					creep.memory._lastWithdrawId = link.id; // used for visualizeState
+				}
+			}
+
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
-				if (target.structureType == STRUCTURE_TERMINAL && Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.carryCapacity) {
+				if (target.structureType == STRUCTURE_TERMINAL && Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 					creep.transfer(target, RESOURCE_ENERGY, Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]);
 				}
 				else {
@@ -241,10 +239,18 @@ let roleRelay = {
 				creep.memory._lastDepositId = target.id; // used for visualizeState
 			}
 		}
+		// otherwise, fill the storage with energy from the link.
 		else {
-			// otherwise, fill the storage with energy from the link.
-			creep.transfer(storage, RESOURCE_ENERGY);
-			creep.memory._lastDepositId = storage.id; // used for visualizeState
+			// check if the creep is carrying energy, and pick some up if needed
+			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity() && link.store[RESOURCE_ENERGY] > 0) {
+				creep.withdraw(link, RESOURCE_ENERGY);
+				creep.memory._lastWithdrawId = link.id; // used for visualizeState
+			}
+
+			if (creep.store[RESOURCE_ENERGY] > 0) {
+				creep.transfer(storage, RESOURCE_ENERGY);
+				creep.memory._lastDepositId = storage.id; // used for visualizeState
+			}
 		}
 
 		this.visualizeState(creep);
