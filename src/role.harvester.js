@@ -617,31 +617,41 @@ let roleHarvester = {
 
 	visualizeState(creep) {
 		let vis = creep.room.visual;
+		if (!creep.memory.harvestPos) {
+			creep.log("ERROR: Can't visualize state because this creep does not have a harvestPos");
+			return;
+		}
 		let harvestPos = new RoomPosition(creep.memory.harvestPos.x, creep.memory.harvestPos.y, creep.memory.harvestPos.roomName);
 
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		let link = Game.getObjectById(creep.memory.dedicatedLinkId);
-		vis.line(harvestPos, harvestTarget.pos, {
-			color: "#ff0",
-			opacity: 1,
-		});
-		vis.line(harvestPos, link.pos, {
-			color: "#ff0",
-			opacity: 1,
-		});
-
-		// draw lines to fill targets
-		for (let targetId of creep.memory.fillTargetIds) {
-			let target = Game.getObjectById(targetId);
-			if (!target) {
-				creep.log("WARN: target", targetId, "does not exist");
-				continue;
-			}
-
-			vis.line(harvestPos, target.pos, {
-				color: target.id == creep.memory.transferTarget ? "#f0a" : "#00f",
+		if (harvestTarget) {
+			vis.line(harvestPos, harvestTarget.pos, {
+				color: "#ff0",
 				opacity: 1,
 			});
+		}
+		if (link) {
+			vis.line(harvestPos, link.pos, {
+				color: link.id == creep.memory.transferTarget ? "#f0a" : "#ff0",
+				opacity: 1,
+			});
+		}
+
+		// draw lines to fill targets
+		if (creep.memory.fillTargetIds) {
+			for (let targetId of creep.memory.fillTargetIds) {
+				let target = Game.getObjectById(targetId);
+				if (!target) {
+					creep.log("WARN: target", targetId, "does not exist");
+					continue;
+				}
+
+				vis.line(harvestPos, target.pos, {
+					color: target.id == creep.memory.transferTarget ? "#f0a" : "#00f",
+					opacity: 1,
+				});
+			}
 		}
 
 		// draw harvest position on top
