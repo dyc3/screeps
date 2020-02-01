@@ -450,8 +450,14 @@ let roleHarvester = {
 
 				// check for building plans
 				planned = brainAutoPlanner.isPositionPlanned(adj[i]);
-				if (planned && planned !== STRUCTURE_ROAD && planned !== STRUCTURE_CONTAINER) {
-					continue;
+				if (planned) {
+					if (planned !== STRUCTURE_ROAD) {
+						continue;
+					}
+					else if (planned === STRUCTURE_CONTAINER) {
+						creep.memory.harvestPos = adj[i];
+						break;
+					}
 				}
 
 				// look for structures
@@ -470,8 +476,12 @@ let roleHarvester = {
 						}
 					}
 					else if (look.type === LOOK_STRUCTURES) {
-						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
+						if (look.structure.structureType !== STRUCTURE_ROAD) {
 							isValid = false;
+							break;
+						}
+						else if (look.structure.structureType === STRUCTURE_CONTAINER) {
+							creep.memory.harvestPos = adj[i];
 							break;
 						}
 					}
