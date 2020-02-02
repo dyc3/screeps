@@ -58,12 +58,16 @@ class DeliveryTask {
 		}
 		else {
 			new RoomVisual(sourceStruct.pos.roomName).circle(sourceStruct.pos, {
-				color: "#ff0",
+				fill: "#0af",
+				stroke: "#0af",
+				radius: 0.4,
 				opacity: 0.7,
 				lineStyle: "dotted",
 			});
-			new RoomVisual(sourceStruct.pos.roomName).circle(sinkStruct.pos, {
-				color: "#ff0",
+			new RoomVisual(sinkStruct.pos.roomName).circle(sinkStruct.pos, {
+				fill: "#fa0",
+				stroke: "#fa0",
+				radius: 0.4,
 				opacity: 0.7,
 				lineStyle: "dotted",
 			});
@@ -109,7 +113,7 @@ module.exports = {
 		for (let room of rooms) {
 			let sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
-					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE].includes(struct.structureType) && struct.store;
+					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
 				}
 			});
 
@@ -182,7 +186,9 @@ module.exports = {
 			let sinkStruct = Game.getObjectById(sink.objectId);
 
 			// Try to source from the closest target, ideally in the same room
-			let possibleSources = _.filter(sources, { resource: sink.resource });
+			let possibleSources = _.filter(sources, source => {
+				return source.resource === sink.resource && source.objectId !== sink.objectId;
+			});
 			if (possibleSources.length <= 0) {
 				continue;
 			}
