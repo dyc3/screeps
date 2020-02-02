@@ -1131,6 +1131,7 @@ function main() {
 	}
 
 	brainGuard.init();
+	brainLogistics.init();
 
 	let rooms = util.getOwnedRooms();
 
@@ -1276,6 +1277,9 @@ function main() {
 				case 'invaderdestroyer':
 					require("role.invaderdestroyer").run(creep);
 					break;
+				case 'testlogistics':
+					require("role.testlogistics").run(creep);
+					break;
 				default:
 					console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
 					console.log("Parsing role from name...");
@@ -1399,21 +1403,20 @@ function main() {
 	brainGuard.finalize();
 
 	try {
-		brainLogistics.init();
 		let sinks = brainLogistics.findResourceSinks();
 		console.log(JSON.stringify(sinks));
 		let sources = brainLogistics.findResourceSources();
 		console.log(JSON.stringify(sources));
 		let tasks = brainLogistics.buildDeliveryTasks(sinks, sources);
-		console.log(JSON.stringify(tasks));
-		brainLogistics.visualizeTasks(tasks);
 		brainLogistics.tasks = tasks;
-		brainLogistics.finalize();
+		console.log(JSON.stringify(brainLogistics.tasks));
+		brainLogistics.visualizeTasks(brainLogistics.tasks);
 	}
 	catch (e) {
 		console.log("ERR: brain.logistics tasks failed");
 		printException(e);
 	}
+	brainLogistics.finalize();
 
 	printStatus();
 

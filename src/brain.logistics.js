@@ -17,6 +17,7 @@ class ResourceSink {
 	constructor(args=null) {
 		this.resource = "";
 		this.objectId = "";
+		this.roomName = "";
 		this.amount = 0;
 		if (args) {
 			Object.assign(this, args);
@@ -32,6 +33,7 @@ class ResourceSource {
 	constructor(args=null) {
 		this.resource = "";
 		this.objectId = "";
+		this.roomName = "";
 		if (args) {
 			Object.assign(this, args);
 		}
@@ -213,6 +215,7 @@ module.exports = {
 				resource,
 				objectId: struct.id,
 				amount,
+				roomName: struct.pos.roomName,
 			});
 			sinks.push(sink);
 		}
@@ -245,6 +248,7 @@ module.exports = {
 					resource,
 					objectId: struct.id,
 					amount,
+					roomName: struct.pos.roomName,
 				});
 				sinks.push(sink);
 			}
@@ -269,6 +273,7 @@ module.exports = {
 					let source = new ResourceSource({
 						resource,
 						objectId: struct.id,
+						roomName: struct.pos.roomName,
 					});
 					if (source.amount <= 0) {
 						continue;
@@ -292,6 +297,7 @@ module.exports = {
 			let source = new ResourceSource({
 				resource: lookResult[0].resourceType,
 				objectId: lookResult[0].id,
+				roomName: miningTarget.roomName,
 			});
 			if (source.amount <= 0) {
 				continue;
@@ -346,11 +352,22 @@ module.exports = {
 	 */
 	allocateCreep(creep) {
 		let availableTasks = _.filter(this.tasks, task => {
+			if (task.isComplete) {
+				return false;
+			}
+
+			if (task.amount < creep.store.getCapacity()) {
+				return false;
+			}
+
 			if (creep.memory.role === "manager") {
 				return task.resource === RESOURCE_ENERGY;
 			}
-			else if (creep.memory.role === "scientist") {
+			else if (creep.memory.role === "scientist" || creep.memory.role === "testlogistics") {
 				return task.resource !== RESOURCE_ENERGY;
+			}
+			else {
+				return true;
 			}
 		})
 		if (availableTasks.length === 0) {
