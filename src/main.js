@@ -1399,6 +1399,7 @@ function main() {
 	brainGuard.finalize();
 
 	try {
+		brainLogistics.init();
 		let sinks = brainLogistics.findResourceSinks();
 		console.log(JSON.stringify(sinks));
 		let sources = brainLogistics.findResourceSources();
@@ -1406,6 +1407,8 @@ function main() {
 		let tasks = brainLogistics.buildDeliveryTasks(sinks, sources);
 		console.log(JSON.stringify(tasks));
 		brainLogistics.visualizeTasks(tasks);
+		brainLogistics.tasks = tasks;
+		brainLogistics.finalize();
 	}
 	catch (e) {
 		console.log("ERR: brain.logistics tasks failed");

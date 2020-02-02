@@ -32,7 +32,6 @@ class ResourceSource {
 	constructor(args=null) {
 		this.resource = "";
 		this.objectId = "";
-		this.amount = 0;
 		if (args) {
 			Object.assign(this, args);
 		}
@@ -41,23 +40,37 @@ class ResourceSource {
 	get object() {
 		return Game.getObjectById(this.objectId);
 	}
+
+	get amount() {
+		if (this.object instanceof Resource) {
+			return this.object.amount;
+		}
+		let amount = this.object.store.getUsedCapacity(this.resource);
+		if (this.object.structureType === STRUCTURE_TERMINAL && this.resource === RESOURCE_ENERGY) {
+			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.terminalEnergyTarget, 0);
+		}
+		else if (this.object.structureType === STRUCTURE_FACTORY && this.resource === RESOURCE_ENERGY) {
+			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.factoryEnergyTarget, 0);
+		}
+		return amount;
+	}
 }
 
 class DeliveryTask {
 	constructor(source, sink) {
 		// validate
 		if (source.resource !== sink.resource) {
-			throw new Error("Source and sink resources do not match");
+			throw new Error(`Source ${source.object} and sink ${sink.object} resources do not match`);
 		}
 		if (source.objectId === sink.objectId) {
-			throw new Error("Source object can't be the same as sink object");
+			throw new Error(`Source object can't be the same as sink object ${source.object}`);
 		}
-		if (source.amount === 0) {
-			throw new Error("Source has amount == 0");
-		}
-		if (sink.amount === 0) {
-			throw new Error("Sink has amount == 0");
-		}
+		// if (source.amount === 0) {
+		// 	throw new Error(`Source ${source.object} has ${source.resource} amount == 0`);
+		// }
+		// if (sink.amount === 0) {
+		// 	throw new Error(`Sink ${sink.object} has ${sink.resource} amount == 0`);
+		// }
 
 		this.id = `${Game.shard.name}${Game.time.toString(24)}${Math.random()}`;
 		this.source = source;
@@ -93,6 +106,14 @@ class DeliveryTask {
 		return this.resource === other.resource &&
 			this.sink.objectId === other.sink.objectId &&
 			this.source.objectId === other.sink.objectId;
+	}
+
+	serialize() {
+		return {
+			id: this.id,
+			source: this.source,
+			sink: this.sink,
+		}
 	}
 
 	visualize() {
@@ -134,6 +155,36 @@ class DeliveryTask {
 }
 
 module.exports = {
+	tasks: [],
+
+	init() {
+		if (!Memory.logistics) {
+			Memory.logistics = {
+				tasks: [],
+			};
+		}
+		if (!Memory.guard.tasks) {
+			Memory.guard.tasks = [];
+		}
+		this.tasks = _.map(Memory.logistics.tasks, task => {
+			let t = new DeliveryTask(new ResourceSource(task.source), new ResourceSink(task.sink))
+			t.id = task.id;
+			return t;
+		});
+	},
+
+	finalize() {
+		Memory.logistics.tasks = _.map(this.tasks, task => task.serialize());
+	},
+
+	getTasks() {
+		return this.tasks;
+	},
+
+	getTask(id) {
+		return _.find(this.tasks, task => task.id === id);
+	},
+
 	findResourceSinks() {
 		let sinks = [];
 
@@ -215,23 +266,37 @@ module.exports = {
 
 			for (let struct of sourceStructures) {
 				for (let resource in struct.store) {
-					let amount = struct.store.getUsedCapacity(resource);
-
-					if (struct.structureType === STRUCTURE_TERMINAL && resource === RESOURCE_ENERGY) {
-						amount = Math.max(struct.store.getUsedCapacity(resource) - Memory.terminalEnergyTarget, 0);
-					}
-					else if (struct.structureType === STRUCTURE_FACTORY && resource === RESOURCE_ENERGY) {
-						amount = Math.max(struct.store.getUsedCapacity(resource) - Memory.factoryEnergyTarget, 0);
-					}
-
 					let source = new ResourceSource({
 						resource,
 						objectId: struct.id,
-						amount,
 					});
+					if (source.amount <= 0) {
+						continue;
+					}
 					sources.push(source);
 				}
 			}
+		}
+
+		// add remote mining sources
+		for (let miningTarget of Memory.remoteMining.targets) {
+			let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
+			if (!Game.rooms[miningTarget.roomName]) {
+				// No visibility
+				continue;
+			}
+			let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
+			if (lookResult.length === 0) {
+				continue;
+			}
+			let source = new ResourceSource({
+				resource: lookResult[0].resourceType,
+				objectId: lookResult[0].id,
+			});
+			if (source.amount <= 0) {
+				continue;
+			}
+			sources.push(source);
 		}
 
 		return sources;
@@ -273,5 +338,28 @@ module.exports = {
 		for (let task of tasks) {
 			task.visualize();
 		}
-	}
+	},
+
+	/**
+	 * Tell the specified creep what delivery task to fulfil.
+	 * @param {Creep} creep The creep to give a task to.
+	 */
+	allocateCreep(creep) {
+		let availableTasks = _.filter(this.tasks, task => {
+			if (creep.memory.role === "manager") {
+				return task.resource === RESOURCE_ENERGY;
+			}
+			else if (creep.memory.role === "scientist") {
+				return task.resource !== RESOURCE_ENERGY;
+			}
+		})
+		if (availableTasks.length === 0) {
+			availableTasks = this.tasks;
+		}
+
+		availableTasks = _.sortBy(availableTasks, "amount");
+
+		creep.memory.deliveryTaskId = availableTasks[0].id;
+		return availableTasks[0].id;
+	},
 }
