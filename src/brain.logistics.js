@@ -1,4 +1,5 @@
 const util = require("util");
+const traveler = require("traveler");
 
 // 1. Determine where resources need to go.
 // 2. Determine where we can grab resources from.
@@ -34,6 +35,39 @@ class DeliveryTask {
 	constructor(source, sink) {
 		this.source = source;
 		this.sink = sink;
+	}
+
+	visualize() {
+		if (!this.source) {
+			console.log("ERR: Delivery task has no source");
+			return;
+		}
+		if (!this.sink) {
+			console.log("ERR: Delivery task has no sink");
+			return;
+		}
+
+		let sourceStruct = Game.getObjectById(this.source.objectId);
+		let sinkStruct = Game.getObjectById(this.sink.objectId);
+		if (sourceStruct.pos.roomName === sinkStruct.pos.roomName) {
+			new RoomVisual(sourceStruct.pos.roomName).line(sourceStruct.pos, sinkStruct.pos, {
+				color: "#ff0",
+				opacity: 0.7,
+				lineStyle: "dotted",
+			});
+		}
+		else {
+			new RoomVisual(sourceStruct.pos.roomName).circle(sourceStruct.pos, {
+				color: "#ff0",
+				opacity: 0.7,
+				lineStyle: "dotted",
+			});
+			new RoomVisual(sourceStruct.pos.roomName).circle(sinkStruct.pos, {
+				color: "#ff0",
+				opacity: 0.7,
+				lineStyle: "dotted",
+			});
+		}
 	}
 }
 
@@ -139,5 +173,41 @@ module.exports = {
 		}
 
 		return sources;
+	},
+
+	buildDeliveryTasks(sinks, sources) {
+		let tasks = [];
+
+		for (let sink of sinks) {
+			let sinkStruct = Game.getObjectById(sink.objectId);
+
+			// Try to source from the closest target, ideally in the same room
+			let possibleSources = _.filter(sources, { resource: sink.resource });
+			if (possibleSources.length <= 0) {
+				continue;
+			}
+			possibleSources = _.sortBy(possibleSources, source => {
+				let sourceStruct = Game.getObjectById(source.objectId);
+				if (sinkStruct.pos.roomName === sourceStruct.pos.roomName) {
+					return sinkStruct.pos.getRangeTo(sourceStruct.pos);
+				}
+				else {
+					return 50 * Game.map.getRoomLinearDistance(sinkStruct.pos.roomName, sourceStruct.pos.roomName);
+				}
+			});
+
+			// TODO: use links and terminals to improve efficiency
+
+			let task = new DeliveryTask(possibleSources[0], sink);
+			tasks.push(task);
+		}
+
+		return tasks;
+	},
+
+	visualizeTasks(tasks) {
+		for (let task of tasks) {
+			task.visualize();
+		}
 	}
 }
