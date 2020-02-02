@@ -1,6 +1,10 @@
 const util = require("util");
 const traveler = require("traveler");
 
+/*
+ * This manages the transfer of resources.
+ */
+
 // 1. Determine where resources need to go.
 // 2. Determine where we can grab resources from.
 // 3. Build delivery tasks, optimizing based on creep travel distance, amount creep can carry.
@@ -18,6 +22,10 @@ class ResourceSink {
 			Object.assign(this, args);
 		}
 	}
+
+	get object() {
+		return Game.getObjectById(this.objectId);
+	}
 }
 
 class ResourceSource {
@@ -29,12 +37,62 @@ class ResourceSource {
 			Object.assign(this, args);
 		}
 	}
+
+	get object() {
+		return Game.getObjectById(this.objectId);
+	}
 }
 
 class DeliveryTask {
 	constructor(source, sink) {
+		// validate
+		if (source.resource !== sink.resource) {
+			throw new Error("Source and sink resources do not match");
+		}
+		if (source.objectId === sink.objectId) {
+			throw new Error("Source object can't be the same as sink object");
+		}
+		if (source.amount === 0) {
+			throw new Error("Source has amount == 0");
+		}
+		if (sink.amount === 0) {
+			throw new Error("Sink has amount == 0");
+		}
+
+		this.id = `${Game.shard.name}${Game.time.toString(24)}${Math.random()}`;
 		this.source = source;
 		this.sink = sink;
+	}
+
+	get resource() {
+		return this.sink.resource;
+	}
+
+	get amount() {
+		return this.sink.amount;
+	}
+
+	get isComplete() {
+		return this.sink.amount <= 0;
+	}
+
+	/**
+	 * Register that a specified amount of resource was delivered to the destination.
+	 * @param {Number} amountDelivered The amount of the resource that was delivered
+	 */
+	registerDelivery(amountDelivered) {
+		this.sink.amount -= amountDelivered;
+	}
+
+	/**
+	 * Returns whether or not this DeliveryTask is equivalent to another given DeliveryTask.
+	 * @param {DeliveryTask} other The task to compare to.
+	 * @returns {Boolean} True if equivalent, otherwise false.
+	 */
+	isEqualTo(other) {
+		return this.resource === other.resource &&
+			this.sink.objectId === other.sink.objectId &&
+			this.source.objectId === other.sink.objectId;
 	}
 
 	visualize() {
