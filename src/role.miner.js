@@ -1,6 +1,11 @@
 let traveler = require('traveler');
 let util = require('util');
 
+/*
+ * Tell miners where to deposit materials with a "fill:?" flag or "miner:?" flag
+ * "miner:?" flags use the same format as fill flags
+ */
+
 let roleMiner = {
 	findMineralTarget: function(creep) {
 		let rooms = util.getOwnedRooms();
@@ -24,7 +29,7 @@ let roleMiner = {
 	 * @returns {Structure} The structure to store the mined minerals in.
 	 **/
 	getTargetStorage: function(creep) {
-		let fillFlags = _.filter(Game.flags, (flag) => { return flag.name.includes("fill") && flag.pos.roomName == creep.pos.roomName; });
+		let fillFlags = _.filter(Game.flags, (flag) => { return (flag.name.includes("fill") || flag.name.includes("miner")) && flag.pos.roomName == creep.pos.roomName; });
 		for (let flag of fillFlags) {
 			let material = flag.name.split(":")[1];
 			if (creep.carry[material] > 0) {
