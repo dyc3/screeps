@@ -73,7 +73,7 @@ var roleUpgrader = {
 						}
 					}
 					else {
-						if (creep.room.controller.ticksToDowngrade < 50000 || creep.room.storage.store[RESOURCE_ENERGY] > 800000) {
+						if (creep.room.controller.ticksToDowngrade < 50000 || creep.room.storage.store[RESOURCE_ENERGY] > 500000) {
 							creep.upgradeController(creep.room.controller);
 						}
 						if (!creep.pos.inRangeTo(creep.room.controller, 3)) {
