@@ -2,6 +2,10 @@ Creep.prototype.log = function(...args) {
 	console.log(this.name, ...args);
 };
 
+Number.prototype.clamp = function(min, max) {
+	return util.clamp(this, min, max);
+};
+
 let util = {
 	errorCodeToString(errorCode) {
 		const errors = {
@@ -27,6 +31,10 @@ let util = {
 		catch (e) {
 			return "<INVALID ERROR CODE>"
 		}
+	},
+
+	clamp(x, min, max) {
+		return Math.min(Math.max(x, min), max);
 	},
 
 	/**
