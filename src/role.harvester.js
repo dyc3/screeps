@@ -117,12 +117,11 @@ let roleHarvester = {
 		return targets;
 	},
 
-	findHarvestTarget: function(creep) {
-		var sources = [];
-		var spawns = _.values(Game.spawns);
-		for (var r = 0; r < spawns.length; r++) {
-			var spawn = spawns[r];
-			var roomSources = spawn.room.find(FIND_SOURCES, { filter: (source) => { return toolEnergySource.canAssignSource(source); } });
+	findHarvestTarget(creep) {
+		let sources = [];
+		let rooms = util.getOwnedRooms();
+		for (let room of rooms) {
+			let roomSources = room.find(FIND_SOURCES, { filter: source => toolEnergySource.canAssignSource(source) });
 			// console.log(roomSources.length)
 			if (roomSources && roomSources != undefined && roomSources.length > 0) {
 				sources = sources.concat(roomSources);
