@@ -1425,50 +1425,91 @@ function main() {
 			}
 		}
 
-		if (Game.flags["primary"]) {
-			// draw information about creep quotas
-
-			try {
-				let baseX = 3;
-				let baseY = 5;
-				let vis = new RoomVisual(Game.flags["primary"].pos.roomName);
-				let row = 0;
-				for (let role of _.values(toolCreepUpgrader.roles)) {
-					let count = util.getCreeps(role.name).length;
-					let quota = !role.quota_per_room ? role.quota() : 0;
-					if (role.quota_per_room) {
-						for (let room of rooms) {
-							quota += role.quota(room);
-						}
+		// draw information about creep quotas
+		try {
+			let baseX = 2;
+			let baseY = 2;
+			let vis = new RoomVisual();
+			let row = 0;
+			for (let role of _.values(toolCreepUpgrader.roles)) {
+				let count = util.getCreeps(role.name).length;
+				let quota = !role.quota_per_room ? role.quota() : 0;
+				if (role.quota_per_room) {
+					for (let room of rooms) {
+						quota += role.quota(room);
 					}
-					let percentQuota = util.clamp(count / quota, 0, 1);
+				}
+				let percentQuota = util.clamp(count / quota, 0, 1);
 
-					vis.text(role.name, baseX, baseY + row, {
-						align: "left",
-						font: 0.5,
+				vis.text(role.name, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+				});
+				vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
+					fill: count <= quota ? "#0084f0" : "#f02800",
+				});
+				vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
+					fill: "transparent",
+					stroke: "#ffffff",
+					strokeWidth: 0.08,
+					opacity: 1,
+				});
+
+				vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
+					align: "center",
+					font: 0.5,
+					color: count <= quota ? "#fff" : "#ff8888",
+				});
+
+				row++;
+			}
+		}
+		catch (e) {
+			printException(e);
+		}
+
+		// draw info about spawns
+		try {
+			let baseX = 14;
+			let baseY = 2;
+			let vis = new RoomVisual();
+			let rooms = util.getOwnedRooms();
+			for (let r = 0; r < rooms.length; r++) {
+				let room = rooms[r];
+				vis.text(`${room.name}`, baseX - 0.25, baseY + (4 * r), {
+					align: "left",
+					font: 1,
+					color: "#fff",
+				});
+
+				let spawns = util.getStructures(room, STRUCTURE_SPAWN);
+				for (let s = 0; s < spawns.length; s++) {
+					let xOffset = 0.5;
+					let yOffset = 1.5;
+					let spawn = spawns[s];
+					vis.circle(baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset, {
+						radius: 0.75,
+						fill: "#0084f0",
 					});
-					vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
-						fill: count <= quota ? "#0084f0" : "#f02800",
-					});
-					vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
+					vis.circle(baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset, {
+						radius: 0.75,
 						fill: "transparent",
 						stroke: "#ffffff",
 						strokeWidth: 0.08,
 						opacity: 1,
 					});
-
-					vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
-						align: "center",
-						font: 0.5,
-						color: count <= quota ? "#fff" : "#ff8888",
-					});
-
-					row++;
+					if (spawn.spawning) {
+						vis.text(`${((spawn.needTime - spawn.remainingAmount) / spawn.needTime) * 100}%`, baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset + 0.1, {
+							align: "center",
+							font: 0.5,
+							color: "#fff",
+						});
+					}
 				}
 			}
-			catch (e) {
-				printException(e);
-			}
+		}
+		catch (e) {
+			printException(e);
 		}
 
 		drawRoomScores();
