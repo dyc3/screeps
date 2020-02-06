@@ -1441,14 +1441,14 @@ function main() {
 							quota += role.quota(room);
 						}
 					}
-					let percentQuota = count / quota;
+					let percentQuota = util.clamp(count / quota, 0, 1);
 
 					vis.text(role.name, baseX, baseY + row, {
 						align: "left",
 						font: 0.5,
 					});
 					vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
-						fill: "#0084f0",
+						fill: count <= quota ? "#0084f0" : "#f02800",
 					});
 					vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
 						fill: "transparent",
@@ -1460,6 +1460,7 @@ function main() {
 					vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
 						align: "center",
 						font: 0.5,
+						color: count <= quota ? "#fff" : "#ff8888",
 					});
 
 					row++;
