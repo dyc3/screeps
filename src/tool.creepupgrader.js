@@ -32,6 +32,10 @@ function getUpgraderQuota(room) {
 		}
 		return value;
 	}
+	// HACK: increase upgraders for specific room
+	if (room.name === "W16N7" && room.controller.level < 8) {
+		return 2;
+	}
 	if (room.controller.pos.getRangeTo(room.storage) <= 5) {
 		return 1;
 	}
