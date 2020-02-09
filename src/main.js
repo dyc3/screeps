@@ -1476,32 +1476,37 @@ function main() {
 			let rooms = util.getOwnedRooms();
 			for (let r = 0; r < rooms.length; r++) {
 				let room = rooms[r];
-				vis.text(`${room.name}`, baseX - 0.25, baseY + (4 * r), {
+
+				let ySpacing = 2.2;
+
+				vis.text(`${room.name}`, baseX - 0.25, baseY + (ySpacing * r), {
 					align: "left",
-					font: 1,
+					font: 0.5,
 					color: "#fff",
 				});
 
 				let spawns = util.getStructures(room, STRUCTURE_SPAWN);
 				for (let s = 0; s < spawns.length; s++) {
-					let xOffset = 0.5;
-					let yOffset = 1.5;
+					let xOffset = 0.3;
+					let yOffset = 1;
+					let spawnRadius = 0.5;
+					let xSpacing = 1.4;
 					let spawn = spawns[s];
-					vis.circle(baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset, {
-						radius: 0.75,
+					vis.circle(baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset, {
+						radius: spawnRadius,
 						fill: "#0084f0",
 					});
-					vis.circle(baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset, {
-						radius: 0.75,
+					vis.circle(baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset, {
+						radius: spawnRadius,
 						fill: "transparent",
 						stroke: "#ffffff",
 						strokeWidth: 0.08,
 						opacity: 1,
 					});
 					if (spawn.spawning) {
-						vis.text(`${((spawn.needTime - spawn.remainingAmount) / spawn.needTime) * 100}%`, baseX + 3 * s + xOffset, baseY + (4 * r) + yOffset + 0.1, {
+						vis.text(`${((spawn.needTime - spawn.remainingAmount) / spawn.needTime) * 100}%`, baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset + 0.1, {
 							align: "center",
-							font: 0.5,
+							font: 0.3,
 							color: "#fff",
 						});
 					}
