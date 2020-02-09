@@ -73,7 +73,7 @@ var roleRepairer = {
 					if (struct.structureType == STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
 						return false;
 					}
-					if (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 850000 && (struct.structureType == STRUCTURE_WALL || struct.structureType == STRUCTURE_RAMPART)) {
+					if (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 700000 && (struct.structureType == STRUCTURE_WALL || struct.structureType == STRUCTURE_RAMPART)) {
 						return true
 					}
 					if (struct.structureType == STRUCTURE_WALL && struct.hits >= 100000) {
