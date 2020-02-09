@@ -1504,7 +1504,7 @@ function main() {
 						opacity: 1,
 					});
 					if (spawn.spawning) {
-						vis.text(`${((spawn.spawning.needTime - spawn.spawning.remainingAmount) / spawn.spawning.needTime) * 100}%`, baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset + 0.1, {
+						vis.text(`${Math.round(((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime) * 100)}%`, baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset + 0.1, {
 							align: "center",
 							font: 0.3,
 							color: "#fff",
