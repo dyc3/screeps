@@ -260,6 +260,15 @@ module.exports = {
 					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
 					if (hostiles.length > 0) {
+						// prioritize creeps that can heal
+						hostiles = _.sortByOrder(hostiles, [c => {
+							return c.getActiveBodyparts(HEAL);
+						},
+						c => {
+							return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
+						}
+						], ["desc", "desc"]);
+
 						task._currentTarget = hostiles[0].id;
 					}
 					else {
