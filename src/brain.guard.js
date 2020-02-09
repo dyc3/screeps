@@ -307,6 +307,7 @@ module.exports = {
 
 				if (creep.getActiveBodyparts(HEAL) > 0) {
 					if (creep.hits < creep.hitsMax) {
+						creep.log("[guard] healing self");
 						creep.heal(creep);
 					}
 					else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
@@ -318,10 +319,28 @@ module.exports = {
 						});
 						if (creepsNeedHeal.length > 0) {
 							if (creep.pos.isNearTo(creepsNeedHeal[0])) {
+								creep.log("[guard] healing other guard");
 								creep.heal(creepsNeedHeal[0]);
 							}
 							else {
+								creep.log("[guard] ranged healing other guard");
 								creep.rangedHeal(creepsNeedHeal[0]);
+							}
+						}
+						else {
+							// passively heal other friendly creeps in range.
+							let otherCreepsNeedHeal = creep.pos.findInRange(FIND_CREEPS, 3).filter(c => {
+								return toolFriends.isCreepFriendly(c) && c.hits < c.hitsMax;
+							});
+							if (otherCreepsNeedHeal.length > 0) {
+								if (creep.pos.isNearTo(otherCreepsNeedHeal[0])) {
+									creep.log("[guard] healing other friendly creep");
+									creep.heal(otherCreepsNeedHeal[0]);
+								}
+								else {
+									creep.log("[guard] ranged healing friendly creep");
+									creep.rangedHeal(otherCreepsNeedHeal[0]);
+								}
 							}
 						}
 					}
