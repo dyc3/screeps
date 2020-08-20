@@ -54,6 +54,18 @@ These methods should only be used from the console. They should not be used in t
 `global.market.quickSellEnergy()`
 Sells energy on the market to free up some storage space.
 
+### `global.logistics`
+
+TODO
+
+### `global.util`
+
+`global.util.spawnMegaBuilder(spawnName=null)`
+Spawns a very large builder creep with:
+- 15 `WORK`
+- 10 `CARRY`
+- 25 `MOVE`
+
 ## Misc
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
@@ -1619,6 +1631,34 @@ global.market = {
 
 global.logistics = {
 	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
+};
+
+global.util = {
+	spawnMegaBuilder(spawnName=null) {
+		let spawn = null;
+		if (!spawnName) {
+			rooms = util.getOwnedRooms();
+			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
+		}
+		else {
+			spawn = Game.spawns[spawnName];
+		}
+		return spawn.spawnCreep([
+			WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+			CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+			MOVE,MOVE,MOVE,MOVE,MOVE,
+		],
+		`builder_${Game.time.toString(16)}`,
+		{
+			memory: {
+				role: "builder",
+				keepAlive: false,
+				stage: 5
+			}
+		})
+	}
 };
 
 // https://github.com/screepers/screeps-profiler
