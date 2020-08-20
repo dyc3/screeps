@@ -772,8 +772,8 @@ function doAutoPlanning() {
 			let minerals = room.find(FIND_MINERALS);
 			for (let m in minerals) {
 				let mineral = minerals[m];
-				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_EXTRACTOR }).length == 0) {
+					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: site => site.structureType === STRUCTURE_EXTRACTOR }).length == 0) {
 						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
 					}
 				}
