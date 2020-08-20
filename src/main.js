@@ -370,6 +370,7 @@ function doFlagCommandsAndStuff() {
 			roomName: pos.roomName,
 			harvestPos: {},
 			id: "",
+			neededCarriers: 1,
 		};
 		// check if we are already harvesting this target
 		if (_.find(Memory.remoteMining.targets, { x: newTarget.x, y: newTarget.y, roomName: newTarget.roomName })) {
@@ -835,17 +836,41 @@ function commandRemoteMining() {
 	let neededHarvesters = 0, neededCarriers = 0;
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		let target = Memory.remoteMining.targets[t];
+		// remove invalid creep references, and initialize potentially missing or invalid memory
 		if (!Game.creeps[target.creepHarvester] || !Game.creeps[target.creepHarvester].memory.harvestTarget || Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id) {
 			delete target.creepHarvester;
 		}
-		if (!Game.creeps[target.creepCarrier] || !Game.creeps[target.creepCarrier].memory.harvestTarget || Game.creeps[target.creepCarrier].memory.harvestTarget.id !== target.id) {
+		if (target.creepCarriers) {
+			for (let i = 0; i < target.creepCarriers.length; i++) {
+				let carrierName = target.creepCarriers[i];
+				if (!Game.creeps[carrierName] || !Game.creeps[carrierName].memory.harvestTarget || Game.creeps[carrierName].memory.harvestTarget.id !== target.id) {
+					target.creepCarriers.splice(i, 1);
+					i--;
+				}
+			}
+		}
+		else {
+			target.creepCarriers = [];
+		}
+
+		if (!target.neededCarriers || target.neededCarriers < 1) {
+			target.neededCarriers = 1;
+		}
+
+		// HACK: move memory to the new thing
+		if (target.creepCarrier) {
+			if (!target.creepCarriers) {
+				target.creepCarriers = [];
+			}
+			target.creepCarriers.push(target.creepCarrier);
 			delete target.creepCarrier;
 		}
 
-		if (!target.creepHarvester || !target.creepCarrier) {
-			console.log("[remote mining]", target.id, "needs harvester or carrier");
+		if (!target.creepHarvester || !target.creepCarriers) {
+			console.log("[remote mining]", target.id, "needs harvester or carriers");
 		}
 
+		// assign harvester
 		if (!target.creepHarvester) {
 			let remoteHarvesters = util.getCreeps("remoteharvester").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
@@ -862,20 +887,25 @@ function commandRemoteMining() {
 			}
 		}
 
-		if (!target.creepCarrier) {
+		// assign carriers that need to be assigned
+		if (target.creepCarriers.length < target.neededCarriers) {
 			let carriers = util.getCreeps("carrier").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
-			let didAssign = false;
+			let countAssigned = 0;
 			for (let creep of carriers) {
-				if (!creep.memory.creepCarrier || creep.memory.harvestTarget.id === target.id) {
-					target.creepCarrier = creep.name;
+				if (creep.memory.harvestTarget.id === target.id) {
 					creep.memory.harvestTarget = target;
-					didAssign = true;
+					countAssigned++;
+				}
+				else if (!creep.memory.harvestTarget && !target.creepCarriers.includes(creep.name)) {
+					target.creepCarriers.push(creep.name);
+					creep.memory.harvestTarget = target;
+					countAssigned++;
+				}
+				if (countAssigned >= target.neededCarriers) {
 					break;
 				}
 			}
-			if (!didAssign) {
-				neededCarriers++;
-			}
+			neededCarriers += target.neededCarriers - countAssigned;
 		}
 
 		Memory.remoteMining.targets[t] = target;
@@ -886,7 +916,7 @@ function commandRemoteMining() {
 	}
 
 	if (neededCarriers > 0) {
-		console.log("[remote mining]", "need to spawn", neededCarriers, "carrier");
+		console.log("[remote mining]", "need to spawn", neededCarriers, "carriers");
 	}
 
 	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;

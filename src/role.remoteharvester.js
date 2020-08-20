@@ -3,7 +3,7 @@ let util = require('util');
 
 let roleRemoteHarvester = {
 	/** @param {Creep} creep **/
-	run: function(creep) {
+	run(creep) {
 		// TEMP set harvest target for testing
 		// creep.memory.harvestTarget = {
 		// 	id: "55c34a6b5be41a0a6e80c5b5",
@@ -33,15 +33,16 @@ let roleRemoteHarvester = {
 		// TODO: cache path to harvest target
 		let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
 		if (util.isTreasureRoom(harvestTarget.room.name)) {
+			// FIXME: don't reference carrier positions here because its brittle and lazy
 			let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
 			if (hostiles.length > 0) {
-				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarrier]);
+				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarriers[0]]);
 				return;
 			}
 
 			let lairs = harvestTarget.pos.findInRange(FIND_HOSTILE_STRUCTURES, 7).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
 			if (lairs.length > 0 && lairs[0].ticksToLive < 20) {
-				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarrier]);
+				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarriers[0]]);
 				return;
 			}
 		}
