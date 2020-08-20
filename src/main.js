@@ -1089,9 +1089,8 @@ function queueJob(job) {
 }
 
 function main() {
-	if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
-		console.log("skipping tick to save cpu");
-		return;
+	if (Game.cpu.bucket > 9500) {
+		Game.cpu.generatePixel();
 	}
 
 	if (!Memory.terminalEnergyTarget) {
