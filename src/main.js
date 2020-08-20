@@ -45,6 +45,15 @@
 /*
 # SOME NOTES
 
+## Control from the console
+
+These methods should only be used from the console. They should not be used in the code anywhere.
+
+### `global.market`
+
+`global.market.quickSellEnergy()`
+Sells energy on the market to free up some storage space.
+
 ## Misc
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
