@@ -904,7 +904,7 @@ function commandRemoteMining() {
 			let carriers = util.getCreeps("carrier").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let countAssigned = 0;
 			for (let creep of carriers) {
-				if (creep.memory.harvestTarget.id === target.id) {
+				if (creep.memory.harvestTarget && creep.memory.harvestTarget.id === target.id) {
 					creep.memory.harvestTarget = target;
 					countAssigned++;
 				}
