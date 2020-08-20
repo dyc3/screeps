@@ -1403,7 +1403,7 @@ function main() {
 	printStatus();
 
 	// draw some extra eye candy, if we can spare the resources
-	if (Game.cpu.bucket > 9950 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
+	if (Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
 		toolEnergySource.drawAssignedCounts();
 
 		let rooms = util.getOwnedRooms();
