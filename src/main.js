@@ -1634,6 +1634,8 @@ global.logistics = {
 };
 
 global.util = {
+	module: util,
+
 	spawnMegaBuilder(spawnName=null) {
 		let spawn = null;
 		if (!spawnName) {
