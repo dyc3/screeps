@@ -1025,7 +1025,17 @@ function doWorkFactories() {
 		// FIXME: make this more dynamic
 		// right now, everything is hard coded
 
-		let productionTargets = [RESOURCE_UTRIUM_BAR, RESOURCE_ZYNTHIUM_BAR, RESOURCE_REDUCTANT];
+		let productionTargets = [
+			RESOURCE_UTRIUM_BAR,
+			RESOURCE_ZYNTHIUM_BAR,
+			RESOURCE_REDUCTANT,
+
+			RESOURCE_ESSENCE,
+			RESOURCE_EMANATION,
+			RESOURCE_SPIRIT,
+			RESOURCE_EXTRACT,
+			RESOURCE_CONCENTRATE,
+		];
 
 		if (room.storage) {
 			if (room.storage.store[RESOURCE_ENERGY] > 800000 && factory.store[RESOURCE_BATTERY] < 5000) {
