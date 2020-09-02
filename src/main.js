@@ -1491,6 +1491,35 @@ function main() {
 			if (root) {
 				room.visual.rect(root.x - .45, root.y - .45, .9, .9, { "fill": "#44dd44" });
 			}
+
+			// draw relay status
+			let relays = util.getCreeps("relay").filter(creep => creep.memory.targetRoom === room.name);
+			for (let relay of relays) {
+				let pos = new RoomPosition(relay.memory.assignedPos.x, relay.memory.assignedPos.y, relay.memory.targetRoom);
+				let stroke;
+				if (relay.pos.isEqualTo(pos)) {
+					stroke = "#44dd44";
+				}
+				else {
+					stroke = "#ddbb44";
+					if (relay.room.name === relay.memory.targetRoom) {
+						room.visual.text(`${relay.pos.getRangeTo(pos)}`, pos, {
+							font: 0.4,
+						})
+					}
+					else {
+						room.visual.text(relay.room.name, pos, {
+							font: 0.4,
+						})
+					}
+				}
+				room.visual.circle(pos, {
+					stroke,
+					fill: "transparent",
+					radius: 0.4,
+					opacity: 0.5,
+				});
+			}
 		}
 
 		// draw information about creep quotas
