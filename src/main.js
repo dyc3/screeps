@@ -939,7 +939,7 @@ function commandRemoteMining() {
 	}
 
 	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;
-	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
+	Memory.remoteMining.needCarrierCount = _.sum(Memory.remoteMining.targets, "neededCarriers");
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(_.filter(Memory.remoteMining.targets, target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
