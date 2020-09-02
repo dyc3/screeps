@@ -1637,7 +1637,26 @@ function main() {
 				row++;
 			}
 		}
-		catch {
+		catch (e) {
+			printException(e);
+		}
+
+		// draw info about remote mining
+		try {
+			let baseX = 14;
+			let baseY = bottomRowCreepInfo + 1;
+			let vis = new RoomVisual();
+			let row = 0;
+			for (let source of Memory.remoteMining.targets) {
+				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers.length}/${source.neededCarriers}`, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+				row++;
+			}
+		}
+		catch (e) {
 			printException(e);
 		}
 
