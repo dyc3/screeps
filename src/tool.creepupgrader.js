@@ -214,28 +214,28 @@ let creepUpgrader = {
 				// MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE, 		MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
-		"healer":{
-			name:"healer",
-			quota:function() { return 0; }, // Memory.doAttack != undefined
-			quota_per_room:false,
-			stages:[
-				[HEAL,MOVE],
-				[TOUGH,HEAL,HEAL,MOVE,MOVE],
-				[TOUGH,TOUGH,HEAL,HEAL,MOVE,MOVE],
-				[TOUGH,TOUGH,TOUGH,HEAL,HEAL,HEAL,MOVE,MOVE,MOVE],
-			],
-		},
-		"attacker":{
-			name:"attacker",
-			quota: getAttackerQuota, //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
-			quota_per_room:false,
-			stages:[
-				[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
-				[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
-				[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
-				[TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
-			],
-		},
+		// "healer":{
+		// 	name:"healer",
+		// 	quota:function() { return 0; }, // Memory.doAttack != undefined
+		// 	quota_per_room:false,
+		// 	stages:[
+		// 		[HEAL,MOVE],
+		// 		[TOUGH,HEAL,HEAL,MOVE,MOVE],
+		// 		[TOUGH,TOUGH,HEAL,HEAL,MOVE,MOVE],
+		// 		[TOUGH,TOUGH,TOUGH,HEAL,HEAL,HEAL,MOVE,MOVE,MOVE],
+		// 	],
+		// },
+		// "attacker":{
+		// 	name:"attacker",
+		// 	quota: getAttackerQuota, //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
+		// 	quota_per_room:false,
+		// 	stages:[
+		// 		[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
+		// 		[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
+		// 		[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
+		// 		[TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
+		// 	],
+		// },
 		"remoteharvester":{
 			name:"remoteharvester",
 			quota:function() { return Memory.remoteMining.needHarvesterCount; },
@@ -256,25 +256,25 @@ let creepUpgrader = {
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY, MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
-		"scout":{
-			name:"scout",
-			// quota:((Game.spawns["Spawn1"].room.controller.level >= 5) ? 1 : 0),
-			quota:function() { return 0; },
-			quota_per_room:false,
-			stages:[
-				[MOVE],
-			],
-		},
-		"nextroomer":{
-			name:"nextroomer",
-			//quota:((Memory.expansionTarget != undefined) ? 1 : 0),
-			quota:function() { return 0; },
-			quota_per_room:false,
-			stages:[
-				// [CLAIM,MOVE],
-				[WORK,MOVE,WORK,MOVE,CARRY,MOVE,WORK,MOVE,CARRY,MOVE],
-			],
-		},
+		// "scout":{
+		// 	name:"scout",
+		// 	// quota:((Game.spawns["Spawn1"].room.controller.level >= 5) ? 1 : 0),
+		// 	quota:function() { return 0; },
+		// 	quota_per_room:false,
+		// 	stages:[
+		// 		[MOVE],
+		// 	],
+		// },
+		// "nextroomer":{
+		// 	name:"nextroomer",
+		// 	//quota:((Memory.expansionTarget != undefined) ? 1 : 0),
+		// 	quota:function() { return 0; },
+		// 	quota_per_room:false,
+		// 	stages:[
+		// 		// [CLAIM,MOVE],
+		// 		[WORK,MOVE,WORK,MOVE,CARRY,MOVE,WORK,MOVE,CARRY,MOVE],
+		// 	],
+		// },
 		"miner": {
 			name:"miner",
 			quota:getMinerQuota,
