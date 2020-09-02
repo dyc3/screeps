@@ -1494,6 +1494,7 @@ function main() {
 		}
 
 		// draw information about creep quotas
+		let bottomRowCreepInfo;
 		try {
 			let baseX = 2;
 			let baseY = 2;
@@ -1531,6 +1532,7 @@ function main() {
 
 				row++;
 			}
+			bottomRowCreepInfo = baseY + row;
 		}
 		catch (e) {
 			printException(e);
@@ -1582,6 +1584,31 @@ function main() {
 			}
 		}
 		catch (e) {
+			printException(e);
+		}
+
+		// draw info about logistics tasks
+		try {
+			let baseX = 2;
+			let baseY = bottomRowCreepInfo + 1;
+			let taskCounts = _.countBy(Memory.logistics.tasks, "source.resource");
+			let row = 0;
+			let vis = new RoomVisual();
+			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo, {
+				align: "left",
+				font: 0.5,
+				color: "#fff",
+			});
+			for (let resource in taskCounts) {
+				vis.text(`${resource} | ${taskCounts[resource]}`, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+				row++;
+			}
+		}
+		catch {
 			printException(e);
 		}
 
