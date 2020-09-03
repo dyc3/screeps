@@ -1747,6 +1747,19 @@ global.market = {
 
 global.logistics = {
 	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
+
+	/**
+	 * An easier way to transfer a resource from one room's terminal to another.
+	 * @param {*} from
+	 * @param {*} to
+	 */
+	transferResource(from, to, resource, amount) {
+		return Game.rooms[from].terminal.send(resource, amount, to);
+	},
+
+	quickTransferEnergy(from, to) {
+		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, 75000, to);
+	},
 };
 
 global.util = {
