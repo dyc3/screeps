@@ -1,5 +1,10 @@
 Creep.prototype.log = function(...args) {
-	console.log(this.name, ...args);
+	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {
+		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
+	}
+	else {
+		console.log(this.name, ...args);
+	}
 };
 
 Number.prototype.clamp = function(min, max) {
