@@ -383,41 +383,8 @@ module.exports = {
 						}
 					}
 
-					// TODO: don't repeat code
-					if (task.guardType === "treasure") {
-						if (task.currentTarget instanceof Creep) {
-							console.log("[guard] attacking creep");
-							if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
-								if (shouldMassAttack) {
-									creep.rangedMassAttack();
-								}
-								else if (isTargetInRange) {
-									creep.rangedAttack(task.currentTarget);
-								}
-								else if (hostilesInRange.length == 1) {
-									creep.rangedAttack(hostilesInRange[0]);
-								}
-							}
-							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
-								creep.attack(task.currentTarget);
-							}
-
-							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
-							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								creep.travelTo(task.currentTarget, { range: minRange });
-							}
-						}
-						else if (task.currentTarget instanceof StructureKeeperLair) {
-							console.log("[guard] waiting by keeper lair");
-							if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-								creep.travelTo(task.currentTarget);
-							}
-						}
-						else {
-							console.log("[guard] ERR: unknown current target");
-						}
-					}
-					else {
+					if (task.currentTarget instanceof Creep) {
+						console.log(`[guard] attacking creep, range=${rangeToTarget}`);
 						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
 							if (shouldMassAttack) {
 								creep.rangedMassAttack();
@@ -434,9 +401,19 @@ module.exports = {
 							creep.move(creep.pos.getDirectionTo(task.currentTarget));
 						}
 
-						if (!creep.pos.inRangeTo(task.currentTarget, 1)) {
-							creep.travelTo(task.currentTarget, { ignoreCreeps: false, movingTarget: true });
+						let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
+						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
+							creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
 						}
+					}
+					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
+						console.log("[guard] waiting by keeper lair");
+						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
+							creep.travelTo(task.currentTarget);
+						}
+					}
+					else {
+						console.log("[guard] ERR: unknown current target");
 					}
 				}
 			}
