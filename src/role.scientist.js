@@ -164,6 +164,7 @@ var roleScientist = {
 		// make sure we don't have any energy on us
 		if (creep.store[RESOURCE_ENERGY] > 0) {
 			taskDepositMaterials.run(creep, exclude_energy=false);
+			return;
 		}
 
 		// console.log(creep.name, targetStruct, targetStorage, creep.memory.targetResource)
