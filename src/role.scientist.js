@@ -57,6 +57,7 @@ var roleScientist = {
 		// NOTE
 		// `targetStruct` is where we deliver the resource
 		// `targetStorage` is where we grab the resource from
+		// TODO: rename these to `depositTarget` and `withdrawTarget` in `creep.memory`
 
 		let neededMinerals = {};
 		if (!creep.memory.targetStruct) {
@@ -141,14 +142,15 @@ var roleScientist = {
 				return;
 			}
 		}
-		let targetStruct = Game.getObjectById(creep.memory.targetStruct);
-		let targetStorage = Game.getObjectById(creep.memory.targetStorage);
+		let depositTarget = Game.getObjectById(creep.memory.targetStruct);
+		let withdrawTarget = Game.getObjectById(creep.memory.targetStorage);
 
-		console.log(creep.name, "transfer", creep.memory.targetResource, "from", targetStorage, "=>", targetStruct);
+		creep.log("transfer", creep.memory.targetResource, "from", withdrawTarget, "=>", depositTarget);
 
-		if (creep.store[creep.memory.targetResource] === 0 && (isStructureFull(targetStruct) || (targetStorage.store && targetStorage.store[creep.memory.targetResource] == 0) || isStructureEmpty(targetStorage))) {
-			if (creep.transfer(targetStorage, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(targetStorage);
+		// FIXME: what the fuck does this if statement mean? why is it here?
+		if (creep.store[creep.memory.targetResource] === 0 && (isStructureFull(depositTarget) || (withdrawTarget.store && withdrawTarget.store[creep.memory.targetResource] == 0) || isStructureEmpty(withdrawTarget))) {
+			if (creep.transfer(withdrawTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
+				creep.travelTo(withdrawTarget);
 			}
 			if (!creep.carry[creep.memory.targetResource] || creep.carry[creep.memory.targetResource] <= 0) {
 				delete creep.memory.targetStruct;
@@ -167,14 +169,14 @@ var roleScientist = {
 		// console.log(creep.name, targetStruct, targetStorage, creep.memory.targetResource)
 
 		if (creep.store[creep.memory.targetResource] > 0 || _.sum(creep.store) > 0) {
-			if (creep.transfer(targetStruct, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(targetStruct);
+			if (creep.transfer(depositTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
+				creep.travelTo(depositTarget);
 			}
 		}
 		else {
-			switch (creep.withdraw(targetStorage, creep.memory.targetResource)) {
+			switch (creep.withdraw(withdrawTarget, creep.memory.targetResource)) {
 				case ERR_NOT_IN_RANGE:
-					creep.travelTo(targetStorage);
+					creep.travelTo(withdrawTarget);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
 					creep.log("withdraw: NOT ENOUGH RESOURCES");
