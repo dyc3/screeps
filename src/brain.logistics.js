@@ -18,7 +18,7 @@ class ResourceSink {
 		this.resource = "";
 		this.objectId = "";
 		this.roomName = "";
-		this.amount = 0;
+		this.amount = 0; // The amount of the resource that this sink needs.
 		if (args) {
 			Object.assign(this, args);
 		}
@@ -135,6 +135,7 @@ class DeliveryTask {
 				color: "#ff0",
 				opacity: 0.7,
 				lineStyle: "dotted",
+				width: Math.max(Math.min(0.05 * 0.001 * this.amount, 0.4), 0.02),
 			});
 		}
 		else {
