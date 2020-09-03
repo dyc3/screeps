@@ -89,9 +89,9 @@ let util = {
 	isTreasureRoom: function(roomName) {
 		let matches = roomName.match(/\d+/g);
 		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
-		let x = parseInt(matches[0]);
-		let y = parseInt(matches[1]);
-		return (x % 10 >= 4 && x % 10 <= 6) && (y % 10 >= 4 && y % 10 <= 6);
+		let x = parseInt(matches[0]) % 10;
+		let y = parseInt(matches[1]) % 10;
+		return (x >= 4 && x <= 6) && (y >= 4 && y <= 6);
 	},
 
 	/**
