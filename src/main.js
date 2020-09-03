@@ -1755,7 +1755,18 @@ global.util = {
 				stage: 5
 			}
 		})
-	}
+	},
+
+	/**
+	 * Trashes the creep's movement cache, forcing it to calculate a new path.
+	 * @param {Creep|String} creep
+	 */
+	forceRepath(creep) {
+		if (typeof creep === "string") {
+			creep = Game.creeps[creep];
+		}
+		delete creep.memory._trav;
+	},
 };
 
 // https://github.com/screepers/screeps-profiler
