@@ -1791,6 +1791,31 @@ global.util = {
 		})
 	},
 
+	spawnTestLogisticsCreep(spawnName=null, size=2) {
+		let spawn = null;
+		if (!spawnName) {
+			rooms = util.getOwnedRooms();
+			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
+		}
+		else {
+			spawn = Game.spawns[spawnName];
+		}
+		let body = [];
+		for (let i = 0; i < size; i++) {
+			body.unshift(CARRY);
+			body.push(MOVE);
+		}
+		return spawn.spawnCreep(body,
+			`testlogistics_${Game.time.toString(16)}`,
+			{
+				memory: {
+					role: "testlogistics",
+					keepAlive: true,
+					stage: size
+				}
+			});
+	},
+
 	/**
 	 * Trashes the creep's movement cache, forcing it to calculate a new path.
 	 * @param {Creep|String} creep
