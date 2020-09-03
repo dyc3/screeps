@@ -1181,6 +1181,9 @@ function main() {
 	if (!Memory.claimTargets) {
 		Memory.claimTargets = [];
 	}
+	if (!Memory.highlightCreepLog) {
+		Memory.highlightCreepLog = [];
+	}
 
 	// initialize jobs
 	if (!Memory.job_last_run) {
