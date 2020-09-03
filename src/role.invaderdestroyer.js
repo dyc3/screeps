@@ -94,6 +94,9 @@ let roleInvaderDestroyer = {
 
 		if (creep.room.name !== creep.memory.targetRoom) {
 			creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+			if (creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) > 0) {
+				creep.heal(creep);
+			}
 			return;
 		}
 

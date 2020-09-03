@@ -45,6 +45,27 @@
 /*
 # SOME NOTES
 
+## Control from the console
+
+These methods should only be used from the console. They should not be used in the code anywhere.
+
+### `global.market`
+
+`global.market.quickSellEnergy()`
+Sells energy on the market to free up some storage space.
+
+### `global.logistics`
+
+TODO
+
+### `global.util`
+
+`global.util.spawnMegaBuilder(spawnName=null)`
+Spawns a very large builder creep with:
+- 15 `WORK`
+- 10 `CARRY`
+- 25 `MOVE`
+
 ## Misc
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
@@ -362,6 +383,7 @@ function doFlagCommandsAndStuff() {
 			roomName: pos.roomName,
 			harvestPos: {},
 			id: "",
+			neededCarriers: 1,
 		};
 		// check if we are already harvesting this target
 		if (_.find(Memory.remoteMining.targets, { x: newTarget.x, y: newTarget.y, roomName: newTarget.roomName })) {
@@ -666,6 +688,11 @@ function doCreepSpawning() {
 }
 
 function doAutoTrading() {
+	// HACK: hardcoded logistics things
+	Game.rooms["W13N11"].terminal.send(RESOURCE_ZYNTHIUM, Game.rooms["W13N11"].terminal.store[RESOURCE_ZYNTHIUM], "W16N9");
+	Game.rooms["W16N7"].terminal.send(RESOURCE_UTRIUM, Game.rooms["W16N7"].terminal.store[RESOURCE_UTRIUM], "W15N8");
+	Game.rooms["W16N9"].terminal.send(RESOURCE_REDUCTANT, Game.rooms["W16N9"].terminal.store[RESOURCE_REDUCTANT], "W15N8");
+
 	let rooms = util.getOwnedRooms();
 
 	let minimumPrice = {};
@@ -681,10 +708,16 @@ function doAutoTrading() {
 
 	minimumPrice[RESOURCE_GHODIUM] = 5;
 
-	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.32;
-	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.32;
+	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.45;
+	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.45;
 	minimumPrice[RESOURCE_REDUCTANT] = 0.45;
 	minimumPrice[RESOURCE_BATTERY] = 0.05;
+
+	minimumPrice[RESOURCE_ESSENCE] = 100000;
+	minimumPrice[RESOURCE_EMANATION] = 30000;
+	minimumPrice[RESOURCE_SPIRIT] = 10000;
+	minimumPrice[RESOURCE_EXTRACT] = 1500;
+	minimumPrice[RESOURCE_CONCENTRATE] = 300;
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -759,8 +792,8 @@ function doAutoPlanning() {
 			let minerals = room.find(FIND_MINERALS);
 			for (let m in minerals) {
 				let mineral = minerals[m];
-				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: (struct) => {return struct.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
-					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: (site) => {return site.structureType == STRUCTURE_EXTRACTOR}}).length == 0) {
+				if (mineral.pos.lookFor(LOOK_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_EXTRACTOR }).length == 0) {
+					if (mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, { filter: site => site.structureType === STRUCTURE_EXTRACTOR }).length == 0) {
 						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
 					}
 				}
@@ -823,17 +856,41 @@ function commandRemoteMining() {
 	let neededHarvesters = 0, neededCarriers = 0;
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		let target = Memory.remoteMining.targets[t];
+		// remove invalid creep references, and initialize potentially missing or invalid memory
 		if (!Game.creeps[target.creepHarvester] || !Game.creeps[target.creepHarvester].memory.harvestTarget || Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id) {
 			delete target.creepHarvester;
 		}
-		if (!Game.creeps[target.creepCarrier] || !Game.creeps[target.creepCarrier].memory.harvestTarget || Game.creeps[target.creepCarrier].memory.harvestTarget.id !== target.id) {
+		if (target.creepCarriers) {
+			for (let i = 0; i < target.creepCarriers.length; i++) {
+				let carrierName = target.creepCarriers[i];
+				if (!Game.creeps[carrierName] || !Game.creeps[carrierName].memory.harvestTarget || Game.creeps[carrierName].memory.harvestTarget.id !== target.id) {
+					target.creepCarriers.splice(i, 1);
+					i--;
+				}
+			}
+		}
+		else {
+			target.creepCarriers = [];
+		}
+
+		if (!target.neededCarriers || target.neededCarriers < 1) {
+			target.neededCarriers = 1;
+		}
+
+		// HACK: move memory to the new thing
+		if (target.creepCarrier) {
+			if (!target.creepCarriers) {
+				target.creepCarriers = [];
+			}
+			target.creepCarriers.push(target.creepCarrier);
 			delete target.creepCarrier;
 		}
 
-		if (!target.creepHarvester || !target.creepCarrier) {
-			console.log("[remote mining]", target.id, "needs harvester or carrier");
+		if (!target.creepHarvester || !target.creepCarriers) {
+			console.log("[remote mining]", target.id, "needs harvester or carriers");
 		}
 
+		// assign harvester
 		if (!target.creepHarvester) {
 			let remoteHarvesters = util.getCreeps("remoteharvester").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
@@ -850,20 +907,25 @@ function commandRemoteMining() {
 			}
 		}
 
-		if (!target.creepCarrier) {
+		// assign carriers that need to be assigned
+		if (target.creepCarriers.length < target.neededCarriers) {
 			let carriers = util.getCreeps("carrier").filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
-			let didAssign = false;
+			let countAssigned = 0;
 			for (let creep of carriers) {
-				if (!creep.memory.creepCarrier || creep.memory.harvestTarget.id === target.id) {
-					target.creepCarrier = creep.name;
+				if (creep.memory.harvestTarget && creep.memory.harvestTarget.id === target.id) {
 					creep.memory.harvestTarget = target;
-					didAssign = true;
+					countAssigned++;
+				}
+				else if (!creep.memory.harvestTarget && !target.creepCarriers.includes(creep.name)) {
+					target.creepCarriers.push(creep.name);
+					creep.memory.harvestTarget = target;
+					countAssigned++;
+				}
+				if (countAssigned >= target.neededCarriers) {
 					break;
 				}
 			}
-			if (!didAssign) {
-				neededCarriers++;
-			}
+			neededCarriers += target.neededCarriers - countAssigned;
 		}
 
 		Memory.remoteMining.targets[t] = target;
@@ -874,11 +936,11 @@ function commandRemoteMining() {
 	}
 
 	if (neededCarriers > 0) {
-		console.log("[remote mining]", "need to spawn", neededCarriers, "carrier");
+		console.log("[remote mining]", "need to spawn", neededCarriers, "carriers");
 	}
 
 	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;
-	Memory.remoteMining.needCarrierCount = Memory.remoteMining.targets.length;
+	Memory.remoteMining.needCarrierCount = _.sum(Memory.remoteMining.targets, "neededCarriers");
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(_.filter(Memory.remoteMining.targets, target => Game.getObjectById(target.id)).map(target => Game.getObjectById(target.id).room.name));
@@ -971,7 +1033,20 @@ function doWorkFactories() {
 		// FIXME: make this more dynamic
 		// right now, everything is hard coded
 
-		let productionTargets = [RESOURCE_UTRIUM_BAR, RESOURCE_ZYNTHIUM_BAR, RESOURCE_REDUCTANT];
+		let productionTargets = [
+			RESOURCE_UTRIUM_BAR,
+			RESOURCE_ZYNTHIUM_BAR,
+			RESOURCE_REDUCTANT,
+
+			RESOURCE_ESSENCE,
+			RESOURCE_EMANATION,
+			RESOURCE_SPIRIT,
+			RESOURCE_EXTRACT,
+			RESOURCE_CONCENTRATE,
+
+			RESOURCE_KEANIUM_BAR,
+			RESOURCE_PURIFIER,
+		];
 
 		if (room.storage) {
 			if (room.storage.store[RESOURCE_ENERGY] > 800000 && factory.store[RESOURCE_BATTERY] < 5000) {
@@ -1086,9 +1161,8 @@ function queueJob(job) {
 }
 
 function main() {
-	if (Game.cpu.bucket <= 7000 && Game.time % 4 == 0) {
-		console.log("skipping tick to save cpu");
-		return;
+	if (Game.cpu.bucket > 9500) {
+		Game.cpu.generatePixel();
 	}
 
 	if (!Memory.terminalEnergyTarget) {
@@ -1181,7 +1255,7 @@ function main() {
 			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder" && creep.memory.role != "carrier") && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
 				taskDepositMaterials.run(creep, true);
-				break;
+				continue;
 			}
 		}
 		catch (e) {
@@ -1421,7 +1495,7 @@ function main() {
 	printStatus();
 
 	// draw some extra eye candy, if we can spare the resources
-	if (Game.cpu.bucket > 9950 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
+	if (Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
 		toolEnergySource.drawAssignedCounts();
 
 		let rooms = util.getOwnedRooms();
@@ -1440,51 +1514,173 @@ function main() {
 			if (root) {
 				room.visual.rect(root.x - .45, root.y - .45, .9, .9, { "fill": "#44dd44" });
 			}
+
+			// draw relay status
+			let relays = util.getCreeps("relay").filter(creep => creep.memory.targetRoom === room.name);
+			for (let relay of relays) {
+				let pos = new RoomPosition(relay.memory.assignedPos.x, relay.memory.assignedPos.y, relay.memory.targetRoom);
+				let stroke;
+				if (relay.pos.isEqualTo(pos)) {
+					stroke = "#44dd44";
+				}
+				else {
+					stroke = "#ddbb44";
+					if (relay.room.name === relay.memory.targetRoom) {
+						room.visual.text(`${relay.pos.getRangeTo(pos)}`, pos, {
+							font: 0.4,
+						})
+					}
+					else {
+						room.visual.text(relay.room.name, pos, {
+							font: 0.4,
+						})
+					}
+				}
+				room.visual.circle(pos, {
+					stroke,
+					fill: "transparent",
+					radius: 0.4,
+					opacity: 0.5,
+				});
+			}
 		}
 
-		if (Game.flags["primary"]) {
-			// draw information about creep quotas
-
-			try {
-				let baseX = 3;
-				let baseY = 5;
-				let vis = new RoomVisual(Game.flags["primary"].pos.roomName);
-				let row = 0;
-				for (let role of _.values(toolCreepUpgrader.roles)) {
-					let count = util.getCreeps(role.name).length;
-					let quota = !role.quota_per_room ? role.quota() : 0;
-					if (role.quota_per_room) {
-						for (let room of rooms) {
-							quota += role.quota(room);
-						}
+		// draw information about creep quotas
+		let bottomRowCreepInfo;
+		try {
+			let baseX = 2;
+			let baseY = 2;
+			let vis = new RoomVisual();
+			let row = 0;
+			for (let role of _.values(toolCreepUpgrader.roles)) {
+				let count = util.getCreeps(role.name).length;
+				let quota = !role.quota_per_room ? role.quota() : 0;
+				if (role.quota_per_room) {
+					for (let room of rooms) {
+						quota += role.quota(room);
 					}
-					let percentQuota = count / quota;
+				}
+				let percentQuota = util.clamp(count / quota, 0, 1);
 
-					vis.text(role.name, baseX, baseY + row, {
-						align: "left",
-						font: 0.5,
-					});
-					vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
+				vis.text(role.name, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+				});
+				vis.rect(baseX + 4, baseY - .4 + row, 5 * percentQuota, 0.6, {
+					fill: count <= quota ? "#0084f0" : "#f02800",
+				});
+				vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
+					fill: "transparent",
+					stroke: "#ffffff",
+					strokeWidth: 0.08,
+					opacity: 1,
+				});
+
+				vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
+					align: "center",
+					font: 0.5,
+					color: count <= quota ? "#fff" : "#ff8888",
+				});
+
+				row++;
+			}
+			bottomRowCreepInfo = baseY + row;
+		}
+		catch (e) {
+			printException(e);
+		}
+
+		// draw info about spawns
+		try {
+			let baseX = 14;
+			let baseY = 2;
+			let vis = new RoomVisual();
+			let rooms = util.getOwnedRooms();
+			for (let r = 0; r < rooms.length; r++) {
+				let room = rooms[r];
+
+				let ySpacing = 2.2;
+
+				vis.text(`${room.name}`, baseX - 0.25, baseY + (ySpacing * r), {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+
+				let spawns = util.getStructures(room, STRUCTURE_SPAWN);
+				for (let s = 0; s < spawns.length; s++) {
+					let xOffset = 0.3;
+					let yOffset = 1;
+					let spawnRadius = 0.5;
+					let xSpacing = 1.4;
+					let spawn = spawns[s];
+					vis.circle(baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset, {
+						radius: spawnRadius,
 						fill: "#0084f0",
 					});
-					vis.rect(baseX + 4, baseY - .4 + row, 5, 0.6, {
+					vis.circle(baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset, {
+						radius: spawnRadius,
 						fill: "transparent",
 						stroke: "#ffffff",
 						strokeWidth: 0.08,
 						opacity: 1,
 					});
-
-					vis.text(`${count}/${quota}`, baseX + 4 + 5/2, baseY + row + 0.1, {
-						align: "center",
-						font: 0.5,
-					});
-
-					row++;
+					if (spawn.spawning) {
+						vis.text(`${Math.round(((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime) * 100)}%`, baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset + 0.1, {
+							align: "center",
+							font: 0.3,
+							color: "#fff",
+						});
+					}
 				}
 			}
-			catch (e) {
-				printException(e);
+		}
+		catch (e) {
+			printException(e);
+		}
+
+		// draw info about logistics tasks
+		try {
+			let baseX = 2;
+			let baseY = bottomRowCreepInfo + 1;
+			let taskCounts = _.countBy(Memory.logistics.tasks, "source.resource");
+			let row = 0;
+			let vis = new RoomVisual();
+			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo, {
+				align: "left",
+				font: 0.5,
+				color: "#fff",
+			});
+			for (let resource in taskCounts) {
+				vis.text(`${resource} | ${taskCounts[resource]}`, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+				row++;
 			}
+		}
+		catch (e) {
+			printException(e);
+		}
+
+		// draw info about remote mining
+		try {
+			let baseX = 14;
+			let baseY = bottomRowCreepInfo + 1;
+			let vis = new RoomVisual();
+			let row = 0;
+			for (let source of Memory.remoteMining.targets) {
+				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers.length}/${source.neededCarriers}`, baseX, baseY + row, {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+				row++;
+			}
+		}
+		catch (e) {
+			printException(e);
 		}
 
 		drawRoomScores();
@@ -1551,6 +1747,47 @@ global.market = {
 
 global.logistics = {
 	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
+};
+
+global.util = {
+	module: util,
+
+	spawnMegaBuilder(spawnName=null) {
+		let spawn = null;
+		if (!spawnName) {
+			rooms = util.getOwnedRooms();
+			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
+		}
+		else {
+			spawn = Game.spawns[spawnName];
+		}
+		return spawn.spawnCreep([
+			WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
+			CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
+			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
+			MOVE,MOVE,MOVE,MOVE,MOVE,
+		],
+		`builder_${Game.time.toString(16)}`,
+		{
+			memory: {
+				role: "builder",
+				keepAlive: false,
+				stage: 5
+			}
+		})
+	},
+
+	/**
+	 * Trashes the creep's movement cache, forcing it to calculate a new path.
+	 * @param {Creep|String} creep
+	 */
+	forceRepath(creep) {
+		if (typeof creep === "string") {
+			creep = Game.creeps[creep];
+		}
+		delete creep.memory._trav;
+	},
 };
 
 // https://github.com/screepers/screeps-profiler

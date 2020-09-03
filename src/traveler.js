@@ -62,7 +62,7 @@ class Traveler {
         }
         if (state.stuckCount >= options.stuckValue && Math.random() > .5) {
             options.ignoreCreeps = false;
-            options.ignoreCreepsRange = 8;
+            options.avoidCreepsRange = 8;
             options.freshMatrix = true;
             delete travelData.path;
         }
@@ -218,7 +218,7 @@ class Traveler {
     static findTravelPath(origin, destination, options = {}) {
         _.defaults(options, {
             ignoreCreeps: true,
-            ignoreCreepsRange: Infinity,
+            avoidCreepsRange: Infinity, // Only path around creeps within this range, ignore all creeps outside of this range.
             maxOps: DEFAULT_MAXOPS,
             range: 1,
         });
@@ -256,8 +256,8 @@ class Traveler {
                 if (options.ignoreStructures) {
                     matrix = new PathFinder.CostMatrix();
                     if (!options.ignoreCreeps) {
-                        if (options.ignoreCreepsRange !== Infinity) {
-                            Traveler.addCreepsToMatrix(room, matrix, origin, options.ignoreCreepsRange);
+                        if (options.avoidCreepsRange !== Infinity) {
+                            Traveler.addCreepsToMatrix(room, matrix, origin, options.avoidCreepsRange);
                         }
                         else {
                             Traveler.addCreepsToMatrix(room, matrix);
@@ -268,8 +268,8 @@ class Traveler {
                     matrix = this.getStructureMatrix(room, options.freshMatrix);
                 }
                 else {
-                    if (options.ignoreCreepsRange !== Infinity) {
-                        matrix = this.getCreepMatrix(room, origin, options.ignoreCreepsRange);
+                    if (options.avoidCreepsRange !== Infinity) {
+                        matrix = this.getCreepMatrix(room, origin, options.avoidCreepsRange);
                     }
                     else {
                         matrix = this.getCreepMatrix(room);
@@ -425,6 +425,7 @@ class Traveler {
     /**
      * build a cost matrix based on creeps and structures in the room. Will be cached for one tick. Requires vision.
      * @param room
+     * @param range Only include creeps within the given range.
      * @returns {any}
      */
     static getCreepMatrix(room, pos=undefined, range=Infinity) {
@@ -480,6 +481,7 @@ class Traveler {
      * add creeps to matrix so that they will be avoided by other creeps
      * @param room
      * @param matrix
+     * @param range Only include creeps within the given range.
      * @returns {CostMatrix}
      */
     static addCreepsToMatrix(room, matrix, pos=undefined, range=Infinity) {
