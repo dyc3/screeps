@@ -1034,7 +1034,6 @@ function doWorkFactories() {
 
 		let productionTargets = [
 			RESOURCE_UTRIUM_BAR,
-			RESOURCE_KEANIUM_BAR,
 			RESOURCE_ZYNTHIUM_BAR,
 			RESOURCE_REDUCTANT,
 
@@ -1043,6 +1042,9 @@ function doWorkFactories() {
 			RESOURCE_SPIRIT,
 			RESOURCE_EXTRACT,
 			RESOURCE_CONCENTRATE,
+
+			RESOURCE_KEANIUM_BAR,
+			RESOURCE_PURIFIER,
 		];
 
 		if (room.storage) {
