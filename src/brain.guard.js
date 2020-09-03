@@ -1,6 +1,8 @@
 let util = require("util");
 let toolFriends = require("tool.friends");
 
+const MASS_ATTACK_DISTANCE_MULTIPLIER = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
+
 /*
  * This coordinates guardian creeps to protect key assets most effectively.
  */
@@ -302,6 +304,7 @@ module.exports = {
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
+			let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
 			for (let creep of creeps) {
 				creep.notifyWhenAttacked(false);
 				if (creep.spawning || creep.memory.renewing) {
@@ -356,15 +359,43 @@ module.exports = {
 				}
 
 				if (task.currentTarget) {
-					if (task.guardType == "treasure") {
+					let rangeToTarget = creep.pos.getRangeTo(task.currentTarget);
+					let isTargetInRange = rangeToTarget <= 3;
+					let hostilesInRange = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3));
+					let hostileHealdersInRange = _.filter(hostilesInRange, hostile => hostile.getActiveBodyparts(HEAL) > 0);
+					let rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
+					let rangedMassAttackEffectiveness = rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] || 0); // Estimation of how much damage we will do to the target with a mass attack.
+					let targetHealEffectiveness = task.currentTarget instanceof Creep ? task.currentTarget.getActiveBodyparts(HEAL) * HEAL_POWER : 0;
+
+					let shouldMassAttack = false;
+					// Needs to prioritize focusing down creeps that can heal
+					if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+						if (isTargetInRange) {
+							if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
+								shouldMassAttack = false;
+							}
+							else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
+								shouldMassAttack = true;
+							}
+						}
+						else if (hostilesInRange.length >= 2) {
+							shouldMassAttack = true;
+						}
+					}
+
+					// TODO: don't repeat code
+					if (task.guardType === "treasure") {
 						if (task.currentTarget instanceof Creep) {
 							console.log("[guard] attacking creep");
 							if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
-								if (_.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3)).length > 2) {
+								if (shouldMassAttack) {
 									creep.rangedMassAttack();
 								}
-								else if (creep.pos.inRangeTo(task.currentTarget, 3)) {
+								else if (isTargetInRange) {
 									creep.rangedAttack(task.currentTarget);
+								}
+								else if (hostilesInRange.length == 1) {
+									creep.rangedAttack(hostilesInRange[0]);
 								}
 							}
 							else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
@@ -388,11 +419,14 @@ module.exports = {
 					}
 					else {
 						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
-							if (_.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3)).length > 2) {
+							if (shouldMassAttack) {
 								creep.rangedMassAttack();
 							}
-							else if (creep.pos.inRangeTo(task.currentTarget, 3)) {
+							else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
+							}
+							else if (hostilesInRange.length == 1) {
+								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
 						else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
@@ -401,7 +435,7 @@ module.exports = {
 						}
 
 						if (!creep.pos.inRangeTo(task.currentTarget, 1)) {
-							creep.travelTo(task.currentTarget, { ignoreCreeps: false, movingTarget: Game.time % 5 !== 0 });
+							creep.travelTo(task.currentTarget, { ignoreCreeps: false, movingTarget: true });
 						}
 					}
 				}
