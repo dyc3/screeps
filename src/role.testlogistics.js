@@ -66,7 +66,7 @@ module.exports = {
 		else {
 			if (deliveryTask.source.object) {
 				if (creep.pos.isNearTo(deliveryTask.source.object)) {
-					creep.withdraw(deliveryTask.source.object, deliveryTask.source.resource);
+					creep.withdraw(deliveryTask.source.object, deliveryTask.source.resource, Math.min(creep.store.getFreeCapacity(), deliveryTask.amount));
 					creep.memory.delivering = true;
 				}
 				else {
