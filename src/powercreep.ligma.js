@@ -6,9 +6,14 @@ Ligma can reduce spawn times.
 
 module.exports = {
 	run(creep) {
-		if(!(creep.spawnCooldownTime > Date.now())) {
+		if (!(creep.spawnCooldownTime > Date.now())) {
 			// TODO: make this not hard coded
-			creep.spawn(util.getStructures(Game.rooms["W15N8"], STRUCTURE_POWER_SPAWN)[0]);
+			creep.spawn(Game.getObjectById("5ca9a834279bd66008505768"));
+			// creep.spawn(util.getStructures(Game.rooms["W15N8"], STRUCTURE_POWER_SPAWN)[0]);
+		}
+
+		if (!creep.room) {
+			return;
 		}
 
 		if (!creep.room.controller.isPowerEnabled) {
