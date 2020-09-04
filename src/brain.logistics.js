@@ -358,9 +358,9 @@ module.exports = {
 				return false;
 			}
 
-			if (task.amount < creep.store.getCapacity()) {
-				return false;
-			}
+			// if (task.amount < creep.store.getCapacity()) {
+			// 	return false;
+			// }
 
 			let alreadyAssignedCreeps = _.filter([].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")), creep => creep.memory.deliveryTaskId === task.id);
 			if (alreadyAssignedCreeps.length > 0) {
