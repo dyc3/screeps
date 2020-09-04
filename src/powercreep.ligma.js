@@ -18,6 +18,14 @@ module.exports = {
 			return;
 		}
 
+		if (creep.memory.renewing) {
+			taskRenew.run(creep);
+			return;
+		}
+		else {
+			creep.memory.renewing = taskRenew.checkRenew(creep);
+		}
+
 		if (!creep.room.controller.isPowerEnabled) {
 			creep.log(`Enabling power usage for room ${creep.room.name}`);
 			if (creep.pos.isNearTo(creep.room.controller)) {
