@@ -12,6 +12,11 @@ module.exports = {
 			brainLogistics.allocateCreep(creep);
 		}
 
+		if (!creep.memory.deliveryTaskId) {
+			creep.log("No available tasks");
+			return;
+		}
+
 		let deliveryTask = brainLogistics.getTask(creep.memory.deliveryTaskId);
 
 		if (!deliveryTask) {

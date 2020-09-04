@@ -74,7 +74,7 @@ class DeliveryTask {
 		// 	throw new Error(`Sink ${sink.object} has ${sink.resource} amount == 0`);
 		// }
 
-		this.id = `${Game.shard.name}${Game.time.toString(24)}${Math.random()}`;
+		this.id = `${Game.shard.name}_${source.resource}_${source.objectId}${sink.objectId}`;
 		this.source = source;
 		this.sink = sink;
 	}
@@ -361,7 +361,14 @@ module.exports = {
 				return false;
 			}
 
-			if (creep.memory.role === "manager") {
+			let alreadyAssignedCreeps = _.filter([].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")), creep => creep.memory.deliveryTaskId === task.id);
+			if (alreadyAssignedCreeps.length > 0) {
+				if (task.amount <= alreadyAssignedCreeps[0].store.getCapacity() || alreadyAssignedCreeps.length >= 2) {
+					return false;
+				}
+			}
+
+			if (creep.memory.role === "manager" || creep.memory.role === "testlogistics") {
 				return task.resource === RESOURCE_ENERGY;
 			}
 			else if (creep.memory.role === "scientist" || creep.memory.role === "testlogistics") {
@@ -370,9 +377,9 @@ module.exports = {
 			else {
 				return true;
 			}
-		})
+		});
 		if (availableTasks.length === 0) {
-			availableTasks = this.tasks;
+			return null;
 		}
 
 		availableTasks = _.sortBy(availableTasks, "amount");
