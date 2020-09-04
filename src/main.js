@@ -1819,6 +1819,12 @@ global.util = {
 			});
 	},
 
+	destroyAllTestLogisticsCreeps() {
+		for (let creep of util.getCreeps("testlogistics")) {
+			creep.suicide();
+		}
+	},
+
 	/**
 	 * Trashes the creep's movement cache, forcing it to calculate a new path.
 	 * @param {Creep|String} creep
