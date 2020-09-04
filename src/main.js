@@ -690,7 +690,6 @@ function doAutoTrading() {
 	// HACK: hardcoded logistics things
 	Game.rooms["W13N11"].terminal.send(RESOURCE_ZYNTHIUM, Game.rooms["W13N11"].terminal.store[RESOURCE_ZYNTHIUM], "W16N9");
 	Game.rooms["W16N7"].terminal.send(RESOURCE_UTRIUM, Game.rooms["W16N7"].terminal.store[RESOURCE_UTRIUM], "W15N8");
-	Game.rooms["W16N9"].terminal.send(RESOURCE_REDUCTANT, Game.rooms["W16N9"].terminal.store[RESOURCE_REDUCTANT], "W15N8");
 
 	let rooms = util.getOwnedRooms();
 
