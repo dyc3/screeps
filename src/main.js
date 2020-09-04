@@ -1670,12 +1670,12 @@ function main() {
 
 		// draw info about remote mining
 		try {
-			let baseX = 14;
+			let baseX = 8;
 			let baseY = bottomRowCreepInfo + 1;
 			let vis = new RoomVisual();
 			let row = 0;
 			for (let source of Memory.remoteMining.targets) {
-				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers}`, baseX, baseY + row, {
+				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers}`, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
 					color: "#fff",
