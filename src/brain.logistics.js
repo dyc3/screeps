@@ -382,6 +382,11 @@ module.exports = {
 				return false;
 			}
 
+			// don't have creeps transfer stuff from terminal to terminal
+			if (task.source.object.structureType === task.sink.object.structureType === STRUCTURE_TERMINAL) {
+				return false;
+			}
+
 			return true;
 		});
 		if (availableTasks.length === 0) {
@@ -408,5 +413,18 @@ module.exports = {
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
+	},
+
+	fulfillTerminalTransfers() {
+		let terminalTransferTasks = _.filter(this.tasks, task => task.source.object.structureType === task.sink.object.structureType === STRUCTURE_TERMINAL);
+		for (let task of terminalTransferTasks) {
+			if (task.source.object.cooldown > 0) {
+				continue;
+			}
+			let result = task.source.object.send(task.resource, task.amount, task.sink.roomName);
+			if (result !== OK) {
+				console.log(`Failed to fulfil ${task.id} with terminals: ${result}`);
+			}
+		}
 	},
 }

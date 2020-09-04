@@ -1513,12 +1513,13 @@ function main() {
 
 	try {
 		let sinks = brainLogistics.findResourceSinks();
-		console.log(JSON.stringify(sinks));
+		// console.log(JSON.stringify(sinks));
 		let sources = brainLogistics.findResourceSources();
-		console.log(JSON.stringify(sources));
+		// console.log(JSON.stringify(sources));
 		let tasks = brainLogistics.buildDeliveryTasks(sinks, sources);
 		brainLogistics.tasks = tasks;
-		console.log(JSON.stringify(brainLogistics.tasks));
+		brainLogistics.fulfillTerminalTransfers();
+		// console.log(JSON.stringify(brainLogistics.tasks));
 		brainLogistics.visualizeTasks(brainLogistics.tasks);
 	}
 	catch (e) {
