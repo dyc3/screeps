@@ -205,8 +205,9 @@ module.exports = {
 				continue;
 			}
 
-			let resource = flag.name.split(":")[1];
-			let amount = struct.store.getFreeCapacity(resource);
+			let flagNameSplit = flag.name.split(":");
+			let resource = flagNameSplit[1];
+			let amount = flagNameSplit.length > 2 ? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource)) : struct.store.getFreeCapacity(resource);
 
 			if (amount === 0) {
 				continue;
