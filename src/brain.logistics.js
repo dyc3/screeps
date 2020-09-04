@@ -369,6 +369,11 @@ module.exports = {
 				}
 			}
 
+			// keep managers in their rooms
+			if (creep.memory.role === "manager" && (creep.memory.targetRoom !== task.source.roomName || creep.memory.targetRoom !== task.sink.roomName)) {
+				return false;
+			}
+
 			if (creep.memory.role === "manager" || creep.memory.role === "testlogistics") {
 				return task.resource === RESOURCE_ENERGY;
 			}
