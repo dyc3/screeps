@@ -1336,7 +1336,12 @@ function main() {
 					roleClaimer.run(creep);
 					break;
 				case 'manager':
-					roleManager.run(creep);
+					if (Memory.USE_ADV_LOGISTICS) {
+						require("role.testlogistics").run(creep);
+					}
+					else {
+						roleManager.run(creep);
+					}
 					break;
 				case 'remoteharvester':
 					roleRemoteHarvester.run(creep);
@@ -1354,7 +1359,12 @@ function main() {
 					roleMiner.run(creep);
 					break;
 				case 'scientist':
-					roleScientist.run(creep);
+					if (Memory.USE_ADV_LOGISTICS) {
+						require("role.testlogistics").run(creep);
+					}
+					else {
+						roleScientist.run(creep);
+					}
 					break;
 				case 'relay':
 					roleRelay.run(creep);
