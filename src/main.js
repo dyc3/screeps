@@ -1417,6 +1417,9 @@ function main() {
 		}
 	}
 
+	// TODO: make a job for processing power to replace this hard coded thing
+	Game.getObjectById("5ca9a834279bd66008505768").processPower();
+
 	// process jobs
 	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
 		let job_to_do = Memory.job_queue[0];
