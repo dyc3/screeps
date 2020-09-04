@@ -374,21 +374,16 @@ module.exports = {
 				return false;
 			}
 
-			if (creep.memory.role === "manager" || creep.memory.role === "testlogistics") {
-				return task.resource === RESOURCE_ENERGY;
-			}
-			else if (creep.memory.role === "scientist" || creep.memory.role === "testlogistics") {
-				return task.resource !== RESOURCE_ENERGY;
-			}
-			else {
-				return true;
-			}
+			return true;
 		});
 		if (availableTasks.length === 0) {
 			return null;
 		}
 
-		availableTasks = _.sortBy(availableTasks, "amount");
+		availableTasks = _.sortByOrder(availableTasks, [task =>
+			(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
+			(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY)
+		, "amount"], ["desc", "asc"]);
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
