@@ -1,4 +1,5 @@
 const util = require("util");
+const taskRenew = require("task.renew");
 
 /*
 Ligma can reduce spawn times.
@@ -13,7 +14,16 @@ module.exports = {
 		}
 
 		if (!creep.room) {
+			// creep is not alive
 			return;
+		}
+
+		if (creep.memory.renewing) {
+			taskRenew.run(creep);
+			return;
+		}
+		else {
+			creep.memory.renewing = taskRenew.checkRenew(creep);
 		}
 
 		if (!creep.room.controller.isPowerEnabled) {

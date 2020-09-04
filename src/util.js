@@ -251,7 +251,7 @@ let util = {
 
 	getStructures: function(room, type=undefined) {
 		if (type) {
-			return room.find(FIND_STRUCTURES, { filter: (struct) => { return struct.structureType == type; } });
+			return room.find(FIND_STRUCTURES, { filter: struct => struct.structureType === type });
 		}
 		else {
 			return room.find(FIND_STRUCTURES);

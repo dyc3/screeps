@@ -5,30 +5,30 @@ let taskGather = require("task.gather");
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
 let taskRenew = {
-	/** @param {Creep} creep **/
-	checkRenew: function(creep) {
+	/** @param {Creep|PowerCreep} creep **/
+	checkRenew(creep) {
 		if (creep.memory.renewing) {
 			return true;
 		}
-		if (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0) {
+		if (creep instanceof Creep && (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0)) {
 			return false;
 		}
 
-		let spawn = util.getSpawn(creep.room);
+		let spawn = creep instanceof Creep ? util.getSpawn(creep.room) : _.first(util.getStructures(creep.room, STRUCTURE_POWER_SPAWN));
 		if (!spawn) {
 			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
 				let closestRooms = util.findClosestOwnedRooms(creep.pos);
 				try {
-					creep.memory.renewTarget = util.getSpawn(closestRooms[0]).id
+					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
 				}
 				catch {
-					creep.memory.renewTarget = util.getSpawn(closestRooms[1]).id
+					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[1]) : _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))).id;
 				}
 				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
 			spawn = Game.getObjectById(creep.memory.renewTarget);
 		}
-		if (!spawn) {
+		if (creep instanceof Creep && !spawn) {
 			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
 		}
 		if (!spawn) {
@@ -44,27 +44,29 @@ let taskRenew = {
 			creep.memory._renewTravelTime = travelTime;
 			creep.memory._lastCheckTravelTime = Game.time;
 		}
-		if (spawn.spawning) {
+		if (spawn instanceof StructureSpawn && spawn.spawning) {
 			travelTime += spawn.spawning.remainingTime;
 		}
 
 		return creep.ticksToLive < travelTime + ((creep.room != spawn.room) ? 100 : 40);
 	},
 
-	/** @param {Creep} creep **/
-	run: function(creep) {
+	/** @param {Creep|PowerCreep} creep **/
+	run(creep) {
 		if (!creep.memory.renewTarget) {
-			let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-				filter: (struct) => { return struct.structureType == STRUCTURE_SPAWN && !struct.spawning; }
-			});
-			if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
-				closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+			if (creep instanceof Creep) {
+				let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+					filter: struct => (struct.structureType == STRUCTURE_SPAWN && !struct.spawning)
+				});
+				if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
+					closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+				}
+				creep.memory.renewTarget = closestSpawn.id;
 			}
-			creep.memory.renewTarget = closestSpawn.id;
 		}
 		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
 
-		if (creep.room.name == renewTarget.room.name && creep.room.energyAvailable < 40 && creep.ticksToLive > 60 && creep.carry[RESOURCE_ENERGY] < 10) {
+		if (creep instanceof Creep && creep.room.name == renewTarget.room.name && creep.room.energyAvailable < 40 && creep.ticksToLive > 60 && creep.carry[RESOURCE_ENERGY] < 10) {
 			taskGather.run(creep);
 			return;
 		}
@@ -118,26 +120,32 @@ let taskRenew = {
 			creep.travelTo(renewTarget, {visualizePathStyle:{}});
 		}
 		else if (creep.ticksToLive < maxTicks) {
-			switch (renewTarget.renewCreep(creep)) {
-				case ERR_NOT_ENOUGH_ENERGY:
-					if (renewTarget.room.energyAvailable + creep.store[RESOURCE_ENERGY] >= renewCost) {
-						creep.transfer(renewTarget, RESOURCE_ENERGY);
-					}
-					else if (creep.ticksToLive > 220) {
+			if (creep instanceof Creep) {
+				switch (renewTarget.renewCreep(creep)) {
+					case ERR_NOT_ENOUGH_ENERGY:
+						if (renewTarget.room.energyAvailable + creep.store[RESOURCE_ENERGY] >= renewCost) {
+							creep.transfer(renewTarget, RESOURCE_ENERGY);
+						}
+						else if (creep.ticksToLive > 220) {
+							creep.memory.renewing = false;
+							return;
+						}
+						else {
+							creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
+						}
+						break;
+					case ERR_FULL:
 						creep.memory.renewing = false;
-						return;
-					}
-					else {
-						creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
-					}
-					break;
-				case ERR_FULL:
-					creep.memory.renewing = false;
-					break;
-				case ERR_BUSY:
-					delete creep.memory.renewTarget;
-				default:
-					break;
+						break;
+					case ERR_BUSY:
+						delete creep.memory.renewTarget;
+					default:
+						break;
+				}
+			}
+			else if (creep instanceof PowerCreep) {
+				creep.renew(renewTarget);
+				creep.memory.renewing = false;
 			}
 		}
 		if (creep.ticksToLive >= maxTicks) {
