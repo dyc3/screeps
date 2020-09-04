@@ -1379,6 +1379,15 @@ function main() {
 		}
 	}
 
+	// powercreeps
+	try {
+		require("powercreep.ligma").run(Game.powerCreeps["Ligma"]);
+	}
+	catch (e) {
+		console.log("failed to run power creeps");
+		printException(e);
+	}
+
 	let renewingCreeps = _.filter(_.values(Game.creeps), c => c.memory.renewing);
 	const CREEP_RENEW_PRIORITY = {
 		"_default": 5,

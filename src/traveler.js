@@ -18,7 +18,7 @@ class Traveler {
         if (!destination) {
             return ERR_INVALID_ARGS;
         }
-        if (creep.fatigue > 0) {
+        if (creep instanceof Creep && creep.fatigue > 0) {
             Traveler.circle(creep.pos, "aqua", .3);
             return ERR_TIRED;
         }
@@ -609,5 +609,9 @@ const STATE_DEST_Y = 5;
 const STATE_DEST_ROOMNAME = 6;
 // assigns a function to Creep.prototype: creep.travelTo(destination)
 Creep.prototype.travelTo = function (destination, options) {
+    return Traveler.travelTo(this, destination, options);
+};
+
+PowerCreep.prototype.travelTo = function (destination, options) {
     return Traveler.travelTo(this, destination, options);
 };
