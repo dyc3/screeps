@@ -110,7 +110,7 @@ let util = {
 
 	/**
 	 * Gets the estimated number of ticks to traverse the path. (Not tested, but should kinda work?)
-	 * @param {Creep} creep The creep to estimate
+	 * @param {Creep|PowerCreep} creep The creep to estimate
 	 * @param {array} path Array of RoomPosition that the creep would travel on
 	 * @param {Boolean} assumeCarryFull Whether or not to assume that the creep has a full load.
 	 * @returns {Number} The minimum ticks for the creep to traverse the path.
@@ -118,6 +118,10 @@ let util = {
 	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
 	 */
 	calculateEta(creep, path, assumeCarryFull=false) {
+		if (creep instanceof PowerCreep) {
+			return path.length;
+		}
+
 		let body = creep.body.map(b => b.type);
 		let baseFatiguePerMove = body.filter(p => p !== MOVE && (!assumeCarryFull || assumeCarryFull && p !== CARRY)).length;
 		let moveParts = body.filter(p => p === MOVE).length;
