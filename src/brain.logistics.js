@@ -224,35 +224,43 @@ module.exports = {
 
 		// find energy sinks
 		let rooms = util.getOwnedRooms();
-		for (let room of rooms) {
-			let sinkStructures = room.find(FIND_STRUCTURES, {
-				filter: struct => {
-					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
-				}
-			});
-
-			for (let struct of sinkStructures) {
-				let resource = RESOURCE_ENERGY;
-				let amount = struct.store.getFreeCapacity(resource);
-
-				if (struct.structureType === STRUCTURE_TERMINAL) {
-					amount = Math.min(Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
-				}
-				else if (struct.structureType === STRUCTURE_FACTORY) {
-					amount = Math.min(Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
-				}
-
-				if (amount <= 0) {
-					continue;
-				}
-
-				let sink = new ResourceSink({
-					resource,
-					objectId: struct.id,
-					amount,
-					roomName: struct.pos.roomName,
+		const resources = [RESOURCE_ENERGY, RESOURCE_POWER, RESOURCE_GHODIUM];
+		for (let resource of resources) {
+			for (let room of rooms) {
+				let sinkStructures = room.find(FIND_STRUCTURES, {
+					filter: struct => {
+						return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
+					}
 				});
-				sinks.push(sink);
+
+				for (let struct of sinkStructures) {
+					if (resource === RESOURCE_GHODIUM && struct.structureType !== STRUCTURE_NUKER) {
+						continue;
+					}
+					if (resource === RESOURCE_POWER && struct.structureType !== STRUCTURE_POWER_SPAWN) {
+						continue;
+					}
+					let amount = struct.store.getFreeCapacity(resource);
+
+					if (struct.structureType === STRUCTURE_TERMINAL) {
+						amount = Math.min(Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
+					}
+					else if (struct.structureType === STRUCTURE_FACTORY) {
+						amount = Math.min(Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
+					}
+
+					if (amount <= 0) {
+						continue;
+					}
+
+					let sink = new ResourceSink({
+						resource,
+						objectId: struct.id,
+						amount,
+						roomName: struct.pos.roomName,
+					});
+					sinks.push(sink);
+				}
 			}
 		}
 
@@ -382,8 +390,21 @@ module.exports = {
 
 		availableTasks = _.sortByOrder(availableTasks, [task =>
 			(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
-			(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY)
-		, "amount"], ["desc", "asc"]);
+			(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
+			task => {
+				let structPriority = {};
+				structPriority[STRUCTURE_EXTENSION] = 1;
+				structPriority[STRUCTURE_SPAWN] = 1;
+				structPriority[STRUCTURE_TOWER] = 2;
+				structPriority[STRUCTURE_POWER_SPAWN] = 4;
+				structPriority[STRUCTURE_LAB] = 5;
+				structPriority[STRUCTURE_FACTORY] = 5;
+				structPriority[STRUCTURE_NUKER] = 6;
+				structPriority[STRUCTURE_CONTAINER] = 9;
+				structPriority[STRUCTURE_STORAGE] = 9;
+				structPriority[STRUCTURE_TERMINAL] = 9;
+				return structPriority[task.sink.object.structureType];
+			}, "amount"], ["desc", "asc", "asc"]);
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
