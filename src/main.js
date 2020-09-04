@@ -1061,6 +1061,12 @@ function doWorkFactories() {
 		for (let productionTarget of productionTargets) {
 			console.log(`[work-factories] production target: ${productionTarget}`);
 			let canProduce = true;
+			if (COMMODITIES[productionTarget].level > factory.level) {
+				console.log(`[work-factories] factory is level ${factory.level}, but level ${COMMODITIES[productionTarget].level} is required`);
+				canProduce = false;
+				break;
+			}
+
 			for (let component in COMMODITIES[productionTarget].components) {
 				// console.log(`[work-factories] factory has component ${component}?`);
 				if (!factory.store.hasOwnProperty(component)) {
@@ -1078,8 +1084,13 @@ function doWorkFactories() {
 
 			console.log(`[work-factories] production target: ${productionTarget}, can produce: ${canProduce}`);
 			if (canProduce) {
-				factory.produce(productionTarget);
-				break;
+				let productionResult = factory.produce(productionTarget);
+				if (productionResult !== OK) {
+					console.log(`[work-factories] unable to produce ${productionTarget} => ${productionResult}`);
+				}
+				else {
+					break;
+				}
 			}
 		}
 	}
