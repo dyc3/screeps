@@ -84,7 +84,7 @@ class DeliveryTask {
 	}
 
 	get amount() {
-		return this.sink.amount;
+		return Math.min(this.source.object.store.getUsedCapacity(this.resource), this.sink.amount);
 	}
 
 	get isComplete() {
