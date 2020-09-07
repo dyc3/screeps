@@ -111,10 +111,12 @@ let taskRenew = {
 			}
 		}
 
-		let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
-		let renewCost = util.getRenewCost(creep.body);
-		let totalRenewCost = renewCost * countRenewsRequired;
-		creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
+		if (creep instanceof Creep) {
+			let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
+			let renewCost = util.getRenewCost(creep.body);
+			let totalRenewCost = renewCost * countRenewsRequired;
+			creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
+		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
 			creep.travelTo(renewTarget, {visualizePathStyle:{}});
