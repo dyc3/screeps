@@ -7,9 +7,10 @@ Ligma can reduce spawn times.
 
 module.exports = {
 	run(creep) {
+		let powerSpawn = Game.getObjectById("5ca9a834279bd66008505768");
 		if (!(creep.spawnCooldownTime > Date.now())) {
 			// TODO: make this not hard coded
-			creep.spawn(Game.getObjectById("5ca9a834279bd66008505768"));
+			creep.spawn(powerSpawn);
 			// creep.spawn(util.getStructures(Game.rooms["W15N8"], STRUCTURE_POWER_SPAWN)[0]);
 		}
 
@@ -19,7 +20,14 @@ module.exports = {
 		}
 
 		if (creep.memory.renewing) {
-			taskRenew.run(creep);
+// 			taskRenew.run(creep);
+			if (creep.pos.isNearTo(powerSpawn)) {
+				creep.renew(powerSpawn);
+				creep.memory.renewing = false;
+			}
+			else {
+				creep.travelTo(powerSpawn);
+			}
 			return;
 		}
 		else {
@@ -40,6 +48,33 @@ module.exports = {
 		if (creep.powers[PWR_GENERATE_OPS].cooldown === 0) {
 			let result = creep.usePower(PWR_GENERATE_OPS);
 			creep.log(`generate ops result: ${result}`);
+		}
+
+
+
+		if (creep.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+			if (creep.pos.isNearTo(powerSpawn)) {
+				creep.transfer(powerSpawn, RESOURCE_POWER);
+			}
+			else {
+				creep.travelTo(new RoomPosition(23, 33, "W15N8"));
+			}
+		}
+		else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER)) {
+			if (creep.pos.isNearTo(creep.room.terminal)) {
+				if (creep.store.getUsedCapacity(RESOURCE_OPS) > 0) {
+					creep.transfer(creep.room.terminal, RESOURCE_OPS);
+				}
+				else {
+					creep.withdraw(creep.room.terminal, RESOURCE_POWER);
+				}
+			}
+			else {
+				creep.travelTo(creep.room.terminal);
+			}
+		}
+		else {
+			creep.travelTo(powerSpawn);
 		}
 	}
 }
