@@ -274,12 +274,15 @@ module.exports = {
 		for (let room of rooms) {
 			let sourceStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
-					return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY].includes(struct.structureType) && struct.store;
+					return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
 				}
 			});
 
 			for (let struct of sourceStructures) {
 				for (let resource in struct.store) {
+					if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
+						continue;
+					}
 					let source = new ResourceSource({
 						resource,
 						objectId: struct.id,
