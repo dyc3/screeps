@@ -1,6 +1,11 @@
 // https://wiki.screepspl.us/index.php/Private_Server_Common_Tasks
 // https://lodash.com/docs/3.10.1
 
+// Game.powerCreeps["Ligma"].renew(Game.getObjectById("5ca9a834279bd66008505768")); Game.powerCreeps["Ligma"].memory.renewing = false
+// Game.powerCreeps["Ligma"].transfer(Game.getObjectById("5b9466c81c8bff516101da4d"), RESOURCE_OPS)
+// Game.powerCreeps["Ligma"].withdraw(Game.getObjectById("5b9466c81c8bff516101da4d"), RESOURCE_POWER)
+// Game.powerCreeps["Ligma"].transfer(Game.getObjectById("5ca9a834279bd66008505768"), RESOURCE_POWER)
+
 // var sci = Game.creeps["scientist1"]; sci.withdraw(sci.room.storage, "U"); sci.transfer(sci.room.terminal, "U")
 
 // Prep attack group for a long journey
@@ -1418,6 +1423,8 @@ function main() {
 
 	// TODO: make a job for processing power to replace this hard coded thing
 	Game.getObjectById("5ca9a834279bd66008505768").processPower();
+	Game.getObjectById("5f54dabd5732e7b26410e1fa").processPower();
+	Game.getObjectById("5f5276f55ae5fa072e1e24bb").processPower();
 
 	// process jobs
 	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
@@ -1497,6 +1504,12 @@ function main() {
 	brainGuard.finalize();
 
 	printStatus();
+
+	// HACK: some hard coded lab stuff
+	let lab = Game.getObjectById("5bd6ad0a73cd123941da20b7");
+	if (lab.cooldown === 0) {
+		lab.reverseReaction(Game.getObjectById("5c52f3dff8e7e01d1be68600"), Game.getObjectById("5bd22b799c36b177348b3e99"));
+	}
 
 	// draw some extra eye candy, if we can spare the resources
 	if (Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
