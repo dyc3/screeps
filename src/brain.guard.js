@@ -304,7 +304,7 @@ module.exports = {
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
-			let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
+			// let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
 			for (let creep of creeps) {
 				creep.notifyWhenAttacked(false);
 				if (creep.spawning || creep.memory.renewing) {
