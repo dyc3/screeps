@@ -431,23 +431,38 @@ module.exports = {
 			return null;
 		}
 
-		availableTasks = _.sortByOrder(availableTasks, [task =>
-			(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
-			(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
+		availableTasks = _.sortByOrder(availableTasks, [
+			task =>
+				(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
+				(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
 			task => {
-				let structPriority = {};
-				structPriority[STRUCTURE_EXTENSION] = 1;
-				structPriority[STRUCTURE_SPAWN] = 1;
-				structPriority[STRUCTURE_TOWER] = 2;
-				structPriority[STRUCTURE_POWER_SPAWN] = 4;
-				structPriority[STRUCTURE_LAB] = 5;
-				structPriority[STRUCTURE_FACTORY] = 5;
-				structPriority[STRUCTURE_NUKER] = 6;
-				structPriority[STRUCTURE_CONTAINER] = 9;
-				structPriority[STRUCTURE_STORAGE] = 9;
-				structPriority[STRUCTURE_TERMINAL] = 9;
-				return structPriority[task.sink.object.structureType];
-			}, "amount"], ["desc", "asc", "asc"]);
+				// sort by sink structure priority
+				switch (task.sink.object.structureType) {
+					case STRUCTURE_EXTENSION:
+						return 1;
+					case STRUCTURE_SPAWN:
+						return 1;
+					case STRUCTURE_TOWER:
+						return 2;
+					case STRUCTURE_POWER_SPAWN:
+						return 4;
+					case STRUCTURE_LAB:
+						return 5;
+					case STRUCTURE_FACTORY:
+						return 5;
+					case STRUCTURE_NUKER:
+						return 6;
+					case STRUCTURE_CONTAINER:
+						return 9;
+					case STRUCTURE_STORAGE:
+						return 9;
+					case STRUCTURE_TERMINAL:
+						return 9;
+					default:
+						return 8;
+				}
+			},
+			"amount"], ["desc", "asc", "asc"]);
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
