@@ -115,6 +115,7 @@ let toolRoadPlanner = require('tool.roadplanner');
 
 let brainAutoPlanner = require('brain.autoplanner');
 let brainGuard = require("brain.guard");
+let brainLogistics = require("brain.logistics");
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
@@ -1222,6 +1223,7 @@ function main() {
 	}
 
 	brainGuard.init();
+	brainLogistics.init();
 
 	let rooms = util.getOwnedRooms();
 
@@ -1268,7 +1270,7 @@ function main() {
 				}
 				continue;
 			}
-			if ((creep.memory.role != "miner" && creep.memory.role != "scientist" && creep.memory.role != "builder" && creep.memory.role != "carrier") && taskDepositMaterials.checkForMaterials(creep, true)) {
+			if (!["miner", "scientist", "builder", "carrier", "manager"].includes(creep.memory.role) && taskDepositMaterials.checkForMaterials(creep, true)) {
 				creep.say("deposit");
 				taskDepositMaterials.run(creep, true);
 				continue;
@@ -1338,7 +1340,12 @@ function main() {
 					roleClaimer.run(creep);
 					break;
 				case 'manager':
-					roleManager.run(creep);
+					if (Memory.USE_ADV_LOGISTICS) {
+						require("role.testlogistics").run(creep);
+					}
+					else {
+						roleManager.run(creep);
+					}
 					break;
 				case 'remoteharvester':
 					roleRemoteHarvester.run(creep);
@@ -1356,7 +1363,12 @@ function main() {
 					roleMiner.run(creep);
 					break;
 				case 'scientist':
-					roleScientist.run(creep);
+					if (Memory.USE_ADV_LOGISTICS) {
+						require("role.testlogistics").run(creep);
+					}
+					else {
+						roleScientist.run(creep);
+					}
 					break;
 				case 'relay':
 					roleRelay.run(creep);
@@ -1366,6 +1378,9 @@ function main() {
 					break;
 				case 'invaderdestroyer':
 					require("role.invaderdestroyer").run(creep);
+					break;
+				case 'testlogistics':
+					require("role.testlogistics").run(creep);
 					break;
 				default:
 					console.log(creep.name, "Err: No",creep.memory.role,"role to execute");
@@ -1502,6 +1517,23 @@ function main() {
 		printException(e);
 	}
 	brainGuard.finalize();
+
+	try {
+		let sinks = brainLogistics.findResourceSinks();
+		// console.log(JSON.stringify(sinks));
+		let sources = brainLogistics.findResourceSources();
+		// console.log(JSON.stringify(sources));
+		let tasks = brainLogistics.buildDeliveryTasks(sinks, sources);
+		brainLogistics.tasks = tasks;
+		brainLogistics.fulfillTerminalTransfers();
+		// console.log(JSON.stringify(brainLogistics.tasks));
+		brainLogistics.visualizeTasks(brainLogistics.tasks);
+	}
+	catch (e) {
+		console.log("ERR: brain.logistics tasks failed");
+		printException(e);
+	}
+	brainLogistics.finalize();
 
 	printStatus();
 
@@ -1663,13 +1695,13 @@ function main() {
 			let taskCounts = _.countBy(Memory.logistics.tasks, "source.resource");
 			let row = 0;
 			let vis = new RoomVisual();
-			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo, {
+			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo + 0.25, {
 				align: "left",
 				font: 0.5,
 				color: "#fff",
 			});
 			for (let resource in taskCounts) {
-				vis.text(`${resource} | ${taskCounts[resource]}`, baseX, baseY + row, {
+				vis.text(`${resource} | ${taskCounts[resource]}`, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
 					color: "#fff",
@@ -1806,6 +1838,37 @@ global.util = {
 				stage: 5
 			}
 		})
+	},
+
+	spawnTestLogisticsCreep(spawnName=null, size=2) {
+		let spawn = null;
+		if (!spawnName) {
+			rooms = util.getOwnedRooms();
+			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
+		}
+		else {
+			spawn = Game.spawns[spawnName];
+		}
+		let body = [];
+		for (let i = 0; i < size; i++) {
+			body.unshift(CARRY);
+			body.push(MOVE);
+		}
+		return spawn.spawnCreep(body,
+			`testlogistics_${Game.time.toString(16)}`,
+			{
+				memory: {
+					role: "testlogistics",
+					keepAlive: true,
+					stage: size
+				}
+			});
+	},
+
+	destroyAllTestLogisticsCreeps() {
+		for (let creep of util.getCreeps("testlogistics")) {
+			creep.suicide();
+		}
 	},
 
 	/**

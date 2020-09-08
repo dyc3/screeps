@@ -377,6 +377,9 @@ module.exports = {
 							else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
 								shouldMassAttack = true;
 							}
+							else if (rangeToTarget === 1 && hostilesInRange.length > 1) {
+								shouldMassAttack = true;
+							}
 						}
 						else if (hostilesInRange.length >= 2) {
 							shouldMassAttack = true;
