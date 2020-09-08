@@ -344,10 +344,45 @@ module.exports = {
 				}
 			});
 
-			// TODO: use links and terminals to improve efficiency
+			// TODO: use links to improve efficiency
 
-			let task = new DeliveryTask(possibleSources[0], sink);
-			tasks.push(task);
+			// Split delivery tasks where the source and sink are in different rooms and there are available terminals.
+			let source = possibleSources[0];
+			if (source.roomName !== sink.roomName && source.object.room.terminal && sink.object.room.terminal) {
+				let resource = sink.resource;
+
+				if (source.object.structureType !== STRUCTURE_TERMINAL) {
+					tasks.push(new DeliveryTask(source, new ResourceSink({
+						resource,
+						objectId: source.object.room.terminal.id,
+						roomName: source.roomName,
+						amount: sink.amount
+					})));
+				}
+
+				tasks.push(new DeliveryTask(new ResourceSource({
+					resource,
+					objectId: source.object.room.terminal.id,
+					roomName: source.roomName
+				}), new ResourceSink({
+					resource,
+					objectId: sink.object.room.terminal.id,
+					roomName: sink.roomName,
+					amount: sink.amount
+				})));
+
+				if (sink.object.structureType !== STRUCTURE_TERMINAL) {
+					tasks.push(new DeliveryTask(new ResourceSource({
+						resource,
+						objectId: sink.object.room.terminal.id,
+						roomName: sink.roomName
+					}), sink));
+				}
+			}
+			else {
+				let task = new DeliveryTask(source, sink);
+				tasks.push(task);
+			}
 		}
 
 		return tasks;
