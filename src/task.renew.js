@@ -99,7 +99,7 @@ let taskRenew = {
 		}
 		else if (creep.memory.role == "harvester") {
 			if (creep.memory.dedicatedLinkId && renewTarget.room.energyAvailable >= 1600) {
-				maxTicks = 1000;
+				maxTicks = 1400;
 			}
 		}
 		else if (creep.memory.role == "relay") {
