@@ -932,6 +932,62 @@ function commandRemoteMining() {
 			neededCarriers += target.neededCarriers - countAssigned;
 		}
 
+		// Determine the danger level for this source
+		let room = new Room(target.roomName);
+		let source = Game.getObjectById(target.id);
+		let hostiles = room.find(FIND_HOSTILE_CREEPS);
+		let keeperLair;
+		if (hostiles.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0) {
+			target.danger = 2;
+		}
+		else if (util.isTreasureRoom(target.roomName)) {
+			// at this point, all hostiles must be source keepers
+			if (!target.keeperLairId) {
+				keeperLair = source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
+					filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
+				});
+				target.keeperLairId = keeperLair.id;
+			}
+			else {
+				keeperLair = Game.getObjectById(target.keeperLairId);
+			}
+
+			if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 10).length > 0) {
+				target.danger = 1;
+			}
+			else if (keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5) {
+				target.danger = 1;
+			}
+			else {
+				target.danger = 0;
+			}
+		}
+		else {
+			target.danger = 0;
+		}
+
+		// determine ideal creep positions for increased danger levels
+		if (!target.dangerPos) {
+			let harvestPos = new RoomPosition(target.harvestPos.x, target.harvestPos.y, target.roomName);
+			target.dangerPos = {
+				1: _.last(PathFinder.search(
+					harvestPos,
+					keeperLair ? [
+						{ pos: source.pos, range: 10 },
+						{ pos: keeperLair.pos, range: 10 },
+					] : { pos: source.pos, range: 10 },
+					{
+						flee: true,
+					}
+				).path),
+				2: _.filter(PathFinder.search(
+					harvestPos,
+					{ pos: _.filter(util.findClosestOwnedRooms(harvestPos), r => r.storage)[0].storage.pos, range: 4 },
+					{}
+				).path, pos => pos.roomName !== target.roomName && !util.isDistFromEdge(pos, 3))[0],
+			};
+		}
+
 		Memory.remoteMining.targets[t] = target;
 	}
 
@@ -1720,7 +1776,7 @@ function main() {
 			let vis = new RoomVisual();
 			let row = 0;
 			for (let source of Memory.remoteMining.targets) {
-				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers}`, baseX, baseY + row * 0.6, {
+				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers} danger: ${source.danger}`, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
 					color: "#fff",
