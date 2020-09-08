@@ -128,31 +128,33 @@ class DeliveryTask {
 			return;
 		}
 
-		let sourceStruct = Game.getObjectById(this.source.objectId);
-		let sinkStruct = Game.getObjectById(this.sink.objectId);
-		if (sourceStruct.pos.roomName === sinkStruct.pos.roomName) {
-			new RoomVisual(sourceStruct.pos.roomName).line(sourceStruct.pos, sinkStruct.pos, {
-				color: "#ff0",
-				opacity: 0.7,
-				lineStyle: "dotted",
-				width: Math.max(Math.min(0.05 * 0.001 * this.amount, 0.4), 0.02),
-			});
+		let lineStyle = {
+			color: "#ff0",
+			opacity: 0.7,
+			lineStyle: "dotted",
+			width: Math.max(Math.min(0.05 * 0.001 * this.amount, 0.4), 0.02),
+		};
+		if (this.source.object.pos.roomName === this.sink.object.pos.roomName) {
+			new RoomVisual(this.source.object.pos.roomName).line(this.source.object.pos, this.sink.object.pos, lineStyle);
 		}
 		else {
-			new RoomVisual(sourceStruct.pos.roomName).circle(sourceStruct.pos, {
+			new RoomVisual(this.source.object.pos.roomName).circle(this.source.object.pos, {
 				fill: "#0af",
 				stroke: "#0af",
 				radius: 0.4,
 				opacity: 0.7,
 				lineStyle: "dotted",
 			});
-			new RoomVisual(sinkStruct.pos.roomName).circle(sinkStruct.pos, {
+			new RoomVisual(this.sink.object.pos.roomName).circle(this.sink.object.pos, {
 				fill: "#fa0",
 				stroke: "#fa0",
 				radius: 0.4,
 				opacity: 0.7,
 				lineStyle: "dotted",
 			});
+			let mapLineStyle = lineStyle;
+			mapLineStyle.width *= 100;
+			Game.map.visual.line(this.source.object.pos, this.sink.object.pos, mapLineStyle);
 		}
 	}
 }
