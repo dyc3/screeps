@@ -17,10 +17,18 @@ let roleRemoteHarvester = {
 			console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
 			return;
 		}
+		let harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget.id);
+
+		if (harvestTarget.danger > 0) {
+			creep.say("flee");
+			let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
+			creep.travelTo(dangerPos);
+			return;
+		}
 
 		// console.log(creep.name, "observe result:", observer.observeRoom(creep.memory.harvestTarget.roomName));
-		if (creep.room.name !== creep.memory.harvestTarget.roomName) {
-			creep.travelTo(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName));
+		if (creep.room.name !== harvestTarget.roomName) {
+			creep.travelTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
 			return;
 		}
 
@@ -30,39 +38,24 @@ let roleRemoteHarvester = {
 			return;
 		}
 
-		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget.id);
-		if (!harvestTarget) {
+		let source = Game.getObjectById(harvestTarget.id);
+		if (!source) {
 			console.log(creep.name, "CRITICAL: Unable to access harvest target");
 			return;
 		}
 
 		// TODO: cache path to harvest target
-		let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
-		if (util.isTreasureRoom(harvestTarget.room.name)) {
-			// FIXME: don't reference carrier positions here because its brittle and lazy
-			let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
-			if (hostiles.length > 0) {
-				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarriers[0]]);
-				return;
-			}
-
-			let lairs = harvestTarget.pos.findInRange(FIND_HOSTILE_STRUCTURES, 7).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
-			if (lairs.length > 0 && lairs[0].ticksToLive < 20) {
-				creep.travelTo(Game.creeps[creep.memory.harvestTarget.creepCarriers[0]]);
-				return;
-			}
-		}
-
+		let harvestPos = new RoomPosition(harvestTarget.harvestPos.x, harvestTarget.harvestPos.y, harvestTarget.roomName);
 		if (!creep.pos.isEqualTo(harvestPos)) {
 			creep.travelTo(harvestPos);
 			return;
 		}
 
-		if (harvestTarget.energy > 0) {
-			creep.harvest(harvestTarget);
+		if (source.energy > 0) {
+			creep.harvest(source);
 		}
 		else {
-			if (harvestTarget.ticksToRegenerate > 30 && creep.ticksToLive < 300) {
+			if (source.ticksToRegenerate > 30 && creep.ticksToLive < 300) {
 				creep.memory.renewing = true;
 			}
 		}

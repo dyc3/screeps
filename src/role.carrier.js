@@ -70,11 +70,18 @@ let roleCarrier = {
 				return;
 			}
 
-			if (!creep.memory.delivering && creep.room.name !== creep.memory.harvestTarget.roomName) {
-				creep.travelTo(new RoomPosition(creep.memory.harvestTarget.x, creep.memory.harvestTarget.y, creep.memory.harvestTarget.roomName));
+			let harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget.id);
+
+			if (!creep.memory.delivering && creep.room.name !== harvestTarget.roomName && harvestTarget.danger === 0) {
+				creep.travelTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
 				return;
 			}
-			let harvestPos = new RoomPosition(creep.memory.harvestTarget.harvestPos.x, creep.memory.harvestTarget.harvestPos.y, creep.memory.harvestTarget.roomName);
+			else if (!creep.memory.delivering && harvestTarget.danger > 0) {
+				let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
+				creep.travelTo(dangerPos, { range: 1 });
+				return;
+			}
+			let harvestPos = new RoomPosition(harvestTarget.harvestPos.x, harvestTarget.harvestPos.y, harvestTarget.roomName);
 
 			if (!creep.memory.droppedEnergyId) {
 				try {
@@ -88,8 +95,8 @@ let roleCarrier = {
 				}
 			}
 
-			let harvestTarget = Game.getObjectById(creep.memory.harvestTarget.id);
-			if (!harvestTarget) {
+			let source = Game.getObjectById(harvestTarget.id);
+			if (!source) {
 				console.log(creep.name, "CRITICAL: Unable to access harvest target");
 				return;
 			}
@@ -97,7 +104,7 @@ let roleCarrier = {
 			if (creep.memory.delivering && _.sum(creep.store) == 0) {
 				creep.memory.delivering = false;
 			}
-			else if (!creep.memory.delivering && _.sum(creep.store) == creep.carryCapacity) {
+			else if (!creep.memory.delivering && _.sum(creep.store) == creep.store.getCapacity()) {
 				creep.memory.delivering = true;
 			}
 
@@ -115,25 +122,20 @@ let roleCarrier = {
 					creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
 					return;
 				}
-				if (util.isTreasureRoom(harvestTarget.room.name)) {
-					let hostiles = harvestTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
-					if (hostiles.length > 0) {
-						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
-						if (creep.store[RESOURCE_ENERGY] > 0) {
-							creep.memory.delivering = true;
-						}
-						return;
-					}
 
-					let lairs = harvestTarget.pos.findInRange(FIND_HOSTILE_STRUCTURES, 7).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
-					if (lairs.length > 0 && lairs[0].ticksToLive < 20) {
-						creep.travelTo(Game.getObjectById(creep.memory.depositTarget));
-						if (creep.store[RESOURCE_ENERGY] > 0) {
-							creep.memory.delivering = true;
-						}
-						return;
+				if (harvestTarget.danger > 0) {
+					creep.say("flee");
+					if (creep.store[RESOURCE_ENERGY] > 0) {
+						creep.memory.delivering = true;
 					}
+					else {
+						let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
+						creep.travelTo(dangerPos, { range: 1 });
+					}
+					return;
+				}
 
+				if (util.isTreasureRoom(source.room.name)) {
 					if (creep.pos.isNearTo(harvestPos)) {
 						let tombstones = harvestPos.findInRange(FIND_TOMBSTONES, 2);
 						if (tombstones.length > 0 && tombstones[0].store[RESOURCE_ENERGY] > 0) {
