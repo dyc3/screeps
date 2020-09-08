@@ -1540,7 +1540,7 @@ function main() {
 	// HACK: some hard coded lab stuff
 	let lab = Game.getObjectById("5bd6ad0a73cd123941da20b7");
 	if (lab.cooldown === 0) {
-		lab.reverseReaction(Game.getObjectById("5c52f3dff8e7e01d1be68600"), Game.getObjectById("5bd22b799c36b177348b3e99"));
+		lab.reverseReaction(Game.getObjectById("5bd22b799c36b177348b3e99"), Game.getObjectById("5bd6388f0f472220a4ad5a18"));
 	}
 
 	// draw some extra eye candy, if we can spare the resources
