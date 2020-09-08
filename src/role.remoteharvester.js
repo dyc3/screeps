@@ -24,6 +24,12 @@ let roleRemoteHarvester = {
 			return;
 		}
 
+		if (creep.hits < creep.hitsMax) {
+			// HACK: go get healed
+			creep.memory.renewing = true;
+			return;
+		}
+
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget.id);
 		if (!harvestTarget) {
 			console.log(creep.name, "CRITICAL: Unable to access harvest target");
