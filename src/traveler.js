@@ -487,9 +487,11 @@ class Traveler {
     static addCreepsToMatrix(room, matrix, pos=undefined, range=Infinity) {
         if (pos) {
             pos.findInRange(FIND_CREEPS, range).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
+            pos.findInRange(FIND_POWER_CREEPS, range).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
         }
         else {
             room.find(FIND_CREEPS).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
+            room.find(FIND_POWER_CREEPS).forEach((creep) => matrix.set(creep.pos.x, creep.pos.y, 0xff));
         }
         return matrix;
     }
