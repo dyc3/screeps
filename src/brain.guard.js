@@ -259,7 +259,18 @@ module.exports = {
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
 				if (task.guardType == "treasure") {
-					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, { filter: hostile => {
+						if (hostile.owner.username !== "Source Keeper") {
+							return true;
+						}
+						let struct = _.first(hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, { filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR }));
+						if (struct) {
+							return !!_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
+						}
+						else {
+							return true;
+						}
+					}});
 
 					if (hostiles.length > 0) {
 						// prioritize creeps that can heal
@@ -274,7 +285,7 @@ module.exports = {
 						task._currentTarget = hostiles[0].id;
 					}
 					else {
-						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR);
+						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
 						keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
 						task._currentTarget = keeperLairs[0].id;
 					}
