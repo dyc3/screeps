@@ -973,9 +973,9 @@ function commandRemoteMining() {
 				1: _.last(PathFinder.search(
 					harvestPos,
 					keeperLair ? [
-						{ pos: source.pos, range: 10 },
-						{ pos: keeperLair.pos, range: 10 },
-					] : { pos: source.pos, range: 10 },
+						{ pos: source.pos, range: 6 },
+						{ pos: keeperLair.pos, range: 6 },
+					] : { pos: source.pos, range: 6 },
 					{
 						flee: true,
 					}
