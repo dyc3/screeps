@@ -98,7 +98,7 @@ var roleRepairer = {
 				}
 				avgWallHits = sumWallHits / countWalls;
 				targets = _.reject(targets, function(struct) {
-					return (target.structureType == STRUCTURE_WALL || target.structureType == STRUCTURE_RAMPART) && struct.hits > (avgWallHits * 1.1)
+					return (struct.structureType == STRUCTURE_WALL || struct.structureType == STRUCTURE_RAMPART) && struct.hits > (avgWallHits * 1.1)
 				})
 
 				let structPriority = {}
