@@ -21,7 +21,7 @@ let taskRenew = {
 				try {
 					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
 				}
-				catch {
+				catch (e) {
 					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[1]) : _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))).id;
 				}
 				creep.memory._lastCheckForCloseSpawn = Game.time;

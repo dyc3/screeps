@@ -19,5 +19,8 @@
   "dependencies": {
     "grunt": "^1.0.4",
     "grunt-screeps": "^1.4.0"
+  },
+  "devDependencies": {
+    "grunt-eslint": "^23.0.0"
   }
 }

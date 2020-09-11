@@ -441,7 +441,7 @@ function doFlagCommandsAndStuff() {
 				return;
 			}
 		}
-		catch {
+		catch (e) {
 			// need vision
 			let observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc"); // TODO: make dynamic
 			observer.observeRoom(pos.roomName);

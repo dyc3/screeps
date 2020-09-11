@@ -1,7 +1,14 @@
 module.exports = function(grunt) {
-    var config = require('./.screeps.json')
+    var config = require('./.screeps.json');
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-screeps');
     grunt.initConfig({
+        eslint: {
+            options: {
+                configFile: '.eslint.json'
+            },
+            target: ['src/*.js']
+        },
         screeps: {
             options: {
                 email: config.email,
@@ -14,4 +21,6 @@ module.exports = function(grunt) {
             }
         }
     });
+
+    grunt.registerTask('default', ['eslint', 'screeps']);
 }

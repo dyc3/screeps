@@ -90,7 +90,7 @@ let roleCarrier = {
 						creep.memory.droppedEnergyId = lookResult[0].id;
 					}
 				}
-				catch {
+				catch (e) {
 					creep.log("ERR: don't have vision for room at", harvestPos);
 				}
 			}
