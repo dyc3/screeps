@@ -107,11 +107,13 @@ let roleRelay = {
 	 */
 	withdrawOverfillTarget(creep, overfilledStruct, resource=RESOURCE_ENERGY) {
 		let fillTargetAmount = 0;
-		if (overfilledStruct.structureType === STRUCTURE_TERMINAL) {
-			fillTargetAmount = Memory.terminalEnergyTarget;
-		}
-		else if (overfilledStruct.structureType === STRUCTURE_FACTORY) {
-			fillTargetAmount = Memory.factoryEnergyTarget;
+		switch (overfilledStruct.structureType) {
+			case STRUCTURE_TERMINAL:
+				fillTargetAmount = Memory.terminalEnergyTarget;
+				break;
+			case STRUCTURE_FACTORY:
+				fillTargetAmount = Memory.factoryEnergyTarget;
+				break;
 		}
 		let r = creep.withdraw(overfilledStruct, resource, Math.min(Math.max(0, overfilledStruct.store.getUsedCapacity(resource) - fillTargetAmount), creep.store.getFreeCapacity()));
 		creep.memory._lastWithdrawId = overfilledStruct.id; // used for visualizeState
@@ -205,13 +207,14 @@ let roleRelay = {
 				creep.memory._needFillTargetRefresh = true;
 				return false;
 			}
-			if (struct.structureType == STRUCTURE_TERMINAL) {
-				return struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget;
+			switch (struct.structureType) {
+				case STRUCTURE_TERMINAL:
+					return struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget;
+				case STRUCTURE_FACTORY:
+					return struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget;
+				default:
+					return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 			}
-			if (struct.structureType == STRUCTURE_FACTORY) {
-				return struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget;
-			}
-			return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 		});
 
 		let targetIdsOverFilled = _.filter(creep.memory.fillTargetIds, id => {
@@ -222,14 +225,13 @@ let roleRelay = {
 				return false;
 			}
 
-			if (struct.structureType === STRUCTURE_TERMINAL) {
-				return struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget;
-			}
-			else if (struct.structureType === STRUCTURE_FACTORY) {
-				return struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget;
-			}
-			else {
-				return false;
+			switch (struct.structureType) {
+				case STRUCTURE_TERMINAL:
+					return struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget;
+				case STRUCTURE_FACTORY:
+					return struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget;
+				default:
+					return false;
 			}
 		})
 
