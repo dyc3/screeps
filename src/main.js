@@ -1283,13 +1283,24 @@ function main() {
 
 	let rooms = util.getOwnedRooms();
 
-	// do tower stuff
-	for (let i = 0; i < rooms.length; i++) {
-		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rooms[i].controller.level] > 0) {
+	// do tower stuff and process power
+	for (let room of rooms) {
+		let rcl = room.controller.level;
+		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rcl] > 0) {
 			try {
-				roleTower.run(rooms[i]);
+				roleTower.run(room);
 			} catch (e) {
 				printException(e);
+			}
+		}
+
+		// TODO: make something a little more robust/dynamic for limiting the amount of energy spent on power.
+		if (CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][rcl] > 0) {
+			if (room.storage[RESOURCE_ENERGY] >= 500000) {
+				let powerspawn = room.find(FIND_STRUCTURES, s => s.structureType === STRUCTURE_POWER_SPAWN)[0];
+				if (powerspawn) {
+					powerspawn.processPower();
+				}
 			}
 		}
 	}
@@ -1491,11 +1502,6 @@ function main() {
 			printException(e, creep=creep);
 		}
 	}
-
-	// TODO: make a job for processing power to replace this hard coded thing
-	Game.getObjectById("5ca9a834279bd66008505768").processPower();
-	Game.getObjectById("5f54dabd5732e7b26410e1fa").processPower();
-	Game.getObjectById("5f5276f55ae5fa072e1e24bb").processPower();
 
 	// process jobs
 	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
