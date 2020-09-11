@@ -37,50 +37,72 @@ let roleClaimer = {
 				console.log(creep.name, "WARN: controller is already reserved by somebody else");
 			}
 
-			switch (creep.claimController(claimTarget)) {
-				case ERR_GCL_NOT_ENOUGH:
-					let reserveResult = creep.reserveController(claimTarget);
-					if (reserveResult == ERR_NOT_IN_RANGE) {
-						console.log("reserveController: NOT IN RANGE");
-						creep.travelTo(claimTarget);
+			if (creep.pos.isNearTo(claimTarget)) {
+				if (claimTarget.reservation && claimTarget.reservation != global.WHOAMI) {
+					console.log(creep.name, "WARN: controller is already reserved by somebody else");
+					creep.attackController(claimTarget);
+				}
+				else {
+					switch (creep.claimController(claimTarget)) {
+						case ERR_GCL_NOT_ENOUGH:
+							let reserveResult = creep.reserveController(claimTarget);
+							if (reserveResult == ERR_NOT_IN_RANGE) {
+								console.log("reserveController: NOT IN RANGE");
+								creep.travelTo(claimTarget);
+							}
+							else {
+								console.log("CANT RESERVE: "+reserveResult);
+								creep.travelTo(Game.flags[creep.memory.targetFlag]);
+							}
+							break;
+						case ERR_NOT_IN_RANGE:
+							console.log("claimController: NOT IN RANGE");
+							creep.travelTo(claimTarget);
+							break;
+						case OK:
+							Game.flags["claim"].remove()
+							break;
+						default:
+							console.log(creep.name+": DEFAULT");
+							// creep.move
+							break;
 					}
-					else {
-						console.log("CANT RESERVE: "+reserveResult);
-						creep.travelTo(Game.flags[creep.memory.targetFlag]);
-					}
-					break;
-				case ERR_NOT_IN_RANGE:
-					console.log("claimController: NOT IN RANGE");
-					creep.travelTo(claimTarget);
-					break;
-				case OK:
-					Game.flags["claim"].remove()
-					break;
-				default:
-					console.log(creep.name+": DEFAULT");
-					// creep.move
-					break;
+				}
+			}
+			else {
+				creep.travelTo(claimTarget);
 			}
 		}
 		else if (creep.memory.mode == "reserve") {
 			if (!claimTarget) {
 				creep.travelTo(Game.flags["reserve"])
 			}
-			switch (creep.reserveController(claimTarget)) {
-				case ERR_INVALID_TARGET:
-					delete creep.memory.claimTarget;
-					// console.log(creep.name, "INVALID TARGET");
-					break;
-				case ERR_NOT_IN_RANGE:
-					creep.travelTo(claimTarget)
-					// console.log(creep.name, "NOT IN RANGE");
-					break;
-				case OK:
-					break;
-				default:
-					// console.log(creep.name, "DEFAULT");
-					creep.travelTo(Game.flags["reserve"])
-					break;
+			if (creep.pos.isNearTo(claimTarget)) {
+				if (claimTarget.reservation && claimTarget.reservation != global.WHOAMI) {
+					console.log(creep.name, "WARN: controller is already reserved by somebody else");
+					creep.attackController(claimTarget);
+				}
+				else {
+					switch (creep.reserveController(claimTarget)) {
+						case ERR_INVALID_TARGET:
+							delete creep.memory.claimTarget;
+							// console.log(creep.name, "INVALID TARGET");
+							break;
+						case ERR_NOT_IN_RANGE:
+							creep.travelTo(claimTarget);
+							// console.log(creep.name, "NOT IN RANGE");
+							break;
+						case OK:
+							break;
+						default:
+							// console.log(creep.name, "DEFAULT");
+							creep.travelTo(Game.flags["reserve"])
+							break;
+					}
+				}
+			}
+			else {
+				creep.travelTo(claimTarget);
 			}
 		}
 		else {
