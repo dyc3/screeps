@@ -7,6 +7,15 @@ let roleRelay = {
 	/**
 	 * Draw visuals that show the relay creep's current state.
 	 * Eg. Assigned position, fill targets, storage, and link
+	 *
+	 * Color key:
+	 * - Orange: storage
+	 * - Yellow: link
+	 * - Blue: other object with store
+	 * - Cyan: withdraw
+	 * - Green: deposit
+	 * - Red: bad transfer, withdraw is the same as deposit
+	 *
 	 * @param {Creep} creep Relay creep
 	 */
 	visualizeState(creep) {
