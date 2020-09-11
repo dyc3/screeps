@@ -299,26 +299,27 @@ module.exports = {
 		}
 
 		// add remote mining sources
-		for (let miningTarget of Memory.remoteMining.targets) {
-			let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
-			if (!Game.rooms[miningTarget.roomName]) {
-				// No visibility
-				continue;
-			}
-			let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
-			if (lookResult.length === 0) {
-				continue;
-			}
-			let source = new ResourceSource({
-				resource: lookResult[0].resourceType,
-				objectId: lookResult[0].id,
-				roomName: miningTarget.roomName,
-			});
-			if (source.amount <= 0) {
-				continue;
-			}
-			sources.push(source);
-		}
+		// WARN: this code is effectively useless because there's nothing wrong with the carriers and remote mining can have multiple carriers now, it should probably be removed
+		// for (let miningTarget of Memory.remoteMining.targets) {
+		// 	let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
+		// 	if (!Game.rooms[miningTarget.roomName]) {
+		// 		// No visibility
+		// 		continue;
+		// 	}
+		// 	let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
+		// 	if (lookResult.length === 0) {
+		// 		continue;
+		// 	}
+		// 	let source = new ResourceSource({
+		// 		resource: lookResult[0].resourceType,
+		// 		objectId: lookResult[0].id,
+		// 		roomName: miningTarget.roomName,
+		// 	});
+		// 	if (source.amount <= 0) {
+		// 		continue;
+		// 	}
+		// 	sources.push(source);
+		// }
 
 		return sources;
 	},
