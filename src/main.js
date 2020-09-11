@@ -1301,7 +1301,7 @@ function main() {
 		// TODO: make something a little more robust/dynamic for limiting the amount of energy spent on power.
 		if (CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][rcl] > 0) {
 			if (room.storage[RESOURCE_ENERGY] >= 500000) {
-				let powerspawn = room.find(FIND_STRUCTURES, s => s.structureType === STRUCTURE_POWER_SPAWN)[0];
+				let powerspawn = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_POWER_SPAWN })[0];
 				if (powerspawn) {
 					powerspawn.processPower();
 				}
