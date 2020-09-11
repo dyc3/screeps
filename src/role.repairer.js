@@ -9,6 +9,77 @@ function getRepairerCount(room) {
 }
 
 var roleRepairer = {
+	findRepairTarget_new(creep) {
+		let room = undefined;
+		if (Game.rooms[creep.memory.targetRoom]) {
+			room = Game.rooms[creep.memory.targetRoom];
+		}
+		else {
+			room = creep.room;
+		}
+		let targets = room.find(FIND_STRUCTURES, {
+			filter: struct => {
+				if (struct.owner && struct.owner.username !== global.WHOAMI) {
+					return false;
+				}
+				let flags = struct.pos.lookFor(LOOK_FLAGS);
+				if (flags.length > 0) {
+					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
+						return false;
+					}
+				}
+				if (struct.hits > struct.hitsMax * 0.75) {
+					return false;
+				}
+				if (struct.structureType === STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
+					return false;
+				}
+				return struct.hits < struct.hitsMax;
+			}
+		});
+
+		if (room.storage && room.storage.store[RESOURCE_ENERGY] < 700000) {
+			let avgWallHits = 0;
+			let sumWallHits = 0;
+			let countWalls = 0;
+			for (let target of targets) {
+				if (target.structureType != STRUCTURE_WALL && target.structureType != STRUCTURE_RAMPART) {
+					continue;
+				}
+				countWalls += 1;
+				sumWallHits += target.hits;
+			}
+			avgWallHits = sumWallHits / countWalls;
+			targets = _.reject(targets, struct => {
+				return (struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) && struct.hits > (avgWallHits * 1.1)
+			})
+		}
+
+		targets = _.sortByOrder(targets, [
+			struct => {
+				switch (struct.structureType) {
+					case STRUCTURE_ROAD:
+						return 1;
+					case STRUCTURE_WALL:
+						return 2;
+					case STRUCTURE_RAMPART:
+						return 2;
+					default:
+						return 0;
+				}
+			},
+			struct => struct.pos.getRangeTo(creep),
+		],
+		["asc", "asc"]);
+
+		if (targets.length > 0) {
+			creep.memory.repairTarget = targets[0].id;
+		}
+		else {
+			creep.log("WARN: no repair targets found");
+		}
+	},
+
 	findRepairTarget: function(creep) {
 		let room = undefined;
 		if (Game.rooms[creep.memory.targetRoom]) {
@@ -190,7 +261,7 @@ var roleRepairer = {
 			}
 		}
 		else { // find a repair target if we don't have one
-			this.findRepairTarget(creep);
+			this.findRepairTarget_new(creep);
 
 			// if we don't have a lot of energy, refill before repairing
 			if (creep.store[RESOURCE_ENERGY] <= creep.store.getCapacity() * 0.1) {
