@@ -194,16 +194,16 @@ var roleRepairer = {
 			this.findRepairTarget(creep);
 
 			// if we don't have a lot of energy, refill before repairing
-			if (creep.carry[RESOURCE_ENERGY] <= creep.carryCapacity * 0.1) {
+			if (creep.store[RESOURCE_ENERGY] <= creep.store.getCapacity() * 0.1) {
 				creep.memory.repairing = false;
 			}
 		}
 
-		if(creep.memory.repairing && creep.carry.energy == 0) {
+		if(creep.memory.repairing && creep.store[RESOURCE_ENERGY] == 0) {
 			creep.memory.repairing = false;
 			creep.say('gathering');
 		}
-		else if(!creep.memory.repairing && creep.carry.energy == creep.carryCapacity) {
+		else if(!creep.memory.repairing && creep.store[RESOURCE_ENERGY] == creep.store.getCapacity()) {
 			creep.memory.repairing = true;
 			creep.say('repairing');
 		}
