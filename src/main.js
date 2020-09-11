@@ -1868,8 +1868,8 @@ global.logistics = {
 		return Game.rooms[from].terminal.send(resource, amount, to);
 	},
 
-	quickTransferEnergy(from, to) {
-		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, 75000, to);
+	quickTransferEnergy(from, to, amount=75000) {
+		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
 	},
 };
 
