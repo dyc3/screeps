@@ -933,7 +933,11 @@ function commandRemoteMining() {
 		}
 
 		// Determine the danger level for this source
-		let room = new Room(target.roomName);
+		let room = Game.rooms[target.roomName];
+		if (!room) {
+			// FIXME: don't have vision
+			continue;
+		}
 		let source = Game.getObjectById(target.id);
 		let hostiles = room.find(FIND_HOSTILE_CREEPS);
 		let keeperLair;
