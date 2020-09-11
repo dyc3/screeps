@@ -10,19 +10,19 @@ function getRepairerCount(room) {
 
 var roleRepairer = {
 	findRepairTarget: function(creep) {
-		var room = undefined;
+		let room = undefined;
 		if (Game.rooms[creep.memory.targetRoom]) {
 			room = Game.rooms[creep.memory.targetRoom];
 		}
 		else {
 			room = creep.room;
 		}
-		var targets = room.find(FIND_STRUCTURES, {
+		let targets = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
 				if (struct.owner && struct.owner.username !== global.WHOAMI) {
 					return false;
 				}
-				var flags = struct.pos.lookFor(LOOK_FLAGS);
+				let flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 						return false;
@@ -44,8 +44,8 @@ var roleRepairer = {
 			}
 		});
 		targets.sort(function(a, b) {
-			var aScore = a.hits + (creep.pos.getRangeTo(a) * 1000);
-			var bScore = b.hits + (creep.pos.getRangeTo(b) * 1000);
+			let aScore = a.hits + (creep.pos.getRangeTo(a) * 1000);
+			let bScore = b.hits + (creep.pos.getRangeTo(b) * 1000);
 
 			if (aScore < bScore) {
 				return -1;
@@ -86,23 +86,22 @@ var roleRepairer = {
 				}
 			});
 			if (targets.length > 0) {
-				var avgWallHits = 0;
-				var sumWallHits = 0;
-				var countWalls = 0;
-				for (var t in targets) {
-					var target = targets[t]
+				let avgWallHits = 0;
+				let sumWallHits = 0;
+				let countWalls = 0;
+				for (let target of targets) {
 					if (target.structureType != STRUCTURE_WALL && target.structureType != STRUCTURE_RAMPART) {
-						continue
+						continue;
 					}
-					countWalls += 1
-					sumWallHits += target.hits
+					countWalls += 1;
+					sumWallHits += target.hits;
 				}
-				avgWallHits = sumWallHits / countWalls
+				avgWallHits = sumWallHits / countWalls;
 				targets = _.reject(targets, function(struct) {
 					return (target.structureType == STRUCTURE_WALL || target.structureType == STRUCTURE_RAMPART) && struct.hits > (avgWallHits * 1.1)
 				})
 
-				var structPriority = {}
+				let structPriority = {}
 				structPriority[STRUCTURE_SPAWN] = 2
 				structPriority[STRUCTURE_STORAGE] = 3
 				structPriority[STRUCTURE_ROAD] = 4
@@ -110,7 +109,7 @@ var roleRepairer = {
 				structPriority[STRUCTURE_WALL] = 7
 				targets.sort(function(a, b) {
 					if (a.structureType != b.structureType && structPriority[a.structureType] && structPriority[b.structureType]) {
-						return structPriority[a.structureType] - structPriority[b.structureType]
+						return structPriority[a.structureType] - structPriority[b.structureType];
 					}
 					else {
 						// return (a.hits / a.hitsMax) - (b.hits / b.hitsMax);
@@ -152,7 +151,7 @@ var roleRepairer = {
 		}
 
 		if (creep.memory.repairTarget) {
-			var repairTarget = Game.getObjectById(creep.memory.repairTarget);
+			let repairTarget = Game.getObjectById(creep.memory.repairTarget);
 			// console.log("repairTarget:",repairTarget);
 			if (repairTarget) {
 				creep.room.visual.circle(repairTarget.pos, {fill:"transparent", radius:0.5, stroke:"#ffff00"});
@@ -175,7 +174,7 @@ var roleRepairer = {
 						delete creep.memory.repairTarget;
 				}
 				else {
-					var weakRamparts = creep.room.find(FIND_STRUCTURES, {
+					let weakRamparts = creep.room.find(FIND_STRUCTURES, {
 						filter: function(struct) {
 							return struct.structureType == STRUCTURE_RAMPART && struct.hits < 3000;
 						}
@@ -209,7 +208,7 @@ var roleRepairer = {
 		}
 
 		if(creep.memory.repairing) {
-			var repairTarget = Game.getObjectById(creep.memory.repairTarget);
+			let repairTarget = Game.getObjectById(creep.memory.repairTarget);
 			// if (creep.memory.role == "repairer") {
 			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
 			// }
@@ -223,7 +222,7 @@ var roleRepairer = {
 					creep.say("dismantle");
 				}
 				else {
-					var constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {filter: function(site) {
+					let constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {filter: function(site) {
 						return site.structureType == STRUCTURE_WALL || site.structureType == STRUCTURE_RAMPART
 					}})
 					if (constructionSite) {
