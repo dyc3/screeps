@@ -1101,6 +1101,7 @@ function doWorkFactories() {
 			RESOURCE_UTRIUM_BAR,
 			RESOURCE_ZYNTHIUM_BAR,
 			RESOURCE_REDUCTANT,
+			RESOURCE_OXIDANT,
 
 			RESOURCE_ESSENCE,
 			RESOURCE_EMANATION,
@@ -1113,10 +1114,10 @@ function doWorkFactories() {
 		];
 
 		if (room.storage) {
-			if (room.storage.store[RESOURCE_ENERGY] > 800000 && factory.store[RESOURCE_BATTERY] < 5000) {
+			if (room.storage.store[RESOURCE_ENERGY] > 800000 && factory.store[RESOURCE_BATTERY] < 10000) {
 				productionTargets.push(RESOURCE_BATTERY);
 			}
-			else if (room.storage.store[RESOURCE_ENERGY] < 200000) {
+			else if (room.storage.store[RESOURCE_ENERGY] < 600000) {
 				productionTargets.push(RESOURCE_ENERGY);
 			}
 		}
@@ -1606,7 +1607,11 @@ function main() {
 	// HACK: some hard coded lab stuff
 	let lab = Game.getObjectById("5bd6ad0a73cd123941da20b7");
 	if (lab.cooldown === 0) {
-		lab.reverseReaction(Game.getObjectById("5bd22b799c36b177348b3e99"), Game.getObjectById("5bd6388f0f472220a4ad5a18"));
+		lab.reverseReaction(Game.getObjectById("5bd286b0e5f5d125150e170e"), Game.getObjectById("5bd6388f0f472220a4ad5a18"));
+	}
+	lab = Game.getObjectById("5f551a96aa0ade59d1cbaa6a");
+	if (lab.cooldown === 0) {
+		lab.reverseReaction(Game.getObjectById("5f54faae9f32eef3fc3152e0"), Game.getObjectById("5f5159d6d4a34b200c26c418"));
 	}
 
 	// draw some extra eye candy, if we can spare the resources
