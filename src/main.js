@@ -1638,6 +1638,9 @@ function main() {
 			// draw relay status
 			let relays = util.getCreeps("relay").filter(creep => creep.memory.targetRoom === room.name);
 			for (let relay of relays) {
+				if (!relay.memory.assignedPos) {
+					continue;
+				}
 				let pos = new RoomPosition(relay.memory.assignedPos.x, relay.memory.assignedPos.y, relay.memory.targetRoom);
 				let stroke;
 				if (relay.pos.isEqualTo(pos)) {
