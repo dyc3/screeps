@@ -1066,13 +1066,11 @@ function satisfyClaimTargets() {
 		}
 		else {
 			// spawn new claimer
-			let rooms = _.filter(util.getOwnedRooms(), r => r.energyCapacityAvailable > 2600 && r.energyAvailable >= r.energyCapacityAvailable * 0.8);
-			if (rooms.length === 0) {
+			let spawnRoom = _.first(util.findClosestOwnedRooms(new RoomPosition(25, 25, Memory.claimTargets[t].room), r => r.energyCapacityAvailable > 2600 && r.energyAvailable >= r.energyCapacityAvailable * 0.8))
+			if (!spawnRoom) {
 				console.log("WARN: All rooms don't have enough energy to spawn creeps");
 				continue;
 			}
-			rooms.sort((a, b) => Game.map.getRoomLinearDistance(Memory.claimTargets[t].room, a.name) - Game.map.getRoomLinearDistance(Memory.claimTargets[t].room, b.name));
-			let spawnRoom = rooms[0];
 			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", Memory.claimTargets[t].room);
 			let spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
 			if (spawns.length === 0) {
