@@ -94,9 +94,11 @@ module.exports = {
 		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
 			let newTask = new GuardTask();
-			if (!util.isTreasureRoom(room.name)) {
+			const isTreasureRoom = util.isTreasureRoom(room.name);
+			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
+			if (!isTreasureRoom) {
 				let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
-				if (hostiles.length === 0) {
+				if (hostiles.length === 0 && !foundInvaderCore) {
 					continue;
 				}
 
@@ -104,9 +106,13 @@ module.exports = {
 			}
 
 			newTask._targetRoom = room.name;
-			if (util.isTreasureRoom(room.name)) {
+			if (isTreasureRoom) {
 				newTask.guardType = "treasure";
 				newTask.neededCreeps = 2;
+			}
+			else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
+				newTask.guardType = "invader-subcore";
+				newTask.neededCreeps = 1;
 			}
 			this.tasks.push(newTask);
 			Memory.guard.tasksMade++;
@@ -215,6 +221,10 @@ module.exports = {
 		else if (guardType == "treasure") {
 			return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,MOVE];
 		}
+		else if (guardType === "invader-subcore") {
+			// used for killing invader cores that have expanded out from the main one.
+			return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
 				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
@@ -288,6 +298,14 @@ module.exports = {
 						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
 						keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
 						task._currentTarget = keeperLairs[0].id;
+					}
+				}
+				else if (task.guardType === "invader-subcore") {
+					let invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
+						filter: struct => struct.struct === STRUCTURE_INVADER_CORE
+					});
+					if (invaderCores.length > 0) {
+						task._currentTarget = invaderCores[0].id;
 					}
 				}
 				else {
@@ -424,6 +442,16 @@ module.exports = {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
 							creep.travelTo(task.currentTarget);
+						}
+					}
+					else if (task.guardType === "invader-subcore" && task.currentTarget instanceof StructureInvaderCore) {
+						if (creep.pos.isNearTo(task.currentTarget)) {
+							if (creep.getActiveBodyparts(ATTACK)) {
+								creep.attack(task.currentTarget);
+							}
+						}
+						else {
+							creep.travelTo(task.currentTarget, { range: 1 });
 						}
 					}
 					else {
