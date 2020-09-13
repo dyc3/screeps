@@ -1043,6 +1043,10 @@ function satisfyClaimTargets() {
 			console.log("[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (Treasure/Highway room detected)");
 			satisfied = true;
 		}
+		else if (Game.rooms[Memory.claimTargets[t].room] && (foundInvaderCore = _.first(Game.rooms[Memory.claimTargets[t].room].find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE })))) {
+			console.log(`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${Memory.claimTargets[t].room})`);
+			satisfied = true;
+		}
 		for (let creep of claimers) {
 			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
 				satisfied = true;
