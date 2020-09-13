@@ -1014,7 +1014,7 @@ function commandRemoteMining() {
 		if (!controller) {
 			console.log("[remote mining] ERR: can't find controller");
 		}
-		if (controller && controller.reservation && controller.reservation.ticksToEnd > 400) {
+		if (controller && controller.reservation && controller.reservation.username === global.WHOAMI && controller.reservation.ticksToEnd > 400) {
 			continue;
 		}
 
@@ -1043,9 +1043,15 @@ function satisfyClaimTargets() {
 			console.log("[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (Treasure/Highway room detected)");
 			satisfied = true;
 		}
-		else if (Game.rooms[Memory.claimTargets[t].room] && (foundInvaderCore = _.first(Game.rooms[Memory.claimTargets[t].room].find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE })))) {
-			console.log(`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${Memory.claimTargets[t].room})`);
-			satisfied = true;
+		else if (Memory.claimTargets[t].mode === "reserve" && Game.rooms[Memory.claimTargets[t].room]) {
+			if (Game.rooms[Memory.claimTargets[t].room] && (foundInvaderCore = _.first(Game.rooms[Memory.claimTargets[t].room].find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE })))) {
+				console.log(`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${Memory.claimTargets[t].room})`);
+				satisfied = true;
+			}
+			else if ((reserv = Game.rooms[Memory.claimTargets[t].room].controller.reservation) && reserv.username !== global.WHOAMI && Game.rooms[Memory.claimTargets[t].room].controller.upgradeBlocked > 20) {
+				console.log(`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${Memory.claimTargets[t].room})`);
+				satisfied = true;
+			}
 		}
 		for (let creep of claimers) {
 			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
