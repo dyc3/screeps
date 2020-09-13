@@ -411,7 +411,7 @@ let roleHarvester = {
 			}
 		}
 
-		if (Game.time % 10 == 0 && (creep.memory.depositMode == "drop" || creep.memory.depositMode == "recovery")) {
+		if ((creep.memory.depositMode == "drop" || creep.memory.depositMode == "recovery") && Game.time % 10 == 0) {
 			creep.memory.depositMode = this.getDepositMode(creep);
 		}
 		else if (Game.time % 40 == 0) {
@@ -425,7 +425,7 @@ let roleHarvester = {
 			delete creep.memory.dedicatedLinkId;
 		}
 		else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
-			let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+			let nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, {
 				filter: (struct) => { return struct.structureType == STRUCTURE_LINK; }
 			});
 			if (nearbyLinks.length > 0) {
