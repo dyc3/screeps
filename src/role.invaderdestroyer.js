@@ -56,7 +56,7 @@ let roleInvaderDestroyer = {
 		}
 
 		if (!Memory.attack.currentTarget) {
-			let hostileTargets = new Room(Memory.attack.targetRoom).find(FIND_HOSTILE_STRUCTURES);
+			let hostileTargets = Game.rooms[Memory.attack.targetRoom].find(FIND_HOSTILE_STRUCTURES);
 			hostileTargets = hostileTargets.filter(struct => {
 				return struct.structureType !== STRUCTURE_KEEPER_LAIR;
 			})
