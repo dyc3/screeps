@@ -302,7 +302,7 @@ module.exports = {
 				}
 				else if (task.guardType === "invader-subcore") {
 					let invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
-						filter: struct => struct.struct === STRUCTURE_INVADER_CORE
+						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE
 					});
 					if (invaderCores.length > 0) {
 						task._currentTarget = invaderCores[0].id;
