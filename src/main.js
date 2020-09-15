@@ -390,6 +390,7 @@ function doFlagCommandsAndStuff() {
 			harvestPos: {},
 			id: "",
 			neededCarriers: 1,
+			danger: 0,
 		};
 		// check if we are already harvesting this target
 		if (_.find(Memory.remoteMining.targets, { x: newTarget.x, y: newTarget.y, roomName: newTarget.roomName })) {
