@@ -313,8 +313,10 @@ module.exports = {
 					}
 					else {
 						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
-						keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
-						task._currentTarget = keeperLairs[0].id;
+						if (keeperLairs) {
+							keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
+							task._currentTarget = keeperLairs[0].id;
+						}
 					}
 				}
 				else if (task.guardType === "invader-subcore") {
