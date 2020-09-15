@@ -93,6 +93,9 @@ module.exports = {
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
 		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
 		for (let room of roomsToSearch) {
+			if (guardedRooms.includes(room.name)) {
+				continue;
+			}
 			let newTask = new GuardTask();
 			const isTreasureRoom = util.isTreasureRoom(room.name);
 			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
@@ -115,6 +118,7 @@ module.exports = {
 				newTask.neededCreeps = 1;
 			}
 			this.tasks.push(newTask);
+			guardedRooms.push(room.name);
 			Memory.guard.tasksMade++;
 		}
 
