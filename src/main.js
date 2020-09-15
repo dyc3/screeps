@@ -54,16 +54,16 @@
 
 These methods should only be used from the console. They should not be used in the code anywhere.
 
-### `global.market`
+### `market`
 
 `global.market.quickSellEnergy()`
 Sells energy on the market to free up some storage space.
 
-### `global.logistics`
+### `logistics`
 
 TODO
 
-### `global.util`
+### `util`
 
 `global.util.spawnMegaBuilder(spawnName=null)`
 Spawns a very large builder creep with:
@@ -116,6 +116,7 @@ let toolRoadPlanner = require('tool.roadplanner');
 let brainAutoPlanner = require('brain.autoplanner');
 let brainGuard = require("brain.guard");
 let brainLogistics = require("brain.logistics");
+let brainHighwayHarvesting = require("brain.highwayharvesting");
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
