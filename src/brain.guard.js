@@ -118,8 +118,25 @@ module.exports = {
 			Memory.guard.tasksMade++;
 		}
 
-		// remove completed guard tasks
-		this.tasks = _.reject(this.tasks, task => task.complete);
+		// TODO: benchmark this method, see if this is faster than doing it normally
+		let grouped = _.groupBy(this.tasks, "complete");
+		if (grouped[true]) {
+			// clean up completed tasks
+			for (let task of grouped[true]) {
+				if (task.guardType === "invader-subcore") {
+					for (let creepName of task.assignedCreeps) {
+						Game.creeps[creepName].suicide();
+					}
+				}
+			}
+		}
+		if (grouped[false]) {
+			// remove completed guard tasks
+			this.tasks = grouped[false];
+		}
+		else {
+			this.tasks = [];
+		}
 
 		// update neededCreeps for existing tasks
 		for (let task of this.tasks) {
@@ -306,6 +323,11 @@ module.exports = {
 					});
 					if (invaderCores.length > 0) {
 						task._currentTarget = invaderCores[0].id;
+					}
+					else {
+						task.complete = true;
+						console.log("[guard] task", task.id, "completed");
+						continue;
 					}
 				}
 				else {
