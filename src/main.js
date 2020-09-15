@@ -1676,12 +1676,13 @@ function main() {
 			}
 		}
 
+		const vis = new RoomVisual();
+
 		// draw information about creep quotas
 		let bottomRowCreepInfo;
 		try {
 			let baseX = 2;
 			let baseY = 2;
-			let vis = new RoomVisual();
 			let row = 0;
 			for (let role of _.values(toolCreepUpgrader.roles)) {
 				let count = util.getCreeps(role.name).length;
@@ -1725,7 +1726,6 @@ function main() {
 		try {
 			let baseX = 14;
 			let baseY = 2;
-			let vis = new RoomVisual();
 			let rooms = util.getOwnedRooms();
 			for (let r = 0; r < rooms.length; r++) {
 				let room = rooms[r];
@@ -1776,7 +1776,6 @@ function main() {
 			let baseY = bottomRowCreepInfo + 1;
 			let taskCounts = _.countBy(Memory.logistics.tasks, "source.resource");
 			let row = 0;
-			let vis = new RoomVisual();
 			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo + 0.25, {
 				align: "left",
 				font: 0.5,
@@ -1799,7 +1798,6 @@ function main() {
 		try {
 			let baseX = 8;
 			let baseY = bottomRowCreepInfo + 1;
-			let vis = new RoomVisual();
 			let row = 0;
 			for (let source of Memory.remoteMining.targets) {
 				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers} danger: ${source.danger}`, baseX, baseY + row * 0.6, {
@@ -1811,6 +1809,23 @@ function main() {
 			}
 		}
 		catch (e) {
+			printException(e);
+		}
+
+		// draw info about guard tasks
+		try {
+			let baseX = 27;
+			let baseY = bottomRowCreepInfo + 1;
+			let row = 0;
+			for (let task of Memory.guard.tasks) {
+				vis.text(`${task.targetRoom}: ${task.guardType} creeps: ${task.assignedCreeps ? task.assignedCreeps.length : 0}/${task.neededCreeps}`, baseX, baseY + row * 0.6, {
+					align: "left",
+					font: 0.5,
+					color: "#fff",
+				});
+				row++;
+			}
+		} catch (e) {
 			printException(e);
 		}
 
