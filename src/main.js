@@ -1294,6 +1294,7 @@ function main() {
 
 	brainGuard.init();
 	brainLogistics.init();
+	brainHighwayHarvesting.init();
 
 	let rooms = util.getOwnedRooms();
 
@@ -1610,6 +1611,14 @@ function main() {
 		printException(e);
 	}
 	brainLogistics.finalize();
+
+	try {
+		// TODO: run creeps assigned to these tasks
+	} catch (e) {
+		console.log("ERR: brain.highwayHarvesting tasks failed");
+		printException(e);
+	}
+	brainHighwayHarvesting.finalize();
 
 	printStatus();
 
