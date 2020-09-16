@@ -68,9 +68,10 @@ var roleRepairer = {
 						return 0;
 				}
 			},
+			struct => struct.hits,
 			struct => struct.pos.getRangeTo(creep),
 		],
-		["asc", "asc"]);
+		["asc", "asc", "asc"]);
 
 		if (targets.length > 0) {
 			creep.memory.repairTarget = targets[0].id;
