@@ -362,7 +362,18 @@ let util = {
 			default:
 				break;
 		}
-	}
+	},
+
+	/**
+	 * Calculate the effectiveness of a given part on a creep.
+	 * @param {Creep} creep
+	 * @param {String} part
+	 */
+	calcEffectiveness(creep, part) {
+		let groups = _.groupBy(creep.body.filter(p => p.type === part), p => p.boost);
+		// TODO: finish
+		// TODO: write tests
+	},
 }
 
 module.exports = util;
