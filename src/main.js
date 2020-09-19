@@ -940,7 +940,7 @@ function commandRemoteMining() {
 				keeperLair = Game.getObjectById(target.keeperLairId);
 			}
 
-			if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 10).length > 0) {
+			if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0) {
 				target.danger = 1;
 			}
 			else if (keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5) {
@@ -957,13 +957,14 @@ function commandRemoteMining() {
 		// determine ideal creep positions for increased danger levels
 		if (!target.dangerPos) {
 			let harvestPos = new RoomPosition(target.harvestPos.x, target.harvestPos.y, target.roomName);
+			let keepAwayFrom = keeperLair ? [
+				{ pos: source.pos, range: 6 },
+				{ pos: keeperLair.pos, range: 5 },
+			] : { pos: source.pos, range: 6 };
 			target.dangerPos = {
 				1: _.last(PathFinder.search(
 					harvestPos,
-					keeperLair ? [
-						{ pos: source.pos, range: 6 },
-						{ pos: keeperLair.pos, range: 6 },
-					] : { pos: source.pos, range: 6 },
+					keepAwayFrom,
 					{
 						flee: true,
 					}
