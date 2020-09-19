@@ -299,8 +299,8 @@ class Traveler {
         let ret = PathFinder.search(origin, { pos: destination, range: options.range }, {
             maxOps: options.maxOps,
             maxRooms: options.maxRooms,
-            plainCost: options.offRoad ? 1 : options.ignoreRoads ? 1 : 2,
-            swampCost: options.offRoad ? 1 : options.ignoreRoads ? 5 : 10,
+            plainCost: options.offRoad ? 1.2 : options.ignoreRoads ? 1.2 : 2,
+            swampCost: options.offRoad ? 1.2 : options.ignoreRoads ? 5 : 10,
             roomCallback: callback,
         });
         if (ret.incomplete && options.ensurePath) {
