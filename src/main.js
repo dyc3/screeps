@@ -50,26 +50,7 @@
 /*
 # SOME NOTES
 
-## Control from the console
-
-These methods should only be used from the console. They should not be used in the code anywhere.
-
-### `market`
-
-`global.market.quickSellEnergy()`
-Sells energy on the market to free up some storage space.
-
-### `logistics`
-
-TODO
-
-### `util`
-
-`global.util.spawnMegaBuilder(spawnName=null)`
-Spawns a very large builder creep with:
-- 15 `WORK`
-- 10 `CARRY`
-- 25 `MOVE`
+See tools.js for console accessible functions.
 
 ## Misc
 
@@ -85,6 +66,7 @@ Spawns a very large builder creep with:
 
 */
 
+require("tools");
 let util = require('util');
 
 let roleHarvester = require('role.harvester');
@@ -1843,153 +1825,6 @@ function main() {
 		drawRoomScores();
 	}
 }
-
-global.market = {
-	/**
-	 * Utility function to sell excess energy on the market.
-	 * Should ONLY be manually called by the user in the console.
-	 *
-	 * @returns String indicating the amount of energy sold, energy used for transation costs, and total energy spent.
-	 */
-	quickSellEnergy() {
-		let buyOrders = Game.market.getAllOrders(order => {
-			return order.type === ORDER_BUY && order.resourceType === RESOURCE_ENERGY && order.remainingAmount > 0;
-		});
-
-		if (buyOrders.length == 0) {
-			return "No energy buy orders.";
-		}
-
-		let rooms = util.getOwnedRooms();
-		let totalEnergySold = 0;
-		let totalEnergyCost = 0;
-		let totalDeals = 0;
-
-		for (let room of rooms) {
-			if (!room.storage || !room.terminal) {
-				continue;
-			}
-
-			if (room.terminal.cooldown > 0 || room.terminal.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
-				continue;
-			}
-
-			if (room.storage.store[RESOURCE_ENERGY] < 700000) {
-				continue;
-			}
-
-
-			let result = null;
-			let attempts = 0;
-			do {
-				let buy = buyOrders[0];
-				let amount = Math.min(buy.remainingAmount, room.terminal.store[RESOURCE_ENERGY] / 2);
-				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
-				result = Game.market.deal(buy.id, amount, room.name);
-				if (result == OK) {
-					totalEnergySold += amount;
-					totalEnergyCost += cost;
-					totalDeals++;
-				}
-				else {
-					buyOrders.splice(0, 1);
-					attempts++;
-				}
-			} while (result != OK && attempts < 5);
-		}
-
-		return `Made ${totalDeals} deals. Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${totalEnergySold + totalEnergyCost} spent.`;
-	},
-};
-
-global.logistics = {
-	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
-
-	/**
-	 * An easier way to transfer a resource from one room's terminal to another.
-	 * @param {*} from
-	 * @param {*} to
-	 */
-	transferResource(from, to, resource, amount) {
-		return Game.rooms[from].terminal.send(resource, amount, to);
-	},
-
-	quickTransferEnergy(from, to, amount=75000) {
-		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
-	},
-};
-
-global.util = {
-	module: util,
-
-	spawnMegaBuilder(spawnName=null) {
-		let spawn = null;
-		if (!spawnName) {
-			rooms = util.getOwnedRooms();
-			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		}
-		else {
-			spawn = Game.spawns[spawnName];
-		}
-		return spawn.spawnCreep([
-			WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
-			CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
-			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
-			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
-			MOVE,MOVE,MOVE,MOVE,MOVE,
-		],
-		`builder_${Game.time.toString(16)}`,
-		{
-			memory: {
-				role: "builder",
-				keepAlive: false,
-				stage: 5
-			}
-		})
-	},
-
-	spawnTestLogisticsCreep(spawnName=null, size=2) {
-		let spawn = null;
-		if (!spawnName) {
-			rooms = util.getOwnedRooms();
-			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		}
-		else {
-			spawn = Game.spawns[spawnName];
-		}
-		let body = [];
-		for (let i = 0; i < size; i++) {
-			body.unshift(CARRY);
-			body.push(MOVE);
-		}
-		return spawn.spawnCreep(body,
-			`testlogistics_${Game.time.toString(16)}`,
-			{
-				memory: {
-					role: "testlogistics",
-					keepAlive: true,
-					stage: size
-				}
-			});
-	},
-
-	destroyAllTestLogisticsCreeps() {
-		for (let creep of util.getCreeps("testlogistics")) {
-			creep.suicide();
-		}
-	},
-
-	/**
-	 * Trashes the creep's movement cache, forcing it to calculate a new path.
-	 * @param {Creep|String} creep
-	 */
-	forceRepath(creep) {
-		if (typeof creep === "string") {
-			creep = Game.creeps[creep];
-		}
-		delete creep.memory._trav;
-	},
-};
 
 // https://github.com/screepers/screeps-profiler
 // const profiler = require('profiler');
