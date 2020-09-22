@@ -459,7 +459,7 @@ module.exports = {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
-						else if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
+						if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
 							creep.attack(task.currentTarget);
 							creep.move(creep.pos.getDirectionTo(task.currentTarget));
 						}
