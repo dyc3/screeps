@@ -305,13 +305,17 @@ module.exports = {
 
 					if (hostiles.length > 0) {
 						// prioritize creeps that can heal
-						hostiles = _.sortByOrder(hostiles, [c => {
+						hostiles = _.sortByOrder(hostiles, [
+						c => {
+							return c.owner.username !== "Source Keeper";
+						},
+						c => {
 							return c.getActiveBodyparts(HEAL);
 						},
 						c => {
 							return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
 						}
-						], ["desc", "desc"]);
+						], ["desc", "desc", "desc"]);
 
 						task._currentTarget = hostiles[0].id;
 					}
@@ -361,6 +365,7 @@ module.exports = {
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
+			let guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
 			// let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
 			for (let creep of creeps) {
 				creep.notifyWhenAttacked(false);
@@ -459,14 +464,24 @@ module.exports = {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
-						if (creep.getActiveBodyparts(ATTACK) > 0 && creep.pos.inRangeTo(task.currentTarget, 1)) {
+						if (creep.getActiveBodyparts(ATTACK) > 0 && rangeToTarget === 1) {
 							creep.attack(task.currentTarget);
 							creep.move(creep.pos.getDirectionTo(task.currentTarget));
 						}
 
-						let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
-						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-							creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
+						if (task.currentTarget.owner.username !== "Source Keeper" && guardsUnavailable > 0) {
+							creep.say("waiting");
+							creep.log("waiting for other guards to finish spawning");
+							if (!creep.memory.stagingObjectId) {
+								creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms()).id;
+							}
+							creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId));
+						}
+						else {
+							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
+							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
+								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
+							}
 						}
 					}
 					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
