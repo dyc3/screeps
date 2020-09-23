@@ -43,19 +43,34 @@ var brainAutoPlanner = {
 		// the best root position is one that is equidistant to the sources and the controller
 		// (this function is also used for finding the best storage module position)
 		function _getTotalDistances(point, includeMineral=false, excludeSources=false, usePaths=false) {
+			let opts = {
+				maxRooms: 1,
+				costCallback: (roomName, costMatrix) => {
+					for (let y = 0; y <= 3; y++) {
+						for (let x = 0; x <= 3; x++) {
+							costMatrix.set(x, y, 0xff);
+						}
+					}
+					for (let y = 47; y < 50; y++) {
+						for (let x = 47; x < 50; x++) {
+							costMatrix.set(x, y, 0xff);
+						}
+					}
+				},
+			};
 			// NOTE: maybe this should the length of paths to the objects instead of ranges?
 			let pos = new RoomPosition(point.x, point.y, room.name);
-			let total = usePaths ? pos.findPathTo(room.controller).length : pos.getRangeTo(room.controller);
+			let total = usePaths ? pos.findPathTo(room.controller, opts).length : pos.getRangeTo(room.controller);
 			if (!excludeSources) {
 				let sources = room.find(FIND_SOURCES);
 				for (let source of sources) {
-					total += usePaths ? pos.findPathTo(source).length : pos.getRangeTo(source);
+					total += usePaths ? pos.findPathTo(source, opts).length : pos.getRangeTo(source);
 				}
 			}
 			if (includeMineral) {
 				let minerals = room.find(FIND_MINERALS);
 				for (let mineral of minerals) {
-					total += usePaths ? pos.findPathTo(mineral).length : pos.getRangeTo(mineral);
+					total += usePaths ? pos.findPathTo(mineral, opts).length : pos.getRangeTo(mineral);
 				}
 			}
 			return total;
@@ -69,7 +84,7 @@ var brainAutoPlanner = {
 					// check the 6x6 area
 					let valid = true;
 					for (let cY = y - 5; cY <= y + 1; cY++) {
-						for (let cX = x - 3; cX <= x + 3; cX++) {
+						for (let cX = x - 4; cX <= x + 4; cX++) {
 							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
 							if (terrain == "wall") {
 								valid = false;
@@ -89,9 +104,15 @@ var brainAutoPlanner = {
 				}
 			}
 			console.log("Found", goodRootPositions.length, "good root positions");
-			goodRootPositions.sort(function(a, b) {
-				return _getTotalDistances(a) - _getTotalDistances(b);
-			});
+			const _center = new RoomPosition(25, 25, room.name);
+			goodRootPositions = _.sortByOrder(goodRootPositions, [
+				pos => {
+					return new RoomPosition(pos.x, pos.y, room.name).getRangeTo(_center);
+				},
+				pos => {
+					return _getTotalDistances(pos);
+				},
+			], ["asc", "asc"]);
 			rootPos = goodRootPositions[0];
 			console.log("Best root:", rootPos.x, ",", rootPos.y);
 			room.memory.rootPos = rootPos;
@@ -295,6 +316,10 @@ var brainAutoPlanner = {
 										costMatrix.set(x, y, Infinity);
 										continue;
 									}
+								}
+								if (x <= 3 || x >= 47 || y <= 3 || y >= 47) {
+									costMatrix.set(x, y, 0xff);
+									continue;
 								}
 
 

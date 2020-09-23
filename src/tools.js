@@ -179,4 +179,12 @@ global.Util = {
 		}
 		delete creep.memory._trav;
 	},
+
+	forceReplan(roomName) {
+		delete Memory.rooms[roomName].structures;
+		delete Memory.rooms[roomName].rootPos;
+		delete Memory.rooms[roomName].storagePos;
+		Game.rooms[roomName].find(FIND_MY_CONSTRUCTION_SITES).forEach(site => site.remove());
+		require("brain.autoplanner").planRoom(Game.rooms[roomName]);
+	},
 };
