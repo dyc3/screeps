@@ -542,7 +542,18 @@ function doCreepSpawning() {
 
 		if (hiStage >= 0) {
 			console.log("Spawn new creep", newCreepName);
-			target_spawn.spawnCreep(toolCreepUpgrader.roles[role.name].stages[hiStage], newCreepName, { memory: newCreepMemory });
+			let body = toolCreepUpgrader.roles[role.name].stages[hiStage];
+			if (role === "upgrader" && room.controller.rcl <= 5 && hiStage > 2) {
+				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
+				let result = target_spawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, { memory: newCreepMemory });
+				if (result === ERR_NOT_ENOUGH_ENERGY) {
+					// fall back just in case
+					target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+				}
+			}
+			else {
+				target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+			}
 			return true;
 		}
 		return false;

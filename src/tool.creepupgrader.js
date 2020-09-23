@@ -8,7 +8,7 @@ function getUpgraderQuota(room) {
 		var value = 2;
 		switch (rcl) {
 			case 1:
-				value = 1;
+				value = util.getOwnedRooms().length > 1 ? 2 : 1;
 				break;
 			case 2:
 			case 3:
@@ -172,6 +172,7 @@ let creepUpgrader = {
 			name:"upgrader",
 			quota:getUpgraderQuota,
 			quota_per_room:true,
+			// HACK: there is a monkey patch in the creep spawning code to add a couple of additional move parts if the target room's RCL <= 5
 			stages:[
 				[WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
