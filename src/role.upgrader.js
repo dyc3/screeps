@@ -46,7 +46,12 @@ var roleUpgrader = {
 		}
 
 		if (creep.room.name != creep.memory.targetRoom) {
-			creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+			if (Game.rooms[creep.memory.targetRoom]) {
+				creep.travelTo(Game.rooms[creep.memory.targetRoom].controller, { range: 3 });
+			}
+			else {
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { range: 20 });
+			}
 			return;
 		}
 
