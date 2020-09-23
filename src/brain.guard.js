@@ -473,7 +473,7 @@ module.exports = {
 							creep.say("waiting");
 							creep.log("waiting for other guards to finish spawning");
 							if (!creep.memory.stagingObjectId) {
-								creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms()).id;
+								creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id;
 							}
 							creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId));
 						}
