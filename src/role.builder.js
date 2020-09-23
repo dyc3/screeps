@@ -31,21 +31,23 @@ var roleBuilder = {
 
 		if(creep.memory.building) {
 			if (!creep.memory.buildTargetId) {
-				// var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
 				let targets = this.findTargets(creep);
-				// console.log(creep.name,"targets:",targets)
 				if(targets.length) {
-					targets.sort(function(a,b) {
-						return (a.progress / a.progressTotal) - (b.progress / b.progressTotal);
-					});
-					targets.reverse();
-					targets.splice(4, targets.length - 5);
-					// var target = creep.pos.findClosestByPath(targets);
-					let target = targets[0];
-					if (target == null) {
-						target = targets[0]; // ????
+					targets = _.sortByOrder(targets, [
+						s => {
+							return s.progress / s.progressTotal;
+						},
+						s => {
+							return s.structureType === STRUCTURE_SPAWN;
+						}
+					], ["desc", "desc"]);
+					let target = _.first(targets);
+					if (target) {
+						creep.memory.buildTargetId = target.id;
 					}
-					creep.memory.buildTargetId = target.id;
+					else {
+						creep.log("ERR: Unable to find a build target");
+					}
 				}
 				else{
 					creep.say('ERR: No construction sites');
