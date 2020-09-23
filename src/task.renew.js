@@ -111,9 +111,10 @@ let taskRenew = {
 			}
 		}
 
+		let renewCost = 0;
 		if (creep instanceof Creep) {
 			let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
-			let renewCost = util.getRenewCost(creep.body);
+			renewCost = util.getRenewCost(creep.body);
 			let totalRenewCost = renewCost * countRenewsRequired;
 			creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
 		}
