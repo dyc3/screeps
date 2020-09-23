@@ -107,6 +107,27 @@ global.Logistics = {
 		console.log(`Transfering ${amount} energy from ${from} to ${to}`);
 		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
 	},
+
+	spawnTmpDelivery(fromId, toId, size=20, spawnName=undefined) {
+		let spawn = null;
+		if (!spawnName) {
+			rooms = util.getOwnedRooms();
+			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
+		}
+		else {
+			spawn = Game.spawns[spawnName];
+		}
+		size = size.clamp(1, 25);
+		return spawn.createCreep(
+			Array.apply(null, Array(size)).map(_ => CARRY).concat(Array.apply(null, Array(size)).map(_ => MOVE)),
+			`tmpdeliver_${Game.time.toString(16)}`, {
+				role:"tmpdeliver",
+				keepAlive:true,
+				stage: 0,
+				withdrawTargetId: fromId,
+				depositTargetId: toId
+			});
+	},
 };
 
 global.Util = {
