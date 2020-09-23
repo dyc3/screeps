@@ -486,9 +486,11 @@ function commandEnergyRelays() {
 
 		let rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
 		let storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
+		// HACK: because the way the storage module is placed is STILL jank af, rooms can opt in to change the relay position for the storage
+		let storagePosRelayDirection = room.memory.storagePosDirection !== undefined ? room.memory.storagePosDirection : RIGHT;
 		let relayPositions = [
 			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
-			util.getPositionInDirection(storagePos, RIGHT),
+			util.getPositionInDirection(storagePos, storagePosRelayDirection),
 			util.getPositionInDirection(rootLinkPos, TOP_RIGHT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
