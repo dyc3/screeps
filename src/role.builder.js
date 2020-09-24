@@ -38,7 +38,7 @@ var roleBuilder = {
 							return s.progress / s.progressTotal;
 						},
 						s => {
-							return s.structureType === STRUCTURE_SPAWN;
+							return s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_TOWER;
 						}
 					], ["desc", "desc"]);
 					let target = _.first(targets);
