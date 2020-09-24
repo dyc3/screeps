@@ -455,6 +455,7 @@ var brainAutoPlanner = {
 		}
 
 		room.memory.structures[struct].push({ x: pos.x, y: pos.y });
+		return `Planned ${struct} at ${pos.x}, ${pos.y}, ${pos.roomName}`;
 	},
 
 	/**
@@ -465,6 +466,7 @@ var brainAutoPlanner = {
 	 */
 	removePlansAtPosition(pos, struct=undefined) {
 		room = new Room(pos.roomName);
+		let count = 0;
 		for (let structure in CONSTRUCTION_COST) { // iterate through all structure names
 			if (!(structure in room.memory.structures)) {
 				continue;
@@ -476,9 +478,11 @@ var brainAutoPlanner = {
 				let checkPos = room.memory.structures[structure][p];
 				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
 					room.memory.structures[structure].splice(p, 1);
+					count++;
 				}
 			}
 		}
+		return `Removed ${count} plans at ${pos.x}, ${pos.y}, ${pos.roomName}`;
 	},
 
 	/** Plan extensions along paths from spawn to sources. **/
