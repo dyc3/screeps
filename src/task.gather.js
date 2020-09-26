@@ -177,6 +177,7 @@ let taskGather = {
 				}).length > 0;
 			}
 			if (creep.getActiveBodyparts(WORK) > 0) {
+				// FIXME: dear god the CPU usage on this is terrible
 				let closest = creep.pos.findClosestByPath(FIND_SOURCES, {
 					filter: function(source) {
 						if (creep.memory.role == "upgrader" && controllerHasContainerNearby) {
