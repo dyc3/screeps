@@ -166,7 +166,7 @@ let taskGather = {
 		}
 
 		// harvest energy from sources
-		if (!spawn || !haveContainer || creep.room.controller.level <= 3 || creep.room.storage.store[RESOURCE_ENERGY] <= 0) {
+		if (!spawn || !haveContainer || creep.room.controller.level <= 3 || !creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] <= 0) {
 			let controllerHasContainerNearby = false;
 			if (creep.memory.role == "upgrader" && creep.room.controller && creep.room.controller.my) {
 				let controller = creep.room.controller;
