@@ -50,7 +50,8 @@ let roleTmpDelivery = {
 
 		return creep.ticksToLive <= creep._routeDistance;
 	},
-	run: function(creep) {
+
+	run(creep) {
 		if (!creep.memory.withdrawTargetId) {
 			creep.say("need info");
 			console.log(creep.name, "needs withdrawTargetId");
@@ -79,7 +80,36 @@ let roleTmpDelivery = {
 			return;
 		}
 
-		if (creep.memory.delivering) {
+		if (creep.memory.recycle) {
+			// recycle this creep at the nearest spawn
+			// only occurs if recycleAfterDelivery === true
+			if (!creep.memory.recycleAtId) {
+				creep.memory.recycleAtId = creep.pos.findClosestByRange(FIND_MY_SPAWNS).id;
+			}
+			let spawn = Game.getObjectById(creep.memory.recycleAtId);
+			let dontRecycleJustYet = false;
+			// if we have extra energy, put it somewhere so we can avoid wasting it
+			if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+				let adjacent = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, {
+					filter: struct => struct.store && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
+				});
+				if (adjacent) {
+					creep.transfer(adjacent[0], RESOURCE_ENERGY);
+					if (adjacent.length >= 2) {
+						dontRecycleJustYet = true;
+					}
+				}
+			}
+			if (creep.pos.isNearTo(spawn)) {
+				if (!dontRecycleJustYet) {
+					spawn.recycleCreep(creep);
+				}
+			}
+			else {
+				creep.travelTo(spawn);
+			}
+		}
+		else if (creep.memory.delivering) {
 			if (creep.pos.isNearTo(depositTarget)) {
 				let transferResult;
 				if (creep.memory.transportOther) {
@@ -93,16 +123,19 @@ let roleTmpDelivery = {
 				else {
 					transferResult = creep.transfer(depositTarget, RESOURCE_ENERGY);
 				}
-				if (transferResult !== ERR_FULL && _.sum(creep.carry) < creep.carryCapacity * 0.25) {
+				if (transferResult !== ERR_FULL && creep.store.getUsedCapacity() < creep.store.getCapacity() * 0.25) {
 					creep.memory.delivering = false;
 
-					if (this.shouldRenew(creep)) {
+					if (creep.memory.recycleAfterDelivery) {
+						creep.memory.recycle = true;
+					}
+					else if (this.shouldRenew(creep)) {
 						creep.memory.renewing = true;
 					}
 				}
 			}
 			else {
-				if (_.sum(creep.carry) === 0) {
+				if (creep.store.getUsedCapacity() === 0) {
 					creep.memory.delivering = false;
 
 					if (this.shouldRenew(creep)) {
@@ -118,7 +151,7 @@ let roleTmpDelivery = {
 			if (creep.pos.isNearTo(withdrawTarget)) {
 				if (creep.memory.transportOther) {
 					for (let resource of RESOURCES_ALL) {
-						if (_.sum(creep.store) == creep.carryCapacity) {
+						if (creep.store.getFreeCapacity() === 0) {
 							break;
 						}
 						if (resource == RESOURCE_ENERGY) {
@@ -130,7 +163,7 @@ let roleTmpDelivery = {
 				else {
 					creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
 				}
-				if (_.sum(creep.carry) < creep.carryCapacity * 0.75) {
+				if (creep.store.getUsedCapacity() < creep.store.getCapacity() * 0.75) {
 					creep.memory.delivering = true;
 
 					if (this.shouldRenew(creep)) {

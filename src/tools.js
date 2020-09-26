@@ -108,24 +108,29 @@ global.Logistics = {
 		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
 	},
 
-	spawnTmpDelivery(fromId, toId, size=20, spawnName=undefined) {
+	spawnTmpDelivery(fromId, toId, options={}) {
+		let opts = _.defaults(options, {
+			size: 20,
+			recycleAfterDelivery: false,
+		});
 		let spawn = null;
-		if (!spawnName) {
+		if (!opts.spawnName) {
 			rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
 		}
 		else {
-			spawn = Game.spawns[spawnName];
+			spawn = Game.spawns[opts.spawnName];
 		}
-		size = size.clamp(1, 25);
+		opts.size = opts.size.clamp(1, 25);
 		return spawn.createCreep(
-			Array.apply(null, Array(size)).map(_ => CARRY).concat(Array.apply(null, Array(size)).map(_ => MOVE)),
+			Array.apply(null, Array(opts.size)).map(_ => CARRY).concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
 			`tmpdeliver_${Game.time.toString(16)}`, {
 				role:"tmpdeliver",
 				keepAlive:true,
 				stage: 0,
 				withdrawTargetId: fromId,
-				depositTargetId: toId
+				depositTargetId: toId,
+				recycleAfterDelivery: opts.recycleAfterDelivery,
 			});
 	},
 };
