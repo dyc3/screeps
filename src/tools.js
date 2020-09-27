@@ -124,7 +124,7 @@ global.Logistics = {
 		opts.size = opts.size.clamp(1, 25);
 		return spawn.createCreep(
 			Array.apply(null, Array(opts.size)).map(_ => CARRY).concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
-			`tmpdeliver_${Game.time.toString(16)}`, {
+			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`, {
 				role:"tmpdeliver",
 				keepAlive:true,
 				stage: 0,
