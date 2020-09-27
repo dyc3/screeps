@@ -63,17 +63,20 @@ let taskGather = {
 		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller && creep.room.controller.level < 6)) {
 			let tombstones = creep.room.find(FIND_TOMBSTONES, {
 				filter: (tomb) => {
+					if (tomb.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(tomb)) {
+						return true;
+					}
+					if (tomb.store[RESOURCE_ENERGY] < 10) {
+						return false;
+					}
 					if (util.isDistFromEdge(tomb.pos, 4)) {
 						return false;
 					}
 					if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
 						return false;
 					}
-					if (tomb.store[RESOURCE_ENERGY] < 10) {
-						return false;
-					}
 
-					return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
+					return tomb.store.getUsedCapacity() > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
 				}
 			});
 			if (tombstones.length > 0) {
