@@ -312,7 +312,7 @@ var roleRepairer = {
 						}
 						else {
 							if (util.isDistFromEdge(creep.pos, 3)) {
-								creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom)); // TODO: avoid pathfinding
+								creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { range: 10, maxRooms: 1 }); // TODO: avoid pathfinding
 							}
 						}
 					}

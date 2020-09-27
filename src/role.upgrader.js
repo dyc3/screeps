@@ -74,7 +74,7 @@ var roleUpgrader = {
 				else {
 					if (creep.room.controller.level < 8) {
 						if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-							creep.travelTo(creep.room.controller, { range: 3 });
+							creep.travelTo(creep.room.controller, { range: 3, maxRooms: 1 });
 						}
 					}
 					else {
@@ -86,12 +86,12 @@ var roleUpgrader = {
 						}
 					}
 					if (creep.pos.findInRange(FIND_CREEPS, 2).length > 2) {
-						creep.travelTo(creep.room.controller);
+						creep.travelTo(creep.room.controller, { maxRooms: 1 });
 					}
 				}
 			}
 			else {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { range: 20 });
 			}
 		}
 		else {
