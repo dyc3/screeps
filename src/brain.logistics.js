@@ -44,6 +44,9 @@ class ResourceSource {
 	}
 
 	get amount() {
+		if (!this.object) {
+			return 0;
+		}
 		if (this.object instanceof Resource) {
 			return this.object.amount;
 		}
