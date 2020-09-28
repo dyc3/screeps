@@ -487,7 +487,7 @@ module.exports = {
 					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							creep.travelTo(task.currentTarget);
+							creep.travelTo(task.currentTarget, { range: 2 });
 						}
 					}
 					else if (task.guardType === "invader-subcore" && task.currentTarget instanceof StructureInvaderCore) {
