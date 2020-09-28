@@ -482,6 +482,7 @@ var brainAutoPlanner = {
 				}
 			}
 		}
+		pos.lookFor(LOOK_CONSTRUCTION_SITES).forEach(s => s.remove());
 		return `Removed ${count} plans at ${pos.x}, ${pos.y}, ${pos.roomName}`;
 	},
 
