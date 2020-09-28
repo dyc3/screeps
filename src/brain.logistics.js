@@ -48,6 +48,9 @@ class ResourceSource {
 			return this.object.amount;
 		}
 		let amount = this.object.store.getUsedCapacity(this.resource);
+		if (this.object instanceof Tombstone) {
+			return amount;
+		}
 		if (this.object.structureType === STRUCTURE_TERMINAL && this.resource === RESOURCE_ENERGY) {
 			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.terminalEnergyTarget, 0);
 		}
@@ -274,6 +277,29 @@ module.exports = {
 
 		let rooms = util.getOwnedRooms();
 		for (let room of rooms) {
+			let tombstones = room.find(FIND_TOMBSTONES, {
+				filter: (tomb) => {
+					if (util.isDistFromEdge(tomb.pos, 4)) {
+						return false;
+					}
+
+					return tomb.store.getUsedCapacity() > 0;
+				}
+			});
+			for (let tombstone of tombstones) {
+				for (let resource in tombstone.store) {
+					let source = new ResourceSource({
+						resource,
+						objectId: tombstone.id,
+						roomName: tombstone.pos.roomName,
+					});
+					if (source.amount <= 0) {
+						continue;
+					}
+					sources.push(source);
+				}
+			}
+
 			let sourceStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
