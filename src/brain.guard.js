@@ -374,8 +374,8 @@ module.exports = {
 					continue;
 				}
 
-				if (!task.currentTarget && creep.room.name !== task._targetRoom) {
-					creep.travelTo(new RoomPosition(25, 25, task._targetRoom));
+				if (!task.currentTarget && creep.room.name !== task._targetRoom && !Game.rooms[task._targetRoom]) {
+					creep.travelTo(new RoomPosition(25, 25, task._targetRoom), { range: 5 });
 					continue;
 				}
 
