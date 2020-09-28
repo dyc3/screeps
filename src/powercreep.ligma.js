@@ -45,7 +45,7 @@ module.exports = {
 			return;
 		}
 
-		if (creep.powers[PWR_GENERATE_OPS].cooldown === 0) {
+		if (creep.powers[PWR_GENERATE_OPS].cooldown === 0 && creep.room.terminal.store[RESOURCE_OPS] < 10000) {
 			let result = creep.usePower(PWR_GENERATE_OPS);
 			creep.log(`generate ops result: ${result}`);
 		}
