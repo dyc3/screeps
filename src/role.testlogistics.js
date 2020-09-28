@@ -79,7 +79,14 @@ module.exports = {
 				}
 			}
 			else {
-				creep.travelTo(new RoomPosition(25, 25, deliveryTask.source.roomName));
+				if (Game.rooms[deliveryTask.source.roomName]) {
+					// the source is no longer valid
+					creep.log("Source is gone, deleting task");
+					delete creep.memory.deliveryTaskId;
+				}
+				else {
+					creep.travelTo(new RoomPosition(25, 25, deliveryTask.source.roomName));
+				}
 			}
 		}
 	}
