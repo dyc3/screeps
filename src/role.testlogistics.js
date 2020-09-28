@@ -66,7 +66,13 @@ module.exports = {
 		else {
 			if (deliveryTask.source.object) {
 				if (creep.pos.isNearTo(deliveryTask.source.object)) {
-					let result = creep.withdraw(deliveryTask.source.object, deliveryTask.source.resource, Math.min(creep.store.getFreeCapacity(), deliveryTask.amount));
+					let result;
+					if (deliveryTask.source.object instanceof Resource) {
+						result = creep.pickup(deliveryTask.source.object);
+					}
+					else {
+						result = creep.withdraw(deliveryTask.source.object, deliveryTask.source.resource, Math.min(creep.store.getFreeCapacity(), deliveryTask.amount));
+					}
 					if (result === OK || result === ERR_FULL) {
 						creep.memory.delivering = true;
 					}
