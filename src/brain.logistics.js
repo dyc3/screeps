@@ -515,7 +515,10 @@ module.exports = {
 						return 8;
 				}
 			},
-			"amount"], ["desc", "asc", "asc"]);
+			task => {
+				return task.source.object.pos.getRangeTo(task.sink.object);
+			},
+			"amount"], ["desc", "asc", "asc", "asc"]);
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
