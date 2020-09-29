@@ -748,7 +748,17 @@ let roleManager = {
 			}
 			creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
 			if (creep.pos.isNearTo(transportTarget)) {
-				creep.transfer(transportTarget, RESOURCE_ENERGY);
+				if (transportTarget.structureType === STRUCTURE_TERMINAL) {
+					amount = Math.min(Memory.terminalEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY));
+					creep.transfer(transportTarget, RESOURCE_ENERGY, amount);
+				}
+				else if (transportTarget.structureType === STRUCTURE_FACTORY) {
+					amount = Math.min(Memory.factoryEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY));
+					creep.transfer(transportTarget, RESOURCE_ENERGY, amount);
+				}
+				else {
+					creep.transfer(transportTarget, RESOURCE_ENERGY);
+				}
 			}
 			else {
 				creep.travelTo(transportTarget, { maxRooms: 1 })
