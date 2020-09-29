@@ -631,6 +631,7 @@ let roleManager = {
 		let sinks = brainLogistics.findSinks({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
+			filter: s => s.objectId !== creep.memory.lastWithdrawStructure
 		});
 		creep.log(`Found ${sinks.length} sinks`);
 
@@ -691,6 +692,7 @@ let roleManager = {
 		let sources = brainLogistics.findSources({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
+			filter: s => s.objectId !== creep.memory.lastDepositStructure,
 		});
 		console.log(`Found ${sources.length} sources`);
 
@@ -731,10 +733,12 @@ let roleManager = {
 
 		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75) {
 			creep.memory.transporting = true;
+			creep.memory.lastWithdrawStructure = creep.memory.aquireTarget;
 			creep.say("transport");
 		}
 		if (creep.memory.transporting && creep.store[RESOURCE_ENERGY] <= 0) {
 			creep.memory.transporting = false;
+			creep.memory.lastDepositStructure = creep.memory.transportTarget;
 			creep.say("aquiring");
 		}
 
