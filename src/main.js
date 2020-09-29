@@ -1840,6 +1840,7 @@ function main() {
 // profiler.registerClass(roleCarrier, 'role.carrier');
 // profiler.registerClass(taskRenew, 'task.renew');
 // profiler.registerClass(brainGuard, 'brain.guard');
+// profiler.registerClass(brainLogistics, 'brain.logistics');
 // profiler.enable();
 
 module.exports = {
