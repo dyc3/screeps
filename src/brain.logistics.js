@@ -64,6 +64,7 @@ class ResourceSource {
 	}
 }
 
+/** DEPRECATED */
 class DeliveryTask {
 	constructor(source, sink) {
 		// validate
@@ -165,216 +166,212 @@ class DeliveryTask {
 	}
 }
 
-module.exports = {
-	tasks: [],
+// cache of all sources and sinks found so far, invalidated at the end of the tick
+let sourcesCache = [];
+let sinksCache = [];
 
-	init() {
-		if (!Memory.logistics) {
-			Memory.logistics = {
-				tasks: [],
-			};
-		}
-		if (!Memory.guard.tasks) {
-			Memory.guard.tasks = [];
-		}
-		this.tasks = _.map(Memory.logistics.tasks, task => {
-			let t = new DeliveryTask(new ResourceSource(task.source), new ResourceSink(task.sink))
-			t.id = task.id;
-			return t;
+function collectAllResourceSources() {
+	if (sourcesCache) {
+		return sourcesCache;
+	}
+
+	let sources = [];
+
+	let rooms = util.getOwnedRooms();
+	for (let room of rooms) {
+		let dropped = room.find(FIND_DROPPED_RESOURCES, {
+			filter: d => {
+				if (util.isDistFromEdge(d.pos, 4)) {
+					return false;
+				}
+
+				return d.amount > 0;
+			}
 		});
-	},
-
-	finalize() {
-		Memory.logistics.tasks = _.map(this.tasks, task => task.serialize());
-	},
-
-	getTasks() {
-		return this.tasks;
-	},
-
-	getTask(id) {
-		return _.find(this.tasks, task => task.id === id);
-	},
-
-	findResourceSinks() {
-		let sinks = [];
-
-		// read fill flags
-		for (let flagName in Game.flags) {
-			if (!flagName.startsWith("fill")) {
-				continue;
-			}
-
-			let flag = Game.flags[flagName];
-
-			let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
-			if (!struct) {
-				console.log("WARN: fill flag does not have structure");
-				continue;
-			}
-
-			let flagNameSplit = flag.name.split(":");
-			let resource = flagNameSplit[1];
-			let amount = flagNameSplit.length > 2 ? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource)) : struct.store.getFreeCapacity(resource);
-
-			if (amount === 0) {
-				continue;
-			}
-
-			let sink = new ResourceSink({
-				resource,
-				objectId: struct.id,
-				amount,
-				roomName: struct.pos.roomName,
+		for (let drop of dropped) {
+			let source = new ResourceSource({
+				resource: drop.resourceType,
+				objectId: drop.id,
+				roomName: drop.pos.roomName,
 			});
-			sinks.push(sink);
+			if (source.amount <= 0) {
+				continue;
+			}
+			sources.push(source);
 		}
 
-		// find energy sinks
-		let rooms = util.getOwnedRooms();
-		const resources = [RESOURCE_ENERGY, RESOURCE_POWER, RESOURCE_GHODIUM];
-		for (let resource of resources) {
-			for (let room of rooms) {
-				let sinkStructures = room.find(FIND_STRUCTURES, {
-					filter: struct => {
-						return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
-					}
-				});
-
-				for (let struct of sinkStructures) {
-					if (resource === RESOURCE_GHODIUM && struct.structureType !== STRUCTURE_NUKER) {
-						continue;
-					}
-					if (resource === RESOURCE_POWER && struct.structureType !== STRUCTURE_POWER_SPAWN) {
-						continue;
-					}
-					let amount = struct.store.getFreeCapacity(resource);
-
-					if (struct.structureType === STRUCTURE_TERMINAL) {
-						amount = Math.min(Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
-					}
-					else if (struct.structureType === STRUCTURE_FACTORY) {
-						amount = Math.min(Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
-					}
-
-					if (amount <= 0) {
-						continue;
-					}
-
-					let sink = new ResourceSink({
-						resource,
-						objectId: struct.id,
-						amount,
-						roomName: struct.pos.roomName,
-					});
-					sinks.push(sink);
+		let tombstones = room.find(FIND_TOMBSTONES, {
+			filter: (tomb) => {
+				if (util.isDistFromEdge(tomb.pos, 4)) {
+					return false;
 				}
+
+				return tomb.store.getUsedCapacity() > 0;
 			}
-		}
-
-		return sinks;
-	},
-
-	findResourceSources() {
-		let sources = [];
-
-		let rooms = util.getOwnedRooms();
-		for (let room of rooms) {
-			let dropped = room.find(FIND_DROPPED_RESOURCES, {
-				filter: d => {
-					if (util.isDistFromEdge(d.pos, 4)) {
-						return false;
-					}
-
-					return d.amount > 0;
-				}
-			});
-			for (let drop of dropped) {
+		});
+		for (let tombstone of tombstones) {
+			for (let resource in tombstone.store) {
 				let source = new ResourceSource({
-					resource: drop.resourceType,
-					objectId: drop.id,
-					roomName: drop.pos.roomName,
+					resource,
+					objectId: tombstone.id,
+					roomName: tombstone.pos.roomName,
 				});
 				if (source.amount <= 0) {
 					continue;
 				}
 				sources.push(source);
 			}
-
-			let tombstones = room.find(FIND_TOMBSTONES, {
-				filter: (tomb) => {
-					if (util.isDistFromEdge(tomb.pos, 4)) {
-						return false;
-					}
-
-					return tomb.store.getUsedCapacity() > 0;
-				}
-			});
-			for (let tombstone of tombstones) {
-				for (let resource in tombstone.store) {
-					let source = new ResourceSource({
-						resource,
-						objectId: tombstone.id,
-						roomName: tombstone.pos.roomName,
-					});
-					if (source.amount <= 0) {
-						continue;
-					}
-					sources.push(source);
-				}
-			}
-
-			let sourceStructures = room.find(FIND_STRUCTURES, {
-				filter: struct => {
-					return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
-				}
-			});
-
-			for (let struct of sourceStructures) {
-				for (let resource in struct.store) {
-					if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
-						continue;
-					}
-					let source = new ResourceSource({
-						resource,
-						objectId: struct.id,
-						roomName: struct.pos.roomName,
-					});
-					if (source.amount <= 0) {
-						continue;
-					}
-					sources.push(source);
-				}
-			}
 		}
 
-		// add remote mining sources
-		// WARN: this code is effectively useless because there's nothing wrong with the carriers and remote mining can have multiple carriers now, it should probably be removed
-		// for (let miningTarget of Memory.remoteMining.targets) {
-		// 	let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
-		// 	if (!Game.rooms[miningTarget.roomName]) {
-		// 		// No visibility
-		// 		continue;
-		// 	}
-		// 	let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
-		// 	if (lookResult.length === 0) {
-		// 		continue;
-		// 	}
-		// 	let source = new ResourceSource({
-		// 		resource: lookResult[0].resourceType,
-		// 		objectId: lookResult[0].id,
-		// 		roomName: miningTarget.roomName,
-		// 	});
-		// 	if (source.amount <= 0) {
-		// 		continue;
-		// 	}
-		// 	sources.push(source);
-		// }
+		let sourceStructures = room.find(FIND_STRUCTURES, {
+			filter: struct => {
+				return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
+			}
+		});
 
-		return sources;
+		for (let struct of sourceStructures) {
+			for (let resource in struct.store) {
+				if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
+					continue;
+				}
+				let source = new ResourceSource({
+					resource,
+					objectId: struct.id,
+					roomName: struct.pos.roomName,
+				});
+				if (source.amount <= 0) {
+					continue;
+				}
+				sources.push(source);
+			}
+		}
+	}
+
+	// add remote mining sources
+	// WARN: this code is effectively useless because there's nothing wrong with the carriers and remote mining can have multiple carriers now, it should probably be removed
+	// for (let miningTarget of Memory.remoteMining.targets) {
+	// 	let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
+	// 	if (!Game.rooms[miningTarget.roomName]) {
+	// 		// No visibility
+	// 		continue;
+	// 	}
+	// 	let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
+	// 	if (lookResult.length === 0) {
+	// 		continue;
+	// 	}
+	// 	let source = new ResourceSource({
+	// 		resource: lookResult[0].resourceType,
+	// 		objectId: lookResult[0].id,
+	// 		roomName: miningTarget.roomName,
+	// 	});
+	// 	if (source.amount <= 0) {
+	// 		continue;
+	// 	}
+	// 	sources.push(source);
+	// }
+
+	sourcesCache = sources;
+
+	return sources;
+}
+
+function collectAllResourceSinks() {
+	if (sinksCache) {
+		return sinksCache;
+	}
+
+	let sinks = [];
+
+	// read fill flags
+	for (let flagName in Game.flags) {
+		if (!flagName.startsWith("fill")) {
+			continue;
+		}
+
+		let flag = Game.flags[flagName];
+
+		let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
+		if (!struct) {
+			console.log("WARN: fill flag does not have structure");
+			continue;
+		}
+
+		let flagNameSplit = flag.name.split(":");
+		let resource = flagNameSplit[1];
+		let amount = flagNameSplit.length > 2 ? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource)) : struct.store.getFreeCapacity(resource);
+
+		if (amount === 0) {
+			continue;
+		}
+
+		let sink = new ResourceSink({
+			resource,
+			objectId: struct.id,
+			amount,
+			roomName: struct.pos.roomName,
+		});
+		sinks.push(sink);
+	}
+
+	// find energy sinks
+	let rooms = util.getOwnedRooms();
+	const resources = [RESOURCE_ENERGY, RESOURCE_POWER, RESOURCE_GHODIUM];
+	for (let resource of resources) {
+		for (let room of rooms) {
+			let sinkStructures = room.find(FIND_STRUCTURES, {
+				filter: struct => {
+					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
+				}
+			});
+
+			for (let struct of sinkStructures) {
+				if (resource === RESOURCE_GHODIUM && struct.structureType !== STRUCTURE_NUKER) {
+					continue;
+				}
+				if (resource === RESOURCE_POWER && struct.structureType !== STRUCTURE_POWER_SPAWN) {
+					continue;
+				}
+				let amount = struct.store.getFreeCapacity(resource);
+
+				if (struct.structureType === STRUCTURE_TERMINAL) {
+					amount = Math.min(Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
+				}
+				else if (struct.structureType === STRUCTURE_FACTORY) {
+					amount = Math.min(Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
+				}
+
+				if (amount <= 0) {
+					continue;
+				}
+
+				let sink = new ResourceSink({
+					resource,
+					objectId: struct.id,
+					amount,
+					roomName: struct.pos.roomName,
+				});
+				sinks.push(sink);
+			}
+		}
+	}
+
+	return sinks;
+}
+
+module.exports = {
+	tasks: [],
+
+	init() {
+
 	},
 
-	buildDeliveryTasks(sinks, sources) {
+	finalize() {
+		// invalidate cache
+		sourcesCache = [];
+		sinksCache = [];
+	},
+
+	old_buildDeliveryTasks(sinks, sources) {
 		let tasks = [];
 
 		for (let sink of sinks) {
@@ -451,7 +448,7 @@ module.exports = {
 	 * Tell the specified creep what delivery task to fulfil.
 	 * @param {Creep} creep The creep to give a task to.
 	 */
-	allocateCreep(creep) {
+	old_allocateCreep(creep) {
 		let availableTasks = _.filter(this.tasks, task => {
 			if (task.isComplete) {
 				return false;
@@ -524,7 +521,7 @@ module.exports = {
 		return availableTasks[0].id;
 	},
 
-	fulfillTerminalTransfers() {
+	old_fulfillTerminalTransfers() {
 		let terminalTransferTasks = _.filter(this.tasks, task => task.source.object.structureType === task.sink.object.structureType === STRUCTURE_TERMINAL);
 		for (let task of terminalTransferTasks) {
 			if (task.source.object.cooldown > 0) {
@@ -535,5 +532,47 @@ module.exports = {
 				console.log(`Failed to fulfil ${task.id} with terminals: ${result}`);
 			}
 		}
+	},
+
+	/**
+	 * Find resource sources
+	 * @param {Object} options
+	 * @param {Function} options.resource
+	 * @param {Function} options.roomName
+	 * @param {Function} options.filter
+	 */
+	findSources(options) {
+		let sources = collectAllResourceSources();
+		if (options.resource) {
+			sources = sources.filter(s => s.resource === options.resource);
+		}
+		if (options.roomName) {
+			sources = sources.filter(s => s.roomName === options.roomName);
+		}
+		if (options.filter) {
+			sources = sources.filter(options.filter);
+		}
+		return sources;
+	},
+
+	/**
+	 * Find resource sinks
+	 * @param {Object} options
+	 * @param {Function} options.resource
+	 * @param {Function} options.roomName
+	 * @param {Function} options.filter
+	 */
+	findSinks(options) {
+		let sinks = collectAllResourceSinks();
+		if (options.resource) {
+			sinks = sinks.filter(s => s.resource === options.resource);
+		}
+		if (options.roomName) {
+			sinks = sinks.filter(s => s.roomName === options.roomName);
+		}
+		if (options.filter) {
+			sinks = sinks.filter(options.filter);
+		}
+		return sinks;
 	},
 }

@@ -1599,6 +1599,8 @@ function main() {
 	}
 	brainHighwayHarvesting.finalize();
 
+	brainLogistics.finalize();
+
 	printStatus();
 
 	// HACK: some hard coded lab stuff
