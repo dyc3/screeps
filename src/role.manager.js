@@ -680,7 +680,7 @@ let roleManager = {
 		let aquireTarget;
 		if (creep.memory.aquireTarget) {
 			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
-			if (aquireTarget && aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+			if (aquireTarget && (!aquireTarget.store || aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)) {
 				return aquireTarget;
 			}
 			else {
@@ -697,6 +697,7 @@ let roleManager = {
 		console.log(`Found ${sources.length} sources`);
 
 		if (sources.length === 0) {
+			delete creep.memory.lastDepositStructure;
 			return null;
 		}
 
@@ -742,11 +743,18 @@ let roleManager = {
 			creep.say("aquiring");
 		}
 
+		if (creep.memory.lastDepositStructure == creep.memory.lastWithdrawStructure) {
+			delete creep.memory.lastDepositStructure;
+		}
+
 		if (creep.memory.transporting) {
 			delete creep.memory.aquireTarget;
 
 			let transportTarget = this.getTransferTarget(creep);
 			if (!transportTarget) {
+				if (Game.time % 5 === 0) {
+					delete creep.memory.lastWithdrawStructure;
+				}
 				creep.log("can't get a transport target");
 				return;
 			}
@@ -773,6 +781,9 @@ let roleManager = {
 
 			let aquireTarget = this.getAquireTarget(creep);
 			if (!aquireTarget) {
+				if (Game.time % 5 === 0) {
+					delete creep.memory.lastDepositStructure;
+				}
 				creep.log("can't get a aquire target");
 				return;
 			}

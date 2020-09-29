@@ -225,7 +225,10 @@ function collectAllResourceSources() {
 
 		let sourceStructures = room.find(FIND_STRUCTURES, {
 			filter: struct => {
-				return [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
+				if (struct.structureType === STRUCTURE_CONTAINER) {
+					return struct.pos.getRangeTo(struct.room.controller) > CONTROLLER_UPGRADE_RANGE;
+				}
+				return [STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
 			}
 		});
 
@@ -320,7 +323,10 @@ function collectAllResourceSinks() {
 		for (let room of rooms) {
 			let sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
-					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
+					if (struct.structureType === STRUCTURE_CONTAINER) {
+						return struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE;
+					}
+					return ![STRUCTURE_ROAD, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
 				}
 			});
 
