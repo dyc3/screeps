@@ -47,6 +47,7 @@ global.Market = {
 		let totalEnergySold = 0;
 		let totalEnergyCost = 0;
 		let totalDeals = 0;
+		let fromRooms = [];
 
 		for (let room of rooms) {
 			if (!room.storage || !room.terminal) {
@@ -69,19 +70,20 @@ global.Market = {
 				let amount = Math.min(buy.remainingAmount, room.terminal.store[RESOURCE_ENERGY] / 2);
 				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
 				result = Game.market.deal(buy.id, amount, room.name);
-				if (result == OK) {
+				if (result === OK) {
 					totalEnergySold += amount;
 					totalEnergyCost += cost;
 					totalDeals++;
+					fromRooms.push(room.name);
 				}
 				else {
 					buyOrders.splice(0, 1);
 					attempts++;
 				}
-			} while (result != OK && attempts < 5);
+			} while (result !== OK && attempts < 5);
 		}
 
-		return `Made ${totalDeals} deals. Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${totalEnergySold + totalEnergyCost} spent.`;
+		return `Made ${totalDeals} deals. Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${totalEnergySold + totalEnergyCost} spent. From rooms: ${JSON.stringify(fromRooms)}`;
 	},
 };
 
