@@ -13,28 +13,23 @@ function doNoJobsStuff(creep) {
 	}
 }
 
-var roleScientist = {
-	run: function(creep) {
+let roleScientist = {
+	run(creep) {
 		if (creep.fatigue > 0) {
 			return;
 		}
 
-		// if (!Memory.scienceQueue) {
-			// Memory.scienceQueue = [];
-			// sample science queue item: {"target":"G","amount":5000}
-		// }
-
 		function isStructureFull(struct) {
 			switch (struct.structureType) {
 				case STRUCTURE_LAB:
-					return struct.mineralAmount == struct.mineralCapacity;
+					return struct.mineralType && struct.store.getFreeCapacity(struct.mineralType) === 0;
+				case STRUCTURE_NUKER:
+					return struct.store.getFreeCapacity(RESOURCE_GHODIUM) === 0;
 				case STRUCTURE_TERMINAL:
 				case STRUCTURE_CONTAINER:
 				case STRUCTURE_STORAGE:
 				case STRUCTURE_FACTORY:
-					return _.sum(struct.store) >= struct.store.getCapacity();
-				case STRUCTURE_NUKER:
-					return struct.ghodium >= struct.ghodiumCapacity;
+					return struct.store.getFreeCapacity() === 0;
 			}
 			return true;
 		}
@@ -42,14 +37,14 @@ var roleScientist = {
 		function isStructureEmpty(struct) {
 			switch (struct.structureType) {
 				case STRUCTURE_LAB:
-					return struct.mineralAmount == 0;
+					return !struct.mineralType || struct.store.getUsedCapacity(struct.mineralType) === 0;
+				case STRUCTURE_NUKER:
+					return struct.store.getUsedCapacity(RESOURCE_GHODIUM) === 0;
 				case STRUCTURE_TERMINAL:
 				case STRUCTURE_CONTAINER:
 				case STRUCTURE_STORAGE:
 				case STRUCTURE_FACTORY:
-					return _.sum(struct.store) == 0;
-				case STRUCTURE_NUKER:
-					return struct.ghodium == 0;
+					return struct.store.getUsedCapacity() === 0;
 			}
 			return true;
 		}
@@ -99,10 +94,10 @@ var roleScientist = {
 						if (struct.mineralType != _mineral) {
 							return false;
 						}
-						var flags = struct.pos.lookFor(LOOK_FLAGS);
+						let flags = struct.pos.lookFor(LOOK_FLAGS);
 						if (flags.length > 0) {
-							for (var f in flags) {
-								var flag = flags[f];
+							for (let f in flags) {
+								let flag = flags[f];
 								if (flag.name.includes("fill")) {
 									return false;
 								}
