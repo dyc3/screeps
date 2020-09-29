@@ -3,6 +3,9 @@ let util = require('util');
 let toolEnergySource = {
 	// adjusted: adjust harvester count for if containers/storage/links are nearby
 	getMaxHarvesters(energySource, adjusted=false) {
+		if (util.getOwnedRooms().length > 1) {
+			return 1;
+		}
 		let count = 0;
 		for (let y = energySource.pos.y - 1; y <= energySource.pos.y + 1; y++) {
 			for (let x = energySource.pos.x - 1; x <= energySource.pos.x + 1; x++) {
