@@ -171,7 +171,7 @@ let sourcesCache = [];
 let sinksCache = [];
 
 function collectAllResourceSources() {
-	if (sourcesCache) {
+	if (sourcesCache.length > 0) {
 		return sourcesCache;
 	}
 
@@ -276,7 +276,7 @@ function collectAllResourceSources() {
 }
 
 function collectAllResourceSinks() {
-	if (sinksCache) {
+	if (sinksCache.length > 0) {
 		return sinksCache;
 	}
 
@@ -320,7 +320,7 @@ function collectAllResourceSinks() {
 		for (let room of rooms) {
 			let sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
-					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
+					return ![STRUCTURE_ROAD, STRUCTURE_CONTAINER, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
 				}
 			});
 

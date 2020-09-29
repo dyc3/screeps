@@ -1,5 +1,6 @@
 let traveler = require('traveler');
 let util = require("util");
+let brainLogistics = require("brain.logistics");
 
 function doAquire(creep, passively=false) {
 	if (creep.memory.aquireTarget && !passively) {
@@ -346,15 +347,15 @@ function passivelyWithdrawOtherResources(creep, structure) {
 
 // get number of managers assigned to a room
 function getManagerCount(room) {
-	return _.filter(Game.creeps, (creep) => creep.memory.role == "manager" && creep.memory.targetRoom == room.name).length;
+	return _.filter(Game.creeps, creep => creep.memory.role === "manager" && creep.memory.targetRoom === room.name).length;
 }
 
 // this role is for transporting energy short distances
-var roleManager = {
-	findTargetRoom: function(creep) {
-		var rooms = util.getOwnedRooms();
-		for (var i = 0; i < rooms.length; i++) {
-			var room = rooms[i];
+let roleManager = {
+	findTargetRoom(creep) {
+		let rooms = util.getOwnedRooms();
+		for (let i = 0; i < rooms.length; i++) {
+			let room = rooms[i];
 			if (room.controller.level < 4) {
 				continue;
 			}
@@ -365,7 +366,7 @@ var roleManager = {
 		}
 	},
 
-	run: function(creep) {
+	run_old(creep) {
 		if (creep.fatigue > 0) {
 			return;
 		}
@@ -612,7 +613,169 @@ var roleManager = {
 		else {
 			doAquire(creep, false);
 		}
-	}
+	},
+
+	getTransferTarget(creep) {
+		let transportTarget;
+		if (creep.memory.trasportTarget) {
+			transportTarget = Game.getObjectById(creep.memory.transportTarget);
+			if (transportTarget && transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+				return transportTarget;
+			}
+			else {
+				delete creep.memory.trasportTarget;
+				transportTarget = null;
+			}
+		}
+
+		let sinks = brainLogistics.findSinks({
+			resource: RESOURCE_ENERGY,
+			roomName: creep.memory.targetRoom,
+		});
+		creep.log(`Found ${sinks.length} sinks`);
+
+		if (sinks.length === 0) {
+			return null;
+		}
+
+		sinks = _.sortByOrder(sinks, [
+			s => {
+				switch (s.object.structureType) {
+					case STRUCTURE_EXTENSION:
+					case STRUCTURE_SPAWN:
+						return 1;
+					case STRUCTURE_TOWER:
+						return 2;
+					case STRUCTURE_POWER_SPAWN:
+						return 4;
+					case STRUCTURE_LAB:
+					case STRUCTURE_FACTORY:
+						return 5;
+					case STRUCTURE_NUKER:
+						return 6;
+					case STRUCTURE_CONTAINER:
+					case STRUCTURE_STORAGE:
+					case STRUCTURE_TERMINAL:
+						return 9;
+					default:
+						return 8;
+				}
+			},
+			s => creep.pos.getRangeTo(s.object),
+		],
+		["asc", "asc"]);
+
+		transportTarget = _.first(sinks).object;
+		if (transportTarget) {
+			creep.memory.transportTarget = transportTarget.id;
+			return transportTarget;
+		}
+		else {
+			return null;
+		}
+	},
+
+	getAquireTarget(creep) {
+		let aquireTarget;
+		if (creep.memory.aquireTarget) {
+			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
+			if (aquireTarget && aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+				return aquireTarget;
+			}
+			else {
+				delete creep.memory.aquireTarget;
+				aquireTarget = null;
+			}
+		}
+
+		let sources = brainLogistics.findSources({
+			resource: RESOURCE_ENERGY,
+			roomName: creep.memory.targetRoom,
+		});
+		console.log(`Found ${sources.length} sources`);
+
+		if (sources.length === 0) {
+			return null;
+		}
+
+		sources = _.sortByOrder(sources, [
+			s => creep.pos.getRangeTo(s.object),
+		],
+		["asc"]);
+
+		aquireTarget = _.first(sources).object;
+		if (aquireTarget) {
+			creep.memory.aquireTarget = aquireTarget.id;
+			return aquireTarget;
+		}
+		else {
+			return null;
+		}
+	},
+
+	run(creep) {
+		if (creep.fatigue > 0) {
+			return;
+		}
+
+		if (creep.memory.role === "manager") {
+			if (!creep.memory.targetRoom) {
+				this.findTargetRoom(creep);
+			}
+
+			if (creep.room.name !== creep.memory.targetRoom) {
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
+				return;
+			}
+		}
+
+		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75) {
+			creep.memory.transporting = true;
+			creep.say("transport");
+		}
+		if (creep.memory.transporting && creep.store[RESOURCE_ENERGY] <= 0) {
+			creep.memory.transporting = false;
+			creep.say("aquiring");
+		}
+
+		if (creep.memory.transporting) {
+			delete creep.memory.aquireTarget;
+
+			let transportTarget = this.getTransferTarget(creep);
+			if (!transportTarget) {
+				creep.log("can't get a transport target");
+				return;
+			}
+			creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
+			if (creep.pos.isNearTo(transportTarget)) {
+				creep.transfer(transportTarget, RESOURCE_ENERGY);
+			}
+			else {
+				creep.travelTo(transportTarget, { maxRooms: 1 })
+			}
+		}
+		else {
+			delete creep.memory.transportTarget;
+
+			let aquireTarget = this.getAquireTarget(creep);
+			if (!aquireTarget) {
+				creep.log("can't get a aquire target");
+				return;
+			}
+			creep.room.visual.circle(aquireTarget.pos, {stroke:"#ff0000", fill:"transparent", radius: 0.8});
+			if (creep.pos.isNearTo(aquireTarget)) {
+				if (aquireTarget instanceof Resource) {
+					creep.pickup(aquireTarget);
+				}
+				else {
+					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+				}
+			}
+			else {
+				creep.travelTo(aquireTarget, { maxRooms: 1 })
+			}
+		}
+	},
 }
 
 module.exports = roleManager;
