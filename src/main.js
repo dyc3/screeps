@@ -1290,7 +1290,6 @@ function main() {
 	}
 
 	brainGuard.init();
-	brainLogistics.init();
 	brainHighwayHarvesting.init();
 
 	let rooms = util.getOwnedRooms();
@@ -1591,23 +1590,6 @@ function main() {
 		printException(e);
 	}
 	brainGuard.finalize();
-
-	try {
-		let sinks = brainLogistics.findResourceSinks();
-		// console.log(JSON.stringify(sinks));
-		let sources = brainLogistics.findResourceSources();
-		// console.log(JSON.stringify(sources));
-		let tasks = brainLogistics.buildDeliveryTasks(sinks, sources);
-		brainLogistics.tasks = tasks;
-		brainLogistics.fulfillTerminalTransfers();
-		// console.log(JSON.stringify(brainLogistics.tasks));
-		brainLogistics.visualizeTasks(brainLogistics.tasks);
-	}
-	catch (e) {
-		console.log("ERR: brain.logistics tasks failed");
-		printException(e);
-	}
-	brainLogistics.finalize();
 
 	try {
 		// TODO: run creeps assigned to these tasks
