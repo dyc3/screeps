@@ -618,13 +618,14 @@ let roleManager = {
 
 	getTransferTarget(creep) {
 		let transportTarget;
-		if (creep.memory.trasportTarget) {
+		if (creep.memory.transportTarget) {
 			transportTarget = Game.getObjectById(creep.memory.transportTarget);
 			if (transportTarget && transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
 				return transportTarget;
 			}
 			else {
-				delete creep.memory.trasportTarget;
+				creep.log("Discarding current transport target");
+				delete creep.memory.transportTarget;
 				transportTarget = null;
 			}
 		}
