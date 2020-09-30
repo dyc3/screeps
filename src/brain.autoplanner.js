@@ -812,6 +812,15 @@ var brainAutoPlanner = {
 			}
 		}
 	},
+
+	isInRootModule(structure) {
+		if (!structure) {
+			return false;
+		}
+		let rX = structure.room.memory.rootPos.x, rY = structure.room.memory.rootPos.y;
+		let x = structure.pos.x, y = structure.pos.y;
+		return x <= rX + 2 && x >= rX - 2 && y <= rY && y >= rY - 4;
+	}
 };
 
 global.autoPlanner = {

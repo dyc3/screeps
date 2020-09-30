@@ -1,6 +1,7 @@
 let traveler = require('traveler');
 let util = require("util");
 let brainLogistics = require("brain.logistics");
+let brainAutoPlanner = require("brain.autoplanner");
 
 function doAquire(creep, passively=false) {
 	if (creep.memory.aquireTarget && !passively) {
@@ -631,7 +632,7 @@ let roleManager = {
 		let sinks = brainLogistics.findSinks({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
-			filter: s => s.objectId !== creep.memory.lastWithdrawStructure
+			filter: s => s.objectId !== creep.memory.lastWithdrawStructure && (!brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) || s.object.structureType !== STRUCTURE_STORAGE),
 		});
 		creep.log(`Found ${sinks.length} sinks`);
 
