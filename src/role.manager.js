@@ -695,19 +695,28 @@ let roleManager = {
 			roomName: creep.memory.targetRoom,
 			filter: s => s.objectId !== creep.memory.lastDepositStructure,
 		});
-		console.log(`Found ${sources.length} sources`);
+		creep.log(`Found ${sources.length} sources`);
 
 		if (sources.length === 0) {
 			delete creep.memory.lastDepositStructure;
 			return null;
 		}
 
-		sources = _.sortByOrder(sources, [
-			s => s.object instanceof Resource,
-			s => s.object instanceof Tombstone || s.object instanceof Ruin,
-			s => creep.pos.getRangeTo(s.object),
-		],
-		["desc", "desc", "asc"]);
+		if (creep.room.energyAvailable <= creep.room.energyCapacityAvailable * 0.25) {
+			sources = _.sortByOrder(sources, [
+				s => creep.pos.getRangeTo(s.object),
+			],
+			["asc"]);
+		}
+		else {
+			sources = _.sortByOrder(sources, [
+				s => s.object instanceof Resource,
+				s => s.object instanceof Tombstone || s.object instanceof Ruin,
+				s => creep.pos.getRangeTo(s.object),
+			],
+			["desc", "desc", "asc"]);
+		}
+
 
 		aquireTarget = _.first(sources).object;
 		if (aquireTarget) {
@@ -762,6 +771,7 @@ let roleManager = {
 				return;
 			}
 			creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
+			creep.log(`Transporting to ${transportTarget}`);
 			if (creep.pos.isNearTo(transportTarget)) {
 				if (transportTarget.structureType === STRUCTURE_TERMINAL) {
 					amount = Math.min(Memory.terminalEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
@@ -791,6 +801,7 @@ let roleManager = {
 				return;
 			}
 			creep.room.visual.circle(aquireTarget.pos, {stroke:"#ff0000", fill:"transparent", radius: 0.8});
+			creep.log(`Aquiring from ${aquireTarget}`);
 			if (creep.pos.isNearTo(aquireTarget)) {
 				if (aquireTarget instanceof Resource) {
 					creep.pickup(aquireTarget);
