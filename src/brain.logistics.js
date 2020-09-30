@@ -182,7 +182,7 @@ function collectAllResourceSources() {
 		let dropped = room.find(FIND_DROPPED_RESOURCES, {
 			filter: d => {
 				if (util.isDistFromEdge(d.pos, 4)) {
-					return false;
+					return d.pos.findInRange(FIND_SOURCES, 1).length > 0 && d.amount > 0;
 				}
 
 				return d.amount > 0;

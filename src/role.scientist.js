@@ -335,7 +335,7 @@ let roleScientist = {
 		}
 		else {
 			let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
-			if ((withdrawTarget instanceof Resource ? withdrawTarget.amount : withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0) {
+			if (withdrawTarget && (withdrawTarget instanceof Resource ? withdrawTarget.amount : withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0) {
 				if (creep.pos.isNearTo(withdrawTarget)) {
 					if (withdrawTarget instanceof Resource) {
 						creep.pickup(withdrawTarget);

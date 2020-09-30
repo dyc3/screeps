@@ -703,9 +703,11 @@ let roleManager = {
 		}
 
 		sources = _.sortByOrder(sources, [
+			s => s.object instanceof Resource,
+			s => s.object instanceof Tombstone || s.object instanceof Ruin,
 			s => creep.pos.getRangeTo(s.object),
 		],
-		["asc"]);
+		["desc", "desc", "asc"]);
 
 		aquireTarget = _.first(sources).object;
 		if (aquireTarget) {
