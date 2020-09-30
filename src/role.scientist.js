@@ -243,7 +243,12 @@ let roleScientist = {
 				let targetResource = depositSink.resource;
 				let sources = brainLogistics.findSources({
 					resource: targetResource,
-					filter: s => s.objectId !== depositSink.objectId,
+					filter: s => {
+						if (targetResource === RESOURCE_ENERGY && depositSink.roomName !== s.roomName) {
+							return false;
+						}
+						return s.objectId !== depositSink.objectId;
+					},
 				});
 				sources = _.sortByOrder(sources, [
 					s => s.roomName === depositSink.roomName,
@@ -266,18 +271,13 @@ let roleScientist = {
 	},
 
 	run(creep) {
-		if (!creep.memory.transporting && creep.store.getUsedCapacity() > 0) {
-			creep.memory.transporting = true;
-			creep.say("transport");
-		}
-		if (creep.memory.transporting && creep.store.getUsedCapacity() === 0) {
-			creep.memory.transporting = false;
-			creep.say("aquiring");
-		}
-
 		if (creep.memory.route) {
 			if (creep.memory.route.depositTargetId === creep.memory.route.withdrawTargetId) {
 				creep.log("withdraw and deposit targets are the same, removing route")
+				delete creep.memory.route;
+			}
+			else if (creep.memory.transporting && creep.store.getUsedCapacity(creep.memory.route.resource) === 0) {
+				creep.log("currently transporting 0 of the resource, deleting route");
 				delete creep.memory.route;
 			}
 			// THIS SHOULD NEVER HAPPEN, so commenting out for performance
@@ -291,6 +291,16 @@ let roleScientist = {
 			creep.memory.route = this.getDeliveryRoute(creep);
 			creep.memory.transporting = false;
 		}
+		else {
+			if (!creep.memory.transporting && creep.store.getUsedCapacity() > 0) {
+				creep.memory.transporting = true;
+				creep.say("transport");
+			}
+			else if (creep.memory.transporting && creep.store.getUsedCapacity() === 0) {
+				creep.memory.transporting = false;
+				creep.say("aquiring");
+			}
+		}
 
 		if (creep.memory.route && !creep.memory.route.withdrawTargetId) {
 			creep.memory.transporting = true;
@@ -302,10 +312,10 @@ let roleScientist = {
 		}
 
 		if (creep.memory.route.withdrawTargetId) {
-			creep.log(`${creep.memory.transporting ? `transporting to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring from ${Game.getObjectById(creep.memory.route.withdrawTargetId)}`}`);
+			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource} from ${Game.getObjectById(creep.memory.route.withdrawTargetId)}`}`);
 		}
 		else {
-			creep.log(`${creep.memory.transporting ? `transporting to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring`}`);
+			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource}`}`);
 		}
 
 		if (creep.memory.transporting) {
