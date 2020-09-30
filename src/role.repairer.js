@@ -220,7 +220,7 @@ var roleRepairer = {
 			}
 
 			if ((creep.room.name != creep.memory.targetRoom || util.isOnEdge(creep.pos)) && !creep.memory.repairTarget) {
-				creep.travelTo(new RoomPosition(25,25,creep.memory.targetRoom), { visualizePathStyle:{} });
+				creep.travelTo(new RoomPosition(25,25,creep.memory.targetRoom), { visualizePathStyle:{}, range: 4 });
 				return;
 			}
 		}
