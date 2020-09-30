@@ -547,7 +547,7 @@ module.exports = {
 	 * @param {Function} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSources(options) {
+	findSources(options={}) {
 		let sources = collectAllResourceSources();
 		if (options.resource) {
 			sources = sources.filter(s => s.resource === options.resource);
@@ -568,7 +568,7 @@ module.exports = {
 	 * @param {Function} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSinks(options) {
+	findSinks(options={}) {
 		let sinks = collectAllResourceSinks();
 		if (options.resource) {
 			sinks = sinks.filter(s => s.resource === options.resource);
