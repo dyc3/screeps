@@ -1839,8 +1839,11 @@ function main() {
 // profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
 // profiler.registerClass(roleCarrier, 'role.carrier');
 // profiler.registerClass(taskRenew, 'task.renew');
+// profiler.registerClass(require('task.gather'), 'task.gather');
+// profiler.registerClass(brainAutoPlanner, 'brain.autoplanner');
 // profiler.registerClass(brainGuard, 'brain.guard');
 // profiler.registerClass(brainLogistics, 'brain.logistics');
+// profiler.registerClass(brainHighwayHarvesting, 'brain.highwayharvesting');
 // profiler.enable();
 
 module.exports = {
