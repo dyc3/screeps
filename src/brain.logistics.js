@@ -1,18 +1,6 @@
 const util = require("util");
 const traveler = require("traveler");
 
-/*
- * This manages the transfer of resources.
- */
-
-// 1. Determine where resources need to go.
-// 2. Determine where we can grab resources from.
-// 3. Build delivery tasks, optimizing based on creep travel distance, amount creep can carry.
-//    a. Avoid making creeps deliver resources across rooms when terminals could be used.
-// 4. Assign managers to energy tasks
-// 5. Assign scientists to all other tasks
-//    a. If there are no other tasks, assign them to energy tasks
-
 class ResourceSink {
 	constructor(args=null) {
 		this.resource = "";
