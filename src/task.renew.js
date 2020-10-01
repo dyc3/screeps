@@ -66,7 +66,7 @@ let taskRenew = {
 		}
 		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
 
-		if (creep instanceof Creep && creep.room.name == renewTarget.room.name && creep.room.energyAvailable < 40 && creep.ticksToLive > 60 && creep.carry[RESOURCE_ENERGY] < 10) {
+		if (creep instanceof Creep && creep.room.name == renewTarget.room.name && creep.room.energyAvailable < 40 && creep.ticksToLive > 60 && creep.store[RESOURCE_ENERGY] < 10) {
 			taskGather.run(creep);
 			return;
 		}
