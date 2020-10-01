@@ -703,7 +703,7 @@ let roleManager = {
 			return null;
 		}
 
-		if (creep.room.energyAvailable <= creep.room.energyCapacityAvailable * 0.25) {
+		if (creep.room.energyAvailable <= creep.room.energyCapacityAvailable * 0.50) {
 			sources = _.sortByOrder(sources, [
 				s => creep.pos.getRangeTo(s.object),
 			],
