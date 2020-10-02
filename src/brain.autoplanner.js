@@ -222,7 +222,7 @@ var brainAutoPlanner = {
 			room.memory.storagePos = storagePos;
 
 			// TODO: plan path from root to controller
-			let _tmpIsPlanned = this.isPositionPlanned;
+			let _tmpIsPlanned = this.getPlansAtPosition;
 			let pathToControllerResult = PathFinder.search(
 				room.controller.pos,
 				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: global.CONTROLLER_UPGRADE_RANGE },
@@ -296,7 +296,7 @@ var brainAutoPlanner = {
 		// NOTE: this part, placing the extensions, should be robust enough though
 		let storeAdj = util.getAdjacent(room.getPositionAt(rootStoragePos.x, rootStoragePos.y));
 		for (let pos of storeAdj) {
-			if (!this.isPositionPlanned(pos) && util.getStructuresAt(pos).length == 0) {
+			if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length == 0) {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
 			}
 		}
@@ -304,7 +304,7 @@ var brainAutoPlanner = {
 
 		// plan structures around sources
 		for (let source of sources) {
-			let _tmpIsPlanned = this.isPositionPlanned;
+			let _tmpIsPlanned = this.getPlansAtPosition;
 			let pathingResult = PathFinder.search(
 				room.getPositionAt(rootPos.x, rootPos.y),
 				{ pos: source.pos, range: 1 },
@@ -353,7 +353,7 @@ var brainAutoPlanner = {
 			}
 			let pathToSource = pathingResult.path;
 			for (let pos of pathToSource) {
-				if (this.isPositionPlanned(pos)) {
+				if (this.getPlansAtPosition(pos)) {
 					continue;
 				}
 				room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x, y: pos.y });
@@ -370,7 +370,7 @@ var brainAutoPlanner = {
 					continue;
 				}
 
-				if (!this.isPositionPlanned(pos) && util.getStructuresAt(pos).length == 0) {
+				if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length == 0) {
 					room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
 				}
 			}
@@ -378,8 +378,7 @@ var brainAutoPlanner = {
 	},
 
 	/* pos is a RoomPosition object */
-	// TODO: rename to something like "getPlansAtPosition"
-	isPositionPlanned: function(pos) {
+	getPlansAtPosition(pos) {
 		room = new Room(pos.roomName);
 		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
 			if (!(struct in room.memory.structures)) {
