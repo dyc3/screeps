@@ -22,6 +22,6 @@
     "grunt-eslint": "^23.0.0"
   },
   "devDependencies": {
-    "screeps-multimeter": "^1.10.0"
+    "screeps-multimeter": "^1.11.0"
   }
 }
