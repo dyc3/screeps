@@ -289,13 +289,8 @@ let util = {
 		}
 	},
 
-	getCreeps: function(role=undefined) {
-		if (role) {
-			return _.filter(Game.creeps, creep => creep.memory.role === role);
-		}
-		else {
-			return Game.creeps;
-		}
+	getCreeps(...roles) {
+		return _.filter(Game.creeps, creep => roles.includes(creep.memory.role));
 	},
 
 	/** @param {RoomPosition} pos **/

@@ -318,6 +318,8 @@ let roleScientist = {
 			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource}`}`);
 		}
 
+		let obstacles = util.getCreeps("harvester", "relay");
+
 		if (creep.memory.transporting) {
 			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
 			if (depositTarget.store.getFreeCapacity(creep.memory.route.resource) > 0) {
@@ -325,7 +327,7 @@ let roleScientist = {
 					creep.transfer(depositTarget, creep.memory.route.resource);
 				}
 				else {
-					creep.travelTo(depositTarget);
+					creep.travelTo(depositTarget, { obstacles });
 				}
 			}
 			else {
@@ -345,7 +347,7 @@ let roleScientist = {
 					}
 				}
 				else {
-					creep.travelTo(withdrawTarget);
+					creep.travelTo(withdrawTarget, { obstacles });
 				}
 			}
 			else {

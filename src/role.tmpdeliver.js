@@ -54,13 +54,13 @@ let roleTmpDelivery = {
 	run(creep) {
 		if (!creep.memory.withdrawTargetId) {
 			creep.say("need info");
-			console.log(creep.name, "needs withdrawTargetId");
+			creep.log("needs withdrawTargetId");
 			return;
 		}
 
 		if (!creep.memory.depositTargetId) {
 			creep.say("need info");
-			console.log(creep.name, "needs depositTargetId");
+			creep.log("needs depositTargetId");
 			return;
 		}
 
@@ -69,16 +69,18 @@ let roleTmpDelivery = {
 
 		if (!withdrawTarget) {
 			delete creep.memory.withdrawTargetId;
-			console.log(creep.name, "Can't find withdraw target");
+			creep.log("Can't find withdraw target");
 			creep.say("help");
 			return;
 		}
 		if (!depositTarget) {
 			delete creep.memory.depositTargetId;
-			console.log(creep.name, "Can't find deposit target");
+			creep.log("Can't find deposit target");
 			creep.say("help");
 			return;
 		}
+
+		let obstacles = util.getCreeps("harvester", "relay");
 
 		if (creep.memory.recycle) {
 			// recycle this creep at the nearest spawn
@@ -106,7 +108,7 @@ let roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(spawn);
+				creep.travelTo(spawn, { obstacles });
 			}
 		}
 		else if (creep.memory.delivering) {
@@ -143,7 +145,7 @@ let roleTmpDelivery = {
 					}
 				}
 				else {
-					creep.travelTo(depositTarget, {visualizePathStyle:{}});
+					creep.travelTo(depositTarget, { obstacles, visualizePathStyle:{} });
 				}
 			}
 		}
@@ -172,7 +174,7 @@ let roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(withdrawTarget, {visualizePathStyle:{}});
+				creep.travelTo(withdrawTarget, { obstacles, visualizePathStyle:{} });
 			}
 		}
 	}
