@@ -1,7 +1,7 @@
-var util = require('util');
+const util = require('util');
 
-var brainAutoPlanner = {
-	run: function() {
+let brainAutoPlanner = {
+	run() {
 		let rooms = util.getOwnedRooms();
 		for (let r = 0; r < rooms.length; r++) {
 			let room = rooms[r];
@@ -377,15 +377,23 @@ var brainAutoPlanner = {
 		}
 	},
 
-	/* pos is a RoomPosition object */
+	/**
+	 * Gets a single planned structure at `pos`. Does not require vision
+	 * @param {RoomPosition} pos
+	 * @returns {String}
+	 */
 	getPlansAtPosition(pos) {
-		room = new Room(pos.roomName);
-		for (let struct in CONSTRUCTION_COST) { // iterate through all structure names
-			if (!(struct in room.memory.structures)) {
+		let memory = Memory.rooms[pos.roomName];
+		if (!memory.structures) {
+			return false;
+		}
+		// iterate through all structure names
+		for (let struct in CONSTRUCTION_COST) {
+			if (!(struct in memory.structures)) {
 				continue;
 			}
-			for (let p of room.memory.structures[struct]) {
-				if (room.getPositionAt(p.x, p.y).isEqualTo(pos)) {
+			for (let p of memory.structures[struct]) {
+				if (pos.x === p.x && pos.y === p.y) {
 					return struct;
 				}
 			}
