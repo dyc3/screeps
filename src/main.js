@@ -1768,30 +1768,6 @@ function main() {
 			printException(e);
 		}
 
-		// draw info about logistics tasks
-		try {
-			let baseX = 2;
-			let baseY = bottomRowCreepInfo + 1;
-			let taskCounts = _.countBy(Memory.logistics.tasks, "source.resource");
-			let row = 0;
-			vis.text(`Logistics Tasks`, baseX - 1, bottomRowCreepInfo + 0.25, {
-				align: "left",
-				font: 0.5,
-				color: "#fff",
-			});
-			for (let resource in taskCounts) {
-				vis.text(`${resource} | ${taskCounts[resource]}`, baseX, baseY + row * 0.6, {
-					align: "left",
-					font: 0.5,
-					color: "#fff",
-				});
-				row++;
-			}
-		}
-		catch (e) {
-			printException(e);
-		}
-
 		// draw info about remote mining
 		try {
 			let baseX = 8;
