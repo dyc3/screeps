@@ -279,7 +279,14 @@ function doLinkTransfers() {
 			}
 
 			if (!room.memory.storageLink) {
-				room.memory.storageLink = links.filter(link => link.pos.inRangeTo(link.room.storage, 2))[0].id;
+				let found = links.filter(link => link.pos.inRangeTo(link.room.storage, 2));
+				if (found.length > 0) {
+					room.memory.storageLink = found[0].id;
+				}
+				else {
+					console.log("No storage link found");
+					continue;
+				}
 			}
 			let storageLink = Game.getObjectById(room.memory.storageLink);
 			if (!storageLink) {
