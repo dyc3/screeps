@@ -310,6 +310,55 @@ let roleScientist = {
 			creep.log("No route found");
 			return;
 		}
+		else {
+			// visualize route
+			const depositColor = "#00ff00";
+			const withdrawColor = "#ff0000";
+			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
+			if (depositTarget) {
+				if (creep.room.name === depositTarget.room.name) {
+					creep.room.visual.line(creep.pos, depositTarget.pos, {
+						color: depositColor,
+						lineStyle: "dotted",
+					});
+				}
+				else {
+					creep.room.visual.circle(depositTarget.pos, {
+						stroke: depositColor,
+						fill: "transparent",
+						radius: 0.8,
+						lineStyle: "dotted",
+					});
+				}
+			}
+
+			if (creep.memory.route.withdrawTargetId) {
+				let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
+				if (withdrawTarget) {
+					if (creep.room.name === withdrawTarget.room.name) {
+						creep.room.visual.line(creep.pos, withdrawTarget.pos, {
+							color: withdrawColor,
+							lineStyle: "dotted",
+						});
+					}
+					else {
+						creep.room.visual.circle(withdrawTarget.pos, {
+							stroke: withdrawColor,
+							fill: "transparent",
+							radius: 0.8,
+							lineStyle: "dotted",
+						});
+					}
+
+					if (depositTarget.room.name === withdrawTarget.room.name) {
+						creep.room.visual.line(withdrawTarget.pos, depositTarget.pos, {
+							color: "#ffff00",
+							lineStyle: "dotted",
+						});
+					}
+				}
+			}
+		}
 
 		if (creep.memory.route.withdrawTargetId) {
 			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource} from ${Game.getObjectById(creep.memory.route.withdrawTargetId)}`}`);
