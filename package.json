@@ -18,8 +18,9 @@
   "homepage": "https://github.com/dyc3/screeps#readme",
   "dependencies": {
     "grunt": "^1.0.4",
+    "grunt-eslint": "^23.0.0",
     "grunt-screeps": "^1.4.0",
-    "grunt-eslint": "^23.0.0"
+    "screeps-api": "^1.13.0"
   },
   "devDependencies": {
     "screeps-multimeter": "^1.11.0"

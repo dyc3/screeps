@@ -1,7 +1,21 @@
 module.exports = function(grunt) {
     var config = require('./.screeps.json');
     grunt.loadNpmTasks('grunt-eslint');
-    grunt.loadNpmTasks('grunt-screeps');
+    // grunt.loadNpmTasks('grunt-screeps');
+    grunt.loadTasks("tasks")
+    grunt.registerTask('deploy', function(...args) {
+        if (args && args.includes("season")) {
+            grunt.config.merge({
+                screeps: {
+                    options: {
+                        season: true,
+                    }
+                },
+            })
+        }
+
+        grunt.task.run(["screeps"]);
+    })
     grunt.initConfig({
         eslint: {
             options: {
@@ -12,9 +26,8 @@ module.exports = function(grunt) {
         screeps: {
             options: {
                 email: config.email,
-                password: config.password,
+                token: config.token,
                 branch: config.branch,
-                ptr: config.ptr
             },
             dist: {
                 src: ['src/*.js']
@@ -22,5 +35,6 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('default', ['eslint', 'screeps']);
+    grunt.registerTask('default', ['eslint', 'deploy']);
+    grunt.registerTask('season', ['eslint', 'deploy:season']);
 }

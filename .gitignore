@@ -3,3 +3,4 @@ node_modules/
 .screeps.json
 screeps-multimeter.json
 .screeps-multimeter.history
+.screeps.yaml
