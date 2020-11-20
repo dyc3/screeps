@@ -52,6 +52,15 @@
 
 See tools.js for console accessible functions.
 
+## Room auto planning
+
+Room memory: `Memory.rooms.ROOMNAME`
+- `rootPos`: root module position
+	- `{x: 0, y: 0}`
+- `storagePos`: storage module position
+	- `{x: 0, y: 0}`
+- `storagePosDirection`: number to dictate which direction the open spot on the storage module should be
+
 ## Misc
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
