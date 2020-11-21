@@ -103,8 +103,6 @@ global.Market = {
 };
 
 global.Logistics = {
-	// TODO: make a function like quickSellEnergy but instead it transfers energy to rooms that need it.
-
 	/**
 	 * An easier way to transfer a resource from one room's terminal to another.
 	 * @param {String} from from room name
@@ -149,6 +147,57 @@ global.Logistics = {
 				depositTargetId: toId,
 				recycleAfterDelivery: opts.recycleAfterDelivery,
 			});
+	},
+
+	balance() {
+		let rooms = util.getOwnedRooms();
+		let hungryRooms = rooms.filter(room => {
+			if (!room.storage || !room.terminal) {
+				return false;
+			}
+			return room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 200000 &&
+				room.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 400000 &&
+				room.terminal.store.getFreeCapacity(RESOURCE_ENERGY) > 100000;
+		});
+		if (hungryRooms.length === 0) {
+			return "No hungry rooms"
+		}
+		let overflowingRooms = rooms.filter(room => !hungryRooms.map(r => r.name).includes(room.name)).filter(room => {
+			if (!room.storage || !room.terminal || room.terminal.cooldown > 0) {
+				return false;
+			}
+			return room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 700000 && room.terminal.store.getUsedCapacity(RESOURCE_ENERGY) >= Memory.terminalEnergyTarget
+		});
+
+		console.log(`hungryRooms: ${hungryRooms}`);
+		console.log(`overflowingRooms: ${overflowingRooms}`);
+
+		let roomsFed = 0;
+		let feedLog = [];
+		for (let receiver of hungryRooms) {
+			// TODO: get room that is closest linearly to optimize energy spent on transfer.
+			if (overflowingRooms.length === 0) {
+				break;
+			}
+			let sender = overflowingRooms.pop();
+
+			// TODO: find actual maximum we can send instead of this approximation
+			let needAmount = receiver.terminal.store.getFreeCapacity(RESOURCE_ENERGY);
+			// Game.market.calcTransactionCost
+			let cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name)
+			let totalNeeded = needAmount + cost;
+			let toSend = needAmount;
+			if (totalNeeded > sender.terminal.store.getUsedCapacity(RESOURCE_ENERGY)) {
+				toSend -= cost;
+			}
+			let result = sender.terminal.send(RESOURCE_ENERGY, toSend, receiver.name);
+			feedLog.push(`[${toSend} energy ${sender.name} -> ${receiver.name}; ${util.errorCodeToString(result)}]`);
+			if (result === OK) {
+				roomsFed++;
+			}
+		}
+
+		return `Fed ${roomsFed}/${hungryRooms.length} hungry rooms. (hungry: ${hungryRooms.length}, overflow: ${overflowingRooms.length}) ${feedLog.join(" ")}`
 	},
 };
 
