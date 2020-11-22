@@ -62,15 +62,24 @@ let util = {
 	 */
 	findClosestOwnedRooms(targetPos, filterCallback=room => true) {
 		let rooms = this.getOwnedRooms();
-		rooms = _.filter(rooms, filterCallback);
+		rooms = _.filter(rooms, filterCallback)
+			// HACK: exclude certain room combos because they suck so much
+			.filter(room => {
+				if (targetPos.roomName === "W15N13") {
+					return room.name !== "W13N11";
+				} else if (targetPos.roomName === "W13N11") {
+					return room.name !== "W15N13";
+				}
+				return true;
+			});
 		rooms.sort((a, b) => {
-			let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, a.name) - Game.map.getRoomLinearDistance(targetPos.roomName, b.name);
+			let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, b.name) - Game.map.getRoomLinearDistance(targetPos.roomName, a.name);
 			if (roomDistance !== 0) {
 				return roomDistance;
 			}
 			let roomPathA = Game.map.findRoute(targetPos.roomName, a.name);
 			let roomPathB = Game.map.findRoute(targetPos.roomName, b.name);
-			let roomPathDistance = roomPathA.length - roomPathB.length;
+			let roomPathDistance = roomPathB.length - roomPathA.length;
 			if (roomPathDistance !== 0) {
 				return roomPathDistance;
 			}
@@ -78,7 +87,7 @@ let util = {
 				return 0;
 			}
 
-			return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length;
+			return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length;
 		});
 		return rooms;
 	},
