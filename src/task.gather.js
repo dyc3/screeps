@@ -234,7 +234,7 @@ let taskGather = {
 		}
 		else if (creep.getActiveBodyparts(WORK) > 0) {
 			let spawn = util.getSpawn(creep.room);
-			let haveContainer = spawn.room.find(FIND_STRUCTURES, {
+			let haveContainer = creep.room.find(FIND_STRUCTURES, {
 				filter: struct => struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE,
 			}).length > 0;
 			if (!spawn || !haveContainer || creep.room.controller.level <= 3 || !creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] <= 0) {
