@@ -736,6 +736,8 @@ function doAutoTrading() {
 	minimumPrice[RESOURCE_EXTRACT] = 1500;
 	minimumPrice[RESOURCE_CONCENTRATE] = 300;
 
+	minimumPrice[RESOURCE_OPS] = 4.7;
+
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
 		if (!room.terminal) {
