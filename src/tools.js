@@ -282,3 +282,42 @@ global.Util = {
 		require("brain.autoplanner").planRoom(Game.rooms[roomName]);
 	},
 };
+
+global.Debug = {
+	/**
+	 * Print debug info about a given harvester.
+	 * @param {String|Creep} creep Creep name, object id, or creep object.
+	 */
+	harvester(creep) {
+		if (typeof(creep) === "string") {
+			if (creep in Game.creeps) {
+				creep = Game.creeps[creep]
+			}
+			else {
+				creep = Game.getObjectById(creep)
+			}
+		}
+
+		if (!(creep instanceof Creep)) {
+			return "Invalid input to debug function"
+		}
+		if (creep.memory.role !== "harvester") {
+			return "Creep is not a harvester"
+		}
+
+		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
+		let out = [
+			`pos=${creep.pos}`,
+			`targetRoom=${creep.memory.targetRoom}`,
+		];
+		if (creep.memory.harvestTarget) {
+			out.push(`harvestTarget=${harvestTarget}${harvestTarget.pos}`)
+		}
+		out.push(`harvesting=${creep.memory.harvesting}`, `renewing=${creep.memory.renewing}`);
+		if (creep.memory.renewTarget) {
+			out.push(`renewTarget=${renewTarget}${renewTarget.pos}`);
+		}
+		return `Harvester ${creep.name}: ${out.join(", ")}`;
+	}
+};
