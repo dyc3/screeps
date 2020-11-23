@@ -252,7 +252,7 @@ let taskGather = {
 	 * @param {Creep} creep
 	 */
 	run(creep) {
-		if (!creep.memory._gatherLastRun || Game.time - 1 > creep.memory._gatherLastRun) {
+		if (!creep.memory.rememberGatherTarget && (!creep.memory._gatherLastRun || Game.time - 1 > creep.memory._gatherLastRun)) {
 			delete creep.memory.gatherTarget;
 		}
 		let gatherTarget = this.getGatherTarget(creep);
