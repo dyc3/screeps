@@ -470,7 +470,7 @@ function doFlagCommandsAndStuff() {
 		const flag = Game.flags[f];
 		// check if dismantle and norepair flags have structures under them
 		if (flag.name.startsWith("dismantle") || flag.name.includes("norepair")) {
-			if (flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
+			if (Game.rooms[flag.pos.roomName] && flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
 				flag.remove();
 			}
 		}
