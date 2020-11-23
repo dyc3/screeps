@@ -60,12 +60,12 @@ module.exports = {
 				creep.travelTo(new RoomPosition(23, 33, "W15N8"));
 			}
 		}
-		else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER)) {
+		else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0 || creep.store.getUsedCapacity(RESOURCE_OPS) >= 200) {
 			if (creep.pos.isNearTo(creep.room.terminal)) {
 				if (creep.store.getUsedCapacity(RESOURCE_OPS) > 0) {
 					creep.transfer(creep.room.terminal, RESOURCE_OPS);
 				}
-				else {
+				else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
 					creep.withdraw(creep.room.terminal, RESOURCE_POWER);
 				}
 			}
@@ -74,7 +74,8 @@ module.exports = {
 			}
 		}
 		else {
-			creep.travelTo(powerSpawn);
+			// creep.travelTo(powerSpawn);
+			creep.travelTo(new RoomPosition(23, 33, "W15N8"));
 		}
 	}
 }
