@@ -73,13 +73,13 @@ let util = {
 				return true;
 			});
 		rooms.sort((a, b) => {
-			let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, b.name) - Game.map.getRoomLinearDistance(targetPos.roomName, a.name);
+			let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, a.name) - Game.map.getRoomLinearDistance(targetPos.roomName, b.name);
 			if (roomDistance !== 0) {
 				return roomDistance;
 			}
 			let roomPathA = Game.map.findRoute(targetPos.roomName, a.name);
 			let roomPathB = Game.map.findRoute(targetPos.roomName, b.name);
-			let roomPathDistance = roomPathB.length - roomPathA.length;
+			let roomPathDistance = roomPathA.length - roomPathB.length;
 			if (roomPathDistance !== 0) {
 				return roomPathDistance;
 			}
@@ -87,7 +87,7 @@ let util = {
 				return 0;
 			}
 
-			return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length;
+			return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length;
 		});
 		return rooms;
 	},
