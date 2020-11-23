@@ -228,7 +228,7 @@ var roleScout = {
 		        }
 		    }
 		    else {
-		        creep.moveTo(Game.flags["scoutdismantle"]);
+		        creep.travelTo(Game.flags["scoutdismantle"]);
 		    }
 		    return;
 		}
@@ -253,7 +253,7 @@ var roleScout = {
 
 				var roomPos = new RoomPosition(25, 25, nextRoom);
 				var destinationPos = (Game.flags["roomToScore"] ? Game.flags["roomToScore"].pos : roomPos);
-				let moveResult = creep.moveTo(destinationPos);
+				let moveResult = creep.travelTo(destinationPos);
 				if (moveResult == ERR_NO_PATH) {
 				    console.log(creep.name, "WARN: No path to target room:", creep.memory.targetRoomToScore, ", marking as fresh...");
 				    Memory.roomInfo[creep.memory.targetRoomToScore] = { timestamp: Game.time, score: null, blocked: true };
@@ -264,7 +264,7 @@ var roleScout = {
 				if (Game.flags["roomToScore"] && creep.room.name == Game.flags["roomToScore"].room.name) {
 					Game.flags["roomToScore"].remove();
 				}
-				creep.moveTo(new RoomPosition(25, 25, creep.room.name)); // prevent moving out before scouting is complete
+				creep.travelTo(new RoomPosition(25, 25, creep.room.name)); // prevent moving out before scouting is complete
 				Memory.roomInfo[creep.room.name] = {}
 				Memory.roomInfo[creep.room.name].timestamp = Game.time;
 				Memory.roomInfo[creep.room.name].score = this.getRoomScore(creep.room);
