@@ -20,9 +20,23 @@ let taskRenew = {
 				let closestRooms = util.findClosestOwnedRooms(creep.pos);
 				try {
 					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
+					creep.memory._renewDebug = {
+						startTime: Game.time,
+						renewTargetSetBy: "checkRenew branch 0",
+						targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+						targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+						closestRooms: closestRooms.map(r => r.name),
+					};
 				}
 				catch (e) {
 					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[1]) : _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))).id;
+					creep.memory._renewDebug = {
+						startTime: Game.time,
+						renewTargetSetBy: "checkRenew branch 1",
+						targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+						targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+						closestRooms: closestRooms.map(r => r.name),
+					};
 				}
 				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
@@ -62,6 +76,13 @@ let taskRenew = {
 					closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
 				}
 				creep.memory.renewTarget = closestSpawn.id;
+				creep.log(`Found renew target: ${creep.memory.renewTarget}`)
+				creep.memory._renewDebug = {
+					startTime: Game.time,
+					renewTargetSetBy: "run method",
+					targetSpawn: closestSpawn.name,
+					targetRoom: closestSpawn.room.name,
+				};
 			}
 		}
 		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
@@ -135,6 +156,14 @@ let taskRenew = {
 						}
 						else {
 							creep.memory.renewTarget = Game.spawns[Object.keys(Game.spawns)[0]].id;
+							if (creep.memory._renewDebug) {
+								creep.memory._renewDebug.overwrittenBy = "renew not enough energy";
+							}
+							else {
+								creep.memory._renewDebug = {
+									overwrittenBy: "renew not enough energy"
+								}
+							}
 						}
 						break;
 					case ERR_FULL:
@@ -142,6 +171,7 @@ let taskRenew = {
 						break;
 					case ERR_BUSY:
 						delete creep.memory.renewTarget;
+						delete creep.memory._renewDebug;
 					default:
 						break;
 				}
@@ -158,6 +188,7 @@ let taskRenew = {
 
 		if (!creep.memory.renewing) {
 			delete creep.memory.renewTarget;
+			delete creep.memory._renewDebug;
 		}
 	}
 }
