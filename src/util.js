@@ -299,7 +299,12 @@ let util = {
 	},
 
 	getCreeps(...roles) {
+		if (roles.length > 0) {
 		return _.filter(Game.creeps, creep => roles.includes(creep.memory.role));
+		}
+		else {
+			return Game.creeps;
+		}
 	},
 
 	/** @param {RoomPosition} pos **/
