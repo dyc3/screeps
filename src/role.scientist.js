@@ -2,6 +2,7 @@ let traveler = require("traveler");
 let util = require("util");
 let taskDepositMaterials = require("task.depositmaterials");
 let brainLogistics = require("brain.logistics");
+let brainAutoPlanner = require("brain.autoplanner");
 
 /**
  * DEPRECATED
@@ -244,8 +245,14 @@ let roleScientist = {
 				let sources = brainLogistics.findSources({
 					resource: targetResource,
 					filter: s => {
-						if (targetResource === RESOURCE_ENERGY && depositSink.roomName !== s.roomName) {
-							return false;
+						if (targetResource === RESOURCE_ENERGY) {
+							if ((brainAutoPlanner.isInRootModule(s.object) || s.object.structureType === STRUCTURE_STORAGE) &&
+								(brainAutoPlanner.isInRootModule(depositSink.object) || depositSink.object.structureType === STRUCTURE_STORAGE)) {
+								return false;
+							}
+							if (depositSink.roomName !== s.roomName) {
+								return false;
+							}
 						}
 						return s.objectId !== depositSink.objectId;
 					},
