@@ -217,7 +217,7 @@ var roleScout = {
 		if (creep.spawning) { return; }
 
 		// be friendly
-		creep.say("greetings", true);
+		// creep.say("greetings", true);
 
         // manual override to be annoying
 		if (creep.getActiveBodyparts(WORK) > 0 && Game.flags["scoutdismantle"]) {
@@ -235,9 +235,9 @@ var roleScout = {
 
 		// lets go around and score rooms
 		// first, we need to find a target room to score
-		if (!creep.memory.targetRoomToScore) {
-			creep.memory.targetRoomToScore = this.findUnscoredRoom(creep);
-		}
+		// if (!creep.memory.targetRoomToScore) {
+		// 	creep.memory.targetRoomToScore = this.findUnscoredRoom(creep);
+		// }
 
 		// we should have a target now, go to the room if we aren't in it
 		if (creep.memory.targetRoomToScore) {
