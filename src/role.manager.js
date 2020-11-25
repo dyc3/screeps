@@ -700,8 +700,22 @@ let roleManager = {
 		creep.log(`Found ${sources.length} sources`);
 
 		if (sources.length === 0) {
-			delete creep.memory.lastDepositStructure;
-			return null;
+			if (Game.rooms[creep.memory.targetRoom] && !Game.rooms[creep.memory.targetRoom].storage) {
+				creep.log(`Falling back because we have no storage`)
+				sources = brainLogistics.findSources({
+					resource: RESOURCE_ENERGY,
+					filter: s => s.objectId !== creep.memory.lastDepositStructure,
+				});
+				creep.log(`Found ${sources.length} sources`);
+				if (sources.length === 0) {
+					delete creep.memory.lastDepositStructure;
+					return null;
+				}
+			}
+			else {
+				delete creep.memory.lastDepositStructure;
+				return null;
+			}
 		}
 
 		if (creep.room.energyAvailable <= creep.room.energyCapacityAvailable * 0.50) {
@@ -740,10 +754,10 @@ let roleManager = {
 				this.findTargetRoom(creep);
 			}
 
-			if (creep.room.name !== creep.memory.targetRoom) {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
-				return;
-			}
+			// if (creep.room.name !== creep.memory.targetRoom) {
+			// 	creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
+			// 	return;
+			// }
 		}
 
 		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75) {
@@ -790,7 +804,11 @@ let roleManager = {
 				}
 			}
 			else {
-				creep.travelTo(transportTarget, { obstacles, maxRooms: 1 })
+				opts = { obstacles }
+				if (creep.room.name === transportTarget.room.name) {
+					opts.maxRooms = 1;
+				}
+				creep.travelTo(transportTarget, opts)
 			}
 		}
 		else {
@@ -815,7 +833,11 @@ let roleManager = {
 				}
 			}
 			else {
-				creep.travelTo(aquireTarget, { obstacles, maxRooms: 1 })
+				opts = { obstacles }
+				if (creep.room.name === aquireTarget.room.name) {
+					opts.maxRooms = 1;
+				}
+				creep.travelTo(aquireTarget, opts)
 			}
 		}
 	},
