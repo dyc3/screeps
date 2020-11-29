@@ -137,7 +137,7 @@ global.Logistics = {
 			spawn = Game.spawns[opts.spawnName];
 		}
 		opts.size = opts.size.clamp(1, 25);
-		return spawn.createCreep(
+		let result = spawn.createCreep(
 			Array.apply(null, Array(opts.size)).map(_ => CARRY).concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
 			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`, {
 				role:"tmpdeliver",
@@ -147,6 +147,13 @@ global.Logistics = {
 				depositTargetId: toId,
 				recycleAfterDelivery: opts.recycleAfterDelivery,
 			});
+
+		if (typeof result === "string") {
+			return result
+		}
+		else {
+			return util.errorCodeToString(result)
+		}
 	},
 
 	balance() {
@@ -213,7 +220,7 @@ global.Util = {
 		else {
 			spawn = Game.spawns[spawnName];
 		}
-		return spawn.spawnCreep([
+		let result = spawn.spawnCreep([
 			WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
 			CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
 			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
@@ -228,6 +235,13 @@ global.Util = {
 				stage: 5
 			}
 		})
+
+		if (typeof result === "string") {
+			return result
+		}
+		else {
+			return util.errorCodeToString(result)
+		}
 	},
 
 	spawnTestLogisticsCreep(spawnName=null, size=2) {
