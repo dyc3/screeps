@@ -163,10 +163,10 @@ let brainAutoPlanner = {
 		room.memory.structures[STRUCTURE_CONTAINER].push({ x: rootPos.x + 2, y: rootPos.y - 2 });
 
 		// towers
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y - 1 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y - 1 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y + 5 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y + 5 });
+		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y + 1 });
+		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y + 1 });
+		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y - 5 });
+		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y - 5 });
 
 		// build storage/trade unit
 		let validStoragePos = [];
