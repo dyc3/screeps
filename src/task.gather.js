@@ -241,8 +241,10 @@ let taskGather = {
 				let source = creep.pos.findClosestByPath(FIND_SOURCES, {
 					filter: s => s.energy > 0,
 				});
-				creep.memory.gatherTarget = source.id;
-				return source;
+				if (source) {
+					creep.memory.gatherTarget = source.id;
+					return source;
+				}
 			}
 		}
 	},
