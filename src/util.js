@@ -139,7 +139,7 @@ let util = {
 		}
 
 		let body = creep.body.map(b => b.type);
-		let baseFatiguePerMove = body.filter(p => p !== MOVE && (!assumeCarryFull || assumeCarryFull && p !== CARRY)).length;
+		let baseFatiguePerMove = body.filter(p => p !== MOVE && (assumeCarryFull || (!assumeCarryFull && p !== CARRY))).length;
 		let moveParts = body.filter(p => p === MOVE).length;
 
 		let totalSteps = 0;
