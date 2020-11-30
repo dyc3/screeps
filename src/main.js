@@ -59,7 +59,7 @@ Room memory: `Memory.rooms.ROOMNAME`
 	- `{x: 0, y: 0}`
 - `storagePos`: storage module position
 	- `{x: 0, y: 0}`
-- `storagePosDirection`: number to dictate which direction the open spot on the storage module should be
+- `storagePosDirection`: number to dictate which direction from `storage` the relay position in the storage module should be
 
 ## Misc
 
