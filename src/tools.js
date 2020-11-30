@@ -127,6 +127,7 @@ global.Logistics = {
 		let opts = _.defaults(options, {
 			size: 20,
 			recycleAfterDelivery: false,
+			memory: {},
 		});
 		let spawn = null;
 		if (!opts.spawnName) {
@@ -139,14 +140,14 @@ global.Logistics = {
 		opts.size = opts.size.clamp(1, 25);
 		let result = spawn.createCreep(
 			Array.apply(null, Array(opts.size)).map(_ => CARRY).concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
-			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`, {
+			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`, Object.assign({
 				role:"tmpdeliver",
 				keepAlive:true,
 				stage: 0,
 				withdrawTargetId: fromId,
 				depositTargetId: toId,
 				recycleAfterDelivery: opts.recycleAfterDelivery,
-			});
+			}, opts.memory));
 
 		if (typeof result === "string") {
 			return result
