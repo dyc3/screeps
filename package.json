@@ -23,6 +23,6 @@
     "screeps-api": "^1.13.0"
   },
   "devDependencies": {
-    "screeps-multimeter": "^1.11.0"
+    "screeps-multimeter": "^1.11.1"
   }
 }
