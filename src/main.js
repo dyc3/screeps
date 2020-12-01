@@ -1814,6 +1814,25 @@ function main() {
 			printException(e);
 		}
 
+		// draw creeps marked for deatch
+		try {
+			for (let c in Game.creeps) {
+				let creep = Game.creeps[c];
+				if (creep.memory.keepAlive) {
+					continue;
+				}
+				creep.room.visual.circle(creep.pos, {
+					stroke: "#f00",
+					fill: "transparent",
+					opacity: 0.6,
+					radius: 0.5,
+					lineStyle: "dotted",
+				})
+			}
+		} catch (e) {
+			printException(e);
+		}
+
 		drawRoomScores();
 	}
 }
