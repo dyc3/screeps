@@ -647,7 +647,7 @@ function doCreepSpawning() {
 					needOtherRoomSpawns = true;
 				}
 
-				if (needOtherRoomSpawns) {
+				if (needOtherRoomSpawns && rooms.length > 1) {
 					console.log(`Using spawns from another room to spawn ${role.name} creep for${room.name}`);
 					let otherRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, room.name), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
 					if (otherRooms.length === 0) {
@@ -666,6 +666,9 @@ function doCreepSpawning() {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
 						continue;
 					}
+				} else if (needOtherRoomSpawns && rooms.length === 1) {
+					console.log("No other rooms to spawn creeps in.")
+					continue;
 				}
 
 				// spawn new creeps to fill up the quota
