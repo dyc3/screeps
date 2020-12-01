@@ -167,7 +167,8 @@ let util = {
 
 		// console.log("[util][calculateEta]", "body:", body, "baseFatiguePerMove:", baseFatiguePerMove, "moveParts:", moveParts, "totalSteps:", totalSteps);
 
-		return totalSteps;
+		// HACK: make sure we don't output something that doesn't make sense.
+		return Math.max(totalSteps, path.length);
 	},
 
 	/**
