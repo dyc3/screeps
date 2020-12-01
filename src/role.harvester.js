@@ -244,7 +244,7 @@ let roleHarvester = {
 						}
 					}
 					var a = (struct.structureType == STRUCTURE_EXTENSION ||
-							(struct.structureType == STRUCTURE_SPAWN && (creep.room.controller.level == 1 || creep.room.energyAvailable > 295)) ||
+							(struct.structureType == STRUCTURE_SPAWN && (creep.room.controller.level == 1 || struct.store.getFreeCapacity(RESOURCE_ENERGY) > 5)) ||
 							struct.structureType == STRUCTURE_TOWER) && struct.energy < struct.energyCapacity;
 					var b = (struct.structureType == STRUCTURE_CONTAINER ||
 							struct.structureType == STRUCTURE_STORAGE) &&
