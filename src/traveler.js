@@ -275,13 +275,28 @@ class Traveler {
                         matrix = this.getCreepMatrix(room);
                     }
                 }
+
+                // HACK: avoid areas around sources
+                let terrain = room.getTerrain();
+                for (let source of room.find(FIND_SOURCES)) {
+                    for (let x = -1; x <= 1; x++) {
+                        for (let y = -1; y <= 1; y++) {
+                            if (terrain.get(source.pos.x + x, source.pos.y + y) === 0) {
+                                matrix.set(source.pos.x + x, source.pos.y + y, 10);
+                            }
+                        }
+                    }
+                }
+
                 if (options.obstacles) {
                     matrix = matrix.clone();
                     for (let obstacle of options.obstacles) {
-                        if (obstacle.pos.roomName !== roomName) {
+                        let pos = obstacle.pos ? obstacle.pos : obstacle;
+                        if (pos.roomName !== roomName) {
                             continue;
                         }
-                        matrix.set(obstacle.pos.x, obstacle.pos.y, 0xff);
+
+                        matrix.set(pos.x, pos.y, 0xff);
                     }
                 }
             }
