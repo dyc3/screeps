@@ -144,7 +144,7 @@ let creepUpgrader = {
 			quota:toolEnergySource.getHarvesterQuota,
 			quota_per_room:true,
 			stages:[
-				[WORK,WORK,CARRY,MOVE],
+				[WORK,CARRY,MOVE],
 				[WORK,WORK,CARRY,MOVE,MOVE],
 				[WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
@@ -178,7 +178,7 @@ let creepUpgrader = {
 			quota_per_room:true,
 			// HACK: there is a monkey patch in the creep spawning code to add a couple of additional move parts if the target room's RCL <= 5
 			stages:[
-				[WORK,CARRY,CARRY,MOVE,MOVE],
+				[WORK,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
@@ -192,7 +192,7 @@ let creepUpgrader = {
 			quota:getBuilderQuota,
 			quota_per_room:false,
 			stages:[
-				[WORK,CARRY,CARRY,MOVE,MOVE],
+				[WORK,CARRY,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,MOVE,MOVE],
 				[WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
