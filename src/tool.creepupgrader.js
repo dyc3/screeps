@@ -109,7 +109,11 @@ function getMinerQuota() {
 // 		}
 // 	}
 // 	return count;
-	return 2;
+	// FIXME: miner quota is broken
+	if (Game.shard === "shard0") {
+		return 2;
+	}
+	return 0;
 }
 
 function getAttackerQuota() {
