@@ -1498,7 +1498,9 @@ function main() {
 
 	// powercreeps
 	try {
-		require("powercreep.ligma").run(Game.powerCreeps["Ligma"]);
+		if (Game.powerCreeps["Ligma"]) {
+			require("powercreep.ligma").run(Game.powerCreeps["Ligma"]);
+		}
 	}
 	catch (e) {
 		console.log("failed to run power creeps");
