@@ -358,24 +358,24 @@ let util = {
 		return (direction + 4) % 8;
 	},
 
-	getPositionInDirection: function(pos, direction) {
+	getPositionInDirection(pos, direction, amount=1) {
 		switch (direction) {
 			case TOP:
-				return new RoomPosition(pos.x, pos.y - 1, pos.roomName);
+				return new RoomPosition(pos.x, pos.y - amount, pos.roomName);
 			case BOTTOM:
-				return new RoomPosition(pos.x, pos.y + 1, pos.roomName);
+				return new RoomPosition(pos.x, pos.y + amount, pos.roomName);
 			case LEFT:
-				return new RoomPosition(pos.x - 1, pos.y, pos.roomName);
+				return new RoomPosition(pos.x - amount, pos.y, pos.roomName);
 			case RIGHT:
-				return new RoomPosition(pos.x + 1, pos.y, pos.roomName);
+				return new RoomPosition(pos.x + amount, pos.y, pos.roomName);
 			case TOP_LEFT:
-				return new RoomPosition(pos.x - 1, pos.y - 1, pos.roomName);
+				return new RoomPosition(pos.x - amount, pos.y - amount, pos.roomName);
 			case TOP_RIGHT:
-				return new RoomPosition(pos.x + 1, pos.y - 1, pos.roomName);
+				return new RoomPosition(pos.x + amount, pos.y - amount, pos.roomName);
 			case BOTTOM_LEFT:
-				return new RoomPosition(pos.x - 1, pos.y + 1, pos.roomName);
+				return new RoomPosition(pos.x - amount, pos.y + amount, pos.roomName);
 			case BOTTOM_RIGHT:
-				return new RoomPosition(pos.x + 1, pos.y + 1, pos.roomName);
+				return new RoomPosition(pos.x + amount, pos.y + amount, pos.roomName);
 			default:
 				break;
 		}
