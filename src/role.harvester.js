@@ -173,7 +173,7 @@ let roleHarvester = {
 			return "link";
 		}
 
-		if (Object.keys(Game.creeps).length <= 3 || harvestTarget.room.controller.level < 4) {
+		if (Object.keys(Game.creeps).length <= 3 || harvestTarget.room.controller.level < 4 || util.getCreeps("manager").length === 0) {
 			return "recovery";
 		}
 
