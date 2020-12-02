@@ -1261,7 +1261,7 @@ function queueJob(job) {
 }
 
 function main() {
-	if (Game.cpu.bucket > 9500) {
+	if (Game.cpu.bucket > 9500 && !!Game.cpu.generatePixel) {
 		Game.cpu.generatePixel();
 	}
 
