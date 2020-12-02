@@ -1623,11 +1623,11 @@ function main() {
 
 	// HACK: some hard coded lab stuff
 	let lab = Game.getObjectById("5bd6ad0a73cd123941da20b7");
-	if (lab.cooldown === 0) {
+	if (lab && lab.cooldown === 0) {
 		lab.reverseReaction(Game.getObjectById("5bd286b0e5f5d125150e170e"), Game.getObjectById("5bd6388f0f472220a4ad5a18"));
 	}
 	lab = Game.getObjectById("5f551a96aa0ade59d1cbaa6a");
-	if (lab.cooldown === 0) {
+	if (lab && lab.cooldown === 0) {
 		lab.reverseReaction(Game.getObjectById("5f54faae9f32eef3fc3152e0"), Game.getObjectById("5f5159d6d4a34b200c26c418"));
 	}
 
