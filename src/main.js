@@ -955,6 +955,7 @@ function commandRemoteMining() {
 		// Determine the danger level for this source
 		let room = Game.rooms[target.roomName];
 		if (!room) {
+			Memory.remoteMining.targets[t] = target;
 			// FIXME: don't have vision
 			continue;
 		}
