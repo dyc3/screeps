@@ -43,6 +43,7 @@ let roleCarrier = {
 					creep.repair(result.structure);
 				}
 				if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
+					creep.log("WARN: canceling move")
 					creep.cancelOrder("move");
 				}
 				return;
@@ -156,7 +157,9 @@ let roleCarrier = {
 				}
 			}
 
-			roleCarrier.passiveMaintainRoads(creep);
+			if (creep.getActiveBodyparts(WORK) > 0) {
+				roleCarrier.passiveMaintainRoads(creep);
+			}
 		},
 		"invader-core-harvesting"(roleCarrier, creep) {
 			if (!creep.memory.targetRoom) {
