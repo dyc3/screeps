@@ -246,6 +246,7 @@ let creepUpgrader = {
 			quota:function() { return Memory.remoteMining.needHarvesterCount; },
 			quota_per_room:false,
 			stages:[
+				[WORK,WORK,WORK,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
@@ -255,6 +256,7 @@ let creepUpgrader = {
 			quota:function() { return Memory.remoteMining.needCarrierCount; },
 			quota_per_room:false,
 			stages:[
+				[CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
 				[WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
