@@ -710,7 +710,7 @@ function doCreepSpawning() {
 
 function doAutoTrading() {
 	// HACK: hardcoded logistics things
-	if (Game.shard === "shard0") {
+	if (Game.shard.name === "shard0") {
 		Game.rooms["W13N11"].terminal.send(RESOURCE_ZYNTHIUM, Game.rooms["W13N11"].terminal.store[RESOURCE_ZYNTHIUM], "W16N9");
 		Game.rooms["W16N7"].terminal.send(RESOURCE_UTRIUM, Game.rooms["W16N7"].terminal.store[RESOURCE_UTRIUM], "W15N8");
 	}
