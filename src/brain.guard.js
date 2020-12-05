@@ -100,7 +100,7 @@ module.exports = {
 			const isTreasureRoom = util.isTreasureRoom(room.name);
 			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
 			if (!isTreasureRoom) {
-				let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep));
+				let hostiles = room.find(FIND_HOSTILE_CREEPS, creep => !toolFriends.isCreepFriendly(creep) && creep.body.length > 1);
 				if (hostiles.length === 0 && !foundInvaderCore) {
 					continue;
 				}
