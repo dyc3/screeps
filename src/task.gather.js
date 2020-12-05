@@ -221,6 +221,7 @@ let taskGather = {
 		let sources = brainLogistics.findSources({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
+			filter: s => s.amount > 30,
 		});
 		sources = _.sortByOrder(sources, [
 			s => creep.pos.getRangeTo(s.object),
