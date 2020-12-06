@@ -52,7 +52,7 @@ class OffenseTask {
 		let strat = new Strategy(this.strategy)
 		if (this.state === TASK_PREPARE) {
 			// HACK: hardcoded position
-			this.creeps.forEach((creep, idx) => {
+			this.creeps.filter(c => !c.memory.renewing).forEach((creep, idx) => {
 				creep.travelTo(new RoomPosition(9 + idx, 36, "W16N3"))
 
 				// healing
