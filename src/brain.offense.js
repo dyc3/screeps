@@ -105,6 +105,7 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 	constructor(mem) {
 		super(mem)
 		this.state = STRATEGY_ACT_TRAVEL;
+		this.mode = 0;
 		// HACK: hardcoded room
 		this.targetRoom = "W16N2";
 		this.fromRoom = "W17N2";
@@ -236,33 +237,36 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 			})
 		}
 		else if (this.state === STRATEGY_ACT_LURE) {
-			// const baseX = 9;
-			// healers.forEach((creep, idx) => {
-			// 	creep.travelTo(new RoomPosition(baseX + idx, 47, "W16N3"));
-			// })
-			// attackers.forEach((creep, idx) => {
-			// 	if (creep.hitsMax - creep.hits > 400) {
-			// 		creep.travelTo(new RoomPosition(baseX + idx, 48, "W16N3"))
-			// 	} else {
-			// 		creep.travelTo(new RoomPosition(baseX + idx, 2, "W16N2"))
-			// 	}
-			// })
-
-
-			const baseY = 28;
-			healers.forEach((creep, idx) => {
-				let opts = creep.room.name === "W17N2" ? { maxRooms: 1 } : {};
-				creep.travelTo(new RoomPosition(47, baseY + idx, "W17N2"), opts);
-			})
-			attackers.forEach((creep, idx) => {
-				let opts = creep.room.name === "W17N2" ? { maxRooms: 1 } : {};
-				if (creep.hitsMax - creep.hits > 400) {
-					creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
-				} else {
-					// creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
-					creep.travelTo(new RoomPosition(1, baseY + idx, "W16N2"), opts)
-				}
-			})
+			if (this.mode === 0) {
+				const baseX = 9;
+				healers.forEach((creep, idx) => {
+					creep.travelTo(new RoomPosition(baseX + idx, 47, "W16N3"));
+				})
+				attackers.forEach((creep, idx) => {
+					if (creep.hitsMax - creep.hits > 400) {
+						creep.travelTo(new RoomPosition(baseX + idx, 48, "W16N3"))
+					} else {
+						creep.travelTo(new RoomPosition(baseX + idx, 1, "W16N2"))
+					}
+				})
+			} else if (this.mode === 1) {
+				const baseY = 28;
+				healers.forEach((creep, idx) => {
+					let opts = creep.room.name === "W17N2" ? { maxRooms: 1 } : {};
+					creep.travelTo(new RoomPosition(47, baseY + idx, "W17N2"), opts);
+				})
+				attackers.forEach((creep, idx) => {
+					let opts = creep.room.name === "W17N2" ? { maxRooms: 1 } : {};
+					if (creep.hitsMax - creep.hits > 400) {
+						creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
+					} else {
+						// creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
+						creep.travelTo(new RoomPosition(1, baseY + idx, "W16N2"), opts)
+					}
+				})
+			} else {
+				this.mode = 0
+			}
 		} else if (this.state === STRATEGY_ACT_ATTACK) {
 			healers.forEach((creep, idx) => {
 				creep.travelTo(attackers[idx], { movingTarget: true });
