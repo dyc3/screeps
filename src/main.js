@@ -984,7 +984,9 @@ function commandRemoteMining() {
 			if (foundInvaderCore && hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0) {
 				target.danger = 2;
 			}
-			else if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0) {
+			else if (hostiles
+				.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0)
+				.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0) {
 				target.danger = 1;
 			}
 			else if (keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5) {
