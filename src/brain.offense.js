@@ -84,6 +84,11 @@ class OffenseTask {
 				this.setState(TASK_RUN)
 			}
 		} else if (this.state === TASK_RUN) {
+			if (this.creeps.length === 0) {
+				this.state = TASK_PREPARE;
+				this.manualStart = false;
+			}
+
 			strat.act(this.creeps)
 		} else {
 			this.state = TASK_PREPARE;
