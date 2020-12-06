@@ -113,8 +113,8 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 
 	act(creeps) {
 		let grouped = _.groupBy(creeps, c => c.memory.type)
-		let attackers = grouped["generic-attack"]
-		let healers = grouped["healer"]
+		let attackers = "generic-attack" in grouped ? grouped["generic-attack"] : []
+		let healers = "healer" in grouped ? grouped["healer"] : []
 		let targetRoomVision = !!Game.rooms[this.targetRoom]
 
 		// healing
