@@ -311,7 +311,7 @@ let util = {
 			return _.filter(Game.creeps, creep => roles.includes(creep.memory.role));
 		}
 		else {
-			return Game.creeps;
+			return _.values(Game.creeps);
 		}
 	},
 
