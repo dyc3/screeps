@@ -108,6 +108,7 @@ let brainAutoPlanner = require('brain.autoplanner');
 let brainGuard = require("brain.guard");
 let brainLogistics = require("brain.logistics");
 let brainHighwayHarvesting = require("brain.highwayharvesting");
+let brainOffense = require("brain.offense");
 
 let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
@@ -1323,6 +1324,12 @@ function main() {
 	brainGuard.init();
 	brainHighwayHarvesting.init();
 
+	try {
+		brainOffense.run();
+	} catch (e) {
+		printException(e);
+	}
+
 	let rooms = util.getOwnedRooms();
 
 	// do tower stuff and process power
@@ -1366,7 +1373,11 @@ function main() {
 			continue;
 		}
 
-		if (creep.memory.role !== "guardian" && creep.memory.stage < 0) {
+		if (creep.memory.role === "offense") {
+			continue;
+		}
+
+		if (creep.memory.role !== "guardian" && creep.memory.role !== "offense" && creep.memory.stage < 0) {
 			creep.memory.stage = toolCreepUpgrader.getCreepStage(creep);
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
 		}
@@ -1527,6 +1538,7 @@ function main() {
 		"carrier": 8,
 		"scientist": 9,
 		"guardian": 9,
+		"offense": 9,
 	}
 	renewingCreeps.sort((a, b) => {
 		// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
