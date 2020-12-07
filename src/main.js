@@ -964,7 +964,9 @@ function commandRemoteMining() {
 		let source = Game.getObjectById(target.id);
 		let hostiles = room.find(FIND_HOSTILE_CREEPS);
 		let keeperLair;
-		if (hostiles.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0) {
+		if (hostiles
+			.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0)
+			.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0) {
 			target.danger = 2;
 		}
 		else if (util.isTreasureRoom(target.roomName)) {
