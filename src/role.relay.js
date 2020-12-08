@@ -182,6 +182,8 @@ let roleRelay = {
 				result.structure.structureType != STRUCTURE_CONTAINER &&
 				result.structure.structureType != STRUCTURE_STORAGE &&
 				result.structure.structureType != STRUCTURE_ROAD &&
+				result.structure.structureType != STRUCTURE_RAMPART &&
+				result.structure.structureType != STRUCTURE_WALL &&
 				result.structure.structureType != STRUCTURE_LINK);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
 			let targets = [];
@@ -222,7 +224,12 @@ let roleRelay = {
 				case STRUCTURE_FACTORY:
 					return struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget;
 				default:
-					return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+					if (struct.store) {
+						return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+					}
+					else {
+						return false;
+					}
 			}
 		});
 
