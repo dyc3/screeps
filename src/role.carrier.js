@@ -42,10 +42,10 @@ let roleCarrier = {
 				if (result.structure.hits < result.structure.hitsMax) {
 					creep.repair(result.structure);
 				}
-				if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
-					creep.log("WARN: canceling move")
-					creep.cancelOrder("move");
-				}
+				// if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
+				// 	creep.log("WARN: canceling move")
+				// 	creep.cancelOrder("move");
+				// }
 				return;
 			}
 		}
@@ -115,7 +115,9 @@ let roleCarrier = {
 					creep.transfer(depositTarget, RESOURCE_ENERGY);
 				}
 				else {
-					creep.travelTo(depositTarget);
+					let obstacles = util.getCreeps("harvester", "relay");
+					creep.travelTo(depositTarget, { obstacles });
+					// creep.travelTo(depositTarget);
 				}
 			}
 			else {
@@ -150,7 +152,9 @@ let roleCarrier = {
 					delete creep.memory.droppedEnergyId;
 				}
 				if (!creep.pos.isNearTo(harvestPos)) {
-					creep.travelTo(harvestPos);
+					let obstacles = util.getCreeps("harvester", "relay");
+					creep.travelTo(harvestPos, { obstacles });
+					// creep.travelTo(harvestPos);
 				}
 				else if (dropped) {
 					creep.pickup(dropped);
