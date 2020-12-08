@@ -7,21 +7,39 @@ let roleTower = {
 
 		let hostiles = room.find(FIND_HOSTILE_CREEPS, {
 			filter: function(c) {
+				// HACK: stop this cock teasing energy drainer
+				if (c.name.toLowerCase().includes("drainer")) {
+					return !util.isDistFromEdge(c.pos, 7)
+				}
+				if (util.isDistFromEdge(c.pos, 5)) {
+					return false;
+				}
+				if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) +  + c.getActiveBodyparts(HEAL) === 0) {
+					return false;
+				}
 				return !toolFriends.isCreepFriendly(c);
 			}
 		});
 		if (hostiles.length > 0) {
+			hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse()
 			for (let i = 0; i < towers.length; i++) {
 				let tower = towers[i];
-				let target = tower.pos.findClosestByRange(hostiles);
+				let target = hostiles[0];
+				if (target.hits < 400) {
+					hostiles.pop(0)
+				}
 				tower.attack(target);
+
+				if (hostiles.length === 0) {
+					break;
+				}
 			}
 			return;
 		}
 
 		let damagedCreeps = room.find(FIND_MY_CREEPS, {
 			filter: (creep) => {
-				return creep.hits < creep.hitsMax;
+				return creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) === 0;
 			}
 		});
 		if (damagedCreeps.length > 0) {
@@ -41,12 +59,20 @@ let roleTower = {
 						return false;
 					}
 				}
-				if (struct.structureType == STRUCTURE_WALL && struct.hits >= 500) {
+				let w = 100;
+				let r = 20000;
+				if (struct.structureType == STRUCTURE_WALL && struct.hits >= w) {
 					return false;
 				}
-				if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= 500) {
+				if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= r) {
 					return false;
 				}
+				// if (struct.structureType == STRUCTURE_WALL) {
+				// 	return false;
+				// }
+				// if (struct.structureType == STRUCTURE_RAMPART) {
+				// 	return false;
+				// }
 				return struct.hits < struct.hitsMax * 0.45;
 			}
 		});
