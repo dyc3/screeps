@@ -645,10 +645,10 @@ let roleManager = {
 		sinks = _.sortByOrder(sinks, [
 			s => {
 				switch (s.object.structureType) {
+					case STRUCTURE_TOWER:
+						return 1;
 					case STRUCTURE_EXTENSION:
 					case STRUCTURE_SPAWN:
-						return 1;
-					case STRUCTURE_TOWER:
 						return 2;
 					case STRUCTURE_POWER_SPAWN:
 						return 4;
