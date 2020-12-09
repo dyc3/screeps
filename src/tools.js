@@ -336,3 +336,14 @@ global.Debug = {
 		return `Harvester ${creep.name}: ${out.join(", ")}`;
 	}
 };
+
+global.id = Game.getObjectById
+global.creep = creepName => Game.creeps[creepName]
+global.obj = identifier => {
+	if (identifier in Game.creeps) {
+		return Game.creeps[identifier]
+	}
+	else {
+		return Game.getObjectById(identifier)
+	}
+}
