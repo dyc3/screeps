@@ -87,11 +87,6 @@ let taskRenew = {
 		}
 		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
 
-		if (creep instanceof Creep && creep.room.name == renewTarget.room.name && creep.room.energyAvailable < 40 && creep.ticksToLive > 60 && creep.store[RESOURCE_ENERGY] < 10) {
-			taskGather.run(creep);
-			return;
-		}
-
 		let maxTicks = 600;
 		if (creep.memory.renew_force_amount) {
 			maxTicks = creep.memory.renew_force_amount;
@@ -138,6 +133,19 @@ let taskRenew = {
 			renewCost = util.getRenewCost(creep.body);
 			let totalRenewCost = renewCost * countRenewsRequired;
 			creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
+
+			if (creep.getActiveBodyparts(CARRY) > 0) {
+				if (!creep.memory._renewGather && creep.room.name == renewTarget.room.name && creep.room.energyAvailable < renewCost * Math.min(countRenewsRequired, 2) && creep.ticksToLive > 60 && creep.store.getUsedCapacity(RESOURCE_ENERGY) < renewCost) {
+					creep.memory._renewGather = true;
+				} else if (creep.memory._renewGather && (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || creep.ticksToLive < 40)) {
+					creep.memory._renewGather = false;
+				}
+
+				if (creep.memory._renewGather) {
+					taskGather.run(creep);
+					return;
+				}
+			}
 		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
