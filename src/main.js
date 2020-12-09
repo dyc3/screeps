@@ -169,16 +169,15 @@ function calculateDefcon(room) {
 	console.log("calculating defcon:", room.name);
 
 	let defcon = 0;
-	if (room.controller.safeMode > 650) {
+	if (room.controller.safeMode > 0) {
 		console.log("safe mode is active, defcon 0");
 		return 0;
 	}
 	let towers = util.getStructures(room, STRUCTURE_TOWER);
+	let spawns = util.getStructures(room, STRUCTURE_SPAWN);
 	if (towers.length > 0) {
 		let hostileCreeps = room.find(FIND_HOSTILE_CREEPS, {
-			filter: function(creep) {
-				return creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(HEAL) + creep.getActiveBodyparts(TOUGH) + creep.getActiveBodyparts(RANGED_ATTACK) > 0;
-			}
+			filter: creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(HEAL) + creep.getActiveBodyparts(TOUGH) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(WORK) > 0,
 		});
 		if (hostileCreeps.length > 0) {
 			console.log(room.name, "hostile creeps: ", hostileCreeps.length);
@@ -188,8 +187,19 @@ function calculateDefcon(room) {
 	else {
 		let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
 		if (hostileCreeps.length > 0) {
-			console.log(room.name, "hostile creeps: ", hostileCreeps.length);
-			defcon = 1;
+			let dangerous = hostileCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(HEAL) + creep.getActiveBodyparts(TOUGH) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(WORK) > 0);
+			console.log(room.name, "hostile creeps:", hostileCreeps.length, "dangerous:", dangerous.length);
+			if (dangerous.length > 0) {
+				// HACK: trigger safe mode on known bad things
+				if (dangerous.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(HEAL) + c.getActiveBodyparts(TOUGH) + c.getActiveBodyparts(RANGED_ATTACK) > 20).length >= 2 * towers.length) {
+					defcon = 3;
+				}
+				else {
+					defcon = 2;
+				}
+			} else {
+				defcon = 1;
+			}
 		}
 		else {
 			defcon = 0;
@@ -207,6 +217,19 @@ function calculateDefcon(room) {
 		// otherwise, defend
 
 		// https://screeps.com/forum/topic/922/tower-damage/6
+
+		let safeModeNeeded = _.any(spawns.map(s => s.hits < s.hitsMax), Boolean);
+		let safeModePossible = room.controller.safeModeCooldown === 0 && room.controller.safeModeAvailable > 0
+
+		// FIXME: untested
+		if (safeModePossible && safeModeNeeded) {
+			console.log("ACTIVATE SAFE MODE")
+			room.controller.activateSafeMode()
+		}
+	}
+	else if (defcon === 3) {
+		console.log("ACTIVATE SAFE MODE")
+		room.controller.activateSafeMode()
 	}
 
 	return defcon;
