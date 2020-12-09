@@ -96,12 +96,6 @@ let roleCarrier = {
 				}
 			}
 
-			let source = Game.getObjectById(harvestTarget.id);
-			if (!source) {
-				console.log(creep.name, "CRITICAL: Unable to access harvest target");
-				return;
-			}
-
 			if (creep.memory.delivering && _.sum(creep.store) == 0) {
 				creep.memory.delivering = false;
 			}
@@ -138,7 +132,7 @@ let roleCarrier = {
 					return;
 				}
 
-				if (util.isTreasureRoom(source.room.name)) {
+				if (util.isTreasureRoom(harvestTarget.roomName)) {
 					if (creep.pos.isNearTo(harvestPos)) {
 						let tombstones = harvestPos.findInRange(FIND_TOMBSTONES, 2);
 						if (tombstones.length > 0 && tombstones[0].store[RESOURCE_ENERGY] > 0) {
