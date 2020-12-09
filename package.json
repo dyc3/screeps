@@ -23,6 +23,7 @@
     "screeps-api": "^1.13.0"
   },
   "devDependencies": {
+    "eslint-plugin-screeps": "^2.1.0",
     "screeps-multimeter": "^1.11.1"
   }
 }

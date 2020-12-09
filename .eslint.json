@@ -1,4 +1,7 @@
 {
+	"plugins": [
+		"screeps"
+	],
 	"parserOptions": {
 		"ecmaVersion": 6,
 		"sourceType": "module",
@@ -7,6 +10,7 @@
 	"rules": {
 	},
 	"env": {
-		"node": true
+		"node": true,
+		"screeps/screeps": true
 	}
 }
