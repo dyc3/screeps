@@ -56,7 +56,10 @@ var roleBuilder = {
 			if (creep.memory.buildTargetId) {
 				let target = Game.getObjectById(creep.memory.buildTargetId);
 				if (target) {
-					if(creep.build(target) == ERR_NOT_IN_RANGE) {
+					if (creep.pos.inRangeTo(target, 3)) {
+						creep.build(target)
+					}
+					else {
 						creep.travelTo(target);
 					}
 				}
