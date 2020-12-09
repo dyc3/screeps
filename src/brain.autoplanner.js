@@ -832,7 +832,13 @@ let brainAutoPlanner = {
 
 global.autoPlanner = {
     addPlans: brainAutoPlanner.addPlansAtPosition,
-    removePlans: brainAutoPlanner.removePlansAtPosition,
+	removePlans: brainAutoPlanner.removePlansAtPosition,
+	plan(x, y, roomName, struct) {
+		return brainAutoPlanner.addPlansAtPosition(new RoomPosition(x, y, roomName), struct)
+	},
+	unplan(x, y, roomName, struct) {
+		return brainAutoPlanner.removePlansAtPosition(new RoomPosition(x, y, roomName), struct)
+	},
 };
 
 module.exports = brainAutoPlanner;
