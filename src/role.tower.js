@@ -11,11 +11,14 @@ let roleTower = {
 				if (c.name.toLowerCase().includes("drainer")) {
 					return !util.isDistFromEdge(c.pos, 7)
 				}
-				if (util.isDistFromEdge(c.pos, 5)) {
-					return false;
-				}
-				if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) +  + c.getActiveBodyparts(HEAL) === 0) {
-					return false;
+				if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) +  + c.getActiveBodyparts(HEAL) > 0) {
+					if (util.isDistFromEdge(c.pos, 5)) {
+						return false;
+					}
+				} else {
+					if (util.isDistFromEdge(c.pos, 7)) {
+						return false;
+					}
 				}
 				return !toolFriends.isCreepFriendly(c);
 			}
@@ -50,6 +53,8 @@ let roleTower = {
 			}
 			return;
 		}
+
+		return;
 
 		let damagedStructures = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
