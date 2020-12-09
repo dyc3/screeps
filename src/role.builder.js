@@ -34,13 +34,12 @@ var roleBuilder = {
 				let targets = this.findTargets(creep);
 				if(targets.length) {
 					targets = _.sortByOrder(targets, [
-						s => {
-							return s.progress / s.progressTotal;
-						},
-						s => {
-							return s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_TOWER;
-						}
-					], ["desc", "desc"]);
+						s => s.structureType === STRUCTURE_SPAWN,
+						s => s.structureType === STRUCTURE_TOWER,
+						s => s.structureType === STRUCTURE_EXTENSION,
+						s => s.structureType !== STRUCTURE_ROAD,
+						s => s.progress / s.progressTotal,
+					], ["desc", "desc", "desc", "desc"]);
 					let target = _.first(targets);
 					if (target) {
 						creep.memory.buildTargetId = target.id;
