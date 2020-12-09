@@ -1,37 +1,35 @@
-var traveler = require('traveler');
-var taskGather = require("task.gather");
-var util = require("util");
+let traveler = require('traveler');
+let taskGather = require("task.gather");
+let util = require("util");
 
-var roleBuilder = {
-	findTargets: function(creep) {
+let roleBuilder = {
+	findTargets() {
 		let targets = [];
 		let rooms = util.getOwnedRooms();
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
+		for (let room of rooms) {
 			let sites = room.find(FIND_CONSTRUCTION_SITES);
-			if (sites.length == 0) {
+			if (sites.length === 0) {
 				continue;
 			}
 			targets = targets.concat(sites);
 		}
-		return targets.filter((site) => { return site != null && site != undefined });
+		return targets.filter(site => !!site);
 	},
 
 	/** @param {Creep} creep **/
-	run: function(creep) {
-
-		if(creep.memory.building && creep.carry.energy < 5) {
+	run(creep) {
+		if (creep.memory.building && creep.store[RESOURCE_ENERGY] === 0) {
 			creep.memory.building = false;
 			creep.say('gathering');
 		}
-		else if(!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
+		else if (!creep.memory.building && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
 			creep.memory.building = true;
 			creep.say('building');
 		}
 
 		if(creep.memory.building) {
 			if (!creep.memory.buildTargetId) {
-				let targets = this.findTargets(creep);
+				let targets = this.findTargets();
 				if(targets.length) {
 					targets = _.sortByOrder(targets, [
 						s => s.structureType === STRUCTURE_SPAWN,
