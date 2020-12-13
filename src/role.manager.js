@@ -634,7 +634,7 @@ let roleManager = {
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
 			filter: s => s.objectId !== creep.memory.lastWithdrawStructure && (!brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) || s.object.structureType !== STRUCTURE_STORAGE) &&
-			s.objectId !== "5f6fdb1cb5f7d2486aa88e21", // HACK
+			!creep.memory.excludeTransport.includes(s.objectId) && s.objectId !== "5f6fdb1cb5f7d2486aa88e21", // HACK
 		});
 		creep.log(`Found ${sinks.length} sinks`);
 
@@ -680,6 +680,8 @@ let roleManager = {
 	},
 
 	getAquireTarget(creep) {
+		delete creep.memory.excludeTransport;
+
 		let aquireTarget;
 		if (creep.memory.aquireTarget) {
 			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
@@ -745,6 +747,10 @@ let roleManager = {
 	},
 
 	run(creep) {
+		if (!creep.memory.excludeTransport) {
+			creep.memory.excludeTransport = []
+		}
+
 		if (creep.fatigue > 0) {
 			return;
 		}
@@ -808,7 +814,12 @@ let roleManager = {
 				if (creep.room.name === transportTarget.room.name) {
 					opts.maxRooms = 1;
 				}
-				creep.travelTo(transportTarget, opts)
+				let result = creep.travelTo(transportTarget, opts)
+				if (result.incomplete) {
+					creep.log("Incomplete path to transport target, clearing")
+					creep.memory.excludeTransport.push(creep.memory.transportTarget);
+					delete creep.memory.transportTarget;
+				}
 			}
 		}
 		else {
