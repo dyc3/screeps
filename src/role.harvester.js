@@ -158,6 +158,10 @@ let roleHarvester = {
 		* `transferTarget` should indicate the current target structure and should NOT be used to determine mode.
 		*/
 
+		if (creep.memory.force_mode) {
+			return creep.memory.force_mode
+		}
+
 		if (!creep.memory.harvestTarget) {
 			creep.log("Can't determine harvest mode without harvestTarget");
 			return "wait";
