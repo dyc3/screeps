@@ -1135,7 +1135,7 @@ function satisfyClaimTargets() {
 		}
 		else {
 			// spawn new claimer
-			let spawnRoom = _.first(util.findClosestOwnedRooms(new RoomPosition(25, 25, Memory.claimTargets[t].room), r => r.energyCapacityAvailable > 2600 && r.energyAvailable >= r.energyCapacityAvailable * 0.8))
+			let spawnRoom = _.first(util.findClosestOwnedRooms(new RoomPosition(25, 25, Memory.claimTargets[t].room), r => r.energyCapacityAvailable > 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8))
 			if (!spawnRoom) {
 				console.log("WARN: All rooms don't have enough energy to spawn creeps");
 				continue;
@@ -1147,9 +1147,11 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			let targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+			// let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+			let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
 			if (Memory.claimTargets[t].mode === "claim") {
-				claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
+				// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
+				claimerBody = [CLAIM, MOVE]
 			}
 			targetSpawn.spawnCreep(claimerBody, 'claimer_' + Game.time.toString(16), {
 				memory: {
