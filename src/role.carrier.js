@@ -28,26 +28,21 @@ let roleCarrier = {
 	},
 
 	passiveMaintainRoads(creep) {
-		if (creep.store[RESOURCE_ENERGY] === 0) {
+		if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 			return;
 		}
 
-		let lookResult = creep.pos.look();
-		for (let result of lookResult) {
-			if (result.type === LOOK_CONSTRUCTION_SITES) {
-				creep.build(result.constructionSite);
-				return;
-			}
-			else if (result.type === LOOK_STRUCTURES) {
-				if (result.structure.hits < result.structure.hitsMax) {
-					creep.repair(result.structure);
-				}
-				// if (result.structure.structureType === STRUCTURE_ROAD && result.structure.hits < result.structure.hitsMax * 0.5) {
-				// 	creep.log("WARN: canceling move")
-				// 	creep.cancelOrder("move");
-				// }
-				return;
-			}
+		let construction = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2);
+		if (construction.length > 0) {
+			creep.build(construction[0]);
+			return;
+		}
+
+		let structs = creep.pos.findInRange(FIND_STRUCTURES, 2).filter(s => s.hits < s.hitsMax);
+		if (structs.length > 0) {
+			structs = _.sortBy(structs, s => s.hits / s.hitsMax)
+			creep.repair(structs[0]);
+			return;
 		}
 
 		// FIXME: This gets really messy, we should plan the roads ahead of time.
@@ -63,11 +58,11 @@ let roleCarrier = {
 			}
 
 			if (!creep.memory.harvestTarget) {
-				console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
+				creep.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
 				return;
 			}
 			if (!creep.memory.depositTarget) {
-				console.log(creep.name, "ERR: need deposit target");
+				creep.log(creep.name, "ERR: need deposit target");
 				return;
 			}
 
