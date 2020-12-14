@@ -566,6 +566,10 @@ function commandEnergyRelays() {
 }
 
 function doCreepSpawning() {
+	if (!Memory.creepSpawnLog) {
+		Memory.creepSpawnLog = [];
+	}
+
 	function spawnCreepOfRole(role, spawns, room=undefined) {
 		let target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
@@ -623,6 +627,7 @@ function doCreepSpawning() {
 		creeps.sort((a,b) => a.memory.stage - b.memory.stage);
 		if (creeps.length > quota) {
 			console.log("marking", creeps[0].name, "for death (above quota)");
+			Memory.creepSpawnLog.push(`${Game.time} | marking ${creeps[0].name}, for death (above quota)`)
 			creeps[0].memory.keepAlive = false;
 			return true;
 		}
@@ -634,12 +639,20 @@ function doCreepSpawning() {
 
 		if (hiStage > creeps[0].memory.stage) {
 			console.log("marking", creeps[0].name, "for death (upgrading)");
+			Memory.creepSpawnLog.push(`${Game.time} | marking ${creeps[0].name}, for death (upgrading stage ${creeps[0].memory.stage} => ${hiStage})`)
 			creeps[0].memory.keepAlive = false;
 			return true;
 		}
 	}
 
 	console.log("Spawning/upgrading creeps...");
+
+	for (let creep of util.getCreeps()) {
+		if (creep.memory.renewing) {
+			console.log("Aborting creep spawn because there are creeps trying to renew")
+			return;
+		}
+	}
 
 	let rooms = util.getOwnedRooms();
 	for (let role_name in toolCreepUpgrader.roles) {
