@@ -9,7 +9,7 @@ let roleClaimer = {
 			try {
 				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
 			} catch (e) {}
-			creep.travelTo(Game.flags[creep.memory.targetFlag]);
+			creep.travelTo(Game.flags[creep.memory.targetFlag], { ensurePath: true });
 			creep.memory.mode = "claim"
 			return;
 		}
@@ -18,19 +18,24 @@ let roleClaimer = {
 			try {
 				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
 			} catch (e) {}
-			creep.travelTo(Game.flags[creep.memory.targetFlag]);
+			creep.travelTo(Game.flags[creep.memory.targetFlag], { ensurePath: true });
 			creep.memory.mode = "reserve"
 			return;
 		}
 		if (!creep.memory.claimTarget && creep.memory.targetRoom) {
 			if (creep.room.name !== creep.memory.targetRoom) {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { ensurePath: true });
 				return;
 			}
 			creep.memory.claimTarget = creep.room.controller.id;
 		}
 
 		let claimTarget = Game.getObjectById(creep.memory.claimTarget)
+
+		if (!claimTarget) {
+			creep.travelTo(Game.flags[creep.memory.targetFlag], { ensurePath: true });;
+			return
+		}
 
 		if (creep.memory.mode == "claim") {
 			if (creep.pos.isNearTo(claimTarget)) {
@@ -53,7 +58,7 @@ let roleClaimer = {
 							break;
 						case ERR_NOT_IN_RANGE:
 							console.log("claimController: NOT IN RANGE");
-							creep.travelTo(claimTarget);
+							creep.travelTo(claimTarget, { ensurePath: true });
 							break;
 						case OK:
 							Game.flags["claim"].remove()
@@ -66,7 +71,7 @@ let roleClaimer = {
 				}
 			}
 			else {
-				creep.travelTo(claimTarget);
+				creep.travelTo(claimTarget, { ensurePath: true });
 			}
 		}
 		else if (creep.memory.mode == "reserve") {
