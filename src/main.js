@@ -1404,6 +1404,7 @@ function main() {
 		}
 	}
 
+	let harvesterCount = util.getCreeps("harvester").length
 	for (let name in Game.creeps) {
 		let creep = Game.creeps[name];
 		if (creep.spawning) {
@@ -1452,12 +1453,24 @@ function main() {
 					roleHarvester.run(creep);
 					break;
 				case 'upgrader':
-					roleUpgrader.run(creep);
+					if (harvesterCount === 0) {
+						// creep.memory.force_mode = "recovery"
+						// creep.memory.mode = "recovery"
+						roleHarvester.run(creep);
+					}
+					else {
+						roleUpgrader.run(creep);
+					}
 					break;
 				case 'builder':
 					// If there is something to build, go build it
 					// otherwise, do repairs
-					if (roleBuilder.findTargets(creep).length > 0) {
+					if (harvesterCount === 0) {
+						// creep.memory.force_mode = "recovery"
+						// creep.memory.mode = "recovery"
+						roleHarvester.run(creep);
+					}
+					else if (roleBuilder.findTargets(creep).length > 0) {
 						if (taskDepositMaterials.checkForMaterials(creep, true)) {
 							creep.say("deposit");
 							taskDepositMaterials.run(creep, true);
@@ -1467,6 +1480,7 @@ function main() {
 						}
 					}
 					else {
+
 						if (Game.time % 600 < 250) {
 							roleRepairer.run(creep);
 						}
@@ -1476,7 +1490,12 @@ function main() {
 								taskDepositMaterials.run(creep, true);
 							}
 							else {
-								roleUpgrader.run(creep);
+								if (util.getCreeps("manager").length === 0) {
+									roleManager.run(creep);
+								}
+								else {
+									roleUpgrader.run(creep);
+								}
 							}
 						}
 						// roleRepairer.run(creep);
