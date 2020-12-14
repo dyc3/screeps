@@ -48,7 +48,12 @@ let toolEnergySource = {
 	},
 
 	getHarvesterQuota(room) {
-		return room.find(FIND_SOURCES).length;
+		if (util.getOwnedRooms().length === 1 && room.controller.level < 4) {
+			return 3;
+		}
+		else {
+			return room.find(FIND_SOURCES).length;
+		}
 	},
 
 	drawAssignedCounts() {
