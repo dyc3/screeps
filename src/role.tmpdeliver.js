@@ -145,7 +145,7 @@ let roleTmpDelivery = {
 					}
 				}
 				else {
-					creep.travelTo(depositTarget, { obstacles, visualizePathStyle:{} });
+					creep.travelTo(depositTarget, { obstacles, visualizePathStyle:{}, ensurePath: true });
 				}
 			}
 		}
@@ -163,7 +163,12 @@ let roleTmpDelivery = {
 					}
 				}
 				else {
-					creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
+					if (withdrawTarget instanceof Resource) {
+						creep.pickup(withdrawTarget);
+					}
+					else {
+						creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
+					}
 				}
 				if (creep.store.getUsedCapacity() < creep.store.getCapacity() * 0.75) {
 					creep.memory.delivering = true;
@@ -174,7 +179,7 @@ let roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(withdrawTarget, { obstacles, visualizePathStyle:{} });
+				creep.travelTo(withdrawTarget, { obstacles, visualizePathStyle:{}, ensurePath: true });
 			}
 		}
 	}
