@@ -37,7 +37,7 @@ let roleBuilder = {
 						s => s.structureType === STRUCTURE_EXTENSION,
 						s => s.structureType !== STRUCTURE_ROAD,
 						s => s.progress / s.progressTotal,
-					], ["desc", "desc", "desc", "desc"]);
+					], ["desc", "desc", "desc", "desc", "desc"]);
 					let target = _.first(targets);
 					if (target) {
 						creep.memory.buildTargetId = target.id;
