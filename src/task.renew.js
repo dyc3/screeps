@@ -15,9 +15,20 @@ let taskRenew = {
 		}
 
 		let spawn = creep instanceof Creep ? util.getSpawn(creep.room) : _.first(util.getStructures(creep.room, STRUCTURE_POWER_SPAWN));
+		if (spawn) {
+			creep.memory.renewTarget = spawn.id;
+			creep.memory._renewDebug = {
+				startTime: Game.time,
+				renewTargetSetBy: "checkRenew default",
+				targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+				targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+			};
+		}
 		if (!spawn) {
 			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
-				let closestRooms = util.findClosestOwnedRooms(creep.pos);
+				let approx_ticks = 600
+				let countRenewsRequired = Math.ceil((approx_ticks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
+				let closestRooms = util.findClosestOwnedRooms(creep.pos, room => room.energyCapacityAvailable >= util.getRenewCost(creep.body) * countRenewsRequired);
 				try {
 					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
 					creep.memory._renewDebug = {
@@ -44,6 +55,13 @@ let taskRenew = {
 		}
 		if (creep instanceof Creep && !spawn) {
 			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+			creep.memory.renewTarget = spawn.id;
+			creep.memory._renewDebug = {
+				startTime: Game.time,
+				renewTargetSetBy: "checkRenew fallback",
+				targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+				targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+			};
 		}
 		if (!spawn) {
 			// there are no spawns anyway, just keep doing your job.
@@ -111,6 +129,9 @@ let taskRenew = {
 			}
 			else if (renewTarget.room.energyAvailable >= 3000) {
 				maxTicks = 900;
+			}
+			else {
+				maxTicks = 1000;
 			}
 		}
 		else if (creep.memory.role == "harvester") {
