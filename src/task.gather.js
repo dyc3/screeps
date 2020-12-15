@@ -206,6 +206,10 @@ let taskGather = {
 	},
 
 	getGatherTarget(creep) {
+		if (creep.memory.force_gather_target) {
+			creep.memory.gatherTarget = creep.memory.force_gather_target
+		}
+
 		let gatherTarget;
 		if (creep.memory.gatherTarget) {
 			gatherTarget = Game.getObjectById(creep.memory.gatherTarget);
