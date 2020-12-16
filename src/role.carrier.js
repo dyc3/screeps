@@ -32,15 +32,17 @@ let roleCarrier = {
 			return;
 		}
 
-		let construction = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2);
+		let construction = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
 		if (construction.length > 0) {
 			creep.build(construction[0]);
 			return;
 		}
 
-		let structs = creep.pos.findInRange(FIND_STRUCTURES, 2).filter(s => s.hits < s.hitsMax);
+		let structs = creep.pos.findInRange(FIND_STRUCTURES, 3).filter(s => s.hits < s.hitsMax);
 		if (structs.length > 0) {
-			structs = _.sortBy(structs, s => s.hits / s.hitsMax)
+			structs = _.sortByOrder(structs, [
+				s => s.hits / s.hitsMax,
+			], ["asc"])
 			creep.repair(structs[0]);
 			return;
 		}
