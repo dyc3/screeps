@@ -1,5 +1,6 @@
 const util = require("util");
 const traveler = require("traveler");
+const brainAutoPlanner = require("brain.autoplanner");
 
 class ResourceSink {
 	constructor(args=null) {
@@ -312,7 +313,10 @@ function collectAllResourceSinks() {
 			let sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
-						return struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE;
+						return struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE || brainAutoPlanner.isInRootModule(struct);
+					}
+					if (brainAutoPlanner.isInRootModule(struct) && struct.room.controller.level >= 5) {
+						return false;
 					}
 					return ![STRUCTURE_ROAD, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
 				}
