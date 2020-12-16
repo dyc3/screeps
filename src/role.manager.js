@@ -745,9 +745,10 @@ let roleManager = {
 			sources = _.sortByOrder(sources, [
 				s => s.object instanceof Resource,
 				s => s.object instanceof Tombstone || s.object instanceof Ruin,
+				s => s.object instanceof Resource && s.amount > 600,
 				s => creep.pos.getRangeTo(s.object),
 			],
-			["desc", "desc", "asc"]);
+			["desc", "desc", "desc", "asc"]);
 		}
 
 
@@ -825,7 +826,7 @@ let roleManager = {
 				}
 			}
 			else {
-				opts = { obstacles }
+				opts = { obstacles, ensurePath: true }
 				if (creep.room.name === transportTarget.room.name) {
 					opts.maxRooms = 1;
 				}
@@ -859,7 +860,7 @@ let roleManager = {
 				}
 			}
 			else {
-				opts = { obstacles }
+				opts = { obstacles, ensurePath: true }
 				if (creep.room.name === aquireTarget.room.name) {
 					opts.maxRooms = 1;
 				}
