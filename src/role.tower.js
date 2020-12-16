@@ -11,11 +11,22 @@ let roleTower = {
 				if (c.name.toLowerCase().includes("drainer")) {
 					return !util.isDistFromEdge(c.pos, 7)
 				}
-				if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) +  + c.getActiveBodyparts(HEAL) > 0) {
+				if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
+					if (util.isDistFromEdge(c.pos, 0)) {
+						return false;
+					}
+				}
+				else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
+					if (util.isDistFromEdge(c.pos, 1)) {
+						return false;
+					}
+				}
+				else if (c.getActiveBodyparts(HEAL) > 0) {
 					if (util.isDistFromEdge(c.pos, 5)) {
 						return false;
 					}
-				} else {
+				}
+				else {
 					if (util.isDistFromEdge(c.pos, 7)) {
 						return false;
 					}
@@ -67,7 +78,7 @@ let roleTower = {
 					}
 				}
 				let w = 100;
-				let r = 20000;
+				let r = 50000;
 				if (struct.structureType == STRUCTURE_WALL && struct.hits >= w) {
 					return false;
 				}
