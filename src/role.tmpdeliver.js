@@ -74,9 +74,11 @@ let roleTmpDelivery = {
 			// if (creep.memory.withdrawCachePos && Game.rooms[creep.memory.withdrawCachePos.roomName]) {
 			// 	delete creep.memory.withdrawTargetId;
 			// }
-			creep.log("Can't find withdraw target (probably no vision)");
-			creep.say("help");
-			return;
+			if (!creep.memory.withdrawCachePos) {
+				creep.log("Can't find withdraw target (probably no vision)");
+				creep.say("help");
+				return;
+			}
 		}
 		if (depositTarget) {
 			creep.memory.depositCachePos = depositTarget.pos
@@ -85,9 +87,11 @@ let roleTmpDelivery = {
 			// if (creep.memory.depositCachePos && Game.rooms[creep.memory.depositCachePos.roomName]) {
 			// 	delete creep.memory.depositTargetId;
 			// }
-			creep.log("Can't find deposit target (probably no vision)");
-			creep.say("help");
-			return;
+			if (!creep.memory.depositCachePos) {
+				creep.log("Can't find deposit target (probably no vision)");
+				creep.say("help");
+				return;
+			}
 		}
 
 		let obstacles = util.getCreeps("harvester", "relay");
