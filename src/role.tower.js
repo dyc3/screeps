@@ -28,7 +28,9 @@ let roleTower = {
 			for (let i = 0; i < towers.length; i++) {
 				let tower = towers[i];
 				let target = hostiles[0];
-				if (target.hits < 400) {
+				let dist = tower.pos.getRangeTo(target);
+				let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(dist);
+				if (target.hits <= damage) {
 					hostiles.pop(0)
 				}
 				tower.attack(target);

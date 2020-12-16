@@ -391,6 +391,22 @@ let util = {
 		// TODO: finish
 		// TODO: write tests
 	},
+
+	/**
+	 * Gets the damage multiplier for tower damage
+	 * @param {*} distance
+	 * @example let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(10)
+	 */
+	towerImpactFactor(distance) {
+		if (distance <= TOWER_OPTIMAL_RANGE) {
+			return 1
+		}
+		if (distance >= TOWER_FALLOFF_RANGE) {
+			return 1 - TOWER_FALLOFF
+		}
+		let towerFalloffPerTile = TOWER_FALLOFF / (TOWER_FALLOFF_RANGE - TOWER_OPTIMAL_RANGE)
+		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile
+	}
 }
 
 module.exports = util;
