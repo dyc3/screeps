@@ -633,8 +633,23 @@ let roleManager = {
 		let sinks = brainLogistics.findSinks({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
-			filter: s => s.objectId !== creep.memory.lastWithdrawStructure && (!brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) || s.object.structureType !== STRUCTURE_STORAGE) &&
-			!creep.memory.excludeTransport.includes(s.objectId) && s.objectId !== "5f6fdb1cb5f7d2486aa88e21", // HACK
+			filter: s => {
+				if (s.objectId === "5f6fdb1cb5f7d2486aa88e21") {
+					return false; // HACK
+				}
+
+				if (s.objectId === creep.memory.lastWithdrawStructure) {
+					return false;
+				}
+				if (creep.memory.excludeTransport.includes(s.objectId)) {
+					return false;
+				}
+				if (brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) && s.object.structureType === STRUCTURE_STORAGE) {
+					return false;
+				}
+
+				return true;
+			},
 		});
 		creep.log(`Found ${sinks.length} sinks`);
 
