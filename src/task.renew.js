@@ -29,27 +29,29 @@ let taskRenew = {
 				let approx_ticks = 600
 				let countRenewsRequired = Math.ceil((approx_ticks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
 				let closestRooms = util.findClosestOwnedRooms(creep.pos, room => room.energyCapacityAvailable >= util.getRenewCost(creep.body) * countRenewsRequired);
-				try {
-					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
-					creep.memory._renewDebug = {
-						startTime: Game.time,
-						renewTargetSetBy: "checkRenew branch 0",
-						targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
-						targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
-						closestRooms: closestRooms.map(r => r.name),
-					};
+				if (closestRooms.length > 0) {
+					try {
+						creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[0]) : _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))).id;
+						creep.memory._renewDebug = {
+							startTime: Game.time,
+							renewTargetSetBy: "checkRenew branch 0",
+							targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+							targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+							closestRooms: closestRooms.map(r => r.name),
+						};
+					}
+					catch (e) {
+						creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[1]) : _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))).id;
+						creep.memory._renewDebug = {
+							startTime: Game.time,
+							renewTargetSetBy: "checkRenew branch 1",
+							targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+							targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+							closestRooms: closestRooms.map(r => r.name),
+						};
+					}
+					creep.memory._lastCheckForCloseSpawn = Game.time;
 				}
-				catch (e) {
-					creep.memory.renewTarget = (creep instanceof Creep ? util.getSpawn(closestRooms[1]) : _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))).id;
-					creep.memory._renewDebug = {
-						startTime: Game.time,
-						renewTargetSetBy: "checkRenew branch 1",
-						targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
-						targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
-						closestRooms: closestRooms.map(r => r.name),
-					};
-				}
-				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
 			spawn = Game.getObjectById(creep.memory.renewTarget);
 		}
