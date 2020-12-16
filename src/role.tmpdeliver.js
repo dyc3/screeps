@@ -67,15 +67,25 @@ let roleTmpDelivery = {
 		let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 		let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 
-		if (!withdrawTarget) {
-			delete creep.memory.withdrawTargetId;
-			creep.log("Can't find withdraw target");
+		if (withdrawTarget) {
+			creep.memory.withdrawCachePos = withdrawTarget.pos
+		}
+		else {
+			// if (creep.memory.withdrawCachePos && Game.rooms[creep.memory.withdrawCachePos.roomName]) {
+			// 	delete creep.memory.withdrawTargetId;
+			// }
+			creep.log("Can't find withdraw target (probably no vision)");
 			creep.say("help");
 			return;
 		}
-		if (!depositTarget) {
-			delete creep.memory.depositTargetId;
-			creep.log("Can't find deposit target");
+		if (depositTarget) {
+			creep.memory.depositCachePos = depositTarget.pos
+		}
+		else {
+			// if (creep.memory.depositCachePos && Game.rooms[creep.memory.depositCachePos.roomName]) {
+			// 	delete creep.memory.depositTargetId;
+			// }
+			creep.log("Can't find deposit target (probably no vision)");
 			creep.say("help");
 			return;
 		}
@@ -112,7 +122,9 @@ let roleTmpDelivery = {
 			}
 		}
 		else if (creep.memory.delivering) {
-			if (creep.pos.isNearTo(depositTarget)) {
+			let _cache = creep.memory.depositCachePos;
+			let targetPos = depositTarget ? depositTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
+			if (creep.pos.isNearTo(targetPos)) {
 				let transferResult;
 				if (creep.memory.transportOther) {
 					for (let resource of RESOURCES_ALL) {
@@ -145,12 +157,14 @@ let roleTmpDelivery = {
 					}
 				}
 				else {
-					creep.travelTo(depositTarget, { obstacles, visualizePathStyle:{}, ensurePath: true });
+					creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
 				}
 			}
 		}
 		else {
-			if (creep.pos.isNearTo(withdrawTarget)) {
+			let _cache = creep.memory.withdrawCachePos;
+			let targetPos = withdrawTarget ? withdrawTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
+			if (creep.pos.isNearTo(targetPos)) {
 				if (creep.memory.transportOther) {
 					for (let resource of RESOURCES_ALL) {
 						if (creep.store.getFreeCapacity() === 0) {
@@ -179,7 +193,7 @@ let roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(withdrawTarget, { obstacles, visualizePathStyle:{}, ensurePath: true });
+				creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
 			}
 		}
 	}
