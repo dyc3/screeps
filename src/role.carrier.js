@@ -41,8 +41,9 @@ let roleCarrier = {
 		let structs = creep.pos.findInRange(FIND_STRUCTURES, 3).filter(s => s.hits < s.hitsMax);
 		if (structs.length > 0) {
 			structs = _.sortByOrder(structs, [
+				s => s.structureType === STRUCTURE_RAMPART,
 				s => s.hits / s.hitsMax,
-			], ["asc"])
+			], ["desc", "asc"])
 			creep.repair(structs[0]);
 			return;
 		}
