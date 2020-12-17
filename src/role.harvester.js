@@ -204,6 +204,9 @@ let roleHarvester = {
 		}
 		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
 			let struct = Game.getObjectById(id);
+			if (!struct) {
+				return false;
+			}
 			return struct.energy < struct.energyCapacity;
 		});
 		if (targetIdsNotFull.length > 0) {
