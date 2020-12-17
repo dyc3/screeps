@@ -207,7 +207,7 @@ let roleHarvester = {
 			if (!struct) {
 				return false;
 			}
-			return struct.energy < struct.energyCapacity;
+			return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 		});
 		if (targetIdsNotFull.length > 0) {
 			return Game.getObjectById(targetIdsNotFull[0]);
