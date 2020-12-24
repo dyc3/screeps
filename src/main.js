@@ -647,13 +647,6 @@ function doCreepSpawning() {
 
 	console.log("Spawning/upgrading creeps...");
 
-	for (let creep of util.getCreeps()) {
-		if (creep.memory.renewing) {
-			console.log("Aborting creep spawn because there are creeps trying to renew")
-			return;
-		}
-	}
-
 	let rooms = util.getOwnedRooms();
 	for (let role_name in toolCreepUpgrader.roles) {
 		let role = toolCreepUpgrader.roles[role_name];
@@ -673,7 +666,9 @@ function doCreepSpawning() {
 				}
 
 				let needOtherRoomSpawns = false;
-				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning).filter(s =>
+					util.getCreeps().filter(c => (c.memory.renewing || c.ticksToLive < 100) && c.memory.renewTarget === s.id).length === 0
+				);
 				if (spawns.length === 0) {
 					console.log("WARN: There are no available spawns in this room to spawn creeps");
 					needOtherRoomSpawns = true;
@@ -698,7 +693,9 @@ function doCreepSpawning() {
 					}
 				// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
 					let target_room = otherRooms[0];
-					spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+					spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning).filter(s =>
+						util.getCreeps().filter(c => (c.memory.renewing || c.ticksToLive < 100) && c.memory.renewTarget === s.id).length === 0
+					);
 					if (spawns.length === 0) {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
 						continue;
