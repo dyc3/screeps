@@ -315,6 +315,7 @@ function collectAllResourceSinks() {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
 						return struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE || brainAutoPlanner.isInRootModule(struct);
 					}
+					// FIXME: what happens when there are no relay creeps? what happens when the root module doesn't have a link?
 					if (brainAutoPlanner.isInRootModule(struct) && struct.room.controller.level >= 5) {
 						return false;
 					}
