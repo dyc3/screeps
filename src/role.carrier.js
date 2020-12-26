@@ -108,8 +108,10 @@ let roleCarrier = {
 				}
 				else {
 					let obstacles = util.getCreeps("harvester", "relay");
-					creep.travelTo(depositTarget, { obstacles });
-					// creep.travelTo(depositTarget);
+					creep.travelTo(depositTarget, {
+						obstacles,
+						ensurePath: true,
+					});
 				}
 			}
 			else {
