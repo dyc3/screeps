@@ -700,7 +700,10 @@ let roleManager = {
 		let aquireTarget;
 		if (creep.memory.aquireTarget) {
 			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
-			if (aquireTarget && (!aquireTarget.store || aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)) {
+			if (aquireTarget && (aquireTarget instanceof Tombstone && aquireTarget.store.getUsedCapacity() > 0)) {
+				return aquireTarget;
+			}
+			else if (aquireTarget && (!aquireTarget.store || aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)) {
 				return aquireTarget;
 			}
 			else {
@@ -854,6 +857,21 @@ let roleManager = {
 			if (creep.pos.isNearTo(aquireTarget)) {
 				if (aquireTarget instanceof Resource) {
 					creep.pickup(aquireTarget);
+				}
+				else if (aquireTarget instanceof Tombstone) {
+					if (aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+						creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+					}
+					else if (aquireTarget.store.getUsedCapacity() > 0) {
+						for (let resource of RESOURCES_ALL) {
+							if (resource == RESOURCE_ENERGY) {
+								continue;
+							}
+							if (structure.store[resource] > 0) {
+								creep.withdraw(structure, resource);
+							}
+						}
+					}
 				}
 				else {
 					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
