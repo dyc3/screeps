@@ -660,27 +660,36 @@ function doCreepSpawning() {
 
 				if (creeps_of_room.length >= role_quota) {
 					if (doMarkForDeath(role, creeps_of_room, role_quota, room)) {
-						return;
+						if (room.energyAvailable < room.energyCapacityAvailable) {
+							console.log("Waiting for enough energy to safely spawn new creep")
+							return;
+						}
 					}
 					continue;
 				}
 
 				let needOtherRoomSpawns = false;
+				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(role.name);
 				let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning).filter(s =>
 					util.getCreeps().filter(c => (c.memory.renewing || c.ticksToLive < 100) && c.memory.renewTarget === s.id).length === 0
 				);
 				if (spawns.length === 0) {
 					console.log("WARN: There are no available spawns in this room to spawn creeps");
 					needOtherRoomSpawns = true;
+					canUseOtherRooms = true;
 				}
-
-				if (room.energyAvailable < room.energyCapacityAvailable * 0.8) {
+				else if (canUseOtherRooms && room.energyAvailable < room.energyCapacityAvailable * 0.8) {
 					console.log("WARN: This room does not have enough energy to spawn creeps");
 					needOtherRoomSpawns = true;
 				}
+				else if (!canUseOtherRooms && room.energyAvailable <= 300) {
+					console.log(`WARN: Room ${room.name} is really starving, and does not have enough energy to spawn creeps. Overriding default behavior to allow spawning ${role.name} in other rooms`);
+					canUseOtherRooms = true;
+					needOtherRoomSpawns = true;
+				}
 
-				if (needOtherRoomSpawns && rooms.length > 1) {
-					console.log(`Using spawns from another room to spawn ${role.name} creep for${room.name}`);
+				if (canUseOtherRooms && needOtherRoomSpawns && rooms.length > 1) {
+					console.log(`Using spawns from another room to spawn ${role.name} creep for ${room.name}`);
 					let otherRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, room.name), r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name);
 					if (otherRooms.length === 0) {
 						console.log("WARN: No rooms are above energy threshold. Falling back to use any energy available.");
@@ -700,7 +709,7 @@ function doCreepSpawning() {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
 						continue;
 					}
-				} else if (needOtherRoomSpawns && rooms.length === 1) {
+				} else if (canUseOtherRooms && needOtherRoomSpawns && rooms.length === 1) {
 					console.log("No other rooms to spawn creeps in.")
 					continue;
 				}
