@@ -16,6 +16,7 @@ class GuardTask {
 		this.assignedCreeps = [];
 		this.neededCreeps = 1;
 		this._currentTarget = null;
+		this.waiting = true;
 	}
 
 	get targetRoom() {
@@ -35,6 +36,7 @@ class GuardTask {
 			assignedCreeps: this.assignedCreeps,
 			neededCreeps: this.neededCreeps,
 			currentTarget: this._currentTarget,
+			waiting: this.waiting,
 		};
 	}
 
@@ -46,6 +48,7 @@ class GuardTask {
 		this.assignedCreeps = mem.assignedCreeps;
 		this._currentTarget = mem.currentTarget;
 		this.neededCreeps = mem.neededCreeps;
+		this.waiting = mem.waiting;
 		return this;
 	}
 };
@@ -252,7 +255,7 @@ module.exports = {
 				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
 			}
 			else {
-				return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+				return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
 			}
 		}
 	},
@@ -262,7 +265,7 @@ module.exports = {
 			if (task.complete) {
 				continue;
 			}
-			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps}`);
+			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"}`);
 			if (task._currentTarget && !task.currentTarget) {
 				delete task._currentTarget;
 			}
@@ -281,6 +284,19 @@ module.exports = {
 					strokeWidth: .07,
 					opacity: .5,
 				});
+			}
+
+			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
+			let guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
+
+			if (task.waiting) {
+				if ((task.currentTarget && task.currentTarget.owner.username === "Source Keeper") || (guardsUnavailable === 0 && creeps.length === task.neededCreeps)) {
+					task.waiting = false;
+				}
+			} else {
+				if (creeps.length === 0) {
+					task.waiting = true;
+				}
 			}
 
 			// FIXME: store all hostile ids in memory as `allTargets`
@@ -360,6 +376,14 @@ module.exports = {
 						if (!task.currentTarget) {
 							delete task._currentTarget;
 						}
+						hostiles = _.sortByOrder(hostiles, [
+							c => {
+								return c.getActiveBodyparts(HEAL);
+							},
+							c => {
+								return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
+							}
+						], ["desc", "desc"]);
 						task._currentTarget = hostiles[0].id;
 					}
 				}
@@ -372,8 +396,6 @@ module.exports = {
 				}
 			}
 
-			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
-			let guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
 			// let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
 			for (let creep of creeps) {
 				creep.notifyWhenAttacked(false);
@@ -431,6 +453,7 @@ module.exports = {
 				if (task.currentTarget) {
 					let rangeToTarget = creep.pos.getRangeTo(task.currentTarget);
 					let isTargetInRange = rangeToTarget <= 3;
+					let hostilesAdjacent = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 1));
 					let hostilesInRange = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3));
 					let hostileHealdersInRange = _.filter(hostilesInRange, hostile => hostile.getActiveBodyparts(HEAL) > 0);
 					let rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
@@ -441,7 +464,10 @@ module.exports = {
 					// Needs to prioritize focusing down creeps that can heal
 					if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
 						if (isTargetInRange) {
-							if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
+							if (rangeToTarget === 1 && hostilesInRange.length > 1) {
+								shouldMassAttack = true;
+							}
+							else if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
 								shouldMassAttack = false;
 							}
 							else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
@@ -475,20 +501,31 @@ module.exports = {
 						if (creep.getActiveBodyparts(ATTACK) > 0 && rangeToTarget === 1) {
 							creep.attack(task.currentTarget);
 							creep.move(creep.pos.getDirectionTo(task.currentTarget));
+						} else if (creep.getActiveBodyparts(MOVE) === 0 && rangeToTarget > 1) {
+							if (creep.getActiveBodyparts(ATTACK) > 0 && hostilesAdjacent.length > 0) {
+								creep.attack(hostilesAdjacent[0]);
+							}
 						}
 
-						if (task.currentTarget.owner.username !== "Source Keeper" && guardsUnavailable > 0) {
+						if (task.waiting) {
 							creep.say("waiting");
 							creep.log("waiting for other guards to finish spawning");
-							if (!creep.memory.stagingObjectId) {
-								creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id;
+							let remoteMiningTarget = _.find(Memory.remoteMining.targets, { roomName: task._targetRoom })
+							if (remoteMiningTarget) {
+								let dangerPos = new RoomPosition(remoteMiningTarget.dangerPos[2].x, remoteMiningTarget.dangerPos[2].y, remoteMiningTarget.dangerPos[2].roomName);
+								creep.travelTo(dangerPos, { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
 							}
-							creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId));
+							else {
+								if (!creep.memory.stagingObjectId) {
+									creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id;
+								}
+								creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId), { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
+							}
 						}
 						else {
 							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
+								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true, stuckValue: 1 });
 							}
 						}
 					}
