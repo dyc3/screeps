@@ -238,6 +238,7 @@ class Traveler {
                 allowedRooms = route;
             }
         }
+        let bannedRooms = options.avoidRooms;
         let roomsSearched = 0;
         let callback = (roomName) => {
             if (allowedRooms) {
@@ -248,6 +249,11 @@ class Traveler {
             else if (!options.allowHostile && Traveler.checkAvoid(roomName)
                 && roomName !== destRoomName && roomName !== originRoomName) {
                 return false;
+            }
+            if (bannedRooms) {
+                if (bannedRooms.includes(roomName)) {
+                    return false;
+                }
             }
             roomsSearched++;
             let matrix;
