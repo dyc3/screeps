@@ -361,21 +361,21 @@ let util = {
 	getPositionInDirection(pos, direction, amount=1) {
 		switch (direction) {
 			case TOP:
-				return new RoomPosition(pos.x, pos.y - amount, pos.roomName);
+				return new RoomPosition(pos.x, (pos.y - amount).clamp(0, 49), pos.roomName);
 			case BOTTOM:
-				return new RoomPosition(pos.x, pos.y + amount, pos.roomName);
+				return new RoomPosition(pos.x, (pos.y + amount).clamp(0, 49), pos.roomName);
 			case LEFT:
-				return new RoomPosition(pos.x - amount, pos.y, pos.roomName);
+				return new RoomPosition((pos.x - amount).clamp(0, 49), pos.y, pos.roomName);
 			case RIGHT:
-				return new RoomPosition(pos.x + amount, pos.y, pos.roomName);
+				return new RoomPosition((pos.x + amount).clamp(0, 49), pos.y, pos.roomName);
 			case TOP_LEFT:
-				return new RoomPosition(pos.x - amount, pos.y - amount, pos.roomName);
+				return new RoomPosition((pos.x - amount).clamp(0, 49), (pos.y - amount).clamp(0, 49), pos.roomName);
 			case TOP_RIGHT:
-				return new RoomPosition(pos.x + amount, pos.y - amount, pos.roomName);
+				return new RoomPosition((pos.x + amount).clamp(0, 49), (pos.y - amount).clamp(0, 49), pos.roomName);
 			case BOTTOM_LEFT:
-				return new RoomPosition(pos.x - amount, pos.y + amount, pos.roomName);
+				return new RoomPosition((pos.x - amount).clamp(0, 49), (pos.y + amount).clamp(0, 49), pos.roomName);
 			case BOTTOM_RIGHT:
-				return new RoomPosition(pos.x + amount, pos.y + amount, pos.roomName);
+				return new RoomPosition((pos.x + amount).clamp(0, 49), (pos.y + amount).clamp(0, 49), pos.roomName);
 			default:
 				break;
 		}
