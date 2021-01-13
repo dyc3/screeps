@@ -785,7 +785,7 @@ let roleManager = {
 			// }
 		}
 
-		if (!creep.memory.transporting && creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75) {
+		if (!creep.memory.transporting && (creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * .75 || creep.store.getFreeCapacity() === 0)) {
 			creep.memory.transporting = true;
 			creep.memory.lastWithdrawStructure = creep.memory.aquireTarget;
 			creep.say("transport");
@@ -816,7 +816,22 @@ let roleManager = {
 			creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
 			creep.log(`Transporting to ${transportTarget}`);
 			if (creep.pos.isNearTo(transportTarget)) {
-				if (transportTarget.structureType === STRUCTURE_TERMINAL) {
+				if (transportTarget.structureType === STRUCTURE_STORAGE) {
+					if (creep.store.getUsedCapacity() - creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+						for (let resource of RESOURCES_ALL) {
+							if (resource == RESOURCE_ENERGY) {
+								continue;
+							}
+							if (creep.store[resource] > 0) {
+								creep.transfer(transportTarget, resource);
+							}
+						}
+					}
+					else {
+						creep.transfer(transportTarget, RESOURCE_ENERGY);
+					}
+				}
+				else if (transportTarget.structureType === STRUCTURE_TERMINAL) {
 					amount = Math.min(Memory.terminalEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
 					creep.transfer(transportTarget, RESOURCE_ENERGY, amount);
 				}
