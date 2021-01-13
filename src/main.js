@@ -645,6 +645,10 @@ function doCreepSpawning() {
 		}
 	}
 
+	if (Memory.creepSpawnLog.length >= 100) {
+		Memory.creepSpawnLog.shift();
+	}
+
 	console.log("Spawning/upgrading creeps...");
 
 	let rooms = util.getOwnedRooms();
