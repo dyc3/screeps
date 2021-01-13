@@ -430,16 +430,13 @@ let roleHarvester = {
 			}
 		}
 
-		if(!creep.memory.harvesting && creep.carry.energy == 0) {
+		if (!creep.memory.harvesting && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 			creep.memory.harvesting = true;
 			creep.say('harvesting');
 		}
-		if(creep.memory.harvesting && (creep.carry.energy == creep.carryCapacity) && creep.memory.depositMode !== "drop") {
+		if (creep.memory.harvesting && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
 			creep.memory.harvesting = false;
 			creep.say('transport');
-		}
-		if (!creep.memory.harvesting && creep.memory.depositMode === "drop") {
-			creep.memory.harvesting = true;
 		}
 
 		if(creep.memory.harvesting) {
@@ -468,8 +465,19 @@ let roleHarvester = {
 						else {
 							creep.travelTo(harvestPos);
 						}
+						creep.memory.depositMode = this.getDepositMode(creep);
 					}
-					creep.memory.depositMode = this.getDepositMode(creep);
+					else if (creep.memory.depositMode === "drop") {
+						if (creep.pos.isEqualTo(harvestPos)) {
+							creep.harvest(harvestTarget);
+						}
+						else {
+							creep.travelTo(harvestPos);
+						}
+					}
+					else {
+						creep.memory.depositMode = this.getDepositMode(creep);
+					}
 					return;
 				}
 				creep.memory.transferTarget = target.id;
