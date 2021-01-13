@@ -867,8 +867,8 @@ let roleManager = {
 							if (resource == RESOURCE_ENERGY) {
 								continue;
 							}
-							if (structure.store[resource] > 0) {
-								creep.withdraw(structure, resource);
+							if (aquireTarget.store[resource] > 0) {
+								creep.withdraw(aquireTarget, resource);
 							}
 						}
 					}
