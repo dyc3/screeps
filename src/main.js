@@ -737,7 +737,9 @@ function doCreepSpawning() {
 
 			if (creeps_of_role.length >= role_quota) {
 				if (doMarkForDeath(role, creeps_of_role, role_quota, target_room)) {
-					return;
+					if (role.name !== "scout") {
+						return;
+					}
 				}
 				continue;
 			}
