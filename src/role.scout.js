@@ -215,6 +215,8 @@ var roleScout = {
 
 		// wait until we are done spawning
 		if (creep.spawning) { return; }
+		Game.map.visual.text("👁", creep.pos);
+		creep.notifyWhenAttacked(false);
 
 		// be friendly
 		// creep.say("greetings", true);
