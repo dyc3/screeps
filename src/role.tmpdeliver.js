@@ -38,10 +38,6 @@ let roleTmpDelivery = {
 	 * @returns {boolean} True if the creep should renew, false if otherwise.
 	 */
 	shouldRenew(creep) {
-		if (this.haveSettingsChanged(creep)) {
-			delete creep.memory._routeDistance;
-		}
-
 		if (!creep.memory._routeDistance) {
 			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
@@ -62,6 +58,13 @@ let roleTmpDelivery = {
 			creep.say("need info");
 			creep.log("needs depositTargetId");
 			return;
+		}
+
+		if (this.haveSettingsChanged(creep)) {
+			delete creep.memory._settingsHash;
+			delete creep.memory._routeDistance;
+			delete creep.memory.withdrawCachePos;
+			delete creep.memory.depositCachePos;
 		}
 
 		let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
