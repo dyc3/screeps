@@ -977,7 +977,12 @@ function commandRemoteMining() {
 				keeperLair = Game.getObjectById(target.keeperLairId);
 			}
 
-			if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0) {
+			let hostileStructures = room.find(FIND_HOSTILE_STRUCTURES)
+			const foundInvaderCore = _.first(hostileStructures.filter(struct => struct.structureType === STRUCTURE_INVADER_CORE));
+			if (foundInvaderCore && hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0) {
+				target.danger = 2;
+			}
+			else if (hostiles.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0) {
 				target.danger = 1;
 			}
 			else if (keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5) {
