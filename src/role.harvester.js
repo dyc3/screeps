@@ -347,7 +347,7 @@ let roleHarvester = {
 						return false;
 					}
 					else if (look.type === LOOK_STRUCTURES) {
-						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER) {
+						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER && look.structure.structureType !== STRUCTURE_RAMPART) {
 							return false;
 						}
 					}
