@@ -7,7 +7,7 @@ let defaultScoreFreshnessThreshold = 50000;
 function isRoomHostile(roomName) {
 	var hasHostileOwner = false;
 	if (Memory.roomInfo[roomName] && Memory.roomInfo[roomName].ownership) {
-		hasHostileOwner = (Memory.roomInfo[roomName].ownership != undefined ? Memory.roomInfo[roomName].ownership.username != "Segmentation_Fault" : false)
+		hasHostileOwner = (Memory.roomInfo[roomName].ownership != undefined ? Memory.roomInfo[roomName].ownership.username != WHOAMI : false)
 	}
 	return hasHostileOwner;
 }
