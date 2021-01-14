@@ -588,6 +588,7 @@ function doCreepSpawning() {
 
 		if (hiStage >= 0) {
 			console.log("Spawn new creep", newCreepName);
+			Memory.creepSpawnLog.push(`${Game.time} | spawning ${newCreepName} at ${target_spawn.name} (stage ${hiStage}${role.quota_per_room ? ", target room:" + room.name : ""})`)
 			let body = toolCreepUpgrader.roles[role.name].stages[hiStage];
 			if (role === "upgrader" && room.controller.rcl <= 5 && hiStage > 2) {
 				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
