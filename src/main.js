@@ -732,6 +732,7 @@ function doAutoTrading() {
 
 	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.45;
 	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.45;
+	minimumPrice[RESOURCE_LEMERGIUM_BAR] = 0.6;
 	minimumPrice[RESOURCE_REDUCTANT] = 0.45;
 	minimumPrice[RESOURCE_BATTERY] = 0.05;
 
@@ -765,7 +766,7 @@ function doAutoTrading() {
 				// ensure we have some energy in reserve
 				continue;
 			}
-			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR || mineral === RESOURCE_REDUCTANT) {
+			if (mineral === RESOURCE_UTRIUM_BAR || mineral === RESOURCE_ZYNTHIUM_BAR || mineral === RESOURCE_LEMERGIUM_BAR || mineral === RESOURCE_REDUCTANT) {
 				if (room.terminal.store[mineral] < 3000) {
 					continue;
 				}
@@ -1135,6 +1136,8 @@ function doWorkFactories() {
 		let productionTargets = [
 			RESOURCE_UTRIUM_BAR,
 			RESOURCE_ZYNTHIUM_BAR,
+			RESOURCE_LEMERGIUM_BAR,
+			RESOURCE_KEANIUM_BAR,
 			RESOURCE_REDUCTANT,
 			RESOURCE_OXIDANT,
 
@@ -1144,7 +1147,6 @@ function doWorkFactories() {
 			RESOURCE_EXTRACT,
 			RESOURCE_CONCENTRATE,
 
-			RESOURCE_KEANIUM_BAR,
 			RESOURCE_PURIFIER,
 		];
 
@@ -1250,7 +1252,7 @@ let jobs = {
 	"work-factories": {
 		name: "work-factories",
 		run: doWorkFactories,
-		interval: 40,
+		interval: 20,
 	},
 	"op-guard": {
 		name: "op-guard",
