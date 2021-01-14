@@ -150,9 +150,10 @@ module.exports = {
 			}
 
 			if (task.guardType === "treasure") {
+				const foundInvaderCore = _.first(task.targetRoom.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }));
 				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 				let invaders = _.filter(hostiles, c => c.owner.username === "Invader");
-				if (invaders.length > 0) {
+				if (invaders.length > 0 || foundInvaderCore) {
 					newTask.neededCreeps = 3;
 				}
 				else {
@@ -290,40 +291,47 @@ module.exports = {
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
 				if (task.guardType == "treasure") {
-					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, { filter: hostile => {
-						if (hostile.owner.username !== "Source Keeper") {
-							return true;
-						}
-						let struct = _.first(hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, { filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR }));
-						if (struct) {
-							return !!_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
-						}
-						else {
-							return true;
-						}
-					}});
-
-					if (hostiles.length > 0) {
-						// prioritize creeps that can heal
-						hostiles = _.sortByOrder(hostiles, [
-						c => {
-							return c.owner.username !== "Source Keeper";
-						},
-						c => {
-							return c.getActiveBodyparts(HEAL);
-						},
-						c => {
-							return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
-						}
-						], ["desc", "desc", "desc"]);
-
-						task._currentTarget = hostiles[0].id;
+					let hostileStructures = task.targetRoom.find(FIND_HOSTILE_STRUCTURES);
+					let towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
+					if (towers.length > 0) {
+						task._currentTarget = towers[0].id;
 					}
 					else {
-						let keeperLairs = task.targetRoom.find(FIND_HOSTILE_STRUCTURES).filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
-						if (keeperLairs) {
-							keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
-							task._currentTarget = keeperLairs[0].id;
+						let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, { filter: hostile => {
+							if (hostile.owner.username !== "Source Keeper") {
+								return true;
+							}
+							let struct = _.first(hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, { filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR }));
+							if (struct) {
+								return !!_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
+							}
+							else {
+								return true;
+							}
+						}});
+
+						if (hostiles.length > 0) {
+							// prioritize creeps that can heal
+							hostiles = _.sortByOrder(hostiles, [
+							c => {
+								return c.owner.username !== "Source Keeper";
+							},
+							c => {
+								return c.getActiveBodyparts(HEAL);
+							},
+							c => {
+								return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
+							}
+							], ["desc", "desc", "desc"]);
+
+							task._currentTarget = hostiles[0].id;
+						}
+						else {
+							let keeperLairs = hostileStructures.filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
+							if (keeperLairs) {
+								keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
+								task._currentTarget = keeperLairs[0].id;
+							}
 						}
 					}
 				}
@@ -439,7 +447,7 @@ module.exports = {
 							else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
 								shouldMassAttack = true;
 							}
-							else if (rangeToTarget === 1 && hostilesInRange.length > 1) {
+							else if (rangeToTarget === 1) {
 								shouldMassAttack = true;
 							}
 						}
@@ -482,6 +490,33 @@ module.exports = {
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
 								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
 							}
+						}
+					}
+					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureTower) {
+						console.log(`[guard] attacking tower, range=${rangeToTarget}`);
+
+						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+							if (shouldMassAttack) {
+								creep.rangedMassAttack();
+								if (rangeToTarget === 1) {
+									creep.move(creep.pos.getDirectionTo(task.currentTarget));
+								}
+							}
+							else if (isTargetInRange) {
+								creep.rangedAttack(task.currentTarget);
+							}
+							else if (hostilesInRange.length == 1) {
+								creep.rangedAttack(hostilesInRange[0]);
+							}
+						}
+						if (creep.getActiveBodyparts(ATTACK) > 0 && rangeToTarget === 1) {
+							creep.attack(task.currentTarget);
+							creep.move(creep.pos.getDirectionTo(task.currentTarget));
+						}
+
+						let minRange = 1;
+						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
+							creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
 						}
 					}
 					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
