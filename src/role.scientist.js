@@ -383,7 +383,7 @@ let roleScientist = {
 					creep.transfer(depositTarget, creep.memory.route.resource);
 				}
 				else {
-					creep.travelTo(depositTarget, { obstacles });
+					creep.travelTo(depositTarget, { obstacles, ensurePath: true });
 				}
 			}
 			else {
@@ -403,7 +403,7 @@ let roleScientist = {
 					}
 				}
 				else {
-					creep.travelTo(withdrawTarget, { obstacles });
+					creep.travelTo(withdrawTarget, { obstacles, ensurePath: true });
 				}
 			}
 			else {
