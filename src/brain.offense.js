@@ -120,7 +120,7 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 	constructor(mem) {
 		super(mem)
 		this.state = STRATEGY_ACT_LURE;
-		this.mode = 0;
+		this.mode = 0; // basically, which direction are we attacking the room from?
 		// HACK: hardcoded room
 		this.targetRoom = "W17N12";
 		this.fromRoom = "W17N11";
