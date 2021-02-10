@@ -263,30 +263,30 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 			if (this.mode === 0) {
 				const baseX = 26;
 				healers.forEach((creep, idx) => {
-					creep.travelTo(new RoomPosition(baseX + idx, 2, "W17N11"));
+					creep.travelTo(new RoomPosition(baseX + idx, 2, this.fromRoom));
 				})
 				attackers.forEach((creep, idx) => {
 					if (creep.hitsMax - creep.hits > 800) {
-						creep.travelTo(new RoomPosition(baseX + idx, 1, "W17N11"))
+						creep.travelTo(new RoomPosition(baseX + idx, 1, this.fromRoom))
 					} else {
-						creep.travelTo(new RoomPosition(baseX + idx, 48, "W17N12"))
+						creep.travelTo(new RoomPosition(baseX + idx, 48, this.targetRoom))
 						// creep.attack(this.currentTarget);
 						// creep.attack(Game.getObjectById("601efbde533d3d0c290bf9d2"));
 					}
 				})
 			} else if (this.mode === 1) {
-				const baseY = 28;
+				const baseY = 11;
 				healers.forEach((creep, idx) => {
 					let opts = creep.room.name === this.targetRoom ? { maxRooms: 1 } : {};
-					creep.travelTo(new RoomPosition(47, baseY + idx, "W17N2"), opts);
+					creep.travelTo(new RoomPosition(47, baseY + idx, this.fromRoom), opts);
 				})
 				attackers.forEach((creep, idx) => {
 					let opts = creep.room.name === this.targetRoom ? { maxRooms: 1 } : {};
 					if (creep.hitsMax - creep.hits > 400) {
-						creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
+						creep.travelTo(new RoomPosition(48, baseY + idx, this.fromRoom), opts)
 					} else {
 						// creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
-						creep.travelTo(new RoomPosition(1, baseY + idx, "W16N2"), opts)
+						creep.travelTo(new RoomPosition(1, baseY + idx, this.targetRoom), opts)
 					}
 				})
 			} else {
