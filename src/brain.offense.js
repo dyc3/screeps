@@ -190,7 +190,7 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 				}
 			}
 			else if (this.state === STRATEGY_ACT_LURE) {
-				if (dangerousHostiles.length === 0 && !_.some(towers, t => t.store[RESOURCE_ENERGY] > 0)) {
+				if (dangerousHostiles.length === 0 && !_.some(towers, t => t.store[RESOURCE_ENERGY] >= 10)) {
 					this.setState(STRATEGY_ACT_ATTACK)
 				}
 			}
