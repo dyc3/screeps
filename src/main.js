@@ -1958,6 +1958,7 @@ function main() {
 // profiler.registerClass(brainGuard, 'brain.guard');
 // profiler.registerClass(brainLogistics, 'brain.logistics');
 // profiler.registerClass(brainHighwayHarvesting, 'brain.highwayharvesting');
+// profiler.registerClass(brainOffense, 'brain.offense');
 // profiler.enable();
 
 module.exports = {
