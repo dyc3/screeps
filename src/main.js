@@ -1160,8 +1160,8 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			let targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-			// let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-			let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
+			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+			// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
 			if (Memory.claimTargets[t].mode === "claim") {
 				// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
 				claimerBody = [CLAIM, MOVE]
