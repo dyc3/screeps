@@ -82,7 +82,7 @@ var roleUpgrader = {
 							creep.upgradeController(creep.room.controller);
 						}
 						if (!creep.pos.inRangeTo(creep.room.controller, 3)) {
-							creep.travelTo(creep.room.controller, { range: 3 });
+							creep.travelTo(creep.room.controller, { range: 3, maxRooms: 1 });
 						}
 					}
 					if (creep.pos.findInRange(FIND_CREEPS, 2).length > 2) {
