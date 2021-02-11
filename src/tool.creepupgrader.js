@@ -116,19 +116,6 @@ function getMinerQuota() {
 	return 0;
 }
 
-function getAttackerQuota() {
-	return 0;
-	let count = 0;
-	let rooms = util.getOwnedRooms();
-	for (let r = 0; r < rooms.length; r++) {
-		let room = rooms[r];
-		if (room.controller.level >= 2) {
-			count += room.memory.defcon;
-		}
-	}
-	return count;
-}
-
 function getRepairerQuota(room) {
 	let rooms = util.getOwnedRooms();
 	if (room.controller.level >= (rooms.length > 1 ? 4 : 6)) {
@@ -219,28 +206,6 @@ let creepUpgrader = {
 				// MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE, 		MOVE,MOVE,MOVE,MOVE,MOVE,		MOVE,MOVE,MOVE,MOVE,MOVE],
 			],
 		},
-		// "healer":{
-		// 	name:"healer",
-		// 	quota:function() { return 0; }, // Memory.doAttack != undefined
-		// 	quota_per_room:false,
-		// 	stages:[
-		// 		[HEAL,MOVE],
-		// 		[TOUGH,HEAL,HEAL,MOVE,MOVE],
-		// 		[TOUGH,TOUGH,HEAL,HEAL,MOVE,MOVE],
-		// 		[TOUGH,TOUGH,TOUGH,HEAL,HEAL,HEAL,MOVE,MOVE,MOVE],
-		// 	],
-		// },
-		// "attacker":{
-		// 	name:"attacker",
-		// 	quota: getAttackerQuota, //((Game.flags["attack"] || Game.flags["Defend"]) ? 2 : 0), // Memory.doAttack != undefined
-		// 	quota_per_room:false,
-		// 	stages:[
-		// 		[TOUGH,MOVE,TOUGH,MOVE,ATTACK],
-		// 		[TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],
-		// 		[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK],
-		// 		[TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],
-		// 	],
-		// },
 		"remoteharvester":{
 			name:"remoteharvester",
 			quota:function() { return Memory.remoteMining.needHarvesterCount; },
@@ -270,16 +235,6 @@ let creepUpgrader = {
 		// 	quota_per_room:false,
 		// 	stages:[
 		// 		[MOVE],
-		// 	],
-		// },
-		// "nextroomer":{
-		// 	name:"nextroomer",
-		// 	//quota:((Memory.expansionTarget != undefined) ? 1 : 0),
-		// 	quota:function() { return 0; },
-		// 	quota_per_room:false,
-		// 	stages:[
-		// 		// [CLAIM,MOVE],
-		// 		[WORK,MOVE,WORK,MOVE,CARRY,MOVE,WORK,MOVE,CARRY,MOVE],
 		// 	],
 		// },
 		"miner": {
