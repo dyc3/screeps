@@ -279,7 +279,7 @@ let taskGather = {
 			}
 		}
 		else {
-			creep.travelTo(gatherTarget);
+			creep.travelTo(gatherTarget, { maxRooms: 1 });
 		}
 
 		creep.memory._gatherLastRun = Game.time;
