@@ -331,39 +331,41 @@ let roleHarvester = {
 		}
 
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		let targetRoom = harvestTarget.room;
 
-		// TODO: harvestPos should probably be set when we plan buldings
-		if (!creep.memory.harvestPos) {
-			let brainAutoPlanner = require("brain.autoplanner");
-			let adj = util.getAdjacent(harvestTarget.pos).filter(pos => {
-				let lookResult = pos.look();
-				for (let l = 0; l < lookResult.length; l++) {
-					let look = lookResult[l];
-					if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
-						continue;
-					}
+		// OLD HARVEST POSITION FINDING CODE, REMOVE WHEN NEW SOLUTION IS KNOWN TO BE GOOD
+		// if (!creep.memory.harvestPos) {
+		// 	let brainAutoPlanner = require("brain.autoplanner");
+		// 	let adj = util.getAdjacent(harvestTarget.pos).filter(pos => {
+		// 		let lookResult = pos.look();
+		// 		for (let l = 0; l < lookResult.length; l++) {
+		// 			let look = lookResult[l];
+		// 			if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+		// 				continue;
+		// 			}
 
-					if (look.type === LOOK_TERRAIN && look.terrain === 'wall') {
-						return false;
-					}
-					else if (look.type === LOOK_STRUCTURES) {
-						if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER && look.structure.structureType !== STRUCTURE_RAMPART) {
-							return false;
-						}
-					}
-				}
-				planned = brainAutoPlanner.getPlansAtPosition(pos);
-				return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
-			});
-			adj = _.sortByOrder(adj, [
-				pos => !util.isDistFromEdge(pos, 2),
-				pos => brainAutoPlanner.getPlansAtPosition(pos) === STRUCTURE_CONTAINER,
-			],
-			["desc", "desc"]);
-			creep.memory.harvestPos = adj[0];
-		}
+		// 			if (look.type === LOOK_TERRAIN && look.terrain === 'wall') {
+		// 				return false;
+		// 			}
+		// 			else if (look.type === LOOK_STRUCTURES) {
+		// 				if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER && look.structure.structureType !== STRUCTURE_RAMPART) {
+		// 					return false;
+		// 				}
+		// 			}
+		// 		}
+		// 		planned = brainAutoPlanner.getPlansAtPosition(pos);
+		// 		return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
+		// 	});
+		// 	adj = _.sortByOrder(adj, [
+		// 		pos => !util.isDistFromEdge(pos, 2),
+		// 		pos => brainAutoPlanner.getPlansAtPosition(pos) === STRUCTURE_CONTAINER,
+		// 	],
+		// 	["desc", "desc"]);
+		// 	creep.memory.harvestPos = adj[0];
+		// }
 
-		let harvestPos = new RoomPosition(creep.memory.harvestPos.x, creep.memory.harvestPos.y, creep.memory.harvestPos.roomName);
+		let { x, y } = targetRoom.memory.harvestPositions[harvestTarget.id];
+		let harvestPos = targetRoom.getPositionAt(x, y);
 
 		if (harvestPos.roomName !== creep.memory.targetRoom) {
 			creep.memory.targetRoom = harvestPos.roomName;
