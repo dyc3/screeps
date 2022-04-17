@@ -1912,7 +1912,7 @@ function main() {
 			printException(e);
 		}
 
-		// draw creeps marked for deatch
+		// draw creeps marked for death
 		try {
 			for (let c in Game.creeps) {
 				let creep = Game.creeps[c];
@@ -1926,6 +1926,36 @@ function main() {
 					radius: 0.5,
 					lineStyle: "dotted",
 				})
+			}
+		} catch (e) {
+			printException(e);
+		}
+
+		// draw planned harvest positions
+		try {
+			for (let room of util.getOwnedRooms()) {
+				if (!room.memory.harvestPositions) {
+					continue;
+				}
+				Object.keys(room.memory.harvestPositions).forEach(id => {
+					let source = Game.getObjectById(id);
+					let { x, y } = room.memory.harvestPositions[id];
+					let pos = room.getPositionAt(x, y);
+					room.visual.circle(pos, {
+						stroke: "#ffff00",
+						fill: "transparent",
+						opacity: 0.8,
+						radius: 0.5,
+						lineStyle: "dotted",
+					});
+
+					room.visual.line(source.pos, pos, {
+						stroke: "#ffff00",
+						fill: "transparent",
+						opacity: 0.8,
+						lineStyle: "dotted",
+					});
+				});
 			}
 		} catch (e) {
 			printException(e);
