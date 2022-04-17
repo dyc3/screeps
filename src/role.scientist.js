@@ -357,7 +357,7 @@ let roleScientist = {
 						});
 					}
 
-					if (depositTarget.room.name === withdrawTarget.room.name) {
+					if (depositTarget && depositTarget.room.name === withdrawTarget.room.name) {
 						creep.room.visual.line(withdrawTarget.pos, depositTarget.pos, {
 							color: "#ffff00",
 							lineStyle: "dotted",
@@ -378,6 +378,11 @@ let roleScientist = {
 
 		if (creep.memory.transporting) {
 			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
+			if (!depositTarget) {
+				creep.log("deposit target does not exist, removing route");
+				delete creep.memory.route;
+				return;
+			}
 			if (depositTarget.store.getFreeCapacity(creep.memory.route.resource) > 0) {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, creep.memory.route.resource);
@@ -393,6 +398,11 @@ let roleScientist = {
 		}
 		else {
 			let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
+			if (!withdrawTarget) {
+				creep.log("withdraw target does not exist, removing route");
+				delete creep.memory.route;
+				return;
+			}
 			if (withdrawTarget && (withdrawTarget instanceof Resource ? withdrawTarget.amount : withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0) {
 				if (creep.pos.isNearTo(withdrawTarget)) {
 					if (withdrawTarget instanceof Resource) {
