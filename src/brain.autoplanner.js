@@ -303,11 +303,73 @@ let brainAutoPlanner = {
 
 
 		// plan structures around sources
+		this.planHarvestPositions(room);
+	},
+
+	/**
+	 * Plans the placement of harvest positions, the placement of building around the harvest position, and the road to the harvest position.
+	 * @param {Room} room
+	 * @example require("brain.autoplanner").planHarvestPositions(Game.rooms["W17N11"]);
+	 */
+	planHarvestPositions(room) {
+		room.memory.harvestPositions = {};
+		const sources = room.find(FIND_SOURCES);
+
+		// plan structures around sources
 		for (let source of sources) {
+			let terrain = Game.map.getRoomTerrain(room.name);
+			let adjacent = util.getAdjacent(source.pos)
+				.filter(pos => {
+					if (terrain.get(pos.x, pos.y) == TERRAIN_MASK_WALL) {
+						return false;
+					}
+
+					let lookResult = pos.look();
+					for (let l = 0; l < lookResult.length; l++) {
+						let look = lookResult[l];
+						if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
+							continue;
+						}
+
+						if (look.type === LOOK_STRUCTURES) {
+							if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER && look.structure.structureType !== STRUCTURE_RAMPART) {
+								return false;
+							}
+						}
+					}
+					planned = brainAutoPlanner.getPlansAtPosition(pos);
+					return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
+				});
+			adjacent = _.sortByOrder(adjacent, [
+				pos => !util.isDistFromEdge(pos, 4),
+				pos => {
+					// count the number of non-wall tiles adjacent to the position
+					let adj = util.getAdjacent(pos);
+					let count = 0;
+					for (let a of adj) {
+						if (terrain.get(a.x, a.y) !== TERRAIN_MASK_WALL) {
+							count++;
+						}
+					}
+					return count;
+				}
+			],
+			["desc", "desc"]);
+
+			let harvestPos = adjacent[0];
+			console.log("Harvest position:", harvestPos);
+			room.memory.harvestPositions[source.id] = { x: harvestPos.x, y: harvestPos.y };
+			let harvestAdj = util.getAdjacent(harvestPos);
+			let sourceLinkPos = harvestAdj.splice(0, 1)[0];
+			console.log("sourceLinkPos:", sourceLinkPos);
+			room.memory.structures[STRUCTURE_LINK].push({ x: sourceLinkPos.x, y: sourceLinkPos.y });
+
+			// plan roads
+			let rootPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y);
 			let _tmpIsPlanned = this.getPlansAtPosition;
 			let pathingResult = PathFinder.search(
 				room.getPositionAt(rootPos.x, rootPos.y),
-				{ pos: source.pos, range: 1 },
+				{ pos: harvestPos, range: 1 },
 				{
 					maxRooms: 1,
 					roomCallback: function(roomName) {
@@ -359,14 +421,11 @@ let brainAutoPlanner = {
 				room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x, y: pos.y });
 			}
 
-			let harvestPos = pathToSource[pathToSource.length - 1];
-			let _dir = util.getOppositeDirection(harvestPos.getDirectionTo(source.pos));
-			let sourceLinkPos = util.getPositionInDirection(harvestPos, _dir);
-			console.log("source link dir", _dir, "sourceLinkPos:", sourceLinkPos);
-			room.memory.structures[STRUCTURE_LINK].push({ x: sourceLinkPos.x, y: sourceLinkPos.y });
-			let harvestAdj = util.getAdjacent(harvestPos);
+
+			// plan extentions in remaining spots
+			// since the road from the path is
 			for (let pos of harvestAdj) {
-				if (util.getTerrainAt(pos) == "wall") {
+				if (terrain.get(pos.x, pos.y) == "wall") {
 					continue;
 				}
 
