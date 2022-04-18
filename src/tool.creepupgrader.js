@@ -59,6 +59,15 @@ function getBuilderQuota() {
 // 		}
 // 	}
 // 	return room.controller.level > 2 ? 2 : 1;
+
+	let rooms = util.getOwnedRooms();
+	if (rooms.length < 3) {
+		return 1;
+	}
+	let lowRCL = rooms.filter(room => room.controller.level <= 4).length;
+	if (lowRCL > 0) {
+		return 3;
+	}
 	return 1;
 }
 
