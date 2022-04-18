@@ -568,8 +568,9 @@ global.Offense = {
 	},
 
 	create(strategyName, init={}) {
+		init.name = strategyName;
 		let task = new OffenseTask({
-			strategy: { name: strategyName, ...init }
+			strategy: init,
 		});
 		Memory.offense.tasks.push(_.omit(task, "creeps"));
 	},
