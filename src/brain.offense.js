@@ -194,6 +194,8 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 			else {
 				visTarget(this.currentTarget.pos);
 			}
+		} else {
+			creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20 });
 		}
 
 		healers.forEach((creep, idx) => {
@@ -221,7 +223,7 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 				}
 			} else {
 				olog("moving to ready position")
-				creep.travelTo(new RoomPosition(28, 44, this.targetRoom));
+				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20 });
 			}
 		})
 	}
