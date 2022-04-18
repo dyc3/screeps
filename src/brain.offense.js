@@ -112,6 +112,119 @@ class OffenseTask {
 	}
 }
 
+/**
+ * `attackerCount`: number of attackers
+ */
+class OffenseStrategySimpleManual extends OffenseStrategy {
+	static get name() {
+		return "SimpleManual";
+	}
+
+	constructor(mem) {
+		super(mem);
+		this.currentTargetId = "";
+		this.targetRoom = "";
+		this.attackerCount = 0;
+		Object.assign(this, mem);
+	}
+
+	get neededCreeps() {
+		return {
+			"generic-attack": this.attackerCount,
+			// "big-healer": 2,
+		};
+	}
+
+	get currentTarget() {
+		return Game.getObjectById(this.currentTargetId)
+	}
+
+	act(creeps) {
+		let healers = creeps.filter(c => c.getActiveBodyparts(HEAL) > 0);
+		let targetRoomVision = !!Game.rooms[this.targetRoom];
+
+		// healing
+		healers.forEach(creep => {
+			if (creep.hits < creep.hitsMax) {
+				creep.heal(creep);
+			} else {
+				let needHeal = creeps.filter(c => c.hits < c.hitsMax && creep.pos.inRangeTo(c, 3))
+				if (!needHeal) {
+					creep.heal(creep);
+					return;
+				}
+				let healTarget = needHeal[0]
+				if (creep.pos.isNearTo(healTarget)) {
+					creep.heal(healTarget)
+				} else {
+					creep.rangedHeal(healTarget)
+				}
+			}
+		})
+
+		if (targetRoomVision) {
+			let room = Game.rooms[this.targetRoom];
+			let hostiles = room.find(FIND_HOSTILE_CREEPS)
+			let dangerousHostiles = hostiles.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(HEAL) > 0)
+			let hostileStructures = room.find(FIND_HOSTILE_STRUCTURES)
+			let towers = hostileStructures.filter(s => s.structureType === STRUCTURE_TOWER)
+			let spawns = hostileStructures.filter(s => s.structureType === STRUCTURE_SPAWN)
+			let extensions = hostileStructures.filter(s => s.structureType === STRUCTURE_EXTENSION)
+
+			if (!this.currentTarget) {
+				// determine target
+				if (dangerousHostiles.length > 0) {
+					this.currentTargetId = dangerousHostiles[0].id
+				} else if (towers.length > 0) {
+					this.currentTargetId = towers[0].id
+				} else if (extensions.length > 0) {
+					this.currentTargetId = extensions[0].id
+				} else if (hostiles.length > 0) {
+					this.currentTargetId = hostiles[0].id
+				} else if (spawns.length > 0) {
+					this.currentTargetId = spawns[0].id
+				} else if (hostileStructures.length > 0) {
+					this.currentTargetId = hostileStructures[0].id
+				} else {
+					this.currentTargetId = "";
+				}
+			}
+			else {
+				visTarget(this.currentTarget.pos);
+			}
+
+			healers.forEach((creep, idx) => {
+				creep.travelTo(attackers[idx % 2], { movingTarget: true });
+			})
+
+			attackers.forEach((creep, idx) => {
+				if (this.currentTargetId !== "") {
+					if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
+						creep.rangedAttack(this.currentTarget);
+					}
+					else {
+						creep.rangedMassAttack();
+					}
+					if (creep.pos.isNearTo(this.currentTarget)) {
+						if (creep.getActiveBodyparts(ATTACK) > 0) {
+							creep.attack(this.currentTarget);
+						}
+						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+							creep.rangedMassAttack();
+						}
+						creep.move(creep.pos.getDirectionTo(this.currentTarget));
+					} else {
+						creep.travelTo(this.currentTarget);
+					}
+				} else {
+					olog("moving to ready position")
+					creep.travelTo(new RoomPosition(28, 44, this.targetRoom));
+				}
+			})
+		}
+	}
+}
+
 class OffenseStrategyLureHarrass extends OffenseStrategy {
 	static get name() {
 		return "LureHarrass"
@@ -121,9 +234,8 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 		super(mem)
 		this.state = STRATEGY_ACT_LURE;
 		this.mode = 0; // basically, which direction are we attacking the room from?
-		// HACK: hardcoded room
-		this.targetRoom = "W17N12";
-		this.fromRoom = "W17N11";
+		this.targetRoom = "";
+		this.fromRoom = "";
 		this.currentTargetId = "";
 		Object.assign(this, mem)
 	}
@@ -399,7 +511,7 @@ class OffenseStrategyBreakAltPath extends OffenseStrategy {
 	}
 }
 
-const Strategies = [OffenseStrategyLureHarrass, OffenseStrategyBreakAltPath];
+const Strategies = [OffenseStrategySimpleManual, OffenseStrategyLureHarrass, OffenseStrategyBreakAltPath];
 const CREEP_BODIES = {
 	"generic-attack": [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE],
 	"ranged": [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,MOVE],
@@ -455,8 +567,11 @@ global.Offense = {
 		})
 	},
 
-	create(strategy) {
-		let task = new OffenseTask({ strategy: { name: strategy } })
+	create(strategyName, init={}) {
+		init.name = strategyName;
+		let task = new OffenseTask({
+			strategy: init,
+		});
 		Memory.offense.tasks.push(_.omit(task, "creeps"));
 	},
 
