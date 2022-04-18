@@ -142,6 +142,7 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 
 	act(creeps) {
 		let healers = creeps.filter(c => c.getActiveBodyparts(HEAL) > 0);
+		let attackers = creeps.filter(c => c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0);
 		let targetRoomVision = !!Game.rooms[this.targetRoom];
 
 		// healing
@@ -193,36 +194,36 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 			else {
 				visTarget(this.currentTarget.pos);
 			}
+		}
 
-			healers.forEach((creep, idx) => {
-				creep.travelTo(attackers[idx % 2], { movingTarget: true });
-			})
+		healers.forEach((creep, idx) => {
+			creep.travelTo(attackers[idx % 2], { movingTarget: true });
+		})
 
-			attackers.forEach((creep, idx) => {
-				if (this.currentTargetId !== "") {
-					if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
-						creep.rangedAttack(this.currentTarget);
+		attackers.forEach((creep, idx) => {
+			if (this.currentTargetId !== "") {
+				if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
+					creep.rangedAttack(this.currentTarget);
+				}
+				else {
+					creep.rangedMassAttack();
+				}
+				if (creep.pos.isNearTo(this.currentTarget)) {
+					if (creep.getActiveBodyparts(ATTACK) > 0) {
+						creep.attack(this.currentTarget);
 					}
-					else {
+					if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
 						creep.rangedMassAttack();
 					}
-					if (creep.pos.isNearTo(this.currentTarget)) {
-						if (creep.getActiveBodyparts(ATTACK) > 0) {
-							creep.attack(this.currentTarget);
-						}
-						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
-							creep.rangedMassAttack();
-						}
-						creep.move(creep.pos.getDirectionTo(this.currentTarget));
-					} else {
-						creep.travelTo(this.currentTarget);
-					}
+					creep.move(creep.pos.getDirectionTo(this.currentTarget));
 				} else {
-					olog("moving to ready position")
-					creep.travelTo(new RoomPosition(28, 44, this.targetRoom));
+					creep.travelTo(this.currentTarget);
 				}
-			})
-		}
+			} else {
+				olog("moving to ready position")
+				creep.travelTo(new RoomPosition(28, 44, this.targetRoom));
+			}
+		})
 	}
 }
 
