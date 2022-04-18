@@ -61,6 +61,11 @@ Room memory: `Memory.rooms.ROOMNAME`
 	- `{x: 0, y: 0}`
 - `storagePosDirection`: number to dictate which direction from `storage` the relay position in the storage module should be
 
+## Flag commands
+- `fill:MINERAL` fill the store with the mineral
+- `make:MINERAL` make a mineral in a lab
+- `unmake:MINERAL` unmake a mineral in a lab
+
 ## Misc
 
 * To force the rootPos of a room to be set somewhere, place a flag with the name "setRootPos"
@@ -889,39 +894,66 @@ function doWorkLabs() {
 				continue;
 			}
 			// console.log(workFlag)
-			let isMakingWhat = workFlag.name.split(":")[1];
-			let needsMinerals = [];
-			switch (isMakingWhat) {
-				case "G":
-					needsMinerals = ["UL", "ZK"];
-					break;
-				default:
-					if (isMakingWhat.startsWith("X")) {
-						needsMinerals = ["X",isMakingWhat.slice(1)]; // untested
-					}
-					else {
-						needsMinerals = isMakingWhat.split("");
-					}
+			let [method, makingWhat] = workFlag.name.split(":");
+			if (method.startsWith("make")) {
+				method = "make";
+			} else if (method.startsWith("unmake")) {
+				method = "unmake";
 			}
-			let sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-				filter: (lab) => { return _.contains(needsMinerals, lab.mineralType); }
-			});
-			// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
-			try {
-				new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[0].pos);
-				new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[1].pos);
-			} catch (e) {
 
-			}
-			if (sourceLabs.length == 2) {
-				labs[l].runReaction(sourceLabs[0], sourceLabs[1]);
-			}
-			else {
-				// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
+			if (method === "make") {
+				let needsMinerals = [];
+				switch (makingWhat) {
+					case "G":
+						needsMinerals = ["UL", "ZK"];
+						break;
+					default:
+						if (makingWhat.startsWith("X")) {
+							needsMinerals = ["X",makingWhat.slice(1)]; // untested
+						}
+						else {
+							needsMinerals = makingWhat.split("");
+						}
+				}
+				let sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+					filter: (lab) => { return lab.structureType === STRUCTURE_LAB && _.contains(needsMinerals, lab.mineralType); }
+				});
+				// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
+				try {
+					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[0].pos);
+					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[1].pos);
+				} catch (e) {
+
+				}
+				if (sourceLabs.length == 2) {
+					labs[l].runReaction(sourceLabs[0], sourceLabs[1]);
+				}
+				else {
+					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
+				}
+			} else if (method === "unmake") {
+				let splitsInto = labs[l].mineralType.split("");
+				console.log("[work-labs] unmaking", labs[l].mineralType, "into", splitsInto);
+				let destLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+					filter: (lab) => { return lab.structureType === STRUCTURE_LAB && (_.contains(splitsInto, lab.mineralType) || lab.mineralType === undefined); }
+				});
+				destLabs = _.sortBy(destLabs, (lab) => { return _.contains(lab.mineralType, splitsInto); }, "desc");
+				destLabs = destLabs.slice(0, splitsInto.length);
+				console.log(labs[l], "is unmaking", labs[l].mineralType, "into", splitsInto, "into", destLabs)
+				try {
+					let vis = new RoomVisual(labs[l].room.name);
+					destLabs.forEach(lab => vis.line(labs[l].pos, lab.pos));
+				} catch (e) {}
+
+				labs[l].reverseReaction(...destLabs);
+			} else {
+				console.log("Unknown method:", method);
 			}
 		}
 	}
 }
+
+global.doWorkLabs = doWorkLabs;
 
 function commandRemoteMining() {
 	// Force job to run: Memory.job_last_run["command-remote-mining"] = 0
@@ -1718,16 +1750,6 @@ function main() {
 	brainLogistics.finalize();
 
 	printStatus();
-
-	// HACK: some hard coded lab stuff
-	let lab = Game.getObjectById("5bd6ad0a73cd123941da20b7");
-	if (lab && lab.cooldown === 0) {
-		lab.reverseReaction(Game.getObjectById("5bd286b0e5f5d125150e170e"), Game.getObjectById("5bd6388f0f472220a4ad5a18"));
-	}
-	lab = Game.getObjectById("5f551a96aa0ade59d1cbaa6a");
-	if (lab && lab.cooldown === 0) {
-		lab.reverseReaction(Game.getObjectById("5f54faae9f32eef3fc3152e0"), Game.getObjectById("5f5159d6d4a34b200c26c418"));
-	}
 
 	// draw some extra eye candy, if we can spare the resources
 	if (Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {

@@ -184,6 +184,15 @@ let roleHarvester = {
 		return "drop";
 	},
 
+	/** Get the harvester creep's harvest position. The creep must have `harvestTarget` set. */
+	getHarvestPosition(creep) {
+		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		let targetRoom = harvestTarget.room;
+		let { x, y } = targetRoom.memory.harvestPositions[creep.memory.harvestTarget];
+		let harvestPos = targetRoom.getPositionAt(x, y);
+		return harvestPos;
+	},
+
 	/** Meant to replace findTransferTargets **/
 	getTransferTarget: function(creep) {
 		// check adjacent positions for empty extensions
@@ -191,8 +200,9 @@ let roleHarvester = {
 			creep.memory.refresh_fill_targets = Game.time - 50;
 		}
 
+		let harvestPos = this.getHarvestPosition(creep);
+
 		if (!creep.memory.fillTargetIds || Game.time - creep.memory.refresh_fill_targets > 50) {
-			let harvestPos = new RoomPosition(creep.memory.harvestPos.x, creep.memory.harvestPos.y, creep.memory.harvestPos.roomName);
 			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, harvestPos.y - 1, harvestPos.x - 1, harvestPos.y + 1, harvestPos.x + 1, asArray=true), (result) => result.structure.structureType === STRUCTURE_EXTENSION);
 			let targets = [];
 			for (let i = 0; i < adjacentStructs.length; i++) {
