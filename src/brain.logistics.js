@@ -276,7 +276,7 @@ function collectAllResourceSinks() {
 
 	// read fill flags
 	for (let flagName in Game.flags) {
-		if (!flagName.startsWith("fill")) {
+		if (!flagName.startsWith("fill") && !flagName.startsWith("unmake")) {
 			continue;
 		}
 
