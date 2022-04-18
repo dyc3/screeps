@@ -607,7 +607,7 @@ global.Offense = {
 	 * If applicable, set the target object of the task.
 	 */
 	setTarget(taskIdx, target) {
-		if (Memory.offense.tasks[taskIdx].strategy.name === "LureHarrass") {
+		if (Memory.offense.tasks[taskIdx].strategy.name === "LureHarrass" || Memory.offense.tasks[taskIdx].strategy.name === "SimpleManual") {
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				currentTargetId: target
 			})
