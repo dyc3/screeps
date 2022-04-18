@@ -125,13 +125,14 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 		this.currentTargetId = "";
 		this.targetRoom = "";
 		this.attackerCount = 0;
+		this.healerCount = 0;
 		Object.assign(this, mem);
 	}
 
 	get neededCreeps() {
 		return {
 			"generic-attack": this.attackerCount,
-			// "big-healer": 2,
+			"healer": this.healerCount,
 		};
 	}
 
