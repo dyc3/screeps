@@ -279,7 +279,11 @@ let taskGather = {
 			}
 		}
 		else {
-			creep.travelTo(gatherTarget, { maxRooms: 1 });
+			let opts = {};
+			if (creep.room.name === gatherTarget.room.name) {
+				opts = { maxRooms: 1 };
+			}
+			creep.travelTo(gatherTarget, opts);
 		}
 
 		creep.memory._gatherLastRun = Game.time;
