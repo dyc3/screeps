@@ -41,8 +41,10 @@ class GuardTask {
 	set currentTarget(value) {
 		if (typeof value === "string") {
 			this._currentTarget = value;
-		} else {
+		} else if (value !== undefined && value !== null) {
 			this._currentTarget = value.id;
+		} else {
+			this._currentTarget = value;
 		}
 	}
 
