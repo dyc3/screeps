@@ -285,7 +285,7 @@ module.exports = {
 			if (task.complete) {
 				continue;
 			}
-			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"} ${task.isEnabled ? "enabled" : `disabled (${task.disabledUntil - Game.time} remaining)`}`);
+			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"} ${task.isEnabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`}`);
 			if (!task.isEnabled) {
 				continue;
 			}
