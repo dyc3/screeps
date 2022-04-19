@@ -17,14 +17,33 @@ class GuardTask {
 		this.neededCreeps = 1;
 		this._currentTarget = null;
 		this.waiting = true;
+		this.disableUntil = 0;
 	}
 
 	get targetRoom() {
 		return Game.rooms[this._targetRoom];
 	}
 
+	set targetRoom(value) {
+		if (value instanceof Room) {
+			this._targetRoom = value.name;
+		} else if (typeof value === "string") {
+			this._targetRoom = value;
+		} else {
+			throw new Error("Invalid value for targetRoom");
+		}
+	}
+
 	get currentTarget() {
 		return Game.getObjectById(this._currentTarget);
+	}
+
+	set currentTarget(value) {
+		if (typeof value === "string") {
+			this._currentTarget = value;
+		} else {
+			this._currentTarget = value.id;
+		}
 	}
 
 	serialize() {
@@ -37,19 +56,17 @@ class GuardTask {
 			neededCreeps: this.neededCreeps,
 			currentTarget: this._currentTarget,
 			waiting: this.waiting,
+			disableUntil: this.disableUntil,
 		};
 	}
 
 	deserialize(mem) {
-		this.id = mem.id;
-		this._targetRoom = mem.targetRoom;
-		this.guardType = mem.guardType;
-		this.complete = mem.complete;
-		this.assignedCreeps = mem.assignedCreeps;
-		this._currentTarget = mem.currentTarget;
-		this.neededCreeps = mem.neededCreeps;
-		this.waiting = mem.waiting;
+		Object.assign(this, mem);
 		return this;
+	}
+
+	get isEnabled() {
+		return this.disableUntil !== undefined && this.disableUntil < Game.time;
 	}
 };
 
@@ -191,6 +208,9 @@ module.exports = {
 		// assign guardians to tasks
 		let unfulfilledTasks = _.filter(this.tasks, task => !task.complete && task.assignedCreeps.length < task.neededCreeps);
 		for (let task of unfulfilledTasks) {
+			if (!task.isEnabled) {
+				continue;
+			}
 			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId && guardian.memory.guardType == task.guardType);
 
 			if (idleGuardians.length > 0) {
@@ -265,7 +285,10 @@ module.exports = {
 			if (task.complete) {
 				continue;
 			}
-			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"}`);
+			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"} ${task.isEnabled ? "enabled" : `disabled (${task.disabledUntil - Game.time} remaining)`}`);
+			if (!task.isEnabled) {
+				continue;
+			}
 			if (task._currentTarget && !task.currentTarget) {
 				delete task._currentTarget;
 			}
@@ -296,6 +319,16 @@ module.exports = {
 			} else {
 				if (creeps.length === 0) {
 					task.waiting = true;
+				}
+			}
+
+			if (!!Game.rooms[task._targetRoom]) {
+				const foundInvaderCore = _.first(task.targetRoom.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }));
+				if (foundInvaderCore && foundInvaderCore.effects.length > 0) {
+					let collapseEffect = _.find(foundInvaderCore.effects, effect => effect.effect === EFFECT_COLLAPSE_TIMER);
+					task.disableUntil = Game.time + collapseEffect.ticksRemaining;
+					console.log("[guard] Found invader core, disabling task " + task.id + " until " + task.disableUntil);
+					continue;
 				}
 			}
 

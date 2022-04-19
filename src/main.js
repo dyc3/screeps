@@ -1923,10 +1923,12 @@ function main() {
 			let baseY = bottomRowCreepInfo + 1;
 			let row = 0;
 			for (let task of Memory.guard.tasks) {
-				vis.text(`${task.targetRoom}: ${task.guardType} creeps: ${task.assignedCreeps ? task.assignedCreeps.length : 0}/${task.neededCreeps}`, baseX, baseY + row * 0.6, {
+				let enabled = task.disableUntil < Game.time;
+				let disabledText = enabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`;
+				vis.text(`${task.targetRoom}: ${task.guardType} creeps: ${task.assignedCreeps ? task.assignedCreeps.length : 0}/${task.neededCreeps} ${disabledText}`, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
-					color: "#fff",
+					color: enabled ? "#fff" : "#aaa",
 				});
 				row++;
 			}
