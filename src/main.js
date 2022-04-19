@@ -1810,8 +1810,8 @@ function main() {
 		// draw information about creep quotas
 		let bottomRowCreepInfo;
 		try {
-			let baseX = 2;
-			let baseY = 2;
+			let baseX = 1;
+			let baseY = 1;
 			let row = 0;
 			for (let role of _.values(toolCreepUpgrader.roles)) {
 				let count = util.getCreeps(role.name).length;
@@ -1852,14 +1852,18 @@ function main() {
 		}
 
 		// draw info about spawns
+		let bottomRowSpawnInfo = 0;
 		try {
-			let baseX = 14;
-			let baseY = 2;
+			const baseX = 11;
+			const baseY = 1;
+			const yOffset = 1;
+			const ySpacing = 2.2;
+			const xOffset = 0.3;
+			const xSpacing = 1.4;
+			const spawnRadius = 0.5;
 			let rooms = util.getOwnedRooms();
 			for (let r = 0; r < rooms.length; r++) {
 				let room = rooms[r];
-
-				let ySpacing = 2.2;
 
 				vis.text(`${room.name}`, baseX - 0.25, baseY + (ySpacing * r), {
 					align: "left",
@@ -1869,10 +1873,6 @@ function main() {
 
 				let spawns = util.getStructures(room, STRUCTURE_SPAWN);
 				for (let s = 0; s < spawns.length; s++) {
-					let xOffset = 0.3;
-					let yOffset = 1;
-					let spawnRadius = 0.5;
-					let xSpacing = 1.4;
 					let spawn = spawns[s];
 					vis.circle(baseX + xSpacing * s + xOffset, baseY + (ySpacing * r) + yOffset, {
 						radius: spawnRadius,
@@ -1894,6 +1894,7 @@ function main() {
 					}
 				}
 			}
+			bottomRowSpawnInfo = baseY + (ySpacing * (rooms.length - 1)) + yOffset + 0.1;
 		}
 		catch (e) {
 			printException(e);
@@ -1902,13 +1903,13 @@ function main() {
 		// draw info about remote mining
 		try {
 			let baseX = 8;
-			let baseY = bottomRowCreepInfo + 1;
+			let baseY = Math.max(bottomRowCreepInfo, bottomRowSpawnInfo) + 1;
 			let row = 0;
 			for (let source of Memory.remoteMining.targets) {
 				vis.text(`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${source.creepCarriers ? source.creepCarriers.length : 0}/${source.neededCarriers} danger: ${source.danger}`, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
-					color: "#fff",
+					color: source.danger > 0 ? "#fa0" : "#fff",
 				});
 				row++;
 			}
