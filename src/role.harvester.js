@@ -177,8 +177,11 @@ let roleHarvester = {
 			return "link";
 		}
 
-		if (Object.keys(Game.creeps).length <= 3 || harvestTarget.room.controller.level < 4 || util.getCreeps("manager").length === 0) {
-			return "recovery";
+		let highLevelRooms = util.getOwnedRooms().filter(room => room.controller.level > 4 && room.storage && room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 300000);
+		if (highLevelRooms.length === 0) {
+			if (Object.keys(Game.creeps).length <= 3 || harvestTarget.room.controller.level < 4 || util.getCreeps("manager").length === 0) {
+				return "recovery";
+			}
 		}
 
 		return "drop";
