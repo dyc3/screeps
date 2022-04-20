@@ -123,10 +123,19 @@ global.Logistics = {
 		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
 	},
 
+	/**
+	 * Available options:
+	 * `size`: number, default 20 - the number of CARRY parts, max 25
+	 * `recycleAfterDelivery`: bool, default false - if true, the creep will recycle after delivering the entire inventory
+	 * `recycleAfterDeposit`: bool, default false - if true, the creep will recycle immediately after the first deposit
+	 * `renewAtWithdraw`: bool, default true - Prefer to renew the creep before it withdraws energy.
+	 */
 	spawnTmpDelivery(fromId, toId, options={}) {
 		let opts = _.defaults(options, {
 			size: 20,
 			recycleAfterDelivery: false,
+			recycleAfterDeposit: false,
+			renewAtWithdraw: true,
 			memory: {},
 		});
 		let spawn = null;
@@ -147,6 +156,8 @@ global.Logistics = {
 				withdrawTargetId: fromId,
 				depositTargetId: toId,
 				recycleAfterDelivery: opts.recycleAfterDelivery,
+				recycleAfterDeposit: opts.recycleAfterDeposit,
+				renewAtWithdraw: opts.renewAtWithdraw,
 			}, opts.memory));
 
 		if (typeof result === "string") {

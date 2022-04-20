@@ -38,13 +38,21 @@ let roleTmpDelivery = {
 	 * @returns {boolean} True if the creep should renew, false if otherwise.
 	 */
 	shouldRenew(creep) {
+		if (creep.memory.recycle) {
+			return false;
+		}
+
 		if (!creep.memory._routeDistance) {
 			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 			creep.memory._routeDistance = util.calculateEta(creep, traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path, true);
 		}
 
-		return creep.ticksToLive <= creep._routeDistance;
+		if (creep.memory.renewAtWithdraw) {
+			return creep.ticksToLive <= creep._routeDistance * 2;
+		} else {
+			return creep.ticksToLive <= creep._routeDistance;
+		}
 	},
 
 	run(creep) {
@@ -150,9 +158,12 @@ let roleTmpDelivery = {
 					if (creep.memory.recycleAfterDelivery) {
 						creep.memory.recycle = true;
 					}
-					else if (this.shouldRenew(creep)) {
-						creep.memory.renewing = true;
-					}
+				}
+				if (creep.memory.recycleAfterDeposit) {
+					creep.memory.recycle = true;
+				}
+				if (!creep.memory.renewAtWithdraw && this.shouldRenew(creep)) {
+					creep.memory.renewing = true;
 				}
 			}
 			else {
