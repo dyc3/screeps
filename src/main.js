@@ -1845,6 +1845,24 @@ function main() {
 
 				row++;
 			}
+			// show tmpdeliver creeps
+			let side = 0;
+			const colWidth = 4;
+			for (let creep of util.getCreeps("tmpdeliver")) {
+				let name = creep.name.split("_")[1];
+				vis.text(`${name}`, baseX + (colWidth * side), baseY + row, {
+					align: "left",
+					font: 0.4,
+				})
+				let percentFilled = creep.store.getUsedCapacity() / creep.store.getCapacity();
+				vis.rect(baseX + 2.2 + (colWidth * side), baseY - .2 + row, 1.5 * percentFilled, 0.3, {
+					fill: "#ffff00"
+				});
+				side = (++side) % 2;
+				if (side === 1) {
+					row += 0.5;
+				}
+			}
 			bottomRowCreepInfo = baseY + row;
 		}
 		catch (e) {
