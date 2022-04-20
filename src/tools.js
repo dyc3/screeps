@@ -136,6 +136,7 @@ global.Logistics = {
 			recycleAfterDelivery: false,
 			recycleAfterDeposit: false,
 			renewAtWithdraw: true,
+			dropAfterDeposit: false,
 			memory: {},
 		});
 		let spawn = null;
@@ -158,6 +159,7 @@ global.Logistics = {
 				recycleAfterDelivery: opts.recycleAfterDelivery,
 				recycleAfterDeposit: opts.recycleAfterDeposit,
 				renewAtWithdraw: opts.renewAtWithdraw,
+				dropAfterDeposit: opts.dropAfterDeposit,
 			}, opts.memory));
 
 		if (typeof result === "string") {

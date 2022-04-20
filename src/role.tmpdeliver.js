@@ -162,6 +162,9 @@ let roleTmpDelivery = {
 				if (creep.memory.recycleAfterDeposit) {
 					creep.memory.recycle = true;
 				}
+				if (creep.memory.dropAfterDeposit) {
+					creep.drop(RESOURCE_ENERGY);
+				}
 				if (!creep.memory.renewAtWithdraw && this.shouldRenew(creep)) {
 					creep.memory.renewing = true;
 				}
