@@ -1859,7 +1859,7 @@ function main() {
 					fill: "#ffff00"
 				});
 				side = (++side) % 2;
-				if (side === 1) {
+				if (side === 0) {
 					row += 0.5;
 				}
 			}
