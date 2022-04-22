@@ -2033,8 +2033,8 @@ function main() {
 
 module.exports = {
 	loop() {
-// 		profiler.wrap(function() {
+		// profiler.wrap(function() {
 			main();
-// 		});
+		// });
 	},
 }
