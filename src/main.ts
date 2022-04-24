@@ -146,6 +146,8 @@ declare global {
 			tasks: any[]; // TODO: define this
 		};
 		USE_ADV_LOGISTICS: boolean;
+		/** @deprecated */
+		attackTarget: string;
 	}
 
 	interface CreepMemory {
@@ -154,6 +156,11 @@ declare global {
 		keepAlive: boolean;
 		stage: number;
 		renewing: boolean;
+
+		// TODO: make role-specific memory types
+		depositMode?: any;
+		harvestTarget?: any;
+		targetRoom?: any;
 	}
 
 	interface RoomMemory {
@@ -482,19 +489,6 @@ function doLinkTransfers() {
 				}
 			}
 		}
-	}
-}
-
-/**
- * Draw the room scores in each room for easy viewing
- */
-function drawRoomScores() {
-	for (const roomName in Memory.roomInfo) {
-		const scoretext = "Score: " + Memory.roomInfo[roomName].score;
-		new RoomVisual(roomName).text(scoretext, 0, 0, {
-			align: "left",
-			font: 0.4,
-		});
 	}
 }
 
@@ -1225,7 +1219,7 @@ function commandRemoteMining() {
 		// assign harvester
 		if (!target.creepHarvester) {
 			const remoteHarvesters = util
-				.getCreeps("remoteharvester")
+				.getCreeps(Role.RemoteHarvester)
 				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
 			for (const creep of remoteHarvesters) {
@@ -1244,7 +1238,7 @@ function commandRemoteMining() {
 		// assign carriers that need to be assigned
 		if (target.creepCarriers.length < target.neededCarriers) {
 			const carriers = util
-				.getCreeps("carrier")
+				.getCreeps(Role.Carrier)
 				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let countAssigned = 0;
 			for (const creep of carriers) {
@@ -1349,6 +1343,7 @@ function commandRemoteMining() {
 					PathFinder.search(
 						harvestPos,
 						{
+							// @ts-expect-error FIXME: this could use a refactor probably
 							pos: _.filter(util.findClosestOwnedRooms(harvestPos), r => r.storage)[0].storage.pos,
 							range: 4,
 						},
@@ -1376,12 +1371,13 @@ function commandRemoteMining() {
 	// handle spawning claimers
 	let targetRooms = _.uniq(
 		_.filter(Memory.remoteMining.targets, target => Game.getObjectById(target.id)).map(
-			target => Game.getObjectById(target.id).room.name
+			// @ts-expect-error FIXME: idk what the fuck is going on here
+			target => Game.getObjectById(target.id)?.room.name
 		)
 	);
 	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
 	for (const room of targetRooms) {
-		const controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0];
+		const controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0] as StructureController;
 		if (!controller) {
 			console.log("[remote mining] ERR: can't find controller");
 		}
@@ -1412,7 +1408,7 @@ function commandRemoteMining() {
 }
 
 function satisfyClaimTargets() {
-	const claimers = util.getCreeps("claimer");
+	const claimers = util.getCreeps(Role.Claimer);
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
 		let satisfied = false;
 		if (util.isTreasureRoom(Memory.claimTargets[t].room) || util.isHighwayRoom(Memory.claimTargets[t].room)) {
@@ -1423,6 +1419,7 @@ function satisfyClaimTargets() {
 		} else if (Memory.claimTargets[t].mode === "reserve" && Game.rooms[Memory.claimTargets[t].room]) {
 			if (
 				Game.rooms[Memory.claimTargets[t].room] &&
+				// @ts-expect-error FIXME: this could use a refactor probably
 				(foundInvaderCore = _.first(
 					Game.rooms[Memory.claimTargets[t].room].find(FIND_HOSTILE_STRUCTURES, {
 						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
@@ -1434,8 +1431,11 @@ function satisfyClaimTargets() {
 				);
 				satisfied = true;
 			} else if (
+				// @ts-expect-error FIXME: define types for claimTargets
 				(reserv = Game.rooms[Memory.claimTargets[t].room].controller.reservation) &&
+				// @ts-expect-error FIXME: this could use a refactor probably
 				reserv.username !== global.WHOAMI &&
+				// @ts-expect-error FIXME: define types for claimTargets
 				Game.rooms[Memory.claimTargets[t].room].controller.upgradeBlocked > 20
 			) {
 				console.log(
@@ -1467,7 +1467,7 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", Memory.claimTargets[t].room);
-			const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
 			if (spawns.length === 0) {
 				console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
 				continue;
@@ -1482,6 +1482,7 @@ function satisfyClaimTargets() {
 			targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
 				memory: {
 					role: Role.Claimer,
+					// @ts-expect-error FIXME: define types for claimTargets
 					targetRoom: Memory.claimTargets[t].room,
 					mode: Memory.claimTargets[t].mode,
 				},
@@ -1530,7 +1531,7 @@ function doWorkFactories() {
 		for (const productionTarget of productionTargets) {
 			console.log(`[work-factories] production target: ${productionTarget}`);
 			let canProduce = true;
-			if (COMMODITIES[productionTarget].level > factory.level) {
+			if (factory.level && (COMMODITIES[productionTarget].level ?? 0 > factory.level)) {
 				console.log(
 					`[work-factories] factory is level ${factory.level}, but level ${COMMODITIES[productionTarget].level} is required`
 				);
@@ -1538,7 +1539,8 @@ function doWorkFactories() {
 				break;
 			}
 
-			for (const component in COMMODITIES[productionTarget].components) {
+			for (const _component in COMMODITIES[productionTarget].components) {
+				let component = _component as CommodityConstant;
 				// console.log(`[work-factories] factory has component ${component}?`);
 				if (!factory.store.hasOwnProperty(component)) {
 					console.log(`[work-factories] no ${component} found`);
@@ -1546,7 +1548,7 @@ function doWorkFactories() {
 					break;
 				}
 				// console.log(`[work-factories] found ${factory.store[component]} ${component}`);
-				if (factory.store[component] < COMMODITIES[productionTarget].components[component]) {
+				if (factory.store.getUsedCapacity(component) < COMMODITIES[productionTarget].components[component]) {
 					console.log(
 						`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`
 					);
@@ -1698,7 +1700,7 @@ function main() {
 	try {
 		brainOffense.run();
 	} catch (e) {
-		printException(e);
+		util.printException(e);
 	}
 
 	const rooms = util.getOwnedRooms();
@@ -1710,7 +1712,7 @@ function main() {
 			try {
 				roleTower.run(room);
 			} catch (e) {
-				printException(e);
+				util.printException(e);
 			}
 		}
 
@@ -1719,7 +1721,7 @@ function main() {
 			if (room.storage && room.storage.store[RESOURCE_ENERGY] >= 500000) {
 				const powerspawn = room.find(FIND_STRUCTURES, {
 					filter: s => s.structureType === STRUCTURE_POWER_SPAWN,
-				})[0];
+				})[0] as StructurePowerSpawn;
 				if (powerspawn) {
 					powerspawn.processPower();
 				}
@@ -1751,6 +1753,7 @@ function main() {
 			continue;
 		}
 
+		// @ts-expect-error because Role.Offense was somehow not in the enum even though it is?
 		if (creep.memory.role !== Role.Guardian && creep.memory.role !== Role.Offense && creep.memory.stage < 0) {
 			creep.memory.stage = toolCreepUpgrader.getCreepStage(creep);
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
