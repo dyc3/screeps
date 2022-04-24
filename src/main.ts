@@ -145,6 +145,7 @@ declare global {
 		guard: {
 			tasks: any[]; // TODO: define this
 		};
+		USE_ADV_LOGISTICS: boolean;
 	}
 
 	interface CreepMemory {
@@ -152,6 +153,7 @@ declare global {
 		room: string;
 		keepAlive: boolean;
 		stage: number;
+		renewing: boolean;
 	}
 
 	interface RoomMemory {
@@ -190,6 +192,14 @@ declare global {
 		Guardian = "guardian",
 		HighwayHarvesting = "highwayharvesting",
 		Offense = "offense",
+		InvaderDestroyer = "invaderdestroyer",
+		TestLogistics = "testlogistics",
+		/** @deprecated */
+		NextRoomer = "nextroomer",
+		/** @deprecated */
+		Attacker = "attacker",
+		/** @deprecated */
+		Healer = "healer",
 	}
 }
 
@@ -1471,7 +1481,7 @@ function satisfyClaimTargets() {
 			}
 			targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
 				memory: {
-					role: "claimer",
+					role: Role.Claimer,
 					targetRoom: Memory.claimTargets[t].room,
 					mode: Memory.claimTargets[t].mode,
 				},
@@ -1483,7 +1493,7 @@ function satisfyClaimTargets() {
 function doWorkFactories() {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
-		const factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
+		const factory = util.getStructures(room, STRUCTURE_FACTORY)[0] as StructureFactory;
 
 		if (!factory || factory.cooldown > 0) {
 			continue;
@@ -1623,7 +1633,7 @@ const jobs = {
 	},
 };
 
-function queueJob(job) {
+function queueJob(job: any) {
 	for (let i = 0; i < Memory.job_queue.length; i++) {
 		if (Memory.job_queue[i].startsWith(job.name)) {
 			return;
@@ -1668,6 +1678,7 @@ function main() {
 	if (!Memory.job_queue) {
 		Memory.job_queue = [];
 	}
+	// @ts-expect-error TODO: define types for jobs
 	for (const job of jobs) {
 		// initialize any new jobs that have not been run yet
 		if (!Memory.job_last_run[job.name]) {
@@ -1694,7 +1705,7 @@ function main() {
 
 	// do tower stuff and process power
 	for (const room of rooms) {
-		const rcl = room.controller.level;
+		const rcl = room.controller?.level ?? 0;
 		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rcl] > 0) {
 			try {
 				roleTower.run(room);
@@ -1705,7 +1716,7 @@ function main() {
 
 		// TODO: make something a little more robust/dynamic for limiting the amount of energy spent on power.
 		if (CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][rcl] > 0) {
-			if (room.storage.store[RESOURCE_ENERGY] >= 500000) {
+			if (room.storage && room.storage.store[RESOURCE_ENERGY] >= 500000) {
 				const powerspawn = room.find(FIND_STRUCTURES, {
 					filter: s => s.structureType === STRUCTURE_POWER_SPAWN,
 				})[0];
@@ -1724,7 +1735,7 @@ function main() {
 		}
 	}
 
-	const harvesterCount = util.getCreeps("harvester").length;
+	const harvesterCount = util.getCreeps(Role.Harvester).length;
 	for (const name in Game.creeps) {
 		let creep = Game.creeps[name];
 		if (creep.spawning) {
@@ -1736,11 +1747,11 @@ function main() {
 			continue;
 		}
 
-		if (creep.memory.role === "offense") {
+		if (creep.memory.role === Role.Offense) {
 			continue;
 		}
 
-		if (creep.memory.role !== "guardian" && creep.memory.role !== "offense" && creep.memory.stage < 0) {
+		if (creep.memory.role !== Role.Guardian && creep.memory.role !== Role.Offense && creep.memory.stage < 0) {
 			creep.memory.stage = toolCreepUpgrader.getCreepStage(creep);
 			console.log("set creep", creep.name, "stage:", creep.memory.stage);
 		}
@@ -1809,7 +1820,7 @@ function main() {
 								creep.say("deposit");
 								taskDepositMaterials.run(creep, true);
 							} else {
-								if (util.getCreeps("manager").length === 0) {
+								if (util.getCreeps(Role.Manager).length === 0) {
 									roleManager.run(creep);
 								} else {
 									roleUpgrader.run(creep);
@@ -1829,12 +1840,6 @@ function main() {
 					// roleUpgrader.run(creep);
 					// roleMiner.run(creep);
 					break;
-				case "attacker":
-					roleAttacker.run(creep);
-					break;
-				case "healer":
-					roleHealer.run(creep);
-					break;
 				case "claimer":
 					roleClaimer.run(creep);
 					break;
@@ -1853,9 +1858,6 @@ function main() {
 					break;
 				case "scout":
 					roleScout.run(creep);
-					break;
-				case "nextroomer":
-					roleNextRoomer.run(creep);
 					break;
 				case "miner":
 					roleMiner.run(creep);
@@ -1901,11 +1903,11 @@ function main() {
 		}
 	} catch (e) {
 		console.log("failed to run power creeps");
-		printException(e);
+		util.printException(e);
 	}
 
-	const renewingCreeps = _.filter(_.values(Game.creeps), c => c.memory.renewing);
-	const CREEP_RENEW_PRIORITY = {
+	const renewingCreeps: Creep[] = _.filter(_.values(Game.creeps), (c: Creep) => c.memory.renewing);
+	const CREEP_RENEW_PRIORITY: Record<any, number> = {
 		_default: 5,
 		harvester: 1,
 		manager: 1,
@@ -1915,15 +1917,17 @@ function main() {
 		guardian: 9,
 		offense: 9,
 	};
-	renewingCreeps.sort((a, b) => {
+	renewingCreeps.sort((a: Creep, b: Creep) => {
 		// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
-		if (a.ticksToLive <= 100) {
+		if (a.ticksToLive && b.ticksToLive && a.ticksToLive <= 100) {
 			return b.ticksToLive - a.ticksToLive;
 		}
 		// priortize creeps based on role, lowest number has highest priority
+		// @ts-ignore
 		const pA = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, a.memory.role)
 			? CREEP_RENEW_PRIORITY[a.memory.role]
 			: CREEP_RENEW_PRIORITY._default;
+		// @ts-ignore
 		const pB = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, b.memory.role)
 			? CREEP_RENEW_PRIORITY[b.memory.role]
 			: CREEP_RENEW_PRIORITY._default;
@@ -1933,7 +1937,7 @@ function main() {
 		try {
 			taskRenew.run(creep);
 		} catch (e) {
-			printException(e, (creep = creep));
+			util.printException(e, creep);
 		}
 	}
 
@@ -1941,6 +1945,7 @@ function main() {
 	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
 		const job_to_do = Memory.job_queue[0];
 		console.log("Running job:", job_to_do);
+		// @ts-expect-error FIXME: define types for jobs
 		const job = jobs[job_to_do];
 		try {
 			job.run();
@@ -1948,7 +1953,7 @@ function main() {
 			Memory.job_last_run[job.name] = Game.time;
 		} catch (e) {
 			console.log("ERR: Job failed", job.name);
-			printException(e);
+			util.printException(e);
 			break;
 		}
 	}
@@ -1957,6 +1962,7 @@ function main() {
 	if (Object.keys(Game.creeps).length === 0 || Memory.forceCreepSpawn || Game.flags.forceSpawn) {
 		queueJob(jobs["creep-spawning"]);
 		if (Memory.forceCreepSpawn) {
+			// @ts-ignore
 			delete Memory.forceCreepSpawn;
 		}
 	}
