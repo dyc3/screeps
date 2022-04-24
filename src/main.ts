@@ -174,7 +174,7 @@ global.WHOAMI = _.find(Game.structures).owner.username as string;
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
-function printException(e, creep = undefined) {
+function printException(e: Error, creep: Creep | undefined = undefined) {
 	const msg = errorMild + '<span style="color: red">ERROR: ' + e.name + ": " + e.message + "\n" + e.stack + "</span>";
 	if (creep) {
 		console.log(creep.name, msg);
@@ -254,11 +254,11 @@ function calculateDefcon(room) {
 		console.log("safe mode is active, defcon 0");
 		return 0;
 	}
-	const towers = util.getStructures(room, STRUCTURE_TOWER);
-	const spawns = util.getStructures(room, STRUCTURE_SPAWN);
+	const towers = util.getStructures(room, STRUCTURE_TOWER) as StructureTower[];
+	const spawns = util.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
 	if (towers.length > 0) {
 		const hostileCreeps = room.find(FIND_HOSTILE_CREEPS, {
-			filter: creep =>
+			filter: (creep: Creep) =>
 				creep.getActiveBodyparts(ATTACK) +
 					creep.getActiveBodyparts(HEAL) +
 					creep.getActiveBodyparts(TOUGH) +
@@ -274,7 +274,7 @@ function calculateDefcon(room) {
 		const hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
 		if (hostileCreeps.length > 0) {
 			const dangerous = hostileCreeps.filter(
-				creep =>
+				(creep: Creep) =>
 					creep.getActiveBodyparts(ATTACK) +
 						creep.getActiveBodyparts(HEAL) +
 						creep.getActiveBodyparts(TOUGH) +
@@ -287,7 +287,7 @@ function calculateDefcon(room) {
 				// HACK: trigger safe mode on known bad things
 				if (
 					dangerous.filter(
-						c =>
+						(c: Creep) =>
 							c.getActiveBodyparts(ATTACK) +
 								c.getActiveBodyparts(HEAL) +
 								c.getActiveBodyparts(TOUGH) +
@@ -366,9 +366,8 @@ function doLinkTransfers() {
 
 	/**
 	 * Shuffles array in place. ES6 version
-	 * @param {Array} a items An array containing the items.
 	 */
-	function shuffle(a) {
+	function shuffle(a: any[]) {
 		for (let i = a.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[a[i], a[j]] = [a[j], a[i]];
@@ -2266,3 +2265,7 @@ function main() {
 export const loop = ErrorMapper.wrapLoop(() => {
 	main();
 });
+function getOwnedRooms() {
+	throw new Error("Function not implemented.");
+}
+
