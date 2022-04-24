@@ -143,6 +143,9 @@ declare global {
 		job_last_run: any; // TODO: define this
 		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 		creepSpawnLog: string[];
+		guard: {
+			tasks: any[] // TODO: define this
+		}
 	}
 
 	interface CreepMemory {
@@ -154,6 +157,11 @@ declare global {
 
 	interface RoomMemory {
 		harvestPositions: any; // TODO: define this
+		defcon: number;
+		rootLink?: Id<_HasId>;
+		storageLink?: Id<_HasId>;
+		rootPos: any; // TODO: define this
+		storagePos: any; // TODO: define this
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
@@ -401,6 +409,10 @@ function doLinkTransfers() {
 			if (!room.memory.rootLink) {
 				try {
 					const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+					if (!rootLinkPos) {
+						throw new Error("root link pos invalid");
+					}
+					// @ts-expect-error idk why tf this isnt working
 					room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
 				} catch (e) {
 					console.log("WARN: no root link found in room", room.name);
@@ -438,10 +450,11 @@ function doLinkTransfers() {
 				const found = links.filter(link => link.pos.inRangeTo(link.room.storage, 2));
 				if (found.length > 0) {
 					room.memory.storageLink = found[0].id;
-				} else {
-					console.log("No storage link found");
-					continue;
 				}
+			}
+			if (!room.memory.storageLink) {
+				console.log("No storage link found");
+				continue;
 			}
 			const storageLink = Game.getObjectById(room.memory.storageLink) as StructureLink;
 			if (!storageLink) {
@@ -570,6 +583,7 @@ function doFlagCommandsAndStuff() {
 							}
 						} else if (look.type === LOOK_STRUCTURES) {
 							if (
+								look.structure &&
 								look.structure.structureType !== STRUCTURE_ROAD &&
 								look.structure.structureType !== STRUCTURE_CONTAINER
 							) {
@@ -608,7 +622,7 @@ function doFlagCommandsAndStuff() {
 			struct => struct.structureType === STRUCTURE_RAMPART
 		);
 		if (lookResult.length > 0) {
-			const rampart = lookResult[0];
+			const rampart = lookResult[0] as StructureRampart;
 			if (Game.flags.setPublic.color === COLOR_GREEN || Game.flags.setPublic.color === COLOR_RED) {
 				rampart.setPublic(Game.flags.setPublic.color === COLOR_GREEN);
 			}
@@ -2024,11 +2038,11 @@ function main() {
 			const room = rooms[r];
 
 			// draw upgrader quotas on controllers
-			const count = util.getCreeps("upgrader").filter(creep => creep.memory.targetRoom === room.name).length;
+			const count = util.getCreeps(Role.Upgrader).filter(creep => creep.memory.targetRoom === room.name).length;
 			const max = toolCreepUpgrader.getUpgraderQuota(room);
 			const text = count + "/" + max;
 			const color = count <= max ? "#11dd11" : "#dd1111";
-			room.visual.text(text, room.controller.pos, { color, font: 0.4, stroke: "#000" });
+			room.visual.text(text, room.controller && room.controller.pos, { color, font: 0.4, stroke: "#000" });
 
 			// mark the room's rootPos, assists autoplanner debugging
 			const root = room.memory.rootPos;
@@ -2037,7 +2051,7 @@ function main() {
 			}
 
 			// draw relay status
-			const relays = util.getCreeps("relay").filter(creep => creep.memory.targetRoom === room.name);
+			const relays = util.getCreeps(Role.Relay).filter(creep => creep.memory.targetRoom === room.name);
 			for (const relay of relays) {
 				if (!relay.memory.assignedPos) {
 					continue;
@@ -2074,7 +2088,7 @@ function main() {
 		const vis = new RoomVisual();
 
 		// draw information about creep quotas
-		let bottomRowCreepInfo;
+		let bottomRowCreepInfo = 0;
 		try {
 			const baseX = 1;
 			const baseY = 1;
@@ -2114,7 +2128,7 @@ function main() {
 			// show tmpdeliver creeps
 			let side = 0;
 			const colWidth = 4;
-			for (const creep of util.getCreeps("tmpdeliver")) {
+			for (const creep of util.getCreeps(Role.TmpDeliver)) {
 				const name = creep.name.split("_")[1];
 				vis.text(`${name}`, baseX + colWidth * side, baseY + row, {
 					align: "left",
@@ -2154,7 +2168,7 @@ function main() {
 					color: "#fff",
 				});
 
-				const spawns = util.getStructures(room, STRUCTURE_SPAWN);
+				const spawns = util.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
 				for (let s = 0; s < spawns.length; s++) {
 					const spawn = spawns[s];
 					vis.circle(baseX + xSpacing * s + xOffset, baseY + ySpacing * r + yOffset, {
@@ -2266,9 +2280,9 @@ function main() {
 					continue;
 				}
 				Object.keys(room.memory.harvestPositions).forEach(id => {
-					const source = Game.getObjectById(id) as Source;
+					const source = Game.getObjectById(id as Id<_HasId>) as Source;
 					const { x, y } = room.memory.harvestPositions[id];
-					const pos = room.getPositionAt(x, y);
+					const pos = room.getPositionAt(x, y) as RoomPosition;
 					room.visual.circle(pos, {
 						stroke: "#ffff00",
 						fill: "transparent",
@@ -2278,8 +2292,7 @@ function main() {
 					});
 
 					room.visual.line(source.pos, pos, {
-						stroke: "#ffff00",
-						fill: "transparent",
+						color: "#ffff00",
 						opacity: 0.8,
 						lineStyle: "dotted",
 					});
@@ -2298,6 +2311,3 @@ function main() {
 export const loop = ErrorMapper.wrapLoop(() => {
 	main();
 });
-function getOwnedRooms() {
-	throw new Error("Function not implemented.");
-}
