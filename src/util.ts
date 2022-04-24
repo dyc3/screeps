@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-const util = {
+export const util = {
 	errorCodeToString(errorCode: number): string {
 		const errors = {
 			OK: 0,

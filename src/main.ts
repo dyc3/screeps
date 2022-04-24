@@ -83,8 +83,8 @@ Room memory: `Memory.rooms.ROOMNAME`
 */
 
 import _ from "lodash";
-import "tools.js";
-import util from "util";
+import "./tools.js";
+import util from "./util";
 
 const roleHarvester = require("roles/role.harvester");
 const roleUpgrader = require("roles/role.upgrader");
