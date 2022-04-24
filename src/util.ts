@@ -101,8 +101,8 @@ export const util = {
 			// invalid room
 			return false;
 		}
-		const x = parseInt(matches[0]);
-		const y = parseInt(matches[1]);
+		const x = parseInt(matches[0], 10);
+		const y = parseInt(matches[1], 10);
 		return x % 10 == 0 || y % 10 == 0;
 	},
 
@@ -114,8 +114,8 @@ export const util = {
 			return false;
 		}
 		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
-		const x = parseInt(matches[0]) % 10;
-		const y = parseInt(matches[1]) % 10;
+		const x = parseInt(matches[0], 10) % 10;
+		const y = parseInt(matches[1], 10) % 10;
 		return x >= 4 && x <= 6 && y >= 4 && y <= 6;
 	},
 
