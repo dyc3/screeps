@@ -219,7 +219,7 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_TERMINAL) {
-							if (struct.owner.username !== global.WHOAMI) {
+							if (struct.my) {
 								return true;
 							}
 							else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
@@ -227,7 +227,7 @@ function doAquire(creep, passively=false) {
 							}
 						}
 						else if (struct.structureType == STRUCTURE_FACTORY) {
-							if (struct.owner.username !== global.WHOAMI) {
+							if (struct.my) {
 								return true;
 							}
 							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
@@ -270,10 +270,10 @@ function doAquire(creep, passively=false) {
 					let closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {stroke:"#ff0000", fill:"transparent", radius:1});
 					let amount = undefined;
-					if (closest.structureType === STRUCTURE_TERMINAL && closest.owner.username === global.WHOAMI) {
+					if (closest.structureType === STRUCTURE_TERMINAL && closest.my) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
 					}
-					else if (closest.structureType === STRUCTURE_FACTORY && closest.owner.username === global.WHOAMI) {
+					else if (closest.structureType === STRUCTURE_FACTORY && closest.my) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
 					}
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
@@ -483,7 +483,7 @@ let roleManager = {
 					}
 
 					if (struct.structureType == STRUCTURE_TERMINAL) {
-						if (struct.owner.username !== global.WHOAMI) {
+						if (struct.my) {
 							return false;
 						}
 						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {

@@ -19,7 +19,7 @@ var roleRepairer = {
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: struct => {
-				if (struct.owner && struct.owner.username !== global.WHOAMI) {
+				if (struct.owner && struct.my) {
 					return false;
 				}
 				let flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -94,7 +94,7 @@ var roleRepairer = {
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
-				if (struct.owner && struct.owner.username !== global.WHOAMI) {
+				if (struct.owner && struct.my) {
 					return false;
 				}
 				let flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -133,7 +133,7 @@ var roleRepairer = {
 		if (targets.length == 0) {
 			targets = creep.room.find(FIND_STRUCTURES, {
 				filter: (struct) => {
-					if (struct.owner && struct.owner.username !== global.WHOAMI) {
+					if (struct.owner && struct.my) {
 						return false;
 					}
 					var flags = struct.pos.lookFor(LOOK_FLAGS);
