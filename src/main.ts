@@ -133,20 +133,27 @@ declare global {
 		remoteMining: {
 			needHarvesterCount: number;
 			needCarrierCount: number;
-			targets: any[] // TODO: define this
+			targets: any[]; // TODO: define this
 		};
 		expansionTarget: string; // FIXME: deprecated?
 		terminalEnergyTarget: number;
 		factoryEnergyTarget: number;
 		claimTargets: any[]; // TODO: define this
-		job_queue: any[] // TODO: define this
+		job_queue: any[]; // TODO: define this
 		job_last_run: any; // TODO: define this
 		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
+		creepSpawnLog: string[];
 	}
 
 	interface CreepMemory {
 		role: Role;
 		room: string;
+		keepAlive: boolean;
+		stage: number;
+	}
+
+	interface RoomMemory {
+		harvestPositions: any; // TODO: define this
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
@@ -173,7 +180,7 @@ declare global {
 		Scientist = "scientist",
 		Relay = "relay",
 		TmpDeliver = "tmpdeliver",
-		Guard = "guard",
+		Guardian = "guardian",
 		HighwayHarvesting = "highwayharvesting",
 		Offense = "offense",
 	}
@@ -253,14 +260,16 @@ function printStatus() {
  * 1 - Warning, spawn a little defense (if no towers yet).
  * 2 - Under attack, determine if current defense can handle attack.
  *
- * @param {Room} room The target room
- *
  */
-function calculateDefcon(room) {
+function calculateDefcon(room: Room) {
 	console.log("calculating defcon:", room.name);
+	if (!room.controller) {
+		// invalid room
+		return 0;
+	}
 
 	let defcon = 0;
-	if (room.controller.safeMode > 0) {
+	if (room.controller.safeMode) {
 		console.log("safe mode is active, defcon 0");
 		return 0;
 	}
@@ -398,14 +407,17 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const rootLink = Game.getObjectById(room.memory.rootLink);
+			const rootLink = Game.getObjectById(room.memory.rootLink) as StructureLink;
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
 				continue;
 			}
 
-			if (rootLink.energy < rootLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
+			if (
+				rootLink.store.getUsedCapacity(RESOURCE_ENERGY) <
+				rootLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
+			) {
 				console.log(room.name, "[link-transfer] rootLink below threshold");
 				for (let i = 0; i < links.length; i++) {
 					const link = links[i];
@@ -431,14 +443,17 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const storageLink = Game.getObjectById(room.memory.storageLink);
+			const storageLink = Game.getObjectById(room.memory.storageLink) as StructureLink;
 			if (!storageLink) {
 				console.log("can't find storage link id:", room.memory.storageLink);
 				delete room.memory.storageLink;
 				continue;
 			}
 
-			if (storageLink.energy < storageLink.energyCapacity - LINK_ENERGY_CAPACITY_THRESHOLD) {
+			if (
+				storageLink.store.getUsedCapacity(RESOURCE_ENERGY) <
+				storageLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
+			) {
 				for (let i = 0; i < links.length; i++) {
 					const link = links[i];
 					if (link.id === storageLink.id || link.id === rootLink.id) {
@@ -577,7 +592,8 @@ function doFlagCommandsAndStuff() {
 			}
 		} catch (e) {
 			// need vision
-			const observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc"); // TODO: make dynamic
+			// @ts-expect-error
+			const observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc") as StructureObserver; // TODO: make dynamic
 			observer.observeRoom(pos.roomName);
 			throw new Error("need vision of room to complete job");
 		}
@@ -691,7 +707,7 @@ function doCreepSpawning() {
 		Memory.creepSpawnLog = [];
 	}
 
-	function spawnCreepOfRole(role, spawns, room = undefined) {
+	function spawnCreepOfRole(role, spawns: StructureSpawn[], room = undefined) {
 		const target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
@@ -731,7 +747,7 @@ function doCreepSpawning() {
 		return false;
 	}
 
-	function doMarkForDeath(role, creeps, quota, room) {
+	function doMarkForDeath(role, creeps: Creep[], quota, room) {
 		// check if we can upgrade any of the creeps,
 		// and if no other creeps are already marked for death,
 		// mark 1 creep for death
@@ -910,11 +926,13 @@ function doCreepSpawning() {
 function doAutoTrading() {
 	// HACK: hardcoded logistics things
 	if (Game.shard.name === "shard0") {
+		// @ts-ignore
 		Game.rooms.W13N11.terminal.send(
 			RESOURCE_ZYNTHIUM,
 			Game.rooms.W13N11.terminal.store[RESOURCE_ZYNTHIUM],
 			"W16N9"
 		);
+		// @ts-ignore
 		Game.rooms.W16N7.terminal.send(RESOURCE_UTRIUM, Game.rooms.W16N7.terminal.store[RESOURCE_UTRIUM], "W15N8");
 	}
 
@@ -1042,12 +1060,12 @@ function doAutoPlanning() {
 				const mineral = minerals[m];
 				if (
 					mineral.pos.lookFor(LOOK_STRUCTURES, {
-						filter: struct => struct.structureType === STRUCTURE_EXTRACTOR,
+						filter: (struct: Structure) => struct.structureType === STRUCTURE_EXTRACTOR,
 					}).length == 0
 				) {
 					if (
 						mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, {
-							filter: site => site.structureType === STRUCTURE_EXTRACTOR,
+							filter: (site: ConstructionSite) => site.structureType === STRUCTURE_EXTRACTOR,
 						}).length == 0
 					) {
 						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
@@ -1081,7 +1099,7 @@ function doWorkLabs() {
 			}
 
 			if (method === "make") {
-				let needsMinerals = [];
+				let needsMinerals: ResourceConstant[] = [];
 				switch (makingWhat) {
 					case "G":
 						needsMinerals = ["UL", "ZK"];
@@ -1094,7 +1112,7 @@ function doWorkLabs() {
 						}
 				}
 				const sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: lab => {
+					filter: (lab: StructureLab) => {
 						return lab.structureType === STRUCTURE_LAB && _.contains(needsMinerals, lab.mineralType);
 					},
 				});
@@ -1112,7 +1130,7 @@ function doWorkLabs() {
 				const splitsInto = labs[l].mineralType.split("");
 				console.log("[work-labs] unmaking", labs[l].mineralType, "into", splitsInto);
 				let destLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: lab => {
+					filter: (lab: StructureLab) => {
 						return (
 							lab.structureType === STRUCTURE_LAB &&
 							(_.contains(splitsInto, lab.mineralType) || lab.mineralType === undefined)
@@ -1121,7 +1139,7 @@ function doWorkLabs() {
 				});
 				destLabs = _.sortBy(
 					destLabs,
-					lab => {
+					(lab: StructureLab) => {
 						return _.contains(lab.mineralType, splitsInto);
 					},
 					"desc"
@@ -1130,7 +1148,7 @@ function doWorkLabs() {
 				console.log(labs[l], "is unmaking", labs[l].mineralType, "into", splitsInto, "into", destLabs);
 				try {
 					const vis = new RoomVisual(labs[l].room.name);
-					destLabs.forEach(lab => vis.line(labs[l].pos, lab.pos));
+					destLabs.forEach((lab: StructureLab) => vis.line(labs[l].pos, lab.pos));
 				} catch (e) {}
 
 				labs[l].reverseReaction(...destLabs);
@@ -1192,7 +1210,7 @@ function commandRemoteMining() {
 		if (!target.creepHarvester) {
 			const remoteHarvesters = util
 				.getCreeps("remoteharvester")
-				.filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let didAssign = false;
 			for (const creep of remoteHarvesters) {
 				if (!creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id) {
@@ -1211,7 +1229,7 @@ function commandRemoteMining() {
 		if (target.creepCarriers.length < target.neededCarriers) {
 			const carriers = util
 				.getCreeps("carrier")
-				.filter(creep => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
 			let countAssigned = 0;
 			for (const creep of carriers) {
 				if (creep.memory.harvestTarget && creep.memory.harvestTarget.id === target.id) {
@@ -1236,9 +1254,9 @@ function commandRemoteMining() {
 			// FIXME: don't have vision
 			continue;
 		}
-		const source = Game.getObjectById(target.id);
+		const source = Game.getObjectById(target.id) as Source;
 		const hostiles = room.find(FIND_HOSTILE_CREEPS);
-		let keeperLair;
+		let keeperLair: StructureKeeperLair | undefined;
 		if (
 			hostiles
 				.filter(
@@ -1256,10 +1274,10 @@ function commandRemoteMining() {
 			if (!target.keeperLairId) {
 				keeperLair = source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
 					filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
-				});
+				}) as StructureKeeperLair;
 				target.keeperLairId = keeperLair.id;
 			} else {
-				keeperLair = Game.getObjectById(target.keeperLairId);
+				keeperLair = Game.getObjectById(target.keeperLairId) as StructureKeeperLair;
 			}
 
 			const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
@@ -1283,7 +1301,11 @@ function commandRemoteMining() {
 					.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0
 			) {
 				target.danger = 1;
-			} else if (keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5) {
+			} else if (
+				keeperLair &&
+				keeperLair.ticksToSpawn &&
+				keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5
+			) {
 				target.danger = 1;
 			} else {
 				target.danger = 0;
@@ -1464,7 +1486,7 @@ function doWorkFactories() {
 		// FIXME: make this more dynamic
 		// right now, everything is hard coded
 
-		const productionTargets = [
+		const productionTargets: (CommodityConstant | RESOURCE_ENERGY)[] = [
 			RESOURCE_UTRIUM_BAR,
 			RESOURCE_ZYNTHIUM_BAR,
 			RESOURCE_LEMERGIUM_BAR,
@@ -1618,6 +1640,8 @@ function main() {
 	}
 	if (!Memory.remoteMining) {
 		Memory.remoteMining = {
+			needCarrierCount: 0,
+			needHarvesterCount: 0,
 			targets: [],
 		};
 	}
@@ -1638,8 +1662,7 @@ function main() {
 	if (!Memory.job_queue) {
 		Memory.job_queue = [];
 	}
-	for (const j in jobs) {
-		const job = jobs[j];
+	for (const job of jobs) {
 		// initialize any new jobs that have not been run yet
 		if (!Memory.job_last_run[job.name]) {
 			console.log("initialize job", job.name);
@@ -1740,7 +1763,7 @@ function main() {
 			printException(e);
 		}
 
-		if (creep.memory.role === "guardian") {
+		if (creep.memory.role === Role.Guardian) {
 			continue;
 		}
 
@@ -1855,7 +1878,7 @@ function main() {
 					console.log("Parsing role from name...");
 					const role = creep.name.split("_")[0];
 					console.log("Found role:", role);
-					creep.memory.role = role;
+					creep.memory.role = role as Role;
 					if (!creep.memory.stage) {
 						creep.memory.stage = -1;
 					}
@@ -2243,7 +2266,7 @@ function main() {
 					continue;
 				}
 				Object.keys(room.memory.harvestPositions).forEach(id => {
-					const source = Game.getObjectById(id);
+					const source = Game.getObjectById(id) as Source;
 					const { x, y } = room.memory.harvestPositions[id];
 					const pos = room.getPositionAt(x, y);
 					room.visual.circle(pos, {
