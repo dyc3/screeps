@@ -4,6 +4,7 @@ const toolEnergySource = require("./toolEnergySource.js");
 
 export default {
 	doVisualize() {
+		const rooms = util.getOwnedRooms();
 		const vis = new RoomVisual();
 
 		// draw information about creep quotas
@@ -13,15 +14,20 @@ export default {
 			const baseY = 1;
 			let row = 0;
 			for (const role of _.values(toolCreepUpgrader.roles)) {
+				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				const count = util.getCreeps(role.name).length;
+				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				let quota = !role.quota_per_room ? role.quota() : 0;
+				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				if (role.quota_per_room) {
 					for (const room of rooms) {
+						// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 						quota += role.quota(room);
 					}
 				}
 				const percentQuota = util.clamp(count / quota, 0, 1);
 
+				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				vis.text(role.name, baseX, baseY + row, {
 					align: "left",
 					font: 0.5,
@@ -64,7 +70,7 @@ export default {
 			}
 			bottomRowCreepInfo = baseY + row;
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		// draw info about spawns
@@ -120,7 +126,7 @@ export default {
 			}
 			bottomRowSpawnInfo = baseY + ySpacing * (rooms.length - 1) + yOffset + 0.1;
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		// draw info about remote mining
@@ -144,7 +150,7 @@ export default {
 				row++;
 			}
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		// draw info about guard tasks
@@ -170,7 +176,7 @@ export default {
 				row++;
 			}
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		// draw creeps marked for death
@@ -189,7 +195,7 @@ export default {
 				});
 			}
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		// draw planned harvest positions
@@ -218,10 +224,8 @@ export default {
 				});
 			}
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
-
-		drawRoomScores();
 	},
 
 	drawQuotas() {

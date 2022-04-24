@@ -128,7 +128,7 @@ declare global {
 	// Memory extension samples
 	interface Memory {
 		highlightCreepLog: string[];
-		mineralsToSell: MineralConstant[];
+		mineralsToSell: ResourceConstant[];
 		remoteMining: {
 			needHarvesterCount: number;
 			needCarrierCount: number;
@@ -156,20 +156,25 @@ declare global {
 		keepAlive: boolean;
 		stage: number;
 		renewing: boolean;
+		renewTarget: Id<StructureSpawn>;
 
 		// TODO: make role-specific memory types
 		depositMode?: any;
 		harvestTarget?: any;
 		targetRoom?: any;
+		assignedPos?: any;
+		mode?: any;
 	}
 
 	interface RoomMemory {
 		harvestPositions: any; // TODO: define this
 		defcon: number;
-		rootLink?: Id<_HasId>;
-		storageLink?: Id<_HasId>;
+		rootLink?: Id<StructureLink>;
+		storageLink?: Id<StructureLink>;
 		rootPos: any; // TODO: define this
 		storagePos: any; // TODO: define this
+		/** @deprecated not sure if this is actually being used */
+		storagePosDirection?: DirectionConstant;
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
@@ -428,7 +433,7 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const rootLink = Game.getObjectById(room.memory.rootLink) as StructureLink;
+			const rootLink = Game.getObjectById(room.memory.rootLink as Id<StructureLink>);
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
@@ -465,7 +470,7 @@ function doLinkTransfers() {
 				console.log("No storage link found");
 				continue;
 			}
-			const storageLink = Game.getObjectById(room.memory.storageLink) as StructureLink;
+			const storageLink = Game.getObjectById(room.memory.storageLink);
 			if (!storageLink) {
 				console.log("can't find storage link id:", room.memory.storageLink);
 				delete room.memory.storageLink;
@@ -515,6 +520,7 @@ function doFlagCommandsAndStuff() {
 				if (closestCreep) {
 					Memory.attackTarget = closestCreep.id;
 				} else {
+					// @ts-expect-error
 					delete Memory.attackTarget;
 				}
 			}
@@ -642,7 +648,7 @@ function doFlagCommandsAndStuff() {
 function commandEnergyRelays() {
 	const rooms = util.getOwnedRooms();
 
-	const relayCreeps = util.getCreeps("relay");
+	const relayCreeps = util.getCreeps(Role.Relay);
 	// console.log("# of relay creeps:", relayCreeps.length);
 	if (relayCreeps.length === 0) {
 		return;
@@ -666,11 +672,10 @@ function commandEnergyRelays() {
 			continue;
 		}
 
-		const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
-		const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
+		const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2) as RoomPosition;
+		const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y) as RoomPosition;
 		// HACK: because the way the storage module is placed is STILL jank af, rooms can opt in to change the relay position for the storage
-		const storagePosRelayDirection =
-			room.memory.storagePosDirection !== undefined ? room.memory.storagePosDirection : RIGHT;
+		const storagePosRelayDirection = room.memory.storagePosDirection ?? RIGHT;
 		const relayPositions = [
 			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
 			util.getPositionInDirection(storagePos, storagePosRelayDirection),
@@ -717,14 +722,20 @@ function doCreepSpawning() {
 		Memory.creepSpawnLog = [];
 	}
 
-	function spawnCreepOfRole(role, spawns: StructureSpawn[], room = undefined) {
+	function spawnCreepOfRole(role: any, spawns: StructureSpawn[], room: Room | undefined = undefined) {
 		const target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
 		const hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn.room);
-		const newCreepMemory = { role: role.name, keepAlive: true, stage: hiStage };
+		const newCreepMemory: {
+			role: Role;
+			stage: number;
+			keepAlive: boolean;
+			targetRoom?: string;
+			mode?: string;
+		} = { role: role.name, keepAlive: true, stage: hiStage };
 		if (role.quota_per_room) {
-			newCreepMemory.targetRoom = room.name;
+			newCreepMemory.targetRoom = room?.name;
 		}
 		if (role.name == "attacker") {
 			newCreepMemory.mode = "defend";
@@ -736,20 +747,23 @@ function doCreepSpawning() {
 			console.log("Spawn new creep", newCreepName);
 			Memory.creepSpawnLog.push(
 				`${Game.time} | spawning ${newCreepName} at ${target_spawn.name} (stage ${hiStage}${
-					role.quota_per_room ? ", target room:" + room.name : ""
+					role.quota_per_room ? ", target room:" + room?.name : ""
 				})`
 			);
 			const body = toolCreepUpgrader.roles[role.name].stages[hiStage];
-			if (role === "upgrader" && room.controller.rcl <= 5 && hiStage > 2) {
+			if (role === "upgrader" && room?.controller && room.controller.level <= 5 && hiStage > 2) {
 				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
 				const result = target_spawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, {
+					// @ts-expect-error this is valid
 					memory: newCreepMemory,
 				});
 				if (result === ERR_NOT_ENOUGH_ENERGY) {
 					// fall back just in case
+					// @ts-expect-error this is valid
 					target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				}
 			} else {
+				// @ts-expect-error this is valid
 				target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 			}
 			return true;
@@ -757,7 +771,7 @@ function doCreepSpawning() {
 		return false;
 	}
 
-	function doMarkForDeath(role, creeps: Creep[], quota, room) {
+	function doMarkForDeath(role: any, creeps: Creep[], quota: number, room: Room) {
 		// check if we can upgrade any of the creeps,
 		// and if no other creeps are already marked for death,
 		// mark 1 creep for death
@@ -797,6 +811,8 @@ function doCreepSpawning() {
 			creeps[0].memory.keepAlive = false;
 			return true;
 		}
+
+		return false;
 	}
 
 	if (Memory.creepSpawnLog.length >= 100) {
@@ -830,15 +846,17 @@ function doCreepSpawning() {
 				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(role.name);
 				let spawns = util
 					.getStructures(room, STRUCTURE_SPAWN)
-					.filter(s => !s.spawning)
+					.filter(s => !(s as StructureSpawn).spawning)
 					.filter(
 						s =>
 							util
 								.getCreeps()
 								.filter(
-									c => (c.memory.renewing || c.ticksToLive < 100) && c.memory.renewTarget === s.id
+									c =>
+										(c.memory.renewing || (c.ticksToLive && c.ticksToLive < 100)) &&
+										c.memory.renewTarget === s.id
 								).length === 0
-					);
+					) as StructureSpawn[];
 				if (spawns.length === 0) {
 					console.log("WARN: There are no available spawns in this room to spawn creeps");
 					needOtherRoomSpawns = true;
@@ -875,15 +893,17 @@ function doCreepSpawning() {
 					const target_room = otherRooms[0];
 					spawns = util
 						.getStructures(target_room, STRUCTURE_SPAWN)
-						.filter(s => !s.spawning)
+						.filter(s => !(s as StructureSpawn).spawning)
 						.filter(
 							s =>
 								util
 									.getCreeps()
 									.filter(
-										c => (c.memory.renewing || c.ticksToLive < 100) && c.memory.renewTarget === s.id
+										(c: Creep) =>
+											(c.memory.renewing || (c.ticksToLive && c.ticksToLive < 100)) &&
+											c.memory.renewTarget === s.id
 									).length === 0
-						);
+						) as StructureSpawn[];
 					if (spawns.length === 0) {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
 						continue;
@@ -908,7 +928,7 @@ function doCreepSpawning() {
 				console.log("WARN: There are no rooms available with enough energy to spawn creeps");
 				continue;
 			}
-			target_room = rooms[Math.floor(Math.random() * rooms.length)];
+			const target_room = rooms[Math.floor(Math.random() * rooms.length)];
 
 			if (creeps_of_role.length >= role_quota) {
 				if (doMarkForDeath(role, creeps_of_role, role_quota, target_room)) {
@@ -919,7 +939,9 @@ function doCreepSpawning() {
 				continue;
 			}
 
-			const spawns = util.getStructures(target_room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			const spawns = util
+				.getStructures(target_room, STRUCTURE_SPAWN)
+				.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
 			if (spawns.length === 0) {
 				continue;
 			}
@@ -939,6 +961,7 @@ function doAutoTrading() {
 		// @ts-ignore
 		Game.rooms.W13N11.terminal.send(
 			RESOURCE_ZYNTHIUM,
+			// @ts-ignore
 			Game.rooms.W13N11.terminal.store[RESOURCE_ZYNTHIUM],
 			"W16N9"
 		);
@@ -987,6 +1010,7 @@ function doAutoTrading() {
 
 		for (let m = 0; m < Memory.mineralsToSell.length; m++) {
 			const mineral = Memory.mineralsToSell[m];
+			// @ts-expect-error FIXME: this could use a refactor to type check better
 			if (!minimumPrice[mineral]) {
 				console.log("WARN: could not find", mineral, "in minimumPrice");
 				continue;
@@ -1017,6 +1041,7 @@ function doAutoTrading() {
 				return (
 					order.type === ORDER_BUY &&
 					order.resourceType === mineral &&
+					// @ts-expect-error FIXME: this could use a refactor to type check better
 					order.price >= minimumPrice[mineral] &&
 					order.remainingAmount > 0
 				);
@@ -1028,7 +1053,7 @@ function doAutoTrading() {
 			const amount = Math.min(room.terminal.store[mineral], 20000);
 			// TODO: sort orders by order of credit price and energy price
 			const buy = buyOrders[0];
-			const cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+			const cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName ?? "");
 			console.log(
 				buy.id,
 				buy.roomName,
@@ -1064,16 +1089,18 @@ function doAutoPlanning() {
 	// place extractors when able
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
-		if (room.controller.level >= 6) {
+		if (room.controller?.level ?? 0 >= 6) {
 			const minerals = room.find(FIND_MINERALS);
 			for (const m in minerals) {
 				const mineral = minerals[m];
 				if (
+					// @ts-expect-error FIXME: this should work normally, type definitions are wrong?
 					mineral.pos.lookFor(LOOK_STRUCTURES, {
 						filter: (struct: Structure) => struct.structureType === STRUCTURE_EXTRACTOR,
 					}).length == 0
 				) {
 					if (
+						// @ts-expect-error FIXME: this should work normally, type definitions are wrong?
 						mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, {
 							filter: (site: ConstructionSite) => site.structureType === STRUCTURE_EXTRACTOR,
 						}).length == 0
@@ -1090,10 +1117,10 @@ function doWorkLabs() {
 	const rooms = util.getOwnedRooms();
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
-		if (room.controller.level < 6) {
+		if (room.controller?.level ?? 0 < 6) {
 			continue;
 		}
-		const labs = util.getStructures(room, STRUCTURE_LAB);
+		const labs = util.getStructures(room, STRUCTURE_LAB) as StructureLab[];
 
 		for (let l = 0; l < labs.length; l++) {
 			const workFlag = util.getWorkFlag(labs[l].pos);
@@ -1116,12 +1143,12 @@ function doWorkLabs() {
 						break;
 					default:
 						if (makingWhat.startsWith("X")) {
-							needsMinerals = ["X", makingWhat.slice(1)]; // untested
+							needsMinerals = ["X", makingWhat.slice(1) as ResourceConstant]; // untested
 						} else {
-							needsMinerals = makingWhat.split("");
+							needsMinerals = makingWhat.split("") as ResourceConstant[];
 						}
 				}
-				const sourceLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+				const sourceLabs: StructureLab[] = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
 					filter: (lab: StructureLab) => {
 						return lab.structureType === STRUCTURE_LAB && _.contains(needsMinerals, lab.mineralType);
 					},
@@ -1137,9 +1164,9 @@ function doWorkLabs() {
 					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
 				}
 			} else if (method === "unmake") {
-				const splitsInto = labs[l].mineralType.split("");
+				const splitsInto = labs[l].mineralType?.split("") as ResourceConstant[];
 				console.log("[work-labs] unmaking", labs[l].mineralType, "into", splitsInto);
-				let destLabs = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
+				let destLabs: StructureLab[] = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
 					filter: (lab: StructureLab) => {
 						return (
 							lab.structureType === STRUCTURE_LAB &&
@@ -1150,6 +1177,7 @@ function doWorkLabs() {
 				destLabs = _.sortBy(
 					destLabs,
 					(lab: StructureLab) => {
+						// @ts-expect-error FIXME: this is functional, but doesn't typecheck
 						return _.contains(lab.mineralType, splitsInto);
 					},
 					"desc"
@@ -1161,7 +1189,7 @@ function doWorkLabs() {
 					destLabs.forEach((lab: StructureLab) => vis.line(labs[l].pos, lab.pos));
 				} catch (e) {}
 
-				labs[l].reverseReaction(...destLabs);
+				labs[l].reverseReaction(destLabs[0], destLabs[1]);
 			} else {
 				console.log("Unknown method:", method);
 			}
@@ -1467,7 +1495,9 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", Memory.claimTargets[t].room);
-			const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
+			const spawns = util
+				.getStructures(spawnRoom, STRUCTURE_SPAWN)
+				.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
 			if (spawns.length === 0) {
 				console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
 				continue;
@@ -1480,9 +1510,9 @@ function satisfyClaimTargets() {
 				claimerBody = [CLAIM, MOVE];
 			}
 			targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
+				// @ts-expect-error this works, its fine
 				memory: {
 					role: Role.Claimer,
-					// @ts-expect-error FIXME: define types for claimTargets
 					targetRoom: Memory.claimTargets[t].room,
 					mode: Memory.claimTargets[t].mode,
 				},
@@ -1540,7 +1570,7 @@ function doWorkFactories() {
 			}
 
 			for (const _component in COMMODITIES[productionTarget].components) {
-				let component = _component as CommodityConstant;
+				const component = _component as CommodityConstant;
 				// console.log(`[work-factories] factory has component ${component}?`);
 				if (!factory.store.hasOwnProperty(component)) {
 					console.log(`[work-factories] no ${component} found`);
@@ -1936,7 +1966,7 @@ function main() {
 			: CREEP_RENEW_PRIORITY._default;
 		return pB - pA;
 	});
-	for (let creep of renewingCreeps) {
+	for (const creep of renewingCreeps) {
 		try {
 			taskRenew.run(creep);
 		} catch (e) {
