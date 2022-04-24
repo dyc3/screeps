@@ -86,21 +86,21 @@ import _ from "lodash";
 import "tools";
 import util from "util";
 
-const roleHarvester = require("role.harvester");
-const roleUpgrader = require("role.upgrader");
-const roleManager = require("role.manager");
-const roleBuilder = require("role.builder");
-const roleRepairer = require("role.repairer");
-const roleClaimer = require("role.claimer");
-const roleRemoteHarvester = require("role.remoteharvester");
-const roleCarrier = require("role.carrier");
-const roleScout = require("role.scout");
-const roleMiner = require("role.miner");
-const roleScientist = require("role.scientist");
-const roleRelay = require("role.relay");
-const roleTmpDeliver = require("role.tmpdeliver");
+const roleHarvester = require("roles/role.harvester");
+const roleUpgrader = require("roles/role.upgrader");
+const roleManager = require("roles/role.manager");
+const roleBuilder = require("roles/role.builder");
+const roleRepairer = require("roles/role.repairer");
+const roleClaimer = require("roles/role.claimer");
+const roleRemoteHarvester = require("roles/role.remoteharvester");
+const roleCarrier = require("roles/role.carrier");
+const roleScout = require("roles/role.scout");
+const roleMiner = require("roles/role.miner");
+const roleScientist = require("roles/role.scientist");
+const roleRelay = require("roles/role.relay");
+const roleTmpDeliver = require("roles/role.tmpdeliver");
 
-const roleTower = require("role.tower");
+const roleTower = require("roles/role.tower");
 
 const taskRenew = require("task.renew");
 const taskDepositMaterials = require("task.depositmaterials");
