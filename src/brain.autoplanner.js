@@ -552,68 +552,6 @@ let brainAutoPlanner = {
 		return `Removed ${count} plans at ${pos.x}, ${pos.y}, ${pos.roomName}`;
 	},
 
-	/** Plan extensions along paths from spawn to sources. **/
-	planExtensions_old: function(room, debug=false) {
-
-		var spawn = util.getSpawn(room);
-		// if we haven't placed all our extensions yet, do that
-		var extensionCount = util.getStructures(room, STRUCTURE_EXTENSION).length;
-		if (extensionCount < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
-			console.log(room.name,"EXTENSIONS BUILT",extensionCount,"/",CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level])
-			var extensionSites = util.getConstruction(room, STRUCTURE_EXTENSION).length;
-			if (extensionCount + extensionSites < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
-				// console.log("PLACE EXTENSIONS")
-				var sources = util.getSources(room);
-				var spawn = util.getSpawn(room);
-				if (!spawn) {
-					return;
-				}
-				for (var s in sources) {
-					var source = sources[s];
-					var path = room.findPath(spawn.pos, source.pos, {ignoreCreeps:true});
-					for (var p = 0; p < path.length; p++) {
-						var pathStep = path[p];
-						var pathPos = new RoomPosition(pathStep.x, pathStep.y, room.name);
-						if (spawn.pos.inRangeTo(pathPos, 3) || source.pos.inRangeTo(pathPos, 3)) {
-							continue;
-						}
-						if (spawn.room.controller.pos.inRangeTo(pathPos, 3)) {
-							continue;
-						}
-						if (util.getStructuresAt(pathPos, STRUCTURE_ROAD).length == 0) {
-							continue;
-						}
-						if (util.getConstructionAt(pathPos).length > 0) {
-							continue;
-						}
-						var perps = util.getPerpendiculars(pathStep);
-						for (var i = 0; i < perps.length; i++) {
-							var roomPos = new RoomPosition(perps[i].x, perps[i].y, room.name);
-							var terrain = util.getTerrainAt(roomPos);
-							if (terrain == "wall") { continue; }
-							if (util.getStructuresAt(roomPos).length > 0) {
-								continue;
-							}
-							if (util.getConstructionAt(roomPos).length > 0) {
-								continue;
-							}
-							if (debug) {
-								new RoomVisual(roomPos.room).circle(roomPos, { radius: 0.5, fill: "transparent" });
-							}
-							else {
-								var c = roomPos.createConstructionSite(STRUCTURE_EXTENSION);
-								if (c != OK) {
-									console.log("ERROR CREATING NEW EXTENSIONS:", c);
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	},
-
 	// var brainAutoPlanner = require('brain.autoplanner'); brainAutoPlanner.planWalls(Game.rooms["ROOM"], true)
 	planWalls: function(room, debug=true) {
 		// these are used for saving positions later

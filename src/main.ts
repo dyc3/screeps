@@ -1,3 +1,5 @@
+import { ErrorMapper } from "utils/ErrorMapper";
+
 // https://wiki.screepspl.us/index.php/Private_Server_Common_Tasks
 // https://lodash.com/docs/3.10.1
 
@@ -80,41 +82,93 @@ Room memory: `Memory.rooms.ROOMNAME`
 
 */
 
-require("tools");
-let util = require('util');
+import _ from 'lodash';
+import "tools";
+import util from 'util';
 
-let roleHarvester = require('role.harvester');
-let roleUpgrader = require('role.upgrader');
-let roleManager = require('role.manager');
-let roleBuilder = require('role.builder');
-let roleRepairer = require('role.repairer');
-let roleClaimer = require('role.claimer');
-let roleRemoteHarvester = require('role.remoteharvester');
-let roleCarrier = require('role.carrier');
-let roleScout = require('role.scout');
-let roleMiner = require('role.miner');
-let roleScientist = require('role.scientist');
-let roleRelay = require('role.relay');
-let roleTmpDeliver = require('role.tmpdeliver');
+const roleHarvester = require('role.harvester');
+const roleUpgrader = require('role.upgrader');
+const roleManager = require('role.manager');
+const roleBuilder = require('role.builder');
+const roleRepairer = require('role.repairer');
+const roleClaimer = require('role.claimer');
+const roleRemoteHarvester = require('role.remoteharvester');
+const roleCarrier = require('role.carrier');
+const roleScout = require('role.scout');
+const roleMiner = require('role.miner');
+const roleScientist = require('role.scientist');
+const roleRelay = require('role.relay');
+const roleTmpDeliver = require('role.tmpdeliver');
 
-let roleTower = require('role.tower');
+const roleTower = require('role.tower');
 
-let taskRenew = require('task.renew');
-let taskDepositMaterials = require('task.depositmaterials');
+const taskRenew = require('task.renew');
+const taskDepositMaterials = require('task.depositmaterials');
 
-let toolEnergySource = require('tool.energysource');
-let toolCreepUpgrader = require('tool.creepupgrader');
-let toolRoadPlanner = require('tool.roadplanner');
+const toolEnergySource = require('tool.energysource');
+const toolCreepUpgrader = require('tool.creepupgrader');
+const toolRoadPlanner = require('tool.roadplanner');
 
-let brainAutoPlanner = require('brain.autoplanner');
-let brainGuard = require("brain.guard");
-let brainLogistics = require("brain.logistics");
-let brainHighwayHarvesting = require("brain.highwayharvesting");
-let brainOffense = require("brain.offense");
+const brainAutoPlanner = require('brain.autoplanner');
+const brainGuard = require("brain.guard");
+const brainLogistics = require("brain.logistics");
+const brainHighwayHarvesting = require("brain.highwayharvesting");
+const brainOffense = require("brain.offense");
 
-let errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
+const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
-global.WHOAMI = _.find(Game.structures).owner.username;
+declare global {
+	/*
+    Example types, expand on these or remove them and add your own.
+    Note: Values, properties defined here do no fully *exist* by this type definiton alone.
+          You must also give them an implemention if you would like to use them. (ex. actually setting a `role` property in a Creeps memory)
+
+    Types added in this `global` block are in an ambient, global context. This is needed because `main.ts` is a module file (uses import or export).
+    Interfaces matching on name from @types/screeps will be merged. This is how you can extend the 'built-in' interfaces from @types/screeps.
+  */
+	// Memory extension samples
+	interface Memory {
+		highlightCreepLog: string;
+		mineralsToSell: MineralConstant[];
+	}
+
+	interface CreepMemory {
+		role: Role;
+		room: string;
+	}
+
+	// Syntax for adding proprties to `global` (ex "global.log")
+	namespace NodeJS {
+		interface Global {
+			log: any;
+			WHOAMI: string;
+			CONTROLLER_UPGRADE_RANGE: number;
+			DROPPED_ENERGY_GATHER_MINIMUM: number;
+		}
+	}
+
+	enum Role {
+		Harvester = "harvester",
+		Upgrader = "upgrader",
+		Manager = "manager",
+		Builder = "builder",
+		Repairer = "repairer",
+		Claimer = "claimer",
+		RemoteHarvester = "remoteharvester",
+		Carrier = "carrier",
+		Scout = "scout",
+		Miner = "miner",
+		Scientist = "scientist",
+		Relay = "relay",
+		TmpDeliver = "tmpdeliver",
+		Guard = "guard",
+		HighwayHarvesting = "highwayharvesting",
+		Offense = "offense",
+	}
+
+}
+
+global.WHOAMI = _.find(Game.structures).owner.username as String;
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
@@ -769,32 +823,33 @@ function doAutoTrading() {
 
 	let rooms = util.getOwnedRooms();
 
-	let minimumPrice = {};
-	minimumPrice[RESOURCE_ENERGY] = 0.08;
-	minimumPrice[RESOURCE_OXYGEN] = 0.08;
-	minimumPrice[RESOURCE_HYDROGEN] = 0.08;
+	let minimumPrice = {
+		[RESOURCE_ENERGY]: 0.08,
+		[RESOURCE_OXYGEN]: 0.08,
+		[RESOURCE_HYDROGEN]: 0.08,
 
-	minimumPrice[RESOURCE_UTRIUM] = 0.08;
-	minimumPrice[RESOURCE_LEMERGIUM] = 0.35;
-	minimumPrice[RESOURCE_KEANIUM] = 0.35;
-	minimumPrice[RESOURCE_ZYNTHIUM] = 0.35;
-	minimumPrice[RESOURCE_CATALYST] = 0.5;
+		[RESOURCE_UTRIUM]: 0.08,
+		[RESOURCE_LEMERGIUM]: 0.35,
+		[RESOURCE_KEANIUM]: 0.35,
+		[RESOURCE_ZYNTHIUM]: 0.35,
+		[RESOURCE_CATALYST]: 0.5,
 
-	minimumPrice[RESOURCE_GHODIUM] = 5;
+		[RESOURCE_GHODIUM]: 5,
 
-	minimumPrice[RESOURCE_UTRIUM_BAR] = 0.45;
-	minimumPrice[RESOURCE_ZYNTHIUM_BAR] = 0.45;
-	minimumPrice[RESOURCE_LEMERGIUM_BAR] = 0.6;
-	minimumPrice[RESOURCE_REDUCTANT] = 0.45;
-	minimumPrice[RESOURCE_BATTERY] = 0.05;
+		[RESOURCE_UTRIUM_BAR]: 0.45,
+		[RESOURCE_ZYNTHIUM_BAR]: 0.45,
+		[RESOURCE_LEMERGIUM_BAR]: 0.6,
+		[RESOURCE_REDUCTANT]: 0.45,
+		[RESOURCE_BATTERY]: 0.05,
 
-	minimumPrice[RESOURCE_ESSENCE] = 100000;
-	minimumPrice[RESOURCE_EMANATION] = 30000;
-	minimumPrice[RESOURCE_SPIRIT] = 10000;
-	minimumPrice[RESOURCE_EXTRACT] = 1500;
-	minimumPrice[RESOURCE_CONCENTRATE] = 300;
+		[RESOURCE_ESSENCE]: 100000,
+		[RESOURCE_EMANATION]: 30000,
+		[RESOURCE_SPIRIT]: 10000,
+		[RESOURCE_EXTRACT]: 1500,
+		[RESOURCE_CONCENTRATE]: 300,
 
-	minimumPrice[RESOURCE_OPS] = 4.7;
+		[RESOURCE_OPS]: 4.7,
+	};
 
 	for (let r = 0; r < rooms.length; r++) {
 		let room = rooms[r];
@@ -811,7 +866,7 @@ function doAutoTrading() {
 				console.log("WARN: could not find", mineral, "in minimumPrice");
 				continue;
 			}
-			if (room.terminal.cooldown > 0 || room.terminal.owner.username !== global.WHOAMI) {
+			if (room.terminal.cooldown > 0 || !room.terminal.my) {
 				continue;
 			}
 			if (room.storage && room.storage.store[RESOURCE_ENERGY] < 10000 || !room.storage) {
@@ -952,8 +1007,6 @@ function doWorkLabs() {
 		}
 	}
 }
-
-global.doWorkLabs = doWorkLabs;
 
 function commandRemoteMining() {
 	// Force job to run: Memory.job_last_run["command-remote-mining"] = 0
@@ -2008,33 +2061,8 @@ function main() {
 	}
 }
 
-// https://github.com/screepers/screeps-profiler
-// const profiler = require('profiler');
-// profiler.registerClass(util, 'util');
-// profiler.registerClass(roleHarvester, 'role.harvester');
-// profiler.registerClass(roleUpgrader, 'role.upgrader');
-// profiler.registerClass(roleBuilder, 'role.builder');
-// profiler.registerClass(roleRepairer, 'role.repairer');
-// profiler.registerClass(roleManager, 'role.manager');
-// profiler.registerClass(roleScientist, 'role.scientist');
-// profiler.registerClass(roleTower, 'role.tower');
-// profiler.registerClass(roleRelay, 'role.relay');
-// profiler.registerClass(roleTmpDeliver, 'role.tmpdeliver');
-// profiler.registerClass(roleRemoteHarvester, 'role.remoteharvester');
-// profiler.registerClass(roleCarrier, 'role.carrier');
-// profiler.registerClass(taskRenew, 'task.renew');
-// profiler.registerClass(require('task.gather'), 'task.gather');
-// profiler.registerClass(brainAutoPlanner, 'brain.autoplanner');
-// profiler.registerClass(brainGuard, 'brain.guard');
-// profiler.registerClass(brainLogistics, 'brain.logistics');
-// profiler.registerClass(brainHighwayHarvesting, 'brain.highwayharvesting');
-// profiler.registerClass(brainOffense, 'brain.offense');
-// profiler.enable();
-
-module.exports = {
-	loop() {
-		// profiler.wrap(function() {
-			main();
-		// });
-	},
-}
+// When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
+// This utility uses source maps to get the line numbers and file names of the original, TS source code
+export const loop = ErrorMapper.wrapLoop(() => {
+	main();
+});

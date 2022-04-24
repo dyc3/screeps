@@ -124,7 +124,7 @@ let taskGather = {
 				}
 
 				if (structure.structureType === STRUCTURE_STORAGE) {
-					if (structure.owner.username !== global.WHOAMI) {
+					if (structure.owner.my) {
 						return structure.store[RESOURCE_ENERGY] > 0;
 					}
 					else {

@@ -1,27 +1,7 @@
-Creep.prototype.log = function(...args) {
-	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {
-		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
-	}
-	else {
-		console.log(this.name, ...args);
-	}
-};
-
-PowerCreep.prototype.log = function(...args) {
-	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === "powercreep")) {
-		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
-	}
-	else {
-		console.log(this.name, ...args);
-	}
-};
-
-Number.prototype.clamp = function(min, max) {
-	return util.clamp(this, min, max);
-};
+import _ from "lodash";
 
 let util = {
-	errorCodeToString(errorCode) {
+	errorCodeToString(errorCode: number): string {
 		const errors = {
 			"OK": 0,
 			"ERR_NOT_OWNER": -1,
@@ -40,6 +20,7 @@ let util = {
 			"ERR_GCL_NOT_ENOUGH": -15,
 		};
 		try {
+			// @ts-expect-error FIXME: needs better typing
 			return _.invert(errors)[errorCode];
 		}
 		catch (e) {
@@ -47,7 +28,7 @@ let util = {
 		}
 	},
 
-	clamp(x, min, max) {
+	clamp(x: number, min: number, max: number): number {
 		return Math.min(Math.max(x, min), max);
 	},
 
@@ -60,7 +41,7 @@ let util = {
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(29, 43, "W15N9"))
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(8, 15, "W15N9"))
 	 */
-	findClosestOwnedRooms(targetPos, filterCallback=room => true) {
+	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback=(room: Room) => true) {
 		let rooms = this.getOwnedRooms();
 		rooms = _.filter(rooms, filterCallback)
 			// HACK: exclude certain room combos because they suck so much
@@ -91,10 +72,11 @@ let util = {
 		// 	return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length;
 		// });
 		rooms = _.sortByAll(rooms, ...[
-			r => Game.map.getRoomLinearDistance(targetPos.roomName, r.name),
-			r => Game.map.findRoute(targetPos.roomName, r.name).length,
+			(r: Room) => Game.map.getRoomLinearDistance(targetPos.roomName, r.name),
+			// @ts-expect-error FIXME: needs better typing
+			(r: Room) => Game.map.findRoute(targetPos.roomName, r.name).length,
 			// TODO: use traveler.Traveler.findTravelPath instead
-			r => PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
+			(r: Room) => PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
 		]);
 		return rooms;
 	},
@@ -108,16 +90,24 @@ let util = {
 	},
 
 	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
-	isHighwayRoom: function(roomName) {
+	isHighwayRoom: function(roomName: string) {
 		let matches = roomName.match(/\d+/g);
+		if (!matches) {
+			// invalid room
+			return false;
+		}
 		let x = parseInt(matches[0]);
 		let y = parseInt(matches[1]);
 		return x % 10 == 0 || y % 10 == 0;
 	},
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
-	isTreasureRoom: function(roomName) {
+	isTreasureRoom: function(roomName: string) {
 		let matches = roomName.match(/\d+/g);
+		if (!matches) {
+			// invalid room
+			return false;
+		}
 		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
 		let x = parseInt(matches[0]) % 10;
 		let y = parseInt(matches[1]) % 10;
@@ -133,7 +123,7 @@ let util = {
 	 *
 	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
 	 */
-	calculateEta(creep, path, assumeCarryFull=false) {
+	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull=false) {
 		if (creep instanceof PowerCreep) {
 			return path.length;
 		}
@@ -173,22 +163,25 @@ let util = {
 
 	/**
 	 * Gets the cost to spawn a creep with the given body.
-	 * @param {array} body The creep's body parts
-	 * @returns {Number} The energy cost to spawn the creep.
 	 */
-	getCreepSpawnCost(body) {
-		if (body.length > 0 && typeof body[0] === "object") {
-			body = body.map(b => b.type);
+	getCreepSpawnCost(body: BodyPartDefinition[] | BodyPartConstant[]): number {
+		function isFullBody(body: BodyPartDefinition[] | BodyPartConstant[]): body is BodyPartDefinition[] {
+			return body.length > 0 && typeof body[0] !== "string" && "type" in body[0];
 		}
-		return body.reduce((a, b) => (typeof a === "string" ? BODYPART_COST[a] : a) + BODYPART_COST[b]);
+		let parts: BodyPartConstant[];
+		if (isFullBody(body)) {
+			parts = body.map(b => b.type);
+		} else {
+			parts = body;
+		}
+		return parts.map(p => BODYPART_COST[p]).reduce((a: number, b: number) => a + b);
 	},
 
 	/**
 	 * Gets the number of ticks a creep's time to live will increase by when it is renewed.
 	 * @param {array} body The creep's body
-	 * @returns {Number} Amount ticksToLive will increase
 	 */
-	getRenewTickIncrease(body) {
+	getRenewTickIncrease(body: BodyPartDefinition[]): number {
 		if (body.length === 0) {
 			throw new Error("Invalid body");
 		}
@@ -200,49 +193,15 @@ let util = {
 	 * @param {array} body The creep's body
 	 * @returns {Number} The energy cost to renew the creep.
 	 */
-	getRenewCost(body) {
+	getRenewCost(body: BodyPartDefinition[]) {
 		if (body.length === 0) {
 			throw new Error("Invalid body");
 		}
 		return Math.ceil(this.getCreepSpawnCost(body) / 2.5 / body.length);
 	},
 
-	/**
-	 * Gets the 2 spots on the side of the given position on a path
-	 * @pram {object} pathStep
-	 */
-	getPerpendiculars: function(pathStep) {
-		var perps = [
-			{ x:pathStep.x + pathStep.dy , y:pathStep.y + pathStep.dx },
-			{ x:pathStep.x - pathStep.dy , y:pathStep.y - pathStep.dx },
-		];
-		switch (pathStep.direction) {
-			case RIGHT:
-			case LEFT:
-			case TOP:
-			case BOTTOM:
-				perps = [
-					{ x:pathStep.x + pathStep.dy , y:pathStep.y + pathStep.dx },
-					{ x:pathStep.x - pathStep.dy , y:pathStep.y - pathStep.dx },
-				];
-				break;
-			case TOP_RIGHT:
-			case BOTTOM_LEFT:
-			case TOP_LEFT:
-			case BOTTOM_RIGHT:
-				perps = [
-					{ x:pathStep.x + pathStep.dx , y:pathStep.y },
-					{ x:pathStep.x - pathStep.dx , y:pathStep.y },
-				];
-				break;
-			default:
-				console.log("ERR: getPerpendiculars invalid direction", pathStep.direction);
-		}
-		return perps;
-	},
-
-	/** @param {RoomPosition} pos **/
-	getConstructionAt: function(pos, type=undefined) {
+	/** @deprecated */
+	getConstructionAt(pos: RoomPosition, type=undefined) {
 		if (type) {
 			return pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(site => site.structureType === type);
 		}
@@ -251,8 +210,8 @@ let util = {
 		}
 	},
 
-	/** @param {RoomPosition} pos **/
-	getStructuresAt: function(pos, type=undefined) {
+	/** @deprecated */
+	getStructuresAt(pos: RoomPosition, type: string | undefined=undefined) {
 		if (type) {
 			return pos.lookFor(LOOK_STRUCTURES).filter(struct => struct.structureType === type);
 		}
@@ -261,16 +220,18 @@ let util = {
 		}
 	},
 
-	getSources: function(room) {
+	/** @deprecated */
+	getSources(room: Room) {
 		return room.find(FIND_SOURCES);
 	},
 
-	/** @param {RoomPosition} pos **/
-	getTerrainAt: function(pos) {
+	/** @deprecated */
+	getTerrainAt(pos: RoomPosition) {
 		return pos.lookFor(LOOK_TERRAIN)[0];
 	},
 
-	getStructures: function(room, type=undefined) {
+	/** @deprecated */
+	getStructures(room: Room, type: string | undefined=undefined) {
 		if (type) {
 			return room.find(FIND_STRUCTURES, { filter: struct => struct.structureType === type });
 		}
@@ -279,12 +240,13 @@ let util = {
 		}
 	},
 
-	getSpawn: function(room) {
+	getSpawn(room: Room) {
 		let spawns = this.getStructures(room, STRUCTURE_SPAWN);
 		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 
-	getConstruction: function(room, type=undefined) {
+	/** @deprecated */
+	getConstruction(room: Room, type=undefined) {
 		if (type) {
 			return room.find(FIND_CONSTRUCTION_SITES, { filter: (site) => { return site.structureType == type; } });
 		}
@@ -293,20 +255,15 @@ let util = {
 		}
 	},
 
-	getOwnedRooms: function() {
-		return _.values(Game.rooms).filter((room) => room.controller && room.controller.my);
+	/**
+	 * Gets all owned rooms.
+	 * @returns {Array<Room>}
+	 */
+	getOwnedRooms(): Room[] {
+		return (_.values(Game.rooms) as Room[]).filter(room => room.controller && room.controller.my);
 	},
 
-	getMinerals: function(room, mineralType=undefined) {
-		if (mineralType) {
-			return room.find(FIND_MINERALS, { filter: (mineral) => { return mineral.mineralType == mineralType; } });
-		}
-		else {
-			return room.find(FIND_MINERALS);
-		}
-	},
-
-	getCreeps(...roles) {
+	getCreeps(...roles: Role[]): Creep[] {
 		if (roles.length > 0) {
 			return _.filter(Game.creeps, creep => roles.includes(creep.memory.role));
 		}
@@ -315,31 +272,26 @@ let util = {
 		}
 	},
 
-	/** @param {RoomPosition} pos **/
-	getWorkFlag: function(pos) {
+	getWorkFlag(pos: RoomPosition) {
 		return pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("make"))[0];
 	},
 
-	/** @param {RoomPosition} pos **/
-	isOnEdge: function(pos) {
+	isOnEdge(pos: RoomPosition) {
 		return pos.x == 0 || pos.y == 0 || pos.x == 49 || pos.y == 49;
 	},
 
-	/** @param {RoomPosition} pos **/
-	/** @param {number} dist **/
-	isDistFromEdge: function(pos, dist) {
+	isDistFromEdge(pos: RoomPosition, dist: number) {
 		return pos.x < dist || pos.y < dist || pos.x >= 49 - dist || pos.y >= 49 - dist;
 	},
 
 	/**
 	 * Gets the mode of an array of numbers
 	 */
-	mode: function(arr) {
+	mode(arr: number[]) {
 		return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
 	},
 
-	/** @param {RoomPosition} pos **/
-	getAdjacent: function(pos) {
+	getAdjacent(pos: RoomPosition) {
 		// console.log("type of pos:", typeof pos, JSON.stringify(pos));
 		let adjacent = [];
 		for (let y = pos.y - 1; y <= pos.y + 1; y++) {
@@ -354,11 +306,11 @@ let util = {
 		return adjacent;
 	},
 
-	getOppositeDirection: function(direction) {
-		return (direction + 4) % 8;
+	getOppositeDirection(direction: DirectionConstant): DirectionConstant {
+		return (direction + 4) % 8 as DirectionConstant;
 	},
 
-	getPositionInDirection(pos, direction, amount=1) {
+	getPositionInDirection(pos: RoomPosition, direction: DirectionConstant, amount=1): RoomPosition {
 		switch (direction) {
 			case TOP:
 				return new RoomPosition(pos.x, (pos.y - amount).clamp(0, 49), pos.roomName);
@@ -377,16 +329,14 @@ let util = {
 			case BOTTOM_RIGHT:
 				return new RoomPosition((pos.x + amount).clamp(0, 49), (pos.y + amount).clamp(0, 49), pos.roomName);
 			default:
-				break;
+				throw new Error("Invalid direction");
 		}
 	},
 
 	/**
 	 * Calculate the effectiveness of a given part on a creep.
-	 * @param {Creep} creep
-	 * @param {String} part
 	 */
-	calcEffectiveness(creep, part) {
+	calcEffectiveness(creep: Creep, part: string) {
 		let groups = _.groupBy(creep.body.filter(p => p.type === part), p => p.boost);
 		// TODO: finish
 		// TODO: write tests
@@ -394,10 +344,9 @@ let util = {
 
 	/**
 	 * Gets the damage multiplier for tower damage
-	 * @param {*} distance
 	 * @example let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(10)
 	 */
-	towerImpactFactor(distance) {
+	towerImpactFactor(distance: number) {
 		if (distance <= TOWER_OPTIMAL_RANGE) {
 			return 1
 		}
@@ -409,4 +358,41 @@ let util = {
 	}
 }
 
+declare global {
+	interface Creep {
+		log(...args: any[]): void;
+	}
+
+	interface PowerCreep {
+		log(...args: any[]): void;
+	}
+
+	interface Number {
+		clamp(min: number, max: number): number;
+	}
+}
+
+Creep.prototype.log = function(...args) {
+	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {
+		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
+	}
+	else {
+		console.log(this.name, ...args);
+	}
+};
+
+PowerCreep.prototype.log = function(...args) {
+	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === "powercreep")) {
+		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
+	}
+	else {
+		console.log(this.name, ...args);
+	}
+};
+
+Number.prototype.clamp = function(min, max) {
+	return util.clamp(this as number, min, max);
+};
+
 module.exports = util;
+export default util;

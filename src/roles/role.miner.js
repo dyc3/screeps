@@ -10,7 +10,7 @@ let roleMiner = {
 	findMineralTarget: function(creep) {
 		let rooms = util.getOwnedRooms();
 		for (let room of rooms) {
-			let minerals = util.getMinerals(room);
+			let minerals = room.find(FIND_MINERALS);
 			for (let mineral of minerals) {
 				if (util.getStructuresAt(mineral.pos, STRUCTURE_EXTRACTOR).length === 0) {
 					continue;
