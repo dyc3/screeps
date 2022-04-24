@@ -1,30 +1,29 @@
 import _ from "lodash";
 
-let util = {
+const util = {
 	errorCodeToString(errorCode: number): string {
 		const errors = {
-			"OK": 0,
-			"ERR_NOT_OWNER": -1,
-			"ERR_NO_PATH": -2,
-			"ERR_NAME_EXISTS": -3,
-			"ERR_BUSY": -4,
-			"ERR_NOT_FOUND": -5,
-			"ERR_NOT_ENOUGH_SOMETHING": -6,
-			"ERR_INVALID_TARGET": -7,
-			"ERR_FULL": -8,
-			"ERR_NOT_IN_RANGE": -9,
-			"ERR_INVALID_ARGS": -10,
-			"ERR_TIRED": -11,
-			"ERR_NO_BODYPART": -12,
-			"ERR_RCL_NOT_ENOUGH": -14,
-			"ERR_GCL_NOT_ENOUGH": -15,
+			OK: 0,
+			ERR_NOT_OWNER: -1,
+			ERR_NO_PATH: -2,
+			ERR_NAME_EXISTS: -3,
+			ERR_BUSY: -4,
+			ERR_NOT_FOUND: -5,
+			ERR_NOT_ENOUGH_SOMETHING: -6,
+			ERR_INVALID_TARGET: -7,
+			ERR_FULL: -8,
+			ERR_NOT_IN_RANGE: -9,
+			ERR_INVALID_ARGS: -10,
+			ERR_TIRED: -11,
+			ERR_NO_BODYPART: -12,
+			ERR_RCL_NOT_ENOUGH: -14,
+			ERR_GCL_NOT_ENOUGH: -15,
 		};
 		try {
 			// @ts-expect-error FIXME: needs better typing
 			return _.invert(errors)[errorCode];
-		}
-		catch (e) {
-			return "<INVALID ERROR CODE>"
+		} catch (e) {
+			return "<INVALID ERROR CODE>";
 		}
 	},
 
@@ -41,7 +40,7 @@ let util = {
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(29, 43, "W15N9"))
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(8, 15, "W15N9"))
 	 */
-	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback=(room: Room) => true) {
+	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback = (room: Room) => true) {
 		let rooms = this.getOwnedRooms();
 		rooms = _.filter(rooms, filterCallback)
 			// HACK: exclude certain room combos because they suck so much
@@ -71,18 +70,22 @@ let util = {
 
 		// 	return PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathA[0].room), range: 20 }).path.length - PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, roomPathB[0].room), range: 20 }).path.length;
 		// });
-		rooms = _.sortByAll(rooms, ...[
-			(r: Room) => Game.map.getRoomLinearDistance(targetPos.roomName, r.name),
-			// @ts-expect-error FIXME: needs better typing
-			(r: Room) => Game.map.findRoute(targetPos.roomName, r.name).length,
-			// TODO: use traveler.Traveler.findTravelPath instead
-			(r: Room) => PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
-		]);
+		rooms = _.sortByAll(
+			rooms,
+			...[
+				(r: Room) => Game.map.getRoomLinearDistance(targetPos.roomName, r.name),
+				// @ts-expect-error FIXME: needs better typing
+				(r: Room) => Game.map.findRoute(targetPos.roomName, r.name).length,
+				// TODO: use traveler.Traveler.findTravelPath instead
+				(r: Room) =>
+					PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
+			]
+		);
 		return rooms;
 	},
 
-	clearAllDebugFlags: function() {
-		for (let flag in Game.flags) {
+	clearAllDebugFlags() {
+		for (const flag in Game.flags) {
 			if (flag.includes("debug")) {
 				Game.flags[flag].remove();
 			}
@@ -90,28 +93,28 @@ let util = {
 	},
 
 	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
-	isHighwayRoom: function(roomName: string) {
-		let matches = roomName.match(/\d+/g);
+	isHighwayRoom(roomName: string) {
+		const matches = roomName.match(/\d+/g);
 		if (!matches) {
 			// invalid room
 			return false;
 		}
-		let x = parseInt(matches[0]);
-		let y = parseInt(matches[1]);
+		const x = parseInt(matches[0]);
+		const y = parseInt(matches[1]);
 		return x % 10 == 0 || y % 10 == 0;
 	},
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
-	isTreasureRoom: function(roomName: string) {
-		let matches = roomName.match(/\d+/g);
+	isTreasureRoom(roomName: string) {
+		const matches = roomName.match(/\d+/g);
 		if (!matches) {
 			// invalid room
 			return false;
 		}
 		// console.log("=========== MATCHES", roomName, JSON.stringify(matches));
-		let x = parseInt(matches[0]) % 10;
-		let y = parseInt(matches[1]) % 10;
-		return (x >= 4 && x <= 6) && (y >= 4 && y <= 6);
+		const x = parseInt(matches[0]) % 10;
+		const y = parseInt(matches[1]) % 10;
+		return x >= 4 && x <= 6 && y >= 4 && y <= 6;
 	},
 
 	/**
@@ -123,27 +126,27 @@ let util = {
 	 *
 	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
 	 */
-	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull=false) {
+	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull = false) {
 		if (creep instanceof PowerCreep) {
 			return path.length;
 		}
 
-		let body = creep.body.map(b => b.type);
-		let baseFatiguePerMove = body.filter(p => p !== MOVE && (assumeCarryFull || (!assumeCarryFull && p !== CARRY))).length;
-		let moveParts = body.filter(p => p === MOVE).length;
+		const body = creep.body.map(b => b.type);
+		const baseFatiguePerMove = body.filter(
+			p => p !== MOVE && (assumeCarryFull || (!assumeCarryFull && p !== CARRY))
+		).length;
+		const moveParts = body.filter(p => p === MOVE).length;
 
 		let totalSteps = 0;
-		for (let pos of path) {
+		for (const pos of path) {
 			let fatigueMultiplier = 2;
 			try {
 				if (this.getStructuresAt(pos, STRUCTURE_ROAD).length > 0) {
 					fatigueMultiplier = 1;
-				}
-				else if (this.getTerrainAt(pos) === "swamp") {
+				} else if (this.getTerrainAt(pos) === "swamp") {
 					fatigueMultiplier = 10;
 				}
-			}
-			catch (e) {
+			} catch (e) {
 				// probably can't access this room, just ignore it
 				// creep.log(e);
 			}
@@ -201,21 +204,19 @@ let util = {
 	},
 
 	/** @deprecated */
-	getConstructionAt(pos: RoomPosition, type=undefined) {
+	getConstructionAt(pos: RoomPosition, type = undefined) {
 		if (type) {
 			return pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(site => site.structureType === type);
-		}
-		else {
+		} else {
 			return pos.lookFor(LOOK_CONSTRUCTION_SITES);
 		}
 	},
 
 	/** @deprecated */
-	getStructuresAt(pos: RoomPosition, type: string | undefined=undefined) {
+	getStructuresAt(pos: RoomPosition, type: string | undefined = undefined) {
 		if (type) {
 			return pos.lookFor(LOOK_STRUCTURES).filter(struct => struct.structureType === type);
-		}
-		else {
+		} else {
 			return pos.lookFor(LOOK_STRUCTURES);
 		}
 	},
@@ -231,26 +232,28 @@ let util = {
 	},
 
 	/** @deprecated */
-	getStructures(room: Room, type: string | undefined=undefined) {
+	getStructures(room: Room, type: string | undefined = undefined) {
 		if (type) {
 			return room.find(FIND_STRUCTURES, { filter: struct => struct.structureType === type });
-		}
-		else {
+		} else {
 			return room.find(FIND_STRUCTURES);
 		}
 	},
 
 	getSpawn(room: Room) {
-		let spawns = this.getStructures(room, STRUCTURE_SPAWN);
+		const spawns = this.getStructures(room, STRUCTURE_SPAWN);
 		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 
 	/** @deprecated */
-	getConstruction(room: Room, type=undefined) {
+	getConstruction(room: Room, type = undefined) {
 		if (type) {
-			return room.find(FIND_CONSTRUCTION_SITES, { filter: (site) => { return site.structureType == type; } });
-		}
-		else {
+			return room.find(FIND_CONSTRUCTION_SITES, {
+				filter: site => {
+					return site.structureType == type;
+				},
+			});
+		} else {
 			return room.find(FIND_CONSTRUCTION_SITES);
 		}
 	},
@@ -260,14 +263,13 @@ let util = {
 	 * @returns {Array<Room>}
 	 */
 	getOwnedRooms(): Room[] {
-		return (_.values(Game.rooms) as Room[]).filter(room => room.controller && room.controller.my);
+		return _.values(Game.rooms).filter(room => room.controller && room.controller.my);
 	},
 
 	getCreeps(...roles: Role[]): Creep[] {
 		if (roles.length > 0) {
 			return _.filter(Game.creeps, creep => roles.includes(creep.memory.role));
-		}
-		else {
+		} else {
 			return _.values(Game.creeps);
 		}
 	},
@@ -288,12 +290,12 @@ let util = {
 	 * Gets the mode of an array of numbers
 	 */
 	mode(arr: number[]) {
-		return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+		return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop();
 	},
 
 	getAdjacent(pos: RoomPosition) {
 		// console.log("type of pos:", typeof pos, JSON.stringify(pos));
-		let adjacent = [];
+		const adjacent = [];
 		for (let y = pos.y - 1; y <= pos.y + 1; y++) {
 			for (let x = pos.x - 1; x <= pos.x + 1; x++) {
 				if (pos.x == x && pos.y == y) {
@@ -307,10 +309,10 @@ let util = {
 	},
 
 	getOppositeDirection(direction: DirectionConstant): DirectionConstant {
-		return (direction + 4) % 8 as DirectionConstant;
+		return ((direction + 4) % 8) as DirectionConstant;
 	},
 
-	getPositionInDirection(pos: RoomPosition, direction: DirectionConstant, amount=1): RoomPosition {
+	getPositionInDirection(pos: RoomPosition, direction: DirectionConstant, amount = 1): RoomPosition {
 		switch (direction) {
 			case TOP:
 				return new RoomPosition(pos.x, (pos.y - amount).clamp(0, 49), pos.roomName);
@@ -337,7 +339,10 @@ let util = {
 	 * Calculate the effectiveness of a given part on a creep.
 	 */
 	calcEffectiveness(creep: Creep, part: string) {
-		let groups = _.groupBy(creep.body.filter(p => p.type === part), p => p.boost);
+		const groups = _.groupBy(
+			creep.body.filter(p => p.type === part),
+			p => p.boost
+		);
 		// TODO: finish
 		// TODO: write tests
 	},
@@ -348,15 +353,15 @@ let util = {
 	 */
 	towerImpactFactor(distance: number) {
 		if (distance <= TOWER_OPTIMAL_RANGE) {
-			return 1
+			return 1;
 		}
 		if (distance >= TOWER_FALLOFF_RANGE) {
-			return 1 - TOWER_FALLOFF
+			return 1 - TOWER_FALLOFF;
 		}
-		let towerFalloffPerTile = TOWER_FALLOFF / (TOWER_FALLOFF_RANGE - TOWER_OPTIMAL_RANGE)
-		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile
-	}
-}
+		const towerFalloffPerTile = TOWER_FALLOFF / (TOWER_FALLOFF_RANGE - TOWER_OPTIMAL_RANGE);
+		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile;
+	},
+};
 
 declare global {
 	interface Creep {
@@ -372,25 +377,23 @@ declare global {
 	}
 }
 
-Creep.prototype.log = function(...args) {
+Creep.prototype.log = function (...args) {
 	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {
 		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
-	}
-	else {
+	} else {
 		console.log(this.name, ...args);
 	}
 };
 
-PowerCreep.prototype.log = function(...args) {
+PowerCreep.prototype.log = function (...args) {
 	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === "powercreep")) {
 		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
-	}
-	else {
+	} else {
 		console.log(this.name, ...args);
 	}
 };
 
-Number.prototype.clamp = function(min, max) {
+Number.prototype.clamp = function (min, max) {
 	return util.clamp(this as number, min, max);
 };
 
