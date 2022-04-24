@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
+
 export const util = {
 	errorCodeToString(errorCode: number): string {
 		const errors = {
@@ -360,6 +362,17 @@ export const util = {
 		}
 		const towerFalloffPerTile = TOWER_FALLOFF / (TOWER_FALLOFF_RANGE - TOWER_OPTIMAL_RANGE);
 		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile;
+	},
+
+	printException(e: any, creep: Creep | undefined = undefined) {
+		const msg =
+			errorMild + '<span style="color: red">ERROR: ' + e.name + ": " + e.message + "\n" + e.stack + "</span>";
+		if (creep) {
+			console.log(creep.name, msg);
+		} else {
+			console.log(msg);
+		}
+		Game.notify(msg);
 	},
 };
 
