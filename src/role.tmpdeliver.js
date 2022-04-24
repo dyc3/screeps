@@ -205,7 +205,7 @@ let roleTmpDelivery = {
 						creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
 					}
 				}
-				if (creep.store.getUsedCapacity() < creep.store.getCapacity() * 0.75) {
+				if (creep.store.getUsedCapacity() >= creep.store.getCapacity() * 0.75) {
 					creep.memory.delivering = true;
 
 					if (this.shouldRenew(creep)) {
