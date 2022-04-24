@@ -83,7 +83,7 @@ Room memory: `Memory.rooms.ROOMNAME`
 */
 
 import _ from "lodash";
-import "tools";
+import "tools.js";
 import util from "util";
 
 const roleHarvester = require("roles/role.harvester");
@@ -128,10 +128,20 @@ declare global {
   */
 	// Memory extension samples
 	interface Memory {
-		highlightCreepLog: string;
+		highlightCreepLog: string[];
 		mineralsToSell: MineralConstant[];
-		remoteMining: any[]; // TODO: define this
+		remoteMining: {
+			needHarvesterCount: number;
+			needCarrierCount: number;
+			targets: any[] // TODO: define this
+		};
 		expansionTarget: string; // FIXME: deprecated?
+		terminalEnergyTarget: number;
+		factoryEnergyTarget: number;
+		claimTargets: any[]; // TODO: define this
+		job_queue: any[] // TODO: define this
+		job_last_run: any; // TODO: define this
+		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 	}
 
 	interface CreepMemory {
@@ -174,7 +184,7 @@ global.WHOAMI = _.find(Game.structures).owner.username as string;
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
-function printException(e: Error, creep: Creep | undefined = undefined) {
+function printException(e: any, creep: Creep | undefined = undefined) {
 	const msg = errorMild + '<span style="color: red">ERROR: ' + e.name + ": " + e.message + "\n" + e.stack + "</span>";
 	if (creep) {
 		console.log(creep.name, msg);
@@ -2268,4 +2278,3 @@ export const loop = ErrorMapper.wrapLoop(() => {
 function getOwnedRooms() {
 	throw new Error("Function not implemented.");
 }
-
