@@ -1706,8 +1706,7 @@ function main() {
 	if (!Memory.job_queue) {
 		Memory.job_queue = [];
 	}
-	// @ts-expect-error TODO: define types for jobs
-	for (const job of jobs) {
+	for (const job of Object.values(jobs)) {
 		// initialize any new jobs that have not been run yet
 		if (!Memory.job_last_run[job.name]) {
 			console.log("initialize job", job.name);
@@ -2068,3 +2067,4 @@ function main() {
 export const loop = ErrorMapper.wrapLoop(() => {
 	main();
 });
+module.exports.loop = loop;
