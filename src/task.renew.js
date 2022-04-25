@@ -1,4 +1,4 @@
-import "./traveler.js";
+import traveler from "./traveler.js";
 import util from "./util";
 import taskGather from "./task.gather.js";
 
