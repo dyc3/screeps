@@ -178,7 +178,7 @@ const roleRelay = {
 		}
 
 		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length == 0 || creep.memory._needFillTargetRefresh) {
-			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, asArray=true), (result) =>
+			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, true), (result) =>
 				result.structure.structureType != STRUCTURE_CONTAINER &&
 				result.structure.structureType != STRUCTURE_STORAGE &&
 				result.structure.structureType != STRUCTURE_ROAD &&

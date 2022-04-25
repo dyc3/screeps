@@ -206,7 +206,7 @@ const roleHarvester = {
 		let harvestPos = this.getHarvestPosition(creep);
 
 		if (!creep.memory.fillTargetIds || Game.time - creep.memory.refresh_fill_targets > 50) {
-			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, harvestPos.y - 1, harvestPos.x - 1, harvestPos.y + 1, harvestPos.x + 1, asArray=true), (result) => result.structure.structureType === STRUCTURE_EXTENSION);
+			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, harvestPos.y - 1, harvestPos.x - 1, harvestPos.y + 1, harvestPos.x + 1, true), (result) => result.structure.structureType === STRUCTURE_EXTENSION);
 			let targets = [];
 			for (let i = 0; i < adjacentStructs.length; i++) {
 				const struct = adjacentStructs[i].structure;
