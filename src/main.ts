@@ -122,7 +122,6 @@ import taskRenew from "./task.renew.js";
 // @ts-expect-error hasn't been converted yet
 import taskDepositMaterials from "./task.depositmaterials.js";
 
-import toolEnergySource from "tool.energysource";
 import toolCreepUpgrader, { Role, RoleMetadata } from "tool.creepupgrader";
 // @ts-expect-error hasn't been converted yet
 import toolRoadPlanner from "tool.roadplanner.js";
