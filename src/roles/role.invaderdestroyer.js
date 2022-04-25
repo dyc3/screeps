@@ -137,3 +137,4 @@ let roleInvaderDestroyer = {
 };
 
 module.exports = roleInvaderDestroyer;
+export default roleInvaderDestroyer;

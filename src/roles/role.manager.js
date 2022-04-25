@@ -904,3 +904,4 @@ let roleManager = {
 }
 
 module.exports = roleManager;
+export default roleManager;

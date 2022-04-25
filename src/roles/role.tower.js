@@ -119,3 +119,4 @@ let roleTower = {
 }
 
 module.exports = roleTower;
+export default roleTower;

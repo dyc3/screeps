@@ -147,3 +147,4 @@ let roleMiner = {
 }
 
 module.exports = roleMiner;
+export default roleMiner;

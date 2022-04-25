@@ -329,3 +329,4 @@ var roleRepairer = {
 }
 
 module.exports = roleRepairer;
+export default roleRepairer;

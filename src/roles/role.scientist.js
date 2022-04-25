@@ -425,3 +425,4 @@ let roleScientist = {
 }
 
 module.exports = roleScientist;
+export default roleScientist;

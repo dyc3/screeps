@@ -292,3 +292,4 @@ var roleScout = {
 }
 
 module.exports = roleScout;
+export default roleScout;

@@ -221,3 +221,4 @@ let roleTmpDelivery = {
 }
 
 module.exports = roleTmpDelivery;
+export default roleTmpDelivery;

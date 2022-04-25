@@ -237,3 +237,4 @@ let roleCarrier = {
 }
 
 module.exports = roleCarrier;
+export default roleCarrier;

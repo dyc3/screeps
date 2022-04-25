@@ -113,3 +113,4 @@ let roleClaimer = {
 }
 
 module.exports = roleClaimer;
+export default roleClaimer;

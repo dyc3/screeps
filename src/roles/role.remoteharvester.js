@@ -63,3 +63,4 @@ let roleRemoteHarvester = {
 }
 
 module.exports = roleRemoteHarvester;
+export default roleRemoteHarvester;

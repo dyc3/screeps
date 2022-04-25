@@ -315,3 +315,4 @@ let roleRelay = {
 };
 
 module.exports = roleRelay;
+export default roleRelay;
