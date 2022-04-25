@@ -216,7 +216,7 @@ let brainAutoPlanner = {
 				}
 			}
 			validStoragePos.sort(function(a, b) {
-				return _getTotalDistances(a, includeMineral=true, excludeSources=true, usePaths=true) - _getTotalDistances(b, includeMineral=true, excludeSources=true, usePaths=true);
+				return _getTotalDistances(a, true, true, true) - _getTotalDistances(b, true, true, true);
 			});
 			storagePos = validStoragePos[0];
 			room.memory.storagePos = storagePos;
