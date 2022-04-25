@@ -265,7 +265,7 @@ export const util = {
 	 * @returns {Array<Room>}
 	 */
 	getOwnedRooms(): Room[] {
-		return _.values(Game.rooms).filter(room => room.controller && room.controller.my);
+		return Object.values(Game.rooms).filter(room => room.controller && room.controller.my);
 	},
 
 	getCreeps(...roles: Role[]): Creep[] {
