@@ -99,18 +99,26 @@ import roleBuilder from "roles/role.builder.js";
 import roleRepairer from "roles/role.repairer.js";
 // @ts-expect-error hasn't been converted yet
 import roleClaimer from "roles/role.claimer.js";
-const roleRemoteHarvester = require("roles/role.remoteharvester");
-const roleCarrier = require("roles/role.carrier");
-const roleScout = require("roles/role.scout");
-const roleMiner = require("roles/role.miner");
-const roleScientist = require("roles/role.scientist");
-const roleRelay = require("roles/role.relay");
+// @ts-expect-error hasn't been converted yet
+import roleRemoteHarvester from "roles/role.remoteharvester.js";
+// @ts-expect-error hasn't been converted yet
+import roleCarrier from "roles/role.carrier.js";
+// @ts-expect-error hasn't been converted yet
+import roleScout from "roles/role.scout.js";
+// @ts-expect-error hasn't been converted yet
+import roleMiner from "roles/role.miner.js";
+// @ts-expect-error hasn't been converted yet
+import roleScientist from "roles/role.scientist.js";
+// @ts-expect-error hasn't been converted yet
+import roleRelay from "roles/role.relay.js";
 const roleTmpDeliver = require("roles/role.tmpdeliver");
 
 const roleTower = require("roles/role.tower");
 
-const taskRenew = require("task.renew");
-const taskDepositMaterials = require("task.depositmaterials");
+// @ts-expect-error hasn't been converted yet
+import taskRenew from "./task.renew.js";
+// @ts-expect-error hasn't been converted yet
+import taskDepositMaterials from "./task.depositmaterials.js";
 
 import toolEnergySource from "tool.energysource";
 import toolCreepUpgrader, { Role, RoleMetadata } from "tool.creepupgrader";

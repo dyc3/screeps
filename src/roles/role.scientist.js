@@ -1,8 +1,8 @@
-let traveler = require("traveler");
-let util = require("../util");
-let taskDepositMaterials = require("task.depositmaterials");
-let brainLogistics = require("brain.logistics");
-let brainAutoPlanner = require("brain.autoplanner");
+import "../traveler.js";
+import util from "../util";
+import taskDepositMaterials from "task.depositmaterials.js";
+import brainLogistics from "../brain.logistics.js";
+import brainAutoPlanner from "../brain.autoplanner.js";
 
 /**
  * DEPRECATED
@@ -20,7 +20,7 @@ function doNoJobsStuff(creep) {
 	}
 }
 
-let roleScientist = {
+const roleScientist = {
 	/**
 	 * DEPRECATED
 	 * @param {*} creep

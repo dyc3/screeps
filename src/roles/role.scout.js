@@ -1,6 +1,6 @@
-var toolEnergySource = require('tool.energysource');
-var toolFriends = require('tool.friends');
-var util = require("../util");
+import "../traveler.js";
+import util from "../util";
+import toolEnergySource from '../tool.energysource.js';
 
 let defaultScoreFreshnessThreshold = 50000;
 
@@ -47,7 +47,7 @@ function shuffle(a) {
     return a;
 }
 
-var roleScout = {
+const roleScout = {
 
 	/** @param {Creep} creep **/
 	findUnscoredRoom: function(creep) {

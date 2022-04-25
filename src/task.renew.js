@@ -1,10 +1,10 @@
-let traveler = require("traveler");
-let util = require("./util");
-let taskGather = require("task.gather");
+import "./traveler.js";
+import util from "./util";
+import taskGather from "./task.gather.js";
 
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
-let taskRenew = {
+const taskRenew = {
 	/** @param {Creep|PowerCreep} creep **/
 	checkRenew(creep) {
 		if (creep.memory.renewing) {
@@ -225,3 +225,4 @@ let taskRenew = {
 }
 
 module.exports = taskRenew;
+export default taskRenew;

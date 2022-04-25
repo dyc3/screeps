@@ -1,12 +1,12 @@
-let traveler = require('traveler');
-let util = require("../util");
+import "../traveler.js";
+import util from "../util";
 
 /*
  * Tell miners where to deposit materials with a "fill:?" flag or "miner:?" flag
  * "miner:?" flags use the same format as fill flags
  */
 
-let roleMiner = {
+const roleMiner = {
 	findMineralTarget: function(creep) {
 		let rooms = util.getOwnedRooms();
 		for (let room of rooms) {

@@ -1,4 +1,4 @@
-var taskDepositMaterials = {
+const taskDepositMaterials = {
 
 	// NOTE: excludes energy by default
 	checkForMaterials: function(creep, exclude_energy=true) {
@@ -47,3 +47,4 @@ var taskDepositMaterials = {
 }
 
 module.exports = taskDepositMaterials;
+export default taskDepositMaterials;

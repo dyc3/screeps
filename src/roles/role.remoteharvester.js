@@ -1,18 +1,8 @@
-let traveler = require('traveler');
-let util = require("../util");
+import "../traveler.js";
 
 let roleRemoteHarvester = {
 	/** @param {Creep} creep **/
 	run(creep) {
-		// TEMP set harvest target for testing
-		// creep.memory.harvestTarget = {
-		// 	id: "55c34a6b5be41a0a6e80c5b5",
-		// 	x: 29,
-		// 	y: 43,
-		// 	roomName: "W15N9",
-		// 	harvestPos: { x: 30, y: 44 },
-		// };
-
 		if (!creep.memory.harvestTarget) {
 			console.log(creep.name, "ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)");
 			return;
