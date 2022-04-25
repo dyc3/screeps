@@ -1,5 +1,6 @@
-const util = require("./util");
-const taskRenew = require("task.renew");
+import "./traveler.js";
+import util from "./util";
+import taskRenew from "./task.renew.js";
 
 /*
 Ligma can reduce spawn times.
@@ -79,3 +80,5 @@ module.exports = {
 		}
 	}
 }
+
+export default module.exports;

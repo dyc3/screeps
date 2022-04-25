@@ -117,6 +117,8 @@ import roleTmpDeliver from "roles/role.tmpdeliver.js";
 
 // @ts-expect-error hasn't been converted yet
 import roleTower from "roles/role.tower.js";
+// @ts-expect-error hasn't been converted yet
+import powercreepLigma from "./powercreep.ligma.js";
 
 // @ts-expect-error hasn't been converted yet
 import taskRenew from "./task.renew.js";
@@ -1926,7 +1928,7 @@ function main() {
 	// powercreeps
 	try {
 		if (Game.powerCreeps.Ligma) {
-			require("./powercreep.ligma.js").run(Game.powerCreeps.Ligma);
+			powercreepLigma.run(Game.powerCreeps.Ligma);
 		}
 	} catch (e) {
 		console.log("failed to run power creeps");
