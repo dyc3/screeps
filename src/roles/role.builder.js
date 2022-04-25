@@ -1,6 +1,6 @@
-let traveler = require('traveler');
-let taskGather = require("task.gather");
-let util = require("../util");
+import "../traveler.js";
+import util from "../util";
+import taskGather from "../task.gather.js";
 
 let roleBuilder = {
 	findTargets() {

@@ -1,7 +1,7 @@
-var traveler = require('traveler');
-var taskGather = require("task.gather");
-var taskDismantle = require("task.dismantle");
-var util = require("../util");
+import "../traveler.js";
+import util from "../util";
+import taskGather from "../task.gather.js";
+import taskDismantle from "../task.dismantle.js";
 
 // get number of repairers assigned to a room
 function getRepairerCount(room) {

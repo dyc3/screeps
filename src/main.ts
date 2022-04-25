@@ -91,10 +91,14 @@ import visualize from "./visualize";
 import roleHarvester from "roles/role.harvester.js";
 // @ts-expect-error hasn't been converted yet
 import roleUpgrader from "roles/role.upgrader.js";
-const roleManager = require("roles/role.manager");
-const roleBuilder = require("roles/role.builder");
-const roleRepairer = require("roles/role.repairer");
-const roleClaimer = require("roles/role.claimer");
+// @ts-expect-error hasn't been converted yet
+import roleManager from "roles/role.manager.js";
+// @ts-expect-error hasn't been converted yet
+import roleBuilder from "roles/role.builder.js";
+// @ts-expect-error hasn't been converted yet
+import roleRepairer from "roles/role.repairer.js";
+// @ts-expect-error hasn't been converted yet
+import roleClaimer from "roles/role.claimer.js";
 const roleRemoteHarvester = require("roles/role.remoteharvester");
 const roleCarrier = require("roles/role.carrier");
 const roleScout = require("roles/role.scout");

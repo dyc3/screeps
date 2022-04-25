@@ -1,7 +1,7 @@
-let traveler = require('traveler');
-let util = require("../util");
-let brainLogistics = require("brain.logistics");
-let brainAutoPlanner = require("brain.autoplanner");
+import "../traveler.js";
+import util from "../util";
+import brainLogistics from "../brain.logistics.js";
+import brainAutoPlanner from "../brain.autoplanner.js";
 
 function doAquire(creep, passively=false) {
 	if (creep.memory.aquireTarget && !passively) {
