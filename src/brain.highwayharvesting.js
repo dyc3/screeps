@@ -1,4 +1,4 @@
-let util = require("./util");
+import util from "./util";
 
 class HighwayHarvestTask {
 	constructor() {
@@ -70,3 +70,5 @@ module.exports = {
 		Memory.highwayHarvesting.lastObserved[roomName] = Game.time;
 	},
 };
+
+export default module.exports;

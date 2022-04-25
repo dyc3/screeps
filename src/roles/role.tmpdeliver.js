@@ -1,7 +1,7 @@
 // This is a tool creep used to set up delivery routes for energy
 
-let traveler = require('traveler');
-let util = require("../util");
+import "../traveler.js";
+import util from "../util";
 
 String.prototype.hashCode = function() {
 	var hash = 0, i, chr;
@@ -16,7 +16,7 @@ String.prototype.hashCode = function() {
 	return hash;
 };
 
-let roleTmpDelivery = {
+const roleTmpDelivery = {
 	/**
 	 * Checks if the creep's settings have been changed, indicating that cached values should be recalculated.
 	 * In this instance, it checks to see if `withdrawTargetId` and `depositTargetId` have changed.

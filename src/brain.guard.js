@@ -1,5 +1,5 @@
-let util = require("./util");
-let toolFriends = require("tool.friends");
+import util from "./util";
+import toolFriends from "./tool.friends.js";
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
 
@@ -615,3 +615,5 @@ module.exports = {
 		}
 	},
 };
+
+export default module.exports;

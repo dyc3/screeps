@@ -1,4 +1,4 @@
-var toolRoadPlanner = {
+const toolRoadPlanner = {
 	/** @param {RoomPosition} posFrom **/
 	/** @param {RoomPosition} posTo **/
 	planPath: function(posFrom, posTo) {
@@ -19,3 +19,4 @@ var toolRoadPlanner = {
 }
 
 module.exports = toolRoadPlanner;
+export default toolRoadPlanner;

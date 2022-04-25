@@ -111,9 +111,11 @@ import roleMiner from "roles/role.miner.js";
 import roleScientist from "roles/role.scientist.js";
 // @ts-expect-error hasn't been converted yet
 import roleRelay from "roles/role.relay.js";
-const roleTmpDeliver = require("roles/role.tmpdeliver");
+// @ts-expect-error hasn't been converted yet
+import roleTmpDeliver from "roles/role.tmpdeliver.js";
 
-const roleTower = require("roles/role.tower");
+// @ts-expect-error hasn't been converted yet
+import roleTower from "roles/role.tower.js";
 
 // @ts-expect-error hasn't been converted yet
 import taskRenew from "./task.renew.js";
@@ -122,38 +124,19 @@ import taskDepositMaterials from "./task.depositmaterials.js";
 
 import toolEnergySource from "tool.energysource";
 import toolCreepUpgrader, { Role, RoleMetadata } from "tool.creepupgrader";
-const toolRoadPlanner = require("tool.roadplanner");
+// @ts-expect-error hasn't been converted yet
+import toolRoadPlanner from "tool.roadplanner.js";
 
-const brainAutoPlanner = require("brain.autoplanner");
-const brainGuard = require("brain.guard");
-const brainLogistics = require("brain.logistics");
-const brainHighwayHarvesting = require("brain.highwayharvesting");
-const brainOffense = require("brain.offense");
-
-// const roleHarvester: any = {};
-// const roleUpgrader: any = {};
-// const roleManager: any = {};
-// const roleBuilder: any = {};
-// const roleRepairer: any = {};
-// const roleClaimer: any = {};
-// const roleRemoteHarvester: any = {};
-// const roleCarrier: any = {};
-// const roleScout: any = {};
-// const roleMiner: any = {};
-// const roleScientist: any = {};
-// const roleRelay: any = {};
-// const roleTmpDeliver: any = {};
-// const roleTower: any = {};
-// const taskRenew: any = {};
-// const taskDepositMaterials: any = {};
-// const toolEnergySource: any = {};
-// const toolCreepUpgrader: any = {};
-// const toolRoadPlanner: any = {};
-// const brainAutoPlanner: any = {};
-// const brainGuard: any = {};
-// const brainLogistics: any = {};
-// const brainHighwayHarvesting: any = {};
-// const brainOffense: any = {};
+// @ts-expect-error hasn't been converted yet
+import brainAutoPlanner from "./brain.autoplanner.js";
+// @ts-expect-error hasn't been converted yet
+import brainGuard from "./brain.guard.js";
+// @ts-expect-error hasn't been converted yet
+import brainLogistics from "./brain.logistics.js";
+// @ts-expect-error hasn't been converted yet
+import brainHighwayHarvesting from "./brain.highwayharvesting.js";
+// @ts-expect-error hasn't been converted yet
+import brainOffense from "./brain.offense.js";
 
 declare global {
 	/*

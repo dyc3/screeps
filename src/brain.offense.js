@@ -1,4 +1,4 @@
-let util = require('./util');
+import util from "./util";
 
 function olog(...args) {
 	console.log('<span style="color: yellow">offense: ', ...args, "</span>");
@@ -620,3 +620,5 @@ global.Offense = {
 		}
 	}
 }
+
+export default module.exports;

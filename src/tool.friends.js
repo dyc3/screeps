@@ -1,4 +1,4 @@
-var toolFriends = {
+const toolFriends = {
 	friends: [
 		"Segmentation_Fault",
 		"Azrules",
@@ -33,3 +33,4 @@ var toolFriends = {
 }
 
 module.exports = toolFriends;
+export default toolFriends;

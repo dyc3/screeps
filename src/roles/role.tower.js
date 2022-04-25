@@ -1,5 +1,5 @@
-let toolFriends = require("tool.friends");
-let util = require("../util");
+import util from "../util";
+import toolFriends from "../tool.friends.js";
 
 let roleTower = {
 	run: function(room) {
