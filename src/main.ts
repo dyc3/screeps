@@ -86,7 +86,7 @@ import _ from "lodash";
 import "./tools.js";
 import util from "./util";
 import visualize from "./visualize";
-import { Role } from './roles/meta';
+import { Role } from "./roles/meta";
 
 // @ts-expect-error hasn't been converted yet
 import roleHarvester from "roles/role.harvester.js";
@@ -1435,87 +1435,94 @@ function commandRemoteMining() {
 
 function satisfyClaimTargets() {
 	const claimers = util.getCreeps(Role.Claimer);
+	const satisfiedIdxs = [];
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
-		let satisfied = false;
 		if (util.isTreasureRoom(Memory.claimTargets[t].room) || util.isHighwayRoom(Memory.claimTargets[t].room)) {
 			console.log(
 				"[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (Treasure/Highway room detected)"
 			);
-			satisfied = true;
-		} else if (Memory.claimTargets[t].mode === "reserve" && Game.rooms[Memory.claimTargets[t].room]) {
-			if (
-				Game.rooms[Memory.claimTargets[t].room] &&
-				// @ts-expect-error FIXME: this could use a refactor probably
-				(foundInvaderCore = _.first(
-					Game.rooms[Memory.claimTargets[t].room].find(FIND_HOSTILE_STRUCTURES, {
-						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
-					})
-				))
-			) {
+			satisfiedIdxs.push(t);
+			continue;
+		}
+		const room = Game.rooms[Memory.claimTargets[t].room];
+		if (Memory.claimTargets[t].mode === "reserve" && room) {
+			if (!room.controller) {
+				console.log(
+					"[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (No controller found)"
+				);
+				satisfiedIdxs.push(t);
+				continue;
+			}
+			const foundInvaderCore = _.first(
+				room.find(FIND_HOSTILE_STRUCTURES, {
+					filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
+				})
+			);
+			if (foundInvaderCore) {
 				console.log(
 					`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${Memory.claimTargets[t].room})`
 				);
-				satisfied = true;
-			} else if (
-				// @ts-expect-error FIXME: define types for claimTargets
-				(reserv = Game.rooms[Memory.claimTargets[t].room].controller.reservation) &&
-				// @ts-expect-error FIXME: this could use a refactor probably
-				reserv.username !== global.WHOAMI &&
-				// @ts-expect-error FIXME: define types for claimTargets
-				Game.rooms[Memory.claimTargets[t].room].controller.upgradeBlocked > 20
-			) {
+				satisfiedIdxs.push(t);
+				continue;
+			}
+			const reserv = room.controller.reservation;
+			if (reserv && reserv.username !== global.WHOAMI && room.controller.upgradeBlocked > 20) {
 				console.log(
 					`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${Memory.claimTargets[t].room})`
 				);
-				satisfied = true;
+				satisfiedIdxs.push(t);
+				continue;
 			}
 		}
 		for (const creep of claimers) {
 			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
-				satisfied = true;
+				satisfiedIdxs.push(t);
 				break;
 			}
 		}
+	}
 
-		if (satisfied) {
-			Memory.claimTargets.splice(t, 1);
-			t--;
-		} else {
-			// spawn new claimer
-			const spawnRoom = _.first(
-				util.findClosestOwnedRooms(
-					new RoomPosition(25, 25, Memory.claimTargets[t].room),
-					r => r.energyCapacityAvailable > 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8
-				)
-			);
-			if (!spawnRoom) {
-				console.log("WARN: All rooms don't have enough energy to spawn creeps");
-				continue;
-			}
-			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", Memory.claimTargets[t].room);
-			const spawns = util
-				.getStructures(spawnRoom, STRUCTURE_SPAWN)
-				.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
-			if (spawns.length === 0) {
-				console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
-				continue;
-			}
-			const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-			// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
-			if (Memory.claimTargets[t].mode === "claim") {
-				// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
-				claimerBody = [CLAIM, MOVE];
-			}
-			targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
-				// @ts-expect-error this works, its fine
-				memory: {
-					role: Role.Claimer,
-					targetRoom: Memory.claimTargets[t].room,
-					mode: Memory.claimTargets[t].mode,
-				},
-			});
+	// remove satisfied targets
+	for (const idx of satisfiedIdxs) {
+		Memory.claimTargets.splice(idx, 1);
+	}
+
+	// spawn new claimers for the remaining targets
+	for (const target of Memory.claimTargets) {
+		// spawn new claimer
+		const spawnRoom = _.first(
+			util.findClosestOwnedRooms(
+				new RoomPosition(25, 25, target.room),
+				r => r.energyCapacityAvailable > 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8
+			)
+		);
+		if (!spawnRoom) {
+			console.log("WARN: All rooms don't have enough energy to spawn creeps");
+			continue;
 		}
+		console.log("Spawning claimer in room", spawnRoom.name, "targetting room", target.room);
+		const spawns = util
+			.getStructures(spawnRoom, STRUCTURE_SPAWN)
+			.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
+		if (spawns.length === 0) {
+			console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
+			continue;
+		}
+		const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
+		let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+		// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
+		if (target.mode === "claim") {
+			// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
+			claimerBody = [CLAIM, MOVE];
+		}
+		targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
+			// @ts-expect-error this works, its fine
+			memory: {
+				role: Role.Claimer,
+				targetRoom: target.room,
+				mode: target.mode,
+			},
+		});
 	}
 }
 
