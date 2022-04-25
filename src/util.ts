@@ -377,8 +377,8 @@ export const util = {
 	},
 
 	isSimulationMode() {
-		return Game.rooms["sim"] != undefined;
-	}
+		return Game.rooms.sim != undefined;
+	},
 };
 
 declare global {

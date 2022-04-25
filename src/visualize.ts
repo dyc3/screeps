@@ -1,5 +1,5 @@
 import util from "./util";
-import { Role } from './roles/meta';
+import { Role } from "./roles/meta";
 import toolEnergySource from "./tool.energysource";
 import toolCreepUpgrader from "./tool.creepupgrader";
 
