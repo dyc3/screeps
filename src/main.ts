@@ -1903,10 +1903,10 @@ function main() {
 					roleTmpDeliver.run(creep);
 					break;
 				case "invaderdestroyer":
-					require("role.invaderdestroyer").run(creep);
+					require("./role.invaderdestroyer.js").run(creep);
 					break;
 				case "testlogistics":
-					require("role.testlogistics").run(creep);
+					require("./role.testlogistics.js").run(creep);
 					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");
@@ -1926,7 +1926,7 @@ function main() {
 	// powercreeps
 	try {
 		if (Game.powerCreeps.Ligma) {
-			require("powercreep.ligma").run(Game.powerCreeps.Ligma);
+			require("./powercreep.ligma.js").run(Game.powerCreeps.Ligma);
 		}
 	} catch (e) {
 		console.log("failed to run power creeps");
