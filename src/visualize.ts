@@ -1,6 +1,6 @@
 import util from "./util";
-const toolCreepUpgrader = require("./toolCreepUpgrader.js");
-const toolEnergySource = require("./toolEnergySource.js");
+import toolEnergySource from "./tool.energysource";
+const toolCreepUpgrader = require("./tool.creepupgrader.js");
 
 export default {
 	doVisualize() {

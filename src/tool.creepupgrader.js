@@ -133,7 +133,7 @@ function getRepairerQuota(room) {
 	return 0;
 }
 
-let creepUpgrader = {
+const creepUpgrader = {
 	roles:{
 		"harvester":{
 			name:"harvester",
@@ -325,3 +325,4 @@ let creepUpgrader = {
 }
 
 module.exports = creepUpgrader;
+export default creepUpgrader;
