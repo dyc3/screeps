@@ -844,7 +844,7 @@ let roleManager = {
 				}
 			}
 			else {
-				opts = { obstacles, ensurePath: true }
+				let opts = { obstacles, ensurePath: true }
 				if (creep.room.name === transportTarget.room.name) {
 					opts.maxRooms = 1;
 				}
@@ -893,7 +893,7 @@ let roleManager = {
 				}
 			}
 			else {
-				opts = { obstacles, ensurePath: true }
+				let opts = { obstacles, ensurePath: true }
 				if (creep.room.name === aquireTarget.room.name) {
 					opts.maxRooms = 1;
 				}
