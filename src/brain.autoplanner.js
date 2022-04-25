@@ -337,7 +337,7 @@ let brainAutoPlanner = {
 							}
 						}
 					}
-					planned = brainAutoPlanner.getPlansAtPosition(pos);
+					const planned = brainAutoPlanner.getPlansAtPosition(pos);
 					return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
 				});
 			adjacent = _.sortByOrder(adjacent, [
@@ -830,6 +830,7 @@ let brainAutoPlanner = {
 global.autoPlanner = {
     addPlans: brainAutoPlanner.addPlansAtPosition,
 	removePlans: brainAutoPlanner.removePlansAtPosition,
+	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
 };
 
 global.plan = (x, y, roomName, struct) => {
