@@ -106,8 +106,8 @@ const roleTower = require("roles/role.tower");
 const taskRenew = require("task.renew");
 const taskDepositMaterials = require("task.depositmaterials");
 
-const toolEnergySource = require("tool.energysource");
-const toolCreepUpgrader = require("tool.creepupgrader");
+import toolEnergySource from "tool.energysource";
+import toolCreepUpgrader, { Role, RoleMetadata } from "tool.creepupgrader";
 const toolRoadPlanner = require("tool.roadplanner");
 
 const brainAutoPlanner = require("brain.autoplanner");
@@ -210,33 +210,6 @@ declare global {
 			CONTROLLER_UPGRADE_RANGE: number;
 			DROPPED_ENERGY_GATHER_MINIMUM: number;
 		}
-	}
-
-	enum Role {
-		Harvester = "harvester",
-		Upgrader = "upgrader",
-		Manager = "manager",
-		Builder = "builder",
-		Repairer = "repairer",
-		Claimer = "claimer",
-		RemoteHarvester = "remoteharvester",
-		Carrier = "carrier",
-		Scout = "scout",
-		Miner = "miner",
-		Scientist = "scientist",
-		Relay = "relay",
-		TmpDeliver = "tmpdeliver",
-		Guardian = "guardian",
-		HighwayHarvesting = "highwayharvesting",
-		Offense = "offense",
-		InvaderDestroyer = "invaderdestroyer",
-		TestLogistics = "testlogistics",
-		/** @deprecated */
-		NextRoomer = "nextroomer",
-		/** @deprecated */
-		Attacker = "attacker",
-		/** @deprecated */
-		Healer = "healer",
 	}
 }
 
@@ -681,9 +654,10 @@ function commandEnergyRelays() {
 
 	for (let r = 0; r < rooms.length; r++) {
 		const room = rooms[r];
+		const roleMeta = toolCreepUpgrader.getRoleMetadata(Role.Relay);
 
 		// skip room if it's not supposed to have relays
-		if (toolCreepUpgrader.roles.relay.quota(room) === 0) {
+		if (roleMeta.quota(room) === 0) {
 			continue;
 		}
 
@@ -708,7 +682,7 @@ function commandEnergyRelays() {
 			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
 		];
-		relayPositions.splice(toolCreepUpgrader.roles.relay.quota(room));
+		relayPositions.splice(roleMeta.quota(room));
 		const availableRelayPos = _.filter(relayPositions, pos => {
 			for (let i = 0; i < relayCreeps.length; i++) {
 				const creep = relayCreeps[i];
@@ -747,7 +721,7 @@ function doCreepSpawning() {
 		Memory.creepSpawnLog = [];
 	}
 
-	function spawnCreepOfRole(role: any, spawns: StructureSpawn[], room: Room | undefined = undefined) {
+	function spawnCreepOfRole(role: RoleMetadata, spawns: StructureSpawn[], room: Room | undefined = undefined) {
 		const target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
@@ -762,9 +736,9 @@ function doCreepSpawning() {
 		if (role.quota_per_room) {
 			newCreepMemory.targetRoom = room?.name;
 		}
-		if (role.name == "attacker") {
+		if (role.name == Role.Attacker) {
 			newCreepMemory.mode = "defend";
-		} else if (role.name == "claimer" || role.name == "scout") {
+		} else if (role.name == Role.Claimer || role.name == Role.Scout) {
 			newCreepMemory.keepAlive = false;
 		}
 
@@ -775,8 +749,8 @@ function doCreepSpawning() {
 					role.quota_per_room ? ", target room:" + room?.name : ""
 				})`
 			);
-			const body = toolCreepUpgrader.roles[role.name].stages[hiStage];
-			if (role === "upgrader" && room?.controller && room.controller.level <= 5 && hiStage > 2) {
+			const body = role.stages[hiStage];
+			if (role.name === Role.Upgrader && room?.controller && room.controller.level <= 5 && hiStage > 2) {
 				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
 				const result = target_spawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, {
 					// @ts-expect-error this is valid
@@ -796,7 +770,7 @@ function doCreepSpawning() {
 		return false;
 	}
 
-	function doMarkForDeath(role: any, creeps: Creep[], quota: number, room: Room) {
+	function doMarkForDeath(role: RoleMetadata, creeps: Creep[], quota: number, room: Room) {
 		// check if we can upgrade any of the creeps,
 		// and if no other creeps are already marked for death,
 		// mark 1 creep for death
@@ -848,17 +822,17 @@ function doCreepSpawning() {
 
 	let rooms = util.getOwnedRooms();
 	for (const role_name in toolCreepUpgrader.roles) {
-		const role = toolCreepUpgrader.roles[role_name];
-		const creeps_of_role = util.getCreeps(role.name);
-		if (role.quota_per_room) {
+		const roleMeta = toolCreepUpgrader.getRoleMetadata(role_name as Role);
+		const creeps_of_role = util.getCreeps(roleMeta.name);
+		if (roleMeta.quota_per_room) {
 			for (let r = 0; r < rooms.length; r++) {
 				const room = rooms[r];
 				const creeps_of_room = _.filter(creeps_of_role, creep => creep.memory.targetRoom === room.name);
-				const role_quota = role.quota(room);
-				console.log(room.name, role.name, creeps_of_room.length + "/" + role_quota);
+				const role_quota = roleMeta.quota(room);
+				console.log(room.name, roleMeta.name, creeps_of_room.length + "/" + role_quota);
 
 				if (creeps_of_room.length >= role_quota) {
-					if (doMarkForDeath(role, creeps_of_room, role_quota, room)) {
+					if (doMarkForDeath(roleMeta, creeps_of_room, role_quota, room)) {
 						if (room.energyAvailable < room.energyCapacityAvailable) {
 							console.log("Waiting for enough energy to safely spawn new creep");
 							return;
@@ -868,7 +842,7 @@ function doCreepSpawning() {
 				}
 
 				let needOtherRoomSpawns = false;
-				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(role.name);
+				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(roleMeta.name);
 				let spawns = util
 					.getStructures(room, STRUCTURE_SPAWN)
 					.filter(s => !(s as StructureSpawn).spawning)
@@ -891,14 +865,14 @@ function doCreepSpawning() {
 					needOtherRoomSpawns = true;
 				} else if (!canUseOtherRooms && room.energyAvailable <= 300) {
 					console.log(
-						`WARN: Room ${room.name} is really starving, and does not have enough energy to spawn creeps. Overriding default behavior to allow spawning ${role.name} in other rooms`
+						`WARN: Room ${room.name} is really starving, and does not have enough energy to spawn creeps. Overriding default behavior to allow spawning ${roleMeta.name} in other rooms`
 					);
 					canUseOtherRooms = true;
 					needOtherRoomSpawns = true;
 				}
 
 				if (canUseOtherRooms && needOtherRoomSpawns && rooms.length > 1) {
-					console.log(`Using spawns from another room to spawn ${role.name} creep for ${room.name}`);
+					console.log(`Using spawns from another room to spawn ${roleMeta.name} creep for ${room.name}`);
 					let otherRooms = util.findClosestOwnedRooms(
 						new RoomPosition(25, 25, room.name),
 						r => r.energyAvailable >= r.energyCapacityAvailable * 0.8 && room.name !== r.name
@@ -939,14 +913,14 @@ function doCreepSpawning() {
 				}
 
 				// spawn new creeps to fill up the quota
-				if (spawnCreepOfRole(role, spawns, room)) {
+				if (spawnCreepOfRole(roleMeta, spawns, room)) {
 					// if successful
 					return;
 				}
 			}
 		} else {
-			const role_quota = role.quota();
-			console.log(role.name, creeps_of_role.length + "/" + role_quota);
+			const role_quota = roleMeta.quota();
+			console.log(roleMeta.name, creeps_of_role.length + "/" + role_quota);
 
 			rooms = _.filter(rooms, room => room.energyAvailable >= room.energyCapacityAvailable * 0.8);
 			if (rooms.length === 0) {
@@ -956,8 +930,8 @@ function doCreepSpawning() {
 			const target_room = rooms[Math.floor(Math.random() * rooms.length)];
 
 			if (creeps_of_role.length >= role_quota) {
-				if (doMarkForDeath(role, creeps_of_role, role_quota, target_room)) {
-					if (role.name !== "scout") {
+				if (doMarkForDeath(roleMeta, creeps_of_role, role_quota, target_room)) {
+					if (roleMeta.name !== "scout") {
 						return;
 					}
 				}
@@ -972,7 +946,7 @@ function doCreepSpawning() {
 			}
 
 			// spawn new creeps to fill up the quota
-			if (spawnCreepOfRole(role, spawns)) {
+			if (spawnCreepOfRole(roleMeta, spawns)) {
 				// if successful
 				return;
 			}
