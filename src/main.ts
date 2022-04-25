@@ -1763,8 +1763,7 @@ function main() {
 	}
 
 	const harvesterCount = util.getCreeps(Role.Harvester).length;
-	for (const name in Game.creeps) {
-		let creep = Game.creeps[name];
+	for (const creep of Object.values(Game.creeps)) {
 		if (creep.spawning) {
 			continue;
 		}
@@ -1920,7 +1919,7 @@ function main() {
 					}
 			}
 		} catch (e) {
-			printException(e, (creep = creep));
+			util.printException(e, creep);
 		}
 	}
 
@@ -1970,7 +1969,7 @@ function main() {
 	}
 
 	// process jobs
-	while (Memory.job_queue.length > 0 && Game.cpu.getUsed() < Game.cpu.limit * 0.7) {
+	while (Memory.job_queue.length > 0 && (Game.cpu.getUsed() < Game.cpu.limit * 0.7 || util.isSimulationMode())) {
 		const job_to_do = Memory.job_queue[0];
 		console.log("Running job:", job_to_do);
 		// @ts-expect-error FIXME: define types for jobs
@@ -2056,7 +2055,7 @@ function main() {
 	printStatus();
 
 	// draw some extra eye candy, if we can spare the resources
-	if (Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) {
+	if ((Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) || util.isSimulationMode()) {
 		visualize.drawQuotas();
 		visualize.doVisualize();
 	}

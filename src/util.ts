@@ -375,6 +375,10 @@ export const util = {
 		}
 		Game.notify(msg);
 	},
+
+	isSimulationMode() {
+		return Game.rooms["sim"] != undefined;
+	}
 };
 
 declare global {
