@@ -1,6 +1,7 @@
 import util from "./util";
+import { Role } from './roles/meta';
 import toolEnergySource from "./tool.energysource";
-import toolCreepUpgrader, { Role } from "./tool.creepupgrader";
+import toolCreepUpgrader from "./tool.creepupgrader";
 
 export default {
 	doVisualize() {

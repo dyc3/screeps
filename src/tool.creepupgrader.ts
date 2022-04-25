@@ -1,32 +1,6 @@
 import toolEnergySource from './tool.energysource';
 import util from './util';
-
-export enum Role {
-	Harvester = "harvester",
-	Upgrader = "upgrader",
-	Manager = "manager",
-	Builder = "builder",
-	Repairer = "repairer",
-	Claimer = "claimer",
-	RemoteHarvester = "remoteharvester",
-	Carrier = "carrier",
-	Scout = "scout",
-	Miner = "miner",
-	Scientist = "scientist",
-	Relay = "relay",
-	TmpDeliver = "tmpdeliver",
-	Guardian = "guardian",
-	HighwayHarvesting = "highwayharvesting",
-	Offense = "offense",
-	InvaderDestroyer = "invaderdestroyer",
-	TestLogistics = "testlogistics",
-	/** @deprecated */
-	NextRoomer = "nextroomer",
-	/** @deprecated */
-	Attacker = "attacker",
-	/** @deprecated */
-	Healer = "healer",
-}
+import { Role } from './roles/meta';
 
 /** @param {Room} room **/
 export function getUpgraderQuota(room: Room) {

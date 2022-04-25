@@ -86,6 +86,7 @@ import _ from "lodash";
 import "./tools.js";
 import util from "./util";
 import visualize from "./visualize";
+import { Role } from './roles/meta';
 
 // @ts-expect-error hasn't been converted yet
 import roleHarvester from "roles/role.harvester.js";
@@ -122,7 +123,7 @@ import taskRenew from "./task.renew.js";
 // @ts-expect-error hasn't been converted yet
 import taskDepositMaterials from "./task.depositmaterials.js";
 
-import toolCreepUpgrader, { Role, RoleMetadata } from "tool.creepupgrader";
+import toolCreepUpgrader, { RoleMetadata } from "tool.creepupgrader";
 // @ts-expect-error hasn't been converted yet
 import toolRoadPlanner from "tool.roadplanner.js";
 

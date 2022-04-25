@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type { Role } from "./tool.creepupgrader";
+import type { Role } from "./roles/meta";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 

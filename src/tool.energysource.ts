@@ -1,5 +1,5 @@
 import util from "./util";
-import { Role } from "./tool.creepupgrader";
+import { Role } from './roles/meta';
 
 const toolEnergySource = {
 	// adjusted: adjust harvester count for if containers/storage/links are nearby
