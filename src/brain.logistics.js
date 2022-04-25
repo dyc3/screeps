@@ -1,6 +1,6 @@
-const util = require("./util");
-const traveler = require("traveler");
-const brainAutoPlanner = require("brain.autoplanner");
+import util from "./util";
+import "./traveler.js";
+import brainAutoPlanner from "./brain.autoplanner.js";
 
 class ResourceSink {
 	constructor(args=null) {
@@ -357,7 +357,7 @@ function collectAllResourceSinks() {
 	return sinks;
 }
 
-module.exports = {
+const brainLogistics = {
 	tasks: [],
 
 	init() {
@@ -575,3 +575,6 @@ module.exports = {
 		return sinks;
 	},
 }
+
+module.exports = brainLogistics;
+export default brainLogistics;

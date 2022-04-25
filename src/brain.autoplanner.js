@@ -1,4 +1,4 @@
-const util = require("./util");
+import util from "./util";
 
 let brainAutoPlanner = {
 	run() {
@@ -840,3 +840,4 @@ global.unplan = (x, y, roomName, struct) => {
 },
 
 module.exports = brainAutoPlanner;
+export default brainAutoPlanner;

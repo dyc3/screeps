@@ -1,7 +1,7 @@
-let traveler = require('traveler');
-let util = require('./util');
-let toolEnergySource = require('tool.energysource');
-let brainLogistics = require("brain.logistics");
+import "./traveler.js";
+import util from "./util.ts";
+import toolEnergySource from "./tool.energysource.ts";
+import brainLogistics from "./brain.logistics.js";
 
 let taskGather = {
 	/**
@@ -291,3 +291,4 @@ let taskGather = {
 }
 
 module.exports = taskGather;
+export default taskGather;

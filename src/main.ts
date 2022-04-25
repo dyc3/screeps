@@ -87,8 +87,10 @@ import "./tools.js";
 import util from "./util";
 import visualize from "./visualize";
 
-const roleHarvester = require("roles/role.harvester");
-const roleUpgrader = require("roles/role.upgrader");
+// @ts-expect-error hasn't been converted yet
+import roleHarvester from "roles/role.harvester.js";
+// @ts-expect-error hasn't been converted yet
+import roleUpgrader from "roles/role.upgrader.js";
 const roleManager = require("roles/role.manager");
 const roleBuilder = require("roles/role.builder");
 const roleRepairer = require("roles/role.repairer");

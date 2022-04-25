@@ -1,8 +1,8 @@
-let traveler = require('traveler');
-let toolEnergySource = require('tool.energysource');
-let util = require("../util");
+import "../traveler.js";
+import util from "../util";
+import toolEnergySource from "../tool.energysource";
 
-let roleHarvester = {
+const roleHarvester = {
 	/** @param {Creep} creep **/
 	findTransferTargets: function(creep) {
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
@@ -588,3 +588,4 @@ let roleHarvester = {
 };
 
 module.exports = roleHarvester;
+export default roleHarvester;

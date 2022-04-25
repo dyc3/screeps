@@ -1,14 +1,15 @@
-var traveler = require('traveler');
-var taskGather = require("task.gather");
-var util = require("../util");
-var toolCreepUpgrader = require("tool.creepupgrader");
+import "../traveler.js";
+import util from "../util";
+// @ts-expect-error hasn't been converted yet
+import taskGather from "../task.gather.js";
+import toolCreepUpgrader from "../tool.creepupgrader.js";
 
 // get number of upgraders assigned to a room
 function getUpgraderCount(room) {
 	return _.filter(Game.creeps, (creep) => creep.memory.role == "upgrader" && creep.memory.targetRoom == room.name).length;
 }
 
-var roleUpgrader = {
+const roleUpgrader = {
 	/** @param {Creep} creep **/
 	findTargetRoom: function(creep) {
 		let rooms = util.getOwnedRooms()
@@ -101,3 +102,4 @@ var roleUpgrader = {
 };
 
 module.exports = roleUpgrader;
+export default roleUpgrader;
