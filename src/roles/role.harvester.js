@@ -1,6 +1,6 @@
 let traveler = require('traveler');
 let toolEnergySource = require('tool.energysource');
-let util = require("util");
+let util = require("../util");
 
 let roleHarvester = {
 	/** @param {Creep} creep **/

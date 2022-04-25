@@ -1,5 +1,5 @@
 let traveler = require("traveler");
-let util = require("util");
+let util = require("./util");
 let taskGather = require("task.gather");
 
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one

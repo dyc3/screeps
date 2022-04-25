@@ -1,5 +1,5 @@
 var toolEnergySource = require('tool.energysource');
-var util = require('util');
+var util = require('./util');
 
 /** @param {Room} room **/
 function getUpgraderQuota(room) {

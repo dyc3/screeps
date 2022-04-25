@@ -1,5 +1,5 @@
 let traveler = require('traveler');
-let util = require('util');
+let util = require('./util');
 let toolEnergySource = require('tool.energysource');
 let brainLogistics = require("brain.logistics");
 

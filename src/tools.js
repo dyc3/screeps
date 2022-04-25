@@ -1,4 +1,4 @@
-let util = require("util");
+let util = require("./util");
 /**
  * Tools for use in the screeps console.
  *

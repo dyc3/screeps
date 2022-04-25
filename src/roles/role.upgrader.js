@@ -1,6 +1,6 @@
 var traveler = require('traveler');
 var taskGather = require("task.gather");
-var util = require("util");
+var util = require("../util");
 var toolCreepUpgrader = require("tool.creepupgrader");
 
 // get number of upgraders assigned to a room

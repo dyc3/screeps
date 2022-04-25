@@ -1,6 +1,6 @@
 let traveler = require('traveler');
 let taskGather = require("task.gather");
-let util = require("util");
+let util = require("../util");
 
 let roleBuilder = {
 	findTargets() {

@@ -1,5 +1,5 @@
 let traveler = require("traveler");
-let util = require("util");
+let util = require("../util");
 let taskDepositMaterials = require("task.depositmaterials");
 let brainLogistics = require("brain.logistics");
 let brainAutoPlanner = require("brain.autoplanner");

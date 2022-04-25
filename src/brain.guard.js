@@ -1,4 +1,4 @@
-let util = require("util");
+let util = require("./util");
 let toolFriends = require("tool.friends");
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };

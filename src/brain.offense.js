@@ -1,4 +1,4 @@
-let util = require('util');
+let util = require('./util');
 
 function olog(...args) {
 	console.log('<span style="color: yellow">offense: ', ...args, "</span>");

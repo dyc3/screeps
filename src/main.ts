@@ -116,6 +116,31 @@ const brainLogistics = require("brain.logistics");
 const brainHighwayHarvesting = require("brain.highwayharvesting");
 const brainOffense = require("brain.offense");
 
+// const roleHarvester: any = {};
+// const roleUpgrader: any = {};
+// const roleManager: any = {};
+// const roleBuilder: any = {};
+// const roleRepairer: any = {};
+// const roleClaimer: any = {};
+// const roleRemoteHarvester: any = {};
+// const roleCarrier: any = {};
+// const roleScout: any = {};
+// const roleMiner: any = {};
+// const roleScientist: any = {};
+// const roleRelay: any = {};
+// const roleTmpDeliver: any = {};
+// const roleTower: any = {};
+// const taskRenew: any = {};
+// const taskDepositMaterials: any = {};
+// const toolEnergySource: any = {};
+// const toolCreepUpgrader: any = {};
+// const toolRoadPlanner: any = {};
+// const brainAutoPlanner: any = {};
+// const brainGuard: any = {};
+// const brainLogistics: any = {};
+// const brainHighwayHarvesting: any = {};
+// const brainOffense: any = {};
+
 declare global {
 	/*
     Example types, expand on these or remove them and add your own.

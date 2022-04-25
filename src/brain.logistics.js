@@ -1,4 +1,4 @@
-const util = require("util");
+const util = require("./util");
 const traveler = require("traveler");
 const brainAutoPlanner = require("brain.autoplanner");
 

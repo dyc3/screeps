@@ -1,5 +1,5 @@
 let traveler = require('traveler');
-let util = require('util');
+let util = require("../util");
 
 /*
  * Tell miners where to deposit materials with a "fill:?" flag or "miner:?" flag

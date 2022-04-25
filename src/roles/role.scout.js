@@ -1,6 +1,6 @@
 var toolEnergySource = require('tool.energysource');
 var toolFriends = require('tool.friends');
-var util = require("util");
+var util = require("../util");
 
 let defaultScoreFreshnessThreshold = 50000;
 

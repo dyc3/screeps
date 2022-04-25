@@ -1,4 +1,4 @@
-let util = require('util');
+let util = require('./util');
 
 let toolEnergySource = {
 	// adjusted: adjust harvester count for if containers/storage/links are nearby

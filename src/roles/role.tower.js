@@ -1,5 +1,5 @@
 let toolFriends = require("tool.friends");
-let util = require("util");
+let util = require("../util");
 
 let roleTower = {
 	run: function(room) {

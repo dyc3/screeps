@@ -1,7 +1,7 @@
 // This is a tool creep used to set up delivery routes for energy
 
 let traveler = require('traveler');
-let util = require("util");
+let util = require("../util");
 
 String.prototype.hashCode = function() {
 	var hash = 0, i, chr;
