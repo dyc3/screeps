@@ -121,9 +121,10 @@ module.exports = {
 			let newTask = new GuardTask();
 			const isTreasureRoom = util.isTreasureRoom(room.name);
 			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
+			const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
+			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
+			let hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
 			if (!isTreasureRoom) {
-				const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
-				let hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
 				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
 					continue;
 				}
@@ -139,9 +140,20 @@ module.exports = {
 			else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
 				newTask.guardType = "invader-subcore";
 				newTask.neededCreeps = 1;
-			} else if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
-				newTask.guardType = "remote-miner-cheap";
-				newTask.neededCreeps = 1;
+			} else if (isRemoteMiningRoom) {
+				if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
+					newTask.guardType = "remote-miner-cheap";
+					newTask.neededCreeps = 1;
+				} else {
+					// TODO: I really need to figure out a better way to build creeps that can counter an arbitrary amount of creeps
+					for (let creep of hostiles) {
+						if (creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 12) {
+							newTask.guardType = "remote-miner-huge";
+							newTask.neededCreeps = 2;
+							break;
+						}
+					}
+				}
 			} else {
 				newTask.guardType = "default";
 			}
@@ -280,6 +292,9 @@ module.exports = {
 		}
 		else if (guardType === "remote-miner-cheap") {
 			return [MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, MOVE]
+		}
+		else if (guardType === "remote-miner-huge") {
+			return [RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,MOVE];
 		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
