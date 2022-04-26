@@ -123,7 +123,7 @@ module.exports = {
 			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
 			const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
 			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
-			let hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
+			const hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
 			if (!isTreasureRoom) {
 				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
 					continue;
@@ -198,6 +198,34 @@ module.exports = {
 				}
 				else {
 					newTask.neededCreeps = 2;
+				}
+			} else if (task.guardType === "remote-miner-cheap" || task.guardType === "remote-miner-huge") {
+				// HACK: determine if we should upgrade to the huge ones
+				// also, I don't know if this even works
+				// this needs to be generalized to all possible scenarios
+				// maybe it would be a good idea to have a mechanism to
+				// hand the task over to the Offense manager if it gets a little too bloody.
+				const allEnemyCreeps = task.targetRoom.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
+				const hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
+
+				if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
+					task.guardType = "remote-miner-cheap";
+					task.neededCreeps = 1;
+				} else {
+					let bigBoys = 0;
+					for (let creep of hostiles) {
+						if (creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 12) {
+							bigBoys++;
+							task.guardType = "remote-miner-huge";
+						}
+					}
+					if (bigBoys > 0) {
+						task.neededCreeps = bigBoys + 1;
+					}
+					if (bigBoys > 3) {
+						console.log(`[guard] [${task.id}] has a lot of really big enemy creeps. Maybe we should hand it over to the offense manager? (TODO)`);
+						task.neededCreeps = 0;
+					}
 				}
 			}
 		}
