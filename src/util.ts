@@ -104,7 +104,7 @@ export const util = {
 		}
 		const x = parseInt(matches[0], 10);
 		const y = parseInt(matches[1], 10);
-		return x % 10 == 0 || y % 10 == 0;
+		return x % 10 === 0 || y % 10 === 0;
 	},
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
@@ -243,8 +243,8 @@ export const util = {
 		}
 	},
 
-	getSpawn(room: Room) {
-		const spawns = this.getStructures(room, STRUCTURE_SPAWN);
+	getSpawn(room: Room): StructureSpawn {
+		const spawns = this.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
 		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 
@@ -296,7 +296,7 @@ export const util = {
 		return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop();
 	},
 
-	getAdjacent(pos: RoomPosition) {
+	getAdjacent(pos: RoomPosition): RoomPosition[] {
 		// console.log("type of pos:", typeof pos, JSON.stringify(pos));
 		const adjacent = [];
 		for (let y = pos.y - 1; y <= pos.y + 1; y++) {
