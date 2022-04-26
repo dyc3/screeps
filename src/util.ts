@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { ErrorMapper } from "utils/ErrorMapper";
 import type { Role } from "./roles/meta";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
@@ -366,8 +367,7 @@ export const util = {
 	},
 
 	printException(e: any, creep: Creep | undefined = undefined) {
-		const msg =
-			errorMild + '<span style="color: red">ERROR: ' + e.name + ": " + e.message + "\n" + e.stack + "</span>";
+		const msg = errorMild + ErrorMapper.renderError(e);
 		if (creep) {
 			console.log(creep.name, msg);
 		} else {
