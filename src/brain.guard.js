@@ -122,12 +122,13 @@ module.exports = {
 			const isTreasureRoom = util.isTreasureRoom(room.name);
 			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
 			if (!isTreasureRoom) {
-				let hostiles = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep) && (creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0));
-				if (hostiles.length === 0 && !foundInvaderCore) {
+				const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
+				let hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
+				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
 					continue;
 				}
 
-				newTask.neededCreeps = hostiles.length;
+				newTask.neededCreeps = Math.max(hostiles.length, 1);
 			}
 
 			newTask._targetRoom = room.name;
@@ -138,6 +139,8 @@ module.exports = {
 			else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
 				newTask.guardType = "invader-subcore";
 				newTask.neededCreeps = 1;
+			} else {
+				newTask.guardType = "default";
 			}
 			this.tasks.push(newTask);
 			guardedRooms.push(room.name);
