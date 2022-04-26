@@ -14,21 +14,16 @@ export default {
 			const baseX = 1;
 			const baseY = 1;
 			let row = 0;
-			for (const role of _.values(toolCreepUpgrader.roles)) {
-				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
+			for (const role of Object.values(toolCreepUpgrader.roles)) {
 				const count = util.getCreeps(role.name).length;
-				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				let quota = !role.quota_per_room ? role.quota() : 0;
-				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				if (role.quota_per_room) {
 					for (const room of rooms) {
-						// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 						quota += role.quota(room);
 					}
 				}
 				const percentQuota = util.clamp(count / quota, 0, 1);
 
-				// @ts-expect-error FIXME: define role types in toolCreepUpgrader
 				vis.text(role.name, baseX, baseY + row, {
 					align: "left",
 					font: 0.5,
