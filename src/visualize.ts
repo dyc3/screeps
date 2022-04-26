@@ -157,10 +157,21 @@ export default {
 			for (const task of Memory.guard.tasks) {
 				const enabled = task.disableUntil < Game.time;
 				const disabledText = enabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`;
+				let spawningText = "";
+				for (let creepName of task.assignedCreeps) {
+					const creep = Game.creeps[creepName];
+					if (creep && creep.spawning) {
+						let spawn = Object.values(Game.spawns).find((s) => s.spawning?.name === creep.name);
+						if (!spawn || !spawn.spawning) {
+							continue;
+						}
+						spawningText += `spawning: ${creep.name} (${(spawn.spawning.remainingTime / spawn.spawning.needTime).toLocaleString(undefined,{style: 'percent'})}%, ETA: ${spawn.spawning.remainingTime}) `;
+					}
+				}
 				vis.text(
 					`${task.targetRoom}: ${task.guardType} creeps: ${
 						task.assignedCreeps ? task.assignedCreeps.length : 0
-					}/${task.neededCreeps} ${disabledText}`,
+					}/${task.neededCreeps} ${disabledText} ${spawningText}`,
 					baseX,
 					baseY + row * 0.6,
 					{
