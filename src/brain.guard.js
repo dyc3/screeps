@@ -139,6 +139,9 @@ module.exports = {
 			else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
 				newTask.guardType = "invader-subcore";
 				newTask.neededCreeps = 1;
+			} else if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
+				newTask.guardType = "remote-miner-cheap";
+				newTask.neededCreeps = 1;
 			} else {
 				newTask.guardType = "default";
 			}
@@ -274,6 +277,9 @@ module.exports = {
 		else if (guardType === "invader-subcore") {
 			// used for killing invader cores that have expanded out from the main one.
 			return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
+		}
+		else if (guardType === "remote-miner-cheap") {
+			return [MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, MOVE]
 		}
 		else {
 			if (util.getOwnedRooms().length > 2) {
