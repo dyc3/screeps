@@ -51,10 +51,16 @@ const toolEnergySource = {
 	},
 
 	getHarvesterQuota(room: Room) {
-		if (util.getOwnedRooms().length === 1 && (room.controller?.level ?? 0 < 4)) {
+		if (!room.controller) {
+			return 0;
+		}
+		if (util.getOwnedRooms().length === 1 && room.controller.level < 4) {
 			return 3;
 		} else {
-			return room.find(FIND_SOURCES).length;
+			if (room.memory.harvestPositions) {
+				return Object.keys(room.memory.harvestPositions).length;
+			}
+			return 2;
 		}
 	},
 
