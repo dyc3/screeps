@@ -512,7 +512,7 @@ let brainAutoPlanner = {
 			return;
 		}
 
-		room = new Room(pos.roomName);
+		const room = new Room(pos.roomName);
 		for (let checkPos of room.memory.structures[struct]) {
 			if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
 				// plans already exist at this position
@@ -531,7 +531,7 @@ let brainAutoPlanner = {
 	 * @example require("brain.autoplanner").removePlansAtPosition(new RoomPosition(22, 30, "W16N9"), STRUCTURE_TERMINAL)
 	 */
 	removePlansAtPosition(pos, struct=undefined) {
-		room = new Room(pos.roomName);
+		const room = new Room(pos.roomName);
 		let count = 0;
 		for (let structure in CONSTRUCTION_COST) { // iterate through all structure names
 			if (!(structure in room.memory.structures)) {
