@@ -907,8 +907,7 @@ function doCreepSpawning() {
 						continue;
 					}
 				} else if (canUseOtherRooms && needOtherRoomSpawns && rooms.length === 1) {
-					console.log("No other rooms to spawn creeps in.");
-					continue;
+					console.log("No other rooms to spawn creeps in. Using this room to spawn creeps.");
 				}
 
 				// spawn new creeps to fill up the quota
