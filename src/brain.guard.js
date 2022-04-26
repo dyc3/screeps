@@ -231,9 +231,14 @@ module.exports = {
 			if (!task.isEnabled) {
 				continue;
 			}
-			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId && guardian.memory.guardType == task.guardType);
+			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId);
+			let idleGuardiansMatching = _.filter(idleGuardians, guardian => guardian.memory.guardType == task.guardType);
 
-			if (idleGuardians.length > 0) {
+			if (idleGuardiansMatching.length > 0) {
+				idleGuardiansMatching[0].memory.taskId = task.id;
+				task.assignedCreeps.push(idleGuardiansMatching[0].name);
+			}
+			else if (idleGuardians.length > 0) {
 				idleGuardians[0].memory.taskId = task.id;
 				task.assignedCreeps.push(idleGuardians[0].name);
 			}
