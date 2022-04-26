@@ -1395,7 +1395,7 @@ function commandRemoteMining() {
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(
-		_.filter(Memory.remoteMining.targets, target => Game.getObjectById(target.id)).map(
+		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
 			// @ts-expect-error FIXME: idk what the fuck is going on here
 			target => Game.getObjectById(target.id)?.room.name
 		)
