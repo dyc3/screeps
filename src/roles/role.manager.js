@@ -832,11 +832,11 @@ let roleManager = {
 					}
 				}
 				else if (transportTarget.structureType === STRUCTURE_TERMINAL) {
-					amount = Math.min(Memory.terminalEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
+					const amount = Math.min(Memory.terminalEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
 					creep.transfer(transportTarget, RESOURCE_ENERGY, amount);
 				}
 				else if (transportTarget.structureType === STRUCTURE_FACTORY) {
-					amount = Math.min(Memory.factoryEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
+					const amount = Math.min(Memory.factoryEnergyTarget - transportTarget.store.getUsedCapacity(RESOURCE_ENERGY), transportTarget.store.getFreeCapacity(RESOURCE_ENERGY), creep.store.getUsedCapacity(RESOURCE_ENERGY));
 					creep.transfer(transportTarget, RESOURCE_ENERGY, amount);
 				}
 				else {
