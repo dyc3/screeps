@@ -1,4 +1,5 @@
 import util from "./util";
+import OffenseStrategyOvermindRemoteMinerBait from "./strategies/OvermindRemoteMinerBait";
 
 function olog(...args) {
 	console.log('<span style="color: yellow">offense: ', ...args, "</span>");
@@ -515,7 +516,7 @@ class OffenseStrategyBreakAltPath extends OffenseStrategy {
 	}
 }
 
-const Strategies = [OffenseStrategySimpleManual, OffenseStrategyLureHarrass, OffenseStrategyBreakAltPath];
+const Strategies = [OffenseStrategySimpleManual, OffenseStrategyLureHarrass, OffenseStrategyBreakAltPath, OffenseStrategyOvermindRemoteMinerBait];
 const CREEP_BODIES = {
 	"generic-attack": [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE],
 	"ranged": [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,MOVE],
