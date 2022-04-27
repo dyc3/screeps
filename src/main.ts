@@ -158,7 +158,8 @@ declare global {
 			needCarrierCount: number;
 			targets: any[]; // TODO: define this
 		};
-		expansionTarget: string; // FIXME: deprecated?
+		/** Used to force adding a claim target to the queue. */
+		expansionTarget: string | undefined;
 		terminalEnergyTarget: number;
 		factoryEnergyTarget: number;
 		claimTargets: any[]; // TODO: define this
@@ -1433,6 +1434,14 @@ function commandRemoteMining() {
 }
 
 function satisfyClaimTargets() {
+	if (Memory.expansionTarget) {
+		Memory.claimTargets.push({
+			room: Memory.expansionTarget,
+			mode: "claim",
+		});
+		delete Memory.expansionTarget;
+	}
+
 	const claimers = util.getCreeps(Role.Claimer);
 	const satisfiedIdxs = [];
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
