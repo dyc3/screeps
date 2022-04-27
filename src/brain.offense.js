@@ -27,7 +27,7 @@ function visTarget(pos) {
 	});
 }
 
-class OffenseStrategy {
+export class OffenseStrategy {
 	get neededCreeps() {
 
 	}
