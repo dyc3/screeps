@@ -1,7 +1,6 @@
-// @ts-expect-error hasn't been converted to typescript yet
-import { OffenseStrategy } from '../brain.offense.js';
+import { OffenseStrategy } from "./BaseStrategy";
 
-export default class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
+export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	// @ts-expect-error FIXME: should probably be renamed so it vibes better with typescript
 	static get name() {
 		return "OvermindRemoteMinerBait";

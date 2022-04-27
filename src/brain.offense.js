@@ -1,5 +1,6 @@
 import util from "./util";
-import OffenseStrategyOvermindRemoteMinerBait from "./strategies/OvermindRemoteMinerBait";
+import { OffenseStrategy } from "./strategies/BaseStrategy";
+import { OffenseStrategyOvermindRemoteMinerBait } from "./strategies/Overmind";
 
 function olog(...args) {
 	console.log('<span style="color: yellow">offense: ', ...args, "</span>");
@@ -25,26 +26,6 @@ function visTarget(pos) {
 		strokeWidth: .07,
 		opacity: .5,
 	});
-}
-
-export class OffenseStrategy {
-	get neededCreeps() {
-
-	}
-
-	areCreepRequirementsMet(creeps) {
-		let grouped = _.groupBy(creeps, c => c.memory.type)
-		for (let creepType of _.keys(this.neededCreeps)) {
-			if (grouped[creepType].length < this.neededCreeps[creepType]) {
-				return false
-			}
-		}
-		return true
-	}
-
-	act() {
-
-	}
 }
 
 class OffenseTask {
