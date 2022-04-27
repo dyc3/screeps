@@ -1,4 +1,4 @@
-let util = require("./util");
+import util from "./util";
 /**
  * Tools for use in the screeps console.
  *
