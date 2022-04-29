@@ -272,8 +272,12 @@ const roleRelay = {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
-					creep.withdraw(storage, RESOURCE_ENERGY);
-					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+					if (storage) {
+						creep.withdraw(storage, RESOURCE_ENERGY);
+						creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+					} else {
+						creep.log("No storage present.");
+					}
 				}
 				else {
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
