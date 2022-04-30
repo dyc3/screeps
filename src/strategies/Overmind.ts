@@ -3,6 +3,7 @@ import util from "../util";
 // @ts-expect-error not converted yet
 import taskRenew from "../task.renew.js";
 import { olog } from "../offense/util";
+import { ObserveQueue } from "../observequeue";
 
 /**
  * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
@@ -20,7 +21,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	/** The room the enemy is probably spawning the guard creeps from. */
 	spawningRoom: string;
 	objective: "bait" | "flee";
-	observerId: Id<StructureObserver> | undefined;
 	lastObservationTime: number = 0;
 
 	constructor(mem: any) {
@@ -29,7 +29,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		this.miningRoom = "";
 		this.spawningRoom = "";
 		this.objective = "bait";
-		this.observerId = undefined;
 		Object.assign(this, mem);
 	}
 
@@ -37,19 +36,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		return {
 			"naive-bait": 1,
 		};
-	}
-
-	findObserver(): Id<StructureObserver> | undefined {
-		const rooms = util.getOwnedRooms();
-		for (let room of rooms) {
-			let observer = room.find(FIND_MY_STRUCTURES, {
-				filter: s => s.structureType === STRUCTURE_OBSERVER
-			})[0] as StructureObserver;
-			if (observer) {
-				return observer.id;
-			}
-		}
-		return;
 	}
 
 	getKnownBadRooms(): string[] {
@@ -126,19 +112,8 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				}
 				this.lastObservationTime = Game.time;
 			} else {
-				// TODO: we should have some sort of observation queue so we don't have to rely on one specific observer being available.
-				if (!this.observerId) {
-					this.observerId = this.findObserver();
-				}
-				if (!this.observerId) {
-					throw new Error("No observer found. You need to build one.");
-				}
 				if (Game.time - this.lastObservationTime > 20) {
-					let observer = Game.getObjectById(this.observerId);
-					if (!observer) {
-						throw new Error("Observer invalid, need to find a new one.");
-					}
-					observer.observeRoom(this.miningRoom);
+					ObserveQueue.queue(this.miningRoom);
 				}
 			}
 		}

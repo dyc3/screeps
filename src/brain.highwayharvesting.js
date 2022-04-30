@@ -1,4 +1,5 @@
 import util from "./util";
+import { ObserveQueue } from "./observequeue";
 
 class HighwayHarvestTask {
 	constructor() {

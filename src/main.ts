@@ -141,6 +141,7 @@ import brainHighwayHarvesting from "./brain.highwayharvesting.js";
 import brainOffense from "./brain.offense.js";
 
 import { RemoteMiningTarget } from "./remotemining";
+import { ObserveQueue } from "./observequeue";
 
 declare global {
 	/*
@@ -177,6 +178,10 @@ declare global {
 		attackTarget: string;
 		offense: {
 			tasks: any[]; // TODO: convert to typescript
+		}
+		observe: {
+			observers: Id<StructureObserver>[];
+			queue: string[];
 		}
 	}
 
@@ -220,6 +225,7 @@ declare global {
 			WHOAMI: string;
 			CONTROLLER_UPGRADE_RANGE: number;
 			DROPPED_ENERGY_GATHER_MINIMUM: number;
+			ObserveQueue: ObserveQueue;
 		}
 	}
 }
@@ -616,9 +622,7 @@ function doFlagCommandsAndStuff() {
 			}
 		} catch (e) {
 			// need vision
-			// @ts-expect-error
-			const observer = Game.getObjectById("5c4fa9d5fd6e624365ff19fc") as StructureObserver; // TODO: make dynamic
-			observer.observeRoom(pos.roomName);
+			ObserveQueue.queue(pos.roomName);
 			throw new Error("need vision of room to complete job");
 		}
 		console.log("adding new target to remote mining:", newTarget.id);
@@ -1677,6 +1681,11 @@ const jobs = {
 		},
 		interval: 5,
 	},
+	"update-observers": {
+		name: "update-observers",
+		run: ObserveQueue.updateCachedObserverIds,
+		interval: 50,
+	},
 };
 
 function queueJob(job: any) {
@@ -1716,6 +1725,7 @@ function main() {
 	if (!Memory.highlightCreepLog) {
 		Memory.highlightCreepLog = [];
 	}
+	ObserveQueue.initialize();
 
 	// initialize jobs
 	if (!Memory.job_last_run) {
@@ -2069,6 +2079,8 @@ function main() {
 	brainHighwayHarvesting.finalize();
 
 	brainLogistics.finalize();
+
+	ObserveQueue.consumeObservations();
 
 	printStatus();
 
