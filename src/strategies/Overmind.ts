@@ -1,7 +1,8 @@
-import { OffenseStrategy, olog } from "./BaseStrategy";
+import { OffenseStrategy } from "./BaseStrategy";
 import util from "../util";
 // @ts-expect-error not converted yet
 import taskRenew from "../task.renew.js";
+import { olog } from "../offense/util";
 
 /**
  * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})

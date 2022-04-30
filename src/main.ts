@@ -175,9 +175,13 @@ declare global {
 		USE_ADV_LOGISTICS: boolean;
 		/** @deprecated */
 		attackTarget: string;
+		offense: {
+			tasks: any[]; // TODO: convert to typescript
+		}
 	}
 
 	interface Creep {
+		travelTo(pos: RoomPosition): OK;
 		travelTo(pos: RoomPosition, opts: any): OK;
 	}
 
