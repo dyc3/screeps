@@ -47,7 +47,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	}
 
 	act(creeps: Creep[]): void {
-		// TODO: finish implementation
 		// 1. bait overmind into spawning a guard with a 1 ATTACK creep
 		// 2. wait for guard to enter room
 		// 3. move our creep out of the room
