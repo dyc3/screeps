@@ -95,9 +95,10 @@ export function autoSpawn(task_idx: number) {
 	let task = new OffenseTask(Memory.offense.tasks[task_idx]);
 	let strat = task.getStrategy();
 	// @ts-expect-error FIXME: need to add `c.memory.type` to creep memory to CreepMemory
-	let grouped = _.groupBy(creeps, c => c.memory.type)
+	let grouped = _.groupBy(task.creeps, c => c.memory.type);
 	for (let [type, needCount] of Object.entries(strat.neededCreeps)) {
-		if (grouped[type].length < needCount) {
+		let haveCount = grouped[type] ? grouped[type].length : 0;
+		if (haveCount < needCount) {
 			// TODO: really need some kind of spawn queue to generalize spawning creeps
 
 			let spawns = Object.values(Game.spawns).filter(s => !s.spawning);

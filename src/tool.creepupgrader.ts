@@ -74,7 +74,7 @@ export function getBuilderQuota() {
 	if (lowRCL > 0) {
 		return 3;
 	}
-	return 1;
+	return 3;
 }
 
 export function getManagerQuota(room: Room) {
