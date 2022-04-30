@@ -22,3 +22,7 @@ export class OffenseStrategy {
 		throw new Error("Not implemented")
 	}
 }
+
+export function olog(...args: any[]) {
+	console.log('<span style="color: yellow">offense: ', ...args, "</span>");
+}

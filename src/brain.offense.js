@@ -1,10 +1,6 @@
 import util from "./util";
-import { OffenseStrategy } from "./strategies/BaseStrategy";
+import { OffenseStrategy, olog } from "./strategies/BaseStrategy";
 import { OffenseStrategyOvermindRemoteMinerBait } from "./strategies/Overmind";
-
-function olog(...args) {
-	console.log('<span style="color: yellow">offense: ', ...args, "</span>");
-}
 
 const TASK_PREPARE = 0
 const TASK_RUN = 1

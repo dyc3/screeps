@@ -1,4 +1,4 @@
-import { OffenseStrategy } from "./BaseStrategy";
+import { OffenseStrategy, olog } from "./BaseStrategy";
 import util from "../util";
 
 /**
@@ -18,6 +18,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	spawningRoom: string;
 	objective: "bait" | "flee";
 	observerId: Id<StructureObserver> | undefined;
+	lastObservationTime: number = 0;
 
 	constructor(mem: any) {
 		super(mem);
@@ -65,6 +66,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		let creep = creeps[0];
 		if (creep) {
 			if (this.objective === "bait") {
+				olog("bait: ", creep.name, creep.pos, "moving to ", this.miningRoom);
 				if (creep.room.name !== this.miningRoom && !this.waitingRoom) {
 					// if we are adjacent to the mining room, and we don't know what our waiting room is,
 					// then we can assume that the current room is the waiting room.
@@ -79,6 +81,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				}
 				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), { range: 20 });
 			} else if (this.objective === "flee") {
+				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
 				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), { range: 20 });
 
 				if (creep.ticksToLive ?? 1500 < 400) {
@@ -105,6 +108,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				if (hostiles.length === 0) {
 					this.objective = "bait";
 				}
+				this.lastObservationTime = Game.time;
 			} else {
 				// TODO: we should have some sort of observation queue so we don't have to rely on one specific observer being available.
 				if (!this.observerId) {
@@ -113,12 +117,20 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				if (!this.observerId) {
 					throw new Error("No observer found. You need to build one.");
 				}
-				let observer = Game.getObjectById(this.observerId);
-				if (!observer) {
-					throw new Error("Observer invalid, need to find a new one.");
+				if (Game.time - this.lastObservationTime > 20) {
+					let observer = Game.getObjectById(this.observerId);
+					if (!observer) {
+						throw new Error("Observer invalid, need to find a new one.");
+					}
+					observer.observeRoom(this.miningRoom);
 				}
-				observer.observeRoom(this.miningRoom);
 			}
 		}
+
+		// visualize on map
+		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), { color: "#ff0000" });
+		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), { color: "#0000ff" });
+		let color = this.objective === "bait" ? "#00ff00" : "#ff0000";
+		Game.map.visual.circle(new RoomPosition(25, 25, this.miningRoom), { stroke: color, fill: "transparent" });
 	}
 }
