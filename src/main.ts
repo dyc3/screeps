@@ -140,6 +140,8 @@ import brainHighwayHarvesting from "./brain.highwayharvesting.js";
 // @ts-expect-error hasn't been converted yet
 import brainOffense from "./brain.offense.js";
 
+import { RemoteMiningTarget } from "./remotemining";
+
 declare global {
 	/*
     Example types, expand on these or remove them and add your own.
@@ -156,7 +158,7 @@ declare global {
 		remoteMining: {
 			needHarvesterCount: number;
 			needCarrierCount: number;
-			targets: any[]; // TODO: define this
+			targets: RemoteMiningTarget[]; // TODO: define this
 		};
 		/** Used to force adding a claim target to the queue. */
 		expansionTarget: string | undefined;
@@ -548,12 +550,12 @@ function doFlagCommandsAndStuff() {
 
 	if (Game.flags.harvestme) {
 		const pos = Game.flags.harvestme.pos;
-		const newTarget = {
+		const newTarget: RemoteMiningTarget = {
 			x: pos.x,
 			y: pos.y,
 			roomName: pos.roomName,
-			harvestPos: {},
-			id: "",
+			harvestPos: { x: pos.x, y: pos.y },
+			id: "" as Id<Source>,
 			neededCarriers: 1,
 			danger: 0,
 		};
@@ -1208,9 +1210,10 @@ function commandRemoteMining() {
 		const target = Memory.remoteMining.targets[t];
 		// remove invalid creep references, and initialize potentially missing or invalid memory
 		if (
-			!Game.creeps[target.creepHarvester] ||
+			target.creepHarvester &&
+			(!Game.creeps[target.creepHarvester] ||
 			!Game.creeps[target.creepHarvester].memory.harvestTarget ||
-			Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id
+			Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id)
 		) {
 			delete target.creepHarvester;
 		}
@@ -1232,15 +1235,6 @@ function commandRemoteMining() {
 
 		if (!target.neededCarriers || target.neededCarriers < 1) {
 			target.neededCarriers = 1;
-		}
-
-		// HACK: move memory to the new thing
-		if (target.creepCarrier) {
-			if (!target.creepCarriers) {
-				target.creepCarriers = [];
-			}
-			target.creepCarriers.push(target.creepCarrier);
-			delete target.creepCarrier;
 		}
 
 		if (!target.creepHarvester || !target.creepCarriers) {
@@ -1402,8 +1396,7 @@ function commandRemoteMining() {
 	// handle spawning claimers
 	let targetRooms = _.uniq(
 		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
-			// @ts-expect-error FIXME: idk what the fuck is going on here
-			target => Game.getObjectById(target.id)?.room.name
+			target => Game.getObjectById(target.id)?.room.name as string
 		)
 	);
 	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
