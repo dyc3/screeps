@@ -19,8 +19,9 @@ export class OffenseStrategy {
 	areCreepRequirementsMet(creeps: Creep[]) {
 		// @ts-expect-error FIXME: need to add `c.memory.type` to creep memory to CreepMemory
 		let grouped = _.groupBy(creeps, c => c.memory.type)
-		for (let creepType of _.keys(this.neededCreeps)) {
-			if (grouped[creepType].length < this.neededCreeps[creepType]) {
+		for (let type of _.keys(this.neededCreeps)) {
+			let haveCount = grouped[type] ? grouped[type].length : 0;
+			if (haveCount < this.neededCreeps[type]) {
 				return false
 			}
 		}

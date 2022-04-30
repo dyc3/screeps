@@ -15,12 +15,12 @@ export class OffenseTask {
 	strategyName: string;
 	strategy: unknown;
 
-	constructor(mem: unknown) {
+	constructor(mem: { strategyName: string }) {
 		this.creepNames = [];
 		this.state = TASK_PREPARE;
 		this.manualStart = false;
 		this.autoSpawn = false;
-		this.strategyName = "";
+		this.strategyName = mem.strategyName;
 		this.strategy = {}
 		Object.assign(this, mem)
 	}
