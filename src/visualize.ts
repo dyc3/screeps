@@ -291,4 +291,16 @@ export default {
 			}
 		}
 	},
+
+	drawMapVision() {
+		const rooms = Object.values(Game.rooms);
+		for (let room of rooms) {
+			let pos = room.getPositionAt(2, 2) as RoomPosition;
+			Game.map.visual.rect(pos, 46, 46, {
+				fill: "transparent",
+				stroke: "#0047AB",
+				opacity: 0.5,
+			})
+		}
+	}
 };

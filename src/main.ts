@@ -2080,6 +2080,7 @@ function main() {
 	if ((Game.cpu.bucket > 500 && Game.cpu.getUsed() < Game.cpu.limit * 0.85) || util.isSimulationMode()) {
 		visualize.drawQuotas();
 		visualize.doVisualize();
+		visualize.drawMapVision();
 	}
 }
 
