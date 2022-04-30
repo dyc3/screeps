@@ -1293,7 +1293,7 @@ function commandRemoteMining() {
 		const room = Game.rooms[target.roomName];
 		if (!room) {
 			Memory.remoteMining.targets[t] = target;
-			// FIXME: don't have vision
+			ObserveQueue.queue(target.roomName);
 			continue;
 		}
 		const source = Game.getObjectById(target.id) as Source;
