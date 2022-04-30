@@ -517,7 +517,11 @@ module.exports = {
 		for (let i = 0; i < Memory.offense.tasks.length; i++) {
 			Memory.offense.tasks[i].creepNames = Memory.offense.tasks[i].creepNames.filter(c => !!Game.creeps[c])
 			let task = new OffenseTask(Memory.offense.tasks[i]);
-			task.run(i);
+			try {
+				task.run(i);
+			} catch (e) {
+				util.printException(e);
+			}
 			Memory.offense.tasks[i] = _.omit(task, "creeps");
 
 			vis.text(`${task.strategy.name}: state: ${task.state}, started: ${task.manualStart}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
