@@ -9,8 +9,7 @@ import { ObserveQueue } from "../observequeue";
  * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
  */
 export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
-	// @ts-expect-error FIXME: should probably be renamed so it vibes better with typescript
-	static get name() {
+	static get strategyName() {
 		return "OvermindRemoteMinerBait";
 	}
 

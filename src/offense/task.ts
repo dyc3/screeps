@@ -12,6 +12,7 @@ export class OffenseTask {
 	state: typeof TASK_PREPARE | typeof TASK_RUN;
 	manualStart: boolean = false;
 	autoSpawn: boolean = false;
+	strategyName: string;
 	strategy: unknown;
 
 	constructor(mem: unknown) {
@@ -19,6 +20,7 @@ export class OffenseTask {
 		this.state = TASK_PREPARE;
 		this.manualStart = false;
 		this.autoSpawn = false;
+		this.strategyName = "";
 		this.strategy = {}
 		Object.assign(this, mem)
 	}
@@ -33,8 +35,7 @@ export class OffenseTask {
 	}
 
 	getStrategy(): OffenseStrategy {
-		// @ts-expect-error FIXME: The whole offense module needs to be reworked from the ground up to use typescript.
-		let Strategy = _.find(Strategies, { name: this.strategy.name })
+		let Strategy = _.find(Strategies, { strategyName: this.strategyName })
 		let strat = new Strategy(this.strategy)
 		return strat;
 	}
@@ -75,7 +76,7 @@ export class OffenseTask {
 			})
 			if (this.manualStart && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN)
-			} else if (strat.name === "OvermindRemoteMinerBait" && strat.areCreepRequirementsMet(this.creeps)) {
+			} else if (strat.strategyName === "OvermindRemoteMinerBait" && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN)
 			}
 		} else if (this.state === TASK_RUN) {
@@ -106,7 +107,7 @@ export function autoSpawn(task_idx: number) {
 			let spawns = Object.values(Game.spawns).filter(s => !s.spawning);
 			if (spawns.length === 0) {
 				// @ts-expect-error
-				olog(`Failed to auto spawn for task ${task_idx} ${task.strategy.name}`)
+				olog(`Failed to auto spawn for task ${task_idx} ${task.strategyName}`)
 				return;
 			}
 			spawns = util.shuffle(spawns);

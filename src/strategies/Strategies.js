@@ -23,7 +23,7 @@ function visTarget(pos) {
  * `attackerCount`: number of attackers
  */
 export class OffenseStrategySimpleManual extends OffenseStrategy {
-	static get name() {
+	static get strategyName() {
 		return "SimpleManual";
 	}
 
@@ -138,7 +138,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 
 /** @deprecated Has hard coded stuff. */
 export class OffenseStrategyLureHarrass extends OffenseStrategy {
-	static get name() {
+	static get strategyName() {
 		return "LureHarrass"
 	}
 
@@ -353,7 +353,7 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 
 /** @deprecated Has hard coded stuff. */
 export class OffenseStrategyBreakAltPath extends OffenseStrategy {
-	static get name() {
+	static get strategyName() {
 		return "BreakAltPath"
 	}
 

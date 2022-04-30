@@ -26,7 +26,7 @@ module.exports = {
 			}
 			Memory.offense.tasks[i] = _.omit(task, "creeps");
 
-			vis.text(`${task.strategy.name}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
+			vis.text(`${task.strategyName}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
 		}
 	},
 }
@@ -57,8 +57,8 @@ global.Offense = {
 	},
 
 	create(strategyName, init={}) {
-		init.name = strategyName;
 		let task = new OffenseTask({
+			strategyName: strategyName,
 			strategy: init,
 		});
 		Memory.offense.tasks.push(_.omit(task, "creeps"));
@@ -76,7 +76,7 @@ global.Offense = {
 			state: TASK_PREPARE,
 			manualStart: false
 		})
-		if (Memory.offense.tasks[taskIdx].strategy.name === "LureHarrass") {
+		if (Memory.offense.tasks[taskIdx].strategyName === "LureHarrass") {
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				state: 0,
 				currentTargetId: ""
@@ -94,7 +94,7 @@ global.Offense = {
 	 * If applicable, set the target object of the task.
 	 */
 	setTarget(taskIdx, target) {
-		if (Memory.offense.tasks[taskIdx].strategy.name === "LureHarrass" || Memory.offense.tasks[taskIdx].strategy.name === "SimpleManual") {
+		if (Memory.offense.tasks[taskIdx].strategyName === "LureHarrass" || Memory.offense.tasks[taskIdx].strategyName === "SimpleManual") {
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				currentTargetId: target
 			})
