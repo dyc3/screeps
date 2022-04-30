@@ -225,6 +225,8 @@ global.Logistics = {
 global.Util = {
 	module: util,
 
+	getCreeps: util.getCreeps,
+
 	spawnMegaBuilder(spawnName=null) {
 		let spawn = null;
 		if (!spawnName) {
