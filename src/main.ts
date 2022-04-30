@@ -175,6 +175,10 @@ declare global {
 		attackTarget: string;
 	}
 
+	interface Creep {
+		travelTo(pos: RoomPosition, opts: any): OK;
+	}
+
 	interface CreepMemory {
 		role: Role;
 		room: string;

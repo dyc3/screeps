@@ -18,7 +18,7 @@ export class OffenseStrategy {
 		return true
 	}
 
-	act() {
+	act(creeps: Creep[]): void {
 		throw new Error("Not implemented")
 	}
 }
