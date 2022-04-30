@@ -1,6 +1,8 @@
 /** Represents a single source that is being mined remotely. */
 export interface RemoteMiningTarget {
 	id: Id<Source>;
+	x: number;
+	y: number;
 	/** The room that the source is in. */
 	roomName: string;
 	harvestPos: { x: number, y: number };

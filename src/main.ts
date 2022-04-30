@@ -550,15 +550,14 @@ function doFlagCommandsAndStuff() {
 
 	if (Game.flags.harvestme) {
 		const pos = Game.flags.harvestme.pos;
-		const newTarget: RemoteMiningTarget = {
+		const newTarget = {
 			x: pos.x,
 			y: pos.y,
 			roomName: pos.roomName,
-			harvestPos: { x: pos.x, y: pos.y },
 			id: "" as Id<Source>,
 			neededCarriers: 1,
 			danger: 0,
-		};
+		} as RemoteMiningTarget;
 		// check if we are already harvesting this target
 		if (_.find(Memory.remoteMining.targets, { x: newTarget.x, y: newTarget.y, roomName: newTarget.roomName })) {
 			console.log("ERR: already harvesting this target");
