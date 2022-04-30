@@ -207,6 +207,7 @@ class OffenseStrategySimpleManual extends OffenseStrategy {
 	}
 }
 
+/** @deprecated Has hard coded stuff. */
 class OffenseStrategyLureHarrass extends OffenseStrategy {
 	static get name() {
 		return "LureHarrass"
@@ -421,6 +422,7 @@ class OffenseStrategyLureHarrass extends OffenseStrategy {
 	}
 }
 
+/** @deprecated Has hard coded stuff. */
 class OffenseStrategyBreakAltPath extends OffenseStrategy {
 	static get name() {
 		return "BreakAltPath"
