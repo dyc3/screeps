@@ -1,5 +1,6 @@
 export class OffenseStrategy {
-	get name(): string { throw new Error("Not implemented") }
+	// @ts-expect-error FIXME: should probably be renamed so it vibes better with typescript
+	static get name(): string { throw new Error("Not implemented") }
 
 	get neededCreeps(): { [creepType: string]: number } {
 		throw new Error("Not implemented")

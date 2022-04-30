@@ -26,7 +26,7 @@ module.exports = {
 			}
 			Memory.offense.tasks[i] = _.omit(task, "creeps");
 
-			vis.text(`${task.strategy.name}: state: ${task.state}, started: ${task.manualStart}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
+			vis.text(`${task.strategy.name}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
 		}
 	},
 }
