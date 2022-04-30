@@ -1,5 +1,7 @@
 import { OffenseStrategy, olog } from "./BaseStrategy";
 import util from "../util";
+// @ts-expect-error not converted yet
+import taskRenew from "../task.renew.js";
 
 /**
  * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
@@ -49,7 +51,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		return;
 	}
 
-
 	act(creeps: Creep[]): void {
 		// TODO: finish implementation
 		// 1. bait overmind into spawning a guard with a 1 ATTACK creep
@@ -65,7 +66,9 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		// act on creeps based on objective
 		let creep = creeps[0];
 		if (creep) {
-			if (this.objective === "bait") {
+			if (creep.memory.renewing) {
+				taskRenew.run(creep);
+			} else if (this.objective === "bait") {
 				olog("bait: ", creep.name, creep.pos, "moving to ", this.miningRoom);
 				if (creep.room.name !== this.miningRoom && !this.waitingRoom) {
 					// if we are adjacent to the mining room, and we don't know what our waiting room is,
@@ -84,8 +87,11 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
 				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), { range: 20 });
 
-				if (creep.ticksToLive ?? 1500 < 400) {
+				// this condition is a little arbitrary, might not be sufficient.
+				if ((creep.ticksToLive ?? 1500) < 400) {
 					creep.memory.renewing = true;
+					creep.memory.renew_force_amount = 1400;
+					olog("flee: ", creep.name, "renewing");
 				}
 			}
 		}

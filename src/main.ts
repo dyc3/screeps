@@ -185,6 +185,7 @@ declare global {
 		keepAlive: boolean;
 		stage: number;
 		renewing: boolean;
+		renew_force_amount: number | undefined;
 		renewTarget: Id<StructureSpawn>;
 
 		// TODO: make role-specific memory types
