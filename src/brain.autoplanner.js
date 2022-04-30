@@ -424,15 +424,15 @@ let brainAutoPlanner = {
 
 			// plan extentions in remaining spots
 			// since the road from the path is
-			for (let pos of harvestAdj) {
-				if (terrain.get(pos.x, pos.y) == "wall") {
-					continue;
-				}
+			// for (let pos of harvestAdj) {
+			// 	if (terrain.get(pos.x, pos.y) == "wall") {
+			// 		continue;
+			// 	}
 
-				if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length == 0) {
-					room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
-				}
-			}
+			// 	if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length == 0) {
+			// 		room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
+			// 	}
+			// }
 		}
 	},
 
