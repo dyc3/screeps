@@ -51,6 +51,15 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		return;
 	}
 
+	getKnownBadRooms(): string[] {
+		let badRooms: string[] = [
+			this.spawningRoom,
+			...Memory.remoteMining.targets.filter(t => t.danger > 0).map(t => t.roomName),
+			// ...Memory.offense.tasks
+		];
+		return badRooms;
+	}
+
 	act(creeps: Creep[]): void {
 		// TODO: finish implementation
 		// 1. bait overmind into spawning a guard with a 1 ATTACK creep
@@ -82,10 +91,10 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 						}
 					}
 				}
-				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), { range: 20 });
+				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), { range: 20, avoidRooms: this.getKnownBadRooms() });
 			} else if (this.objective === "flee") {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
-				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), { range: 20 });
+				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), { range: 20, avoidRooms: this.getKnownBadRooms() });
 
 				// this condition is a little arbitrary, might not be sufficient.
 				if ((creep.ticksToLive ?? 1500) < 400) {
