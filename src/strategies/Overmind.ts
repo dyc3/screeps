@@ -7,6 +7,7 @@ import { ObserveQueue } from "../observequeue";
 
 /**
  * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
+ * Memory.offense.tasks.map(t => t.autoSpawn = true)
  */
 export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	static get strategyName() {
