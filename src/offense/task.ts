@@ -75,6 +75,8 @@ export class OffenseTask {
 			})
 			if (this.manualStart && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN)
+			} else if (strat.name === "OvermindRemoteMinerBait" && strat.areCreepRequirementsMet(this.creeps)) {
+				this.setState(TASK_RUN)
 			}
 		} else if (this.state === TASK_RUN) {
 			if (this.creeps.length === 0) {

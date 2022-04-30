@@ -1,4 +1,6 @@
 export class OffenseStrategy {
+	get name(): string { throw new Error("Not implemented") }
+
 	get neededCreeps(): { [creepType: string]: number } {
 		throw new Error("Not implemented")
 	}
