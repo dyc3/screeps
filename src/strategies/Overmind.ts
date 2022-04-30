@@ -132,5 +132,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), { color: "#0000ff" });
 		let color = this.objective === "bait" ? "#00ff00" : "#ff0000";
 		Game.map.visual.circle(new RoomPosition(25, 25, this.miningRoom), { stroke: color, fill: "transparent" });
+		Game.map.visual.circle(creep.pos, { stroke: "#ffff00", fill: "transparent", radius: 1 });
+		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), creep.pos, { color: "#ffff00" });
 	}
 }
