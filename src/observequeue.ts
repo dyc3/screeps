@@ -23,6 +23,11 @@ export class ObserveQueue {
 	}
 
 	public static consumeObservations(): void {
+		if (Memory.observe.queue.length === 0) {
+			return;
+		}
+
+		let anySuccess = false;
 		for (let observer of this.getObservers()) {
 			if (Memory.observe.queue.length === 0) {
 				break;
@@ -33,6 +38,12 @@ export class ObserveQueue {
 				console.log(`Observer ${observer.id} in ${observer.room} failed to observe ${target}`);
 				continue;
 			}
+			anySuccess = true;
+			Memory.observe.queue.shift();
+		}
+
+		if (!anySuccess) {
+			console.log("Failed to observe any rooms, removing first item in queue.");
 			Memory.observe.queue.shift();
 		}
 	}
