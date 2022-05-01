@@ -1911,6 +1911,11 @@ screeps-api@^1.11.0:
     bufferutil "^4.0.1"
     utf-8-validate "^5.0.2"
 
+screeps-pathfinding@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/screeps-pathfinding/-/screeps-pathfinding-2.0.8.tgz#3e73d7d7d3baeb5040aaf43ca013aaa1d97cb6d0"
+  integrity sha512-TzSqYY3Ti1QvKZDKFEc8drwlvmK5km/u2tkFVWOiTagqK7IBs4VMZKsIGsDt6RfbeakP+Js44jBvNxr01E23BQ==
+
 screeps-profiler@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/screeps-profiler/-/screeps-profiler-2.0.1.tgz#0558aaceed79cb18904a532022041c79f8734d74"
