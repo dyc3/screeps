@@ -31,7 +31,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	miningRoom: string;
 	/** The room the enemy is probably spawning the guard creeps from. */
 	spawningRoom: string;
-	objective: "bait" | "flee";
+	objective: "travel" | "bait" | "flee";
 	lastObservationTime: number = 0;
 
 	constructor(mem: any) {
@@ -39,7 +39,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		this.waitingRoom = "";
 		this.miningRoom = "";
 		this.spawningRoom = "";
-		this.objective = "bait";
+		this.objective = "travel";
 		Object.assign(this, mem);
 	}
 
@@ -64,6 +64,15 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		if (creep) {
 			if (creep.memory.renewing) {
 				taskRenew.run(creep);
+			} else if (this.objective === "travel") {
+				// move to the waiting room
+				olog(`travel: moving to ${this.waitingRoom}`);
+
+				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), {
+					range: 20,
+					avoidRooms: this.getKnownBadRooms(),
+					preferHighway: true,
+				});
 			} else if (this.objective === "bait") {
 				olog("bait: ", creep.name, creep.pos, "moving to ", this.miningRoom);
 				if (creep.room.name !== this.miningRoom && !this.waitingRoom) {
@@ -101,7 +110,15 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		}
 
 		// determine if we need to change objectives
-		if (this.objective === "bait") {
+		if (!creep || (creep.room.name !== this.waitingRoom && creep.room.name !== this.miningRoom)) {
+			this.objective = "travel";
+		} else if (this.objective === "travel") {
+			if (creep.room.name === this.miningRoom) {
+				this.objective = "bait";
+			} else if (creep.room.name === this.waitingRoom) {
+				this.objective = "flee";
+			}
+		} else if (this.objective === "bait") {
 			let miningRoom = Game.rooms[this.miningRoom];
 			if (miningRoom) {
 				let enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
@@ -132,7 +149,11 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	visualize(creep: Creep | undefined): void {
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), { color: "#ff0000" });
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), { color: "#0000ff" });
-		let color = this.objective === "bait" ? "#00ff00" : "#ff0000";
+		let color = {
+			"bait": "#00ff00",
+			"flee" : "#ff0000",
+			"travel": "#ffff00",
+		}[this.objective];
 		Game.map.visual.circle(new RoomPosition(25, 25, this.miningRoom), { stroke: color, fill: "transparent" });
 		if (creep) {
 			Game.map.visual.circle(creep.pos, { stroke: "#ffff00", fill: "transparent", radius: 1 });
