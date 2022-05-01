@@ -42,7 +42,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		let badRooms: string[] = [
 			this.spawningRoom,
 			...Memory.remoteMining.targets.filter(t => t.danger > 0).map(t => t.roomName),
-			// ...Memory.offense.tasks
+			...Memory.offense.tasks.filter(t => t.strategyName === this.strategyName).map(t => t.spawningRoom),
 		];
 		return badRooms;
 	}
@@ -77,10 +77,18 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 						}
 					}
 				}
-				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), { range: 20, avoidRooms: this.getKnownBadRooms() });
+				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), {
+					range: 20,
+					avoidRooms: this.getKnownBadRooms(),
+					preferHighway: true,
+				});
 			} else if (this.objective === "flee") {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
-				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), { range: 20, avoidRooms: this.getKnownBadRooms() });
+				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), {
+					range: 20,
+					avoidRooms: this.getKnownBadRooms(),
+					preferHighway: true,
+				});
 
 				// this condition is a little arbitrary, might not be sufficient.
 				if ((creep.ticksToLive ?? 1500) < 400) {
@@ -117,7 +125,10 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 			}
 		}
 
-		// visualize on map
+		this.visualize(creep);
+	}
+
+	visualize(creep: Creep): void {
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), { color: "#ff0000" });
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), { color: "#0000ff" });
 		let color = this.objective === "bait" ? "#00ff00" : "#ff0000";
