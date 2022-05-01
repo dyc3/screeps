@@ -5,7 +5,7 @@ import type { Role } from "./roles/meta";
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
 export const util = {
-	errorCodeToString(errorCode: number): string {
+	errorCodeToString(errorCode: ScreepsReturnCode): string {
 		const errors = {
 			OK: 0,
 			ERR_NOT_OWNER: -1,

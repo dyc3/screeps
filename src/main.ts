@@ -193,8 +193,8 @@ declare global {
 	}
 
 	interface Creep {
-		travelTo(pos: RoomPosition): OK;
-		travelTo(pos: RoomPosition, opts: any): OK;
+		travelTo(pos: RoomPosition): ScreepsReturnCode;
+		travelTo(pos: RoomPosition, opts: any): ScreepsReturnCode;
 	}
 
 	interface CreepMemory {
