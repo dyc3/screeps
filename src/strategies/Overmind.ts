@@ -6,7 +6,18 @@ import { olog } from "../offense/util";
 import { ObserveQueue } from "../observequeue";
 
 /**
- * @example Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
+ * 1. bait overmind into spawning a guard with a 1 ATTACK creep
+ * 2. wait for guard to enter room
+ * 3. move our creep out of the room
+ * 4. remote observe mining room, wait for guard to despawn or leave room
+ * 5. move our creep back into the room
+ * 6. repeat
+ *
+ * Success condition, when the spawning room that is spawning the creeps is out of energy.
+ *
+ * @example
+ * Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W17N7", spawningRoom: "W18N7", waitingRoom: "W16N7"})
+ * Offense.create("OvermindRemoteMinerBait", init={miningRoom: "W31N11", spawningRoom: "W32N11", waitingRoom: "W30N11"})
  * Memory.offense.tasks.map(t => t.autoSpawn = true)
  */
 export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
@@ -48,16 +59,6 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	}
 
 	act(creeps: Creep[]): void {
-		// 1. bait overmind into spawning a guard with a 1 ATTACK creep
-		// 2. wait for guard to enter room
-		// 3. move our creep out of the room
-		// 4. remote observe mining room, wait for guard to despawn or leave room
-		// 5. move our creep back into the room
-		// 6. repeat
-
-		// Success condition, when the spawning room that is spawning the creeps is out of energy.
-
-
 		// act on creeps based on objective
 		let creep = creeps[0];
 		if (creep) {
