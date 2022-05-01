@@ -1,6 +1,6 @@
 // This is a tool creep used to set up delivery routes for energy
 
-import "../traveler.js";
+import traveler from "../traveler.js";
 import util from "../util";
 
 String.prototype.hashCode = function() {
