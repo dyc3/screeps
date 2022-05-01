@@ -87,6 +87,7 @@ import "./tools.js";
 import util from "./util";
 import visualize from "./visualize";
 import { Role } from "./roles/meta";
+import profiler from "screeps-profiler";
 
 // @ts-expect-error hasn't been converted yet
 import roleHarvester from "roles/role.harvester.js";
@@ -142,6 +143,7 @@ import brainOffense from "./brain.offense.js";
 
 import { RemoteMiningTarget } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
+import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 
 declare global {
 	/*
@@ -2092,9 +2094,15 @@ function main() {
 	}
 }
 
+profiler.enable();
+profiler.registerClass(OffenseStrategyOvermindRemoteMinerBait, "OffenseStrategyOvermindRemoteMinerBait");
+profiler.registerObject(taskRenew, "task.renew");
+
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-	main();
+	profiler.wrap(() => {
+		main();
+	});
 });
 module.exports.loop = loop;

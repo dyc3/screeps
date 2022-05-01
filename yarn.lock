@@ -233,6 +233,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/screeps-profiler@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@types/screeps-profiler/-/screeps-profiler-1.2.2.tgz#d99fa8e2fe1932c38dafc83d6d1f907fcecb8a07"
+  integrity sha512-czGKUk8ulz1qosjl0q5Hg9YuivHpP0mDsiPhkRy0pHxMMYgIJt0zfdBCNzYoU4WnbvoeRxpzIn/cBAj5PBqJtQ==
+
 "@types/screeps@^3.2.3":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@types/screeps/-/screeps-3.3.0.tgz#f3ea8b7f31e75796fa9e344e7d4a30866932f007"
@@ -1905,6 +1910,11 @@ screeps-api@^1.11.0:
   optionalDependencies:
     bufferutil "^4.0.1"
     utf-8-validate "^5.0.2"
+
+screeps-profiler@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/screeps-profiler/-/screeps-profiler-2.0.1.tgz#0558aaceed79cb18904a532022041c79f8734d74"
+  integrity sha1-BViqzu15yxiQSlMgIgQcefhzTXQ=
 
 semver@^6.0.0:
   version "6.3.0"
