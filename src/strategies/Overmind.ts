@@ -33,6 +33,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	spawningRoom: string;
 	objective: "travel" | "bait" | "flee";
 	lastObservationTime: number = 0;
+	outsideOfObservationRange: boolean = false;
 
 	constructor(mem: any) {
 		super(mem);
@@ -138,7 +139,11 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				this.lastObservationTime = Game.time;
 			} else {
 				if (Game.time - this.lastObservationTime > 20) {
-					ObserveQueue.queue(this.miningRoom);
+					if (this.outsideOfObservationRange) {
+						this.objective = "bait";
+					} else {
+						ObserveQueue.queue(this.miningRoom);
+					}
 				}
 			}
 		}
