@@ -5,15 +5,7 @@ import taskGather from "./task.gather.js";
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
 const taskRenew = {
-	/** @param {Creep|PowerCreep} creep **/
-	checkRenew(creep) {
-		if (creep.memory.renewing) {
-			return true;
-		}
-		if (creep instanceof Creep && (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0)) {
-			return false;
-		}
-
+	findRenewTarget(creep) {
 		let spawn = creep instanceof Creep ? util.getSpawn(creep.room) : _.first(util.getStructures(creep.room, STRUCTURE_POWER_SPAWN));
 		if (spawn) {
 			creep.memory.renewTarget = spawn.id;
@@ -23,9 +15,10 @@ const taskRenew = {
 				targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
 				targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
 			};
+			return spawn;
 		}
 		if (!spawn) {
-			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 50) {
+			if (!creep.memory.renewTarget || !creep.memory._lastCheckForCloseSpawn || Game.time - creep.memory._lastCheckForCloseSpawn > 200) {
 				let approx_ticks = 600
 				let countRenewsRequired = Math.ceil((approx_ticks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
 				let closestRooms = util.findClosestOwnedRooms(creep.pos, room => room.energyCapacityAvailable >= util.getRenewCost(creep.body) * countRenewsRequired);
@@ -54,6 +47,9 @@ const taskRenew = {
 				}
 			}
 			spawn = Game.getObjectById(creep.memory.renewTarget);
+			if (spawn) {
+				return spawn;
+			}
 		}
 		if (creep instanceof Creep && !spawn) {
 			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
@@ -64,14 +60,27 @@ const taskRenew = {
 				targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
 				targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
 			};
+			return spawn;
 		}
+	},
+
+	/** @param {Creep|PowerCreep} creep **/
+	checkRenew(creep) {
+		if (creep.memory.renewing) {
+			return true;
+		}
+		if (creep instanceof Creep && (!creep.memory.keepAlive || creep.memory.role == "claimer" || creep.getActiveBodyparts(CLAIM) > 0)) {
+			return false;
+		}
+
+		let spawn = this.findRenewTarget(creep);
 		if (!spawn) {
 			// there are no spawns anyway, just keep doing your job.
 			return false;
 		}
 
 		let travelTime = creep.memory._renewTravelTime;
-		if (!creep.memory._renewTravelTime || !creep.memory._lastCheckTravelTime || Game.time - creep.memory._lastCheckTravelTime > 8) {
+		if (!creep.memory._renewTravelTime || !creep.memory._lastCheckTravelTime || Game.time - creep.memory._lastCheckTravelTime > 30) {
  			// let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
 			let path = traveler.Traveler.findTravelPath(creep.pos, spawn.pos, { range: 1, ignoreCreeps: true }).path;
 			travelTime = util.calculateEta(creep, path);
