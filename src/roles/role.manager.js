@@ -805,14 +805,21 @@ let roleManager = {
 		if (creep.memory.transporting) {
 			delete creep.memory.aquireTarget;
 
+			if (creep.memory._lastTransferTargetFail !== undefined && Game.time - creep.memory._lastTransferTargetFail < 10) {
+				creep.log("Waiting before trying to find a new target to save CPU, because we failed last time.");
+				return;
+			}
+
 			let transportTarget = this.getTransferTarget(creep);
 			if (!transportTarget) {
 				if (Game.time % 5 === 0) {
 					delete creep.memory.lastWithdrawStructure;
 				}
 				creep.log("can't get a transport target");
+				creep.memory._lastTransferTargetFail = Game.time;
 				return;
 			}
+			delete creep.memory._lastTransferTargetFail;
 			creep.room.visual.circle(transportTarget.pos, {stroke:"#00ff00", fill:"transparent", radius: 0.8});
 			creep.log(`Transporting to ${transportTarget}`);
 			if (creep.pos.isNearTo(transportTarget)) {
