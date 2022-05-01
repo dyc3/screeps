@@ -144,6 +144,7 @@ import brainOffense from "./brain.offense.js";
 import { RemoteMiningTarget } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
+import PortalScanner from "intel/PortalScanner.js";
 
 declare global {
 	/*
@@ -184,6 +185,10 @@ declare global {
 		observe: {
 			observers: Id<StructureObserver>[];
 			queue: string[];
+		}
+		portals: {
+			intershard: [string, { shard: string, room: string }][];
+			interroom: [string, string][];
 		}
 	}
 
@@ -1688,6 +1693,12 @@ const jobs = {
 		run: ObserveQueue.updateCachedObserverIds,
 		interval: 50,
 	},
+	"portal-scan": {
+		name: "portal-scan",
+		requestObservations: PortalScanner.requestObservations,
+		run: PortalScanner.scanVisibleRooms,
+		interval: 10,
+	}
 };
 
 function queueJob(job: any) {
@@ -1728,6 +1739,7 @@ function main() {
 		Memory.highlightCreepLog = [];
 	}
 	ObserveQueue.initialize();
+	PortalScanner.initialize();
 
 	// initialize jobs
 	if (!Memory.job_last_run) {
@@ -1744,6 +1756,12 @@ function main() {
 		}
 
 		// queue up job if it needs to be run
+		if (Game.time - Memory.job_last_run[job.name] > job.interval - 1) {
+			if ("requestObservations" in job) {
+				console.log("requesting observations for", job.name);
+				job.requestObservations();
+			}
+		}
 		if (Game.time - Memory.job_last_run[job.name] > job.interval) {
 			queueJob(job);
 		}
@@ -2083,6 +2101,7 @@ function main() {
 	brainLogistics.finalize();
 
 	ObserveQueue.consumeObservations();
+	PortalScanner.finalize();
 
 	printStatus();
 
@@ -2096,6 +2115,7 @@ function main() {
 
 profiler.enable();
 profiler.registerClass(OffenseStrategyOvermindRemoteMinerBait, "OffenseStrategyOvermindRemoteMinerBait");
+profiler.registerClass(PortalScanner, "PortalScanner");
 profiler.registerObject(taskRenew, "task.renew");
 profiler.registerObject(roleHarvester, "role.harvester");
 profiler.registerObject(roleUpgrader, "role.upgrader");
