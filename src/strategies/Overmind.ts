@@ -111,7 +111,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		}
 
 		// determine if we need to change objectives
-		if (!creep || (creep.room.name !== this.waitingRoom && creep.room.name !== this.miningRoom)) {
+		if (!creep) {
 			this.objective = "travel";
 		} else if (this.objective === "travel") {
 			if (creep.room.name === this.miningRoom) {
