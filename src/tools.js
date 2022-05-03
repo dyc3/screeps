@@ -362,3 +362,23 @@ global.obj = identifier => {
 		return Game.getObjectById(identifier)
 	}
 }
+
+Creep.prototype.log = function (...args) {
+	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {
+		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
+	} else {
+		console.log(this.name, ...args);
+	}
+};
+
+PowerCreep.prototype.log = function (...args) {
+	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === "powercreep")) {
+		console.log('<span style="color: cyan">', this.name, ...args, "</span>");
+	} else {
+		console.log(this.name, ...args);
+	}
+};
+
+Number.prototype.clamp = function (min, max) {
+	return util.clamp(this, min, max);
+};
