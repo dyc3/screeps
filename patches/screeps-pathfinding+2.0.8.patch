@@ -1,0 +1,80 @@
+diff --git a/node_modules/screeps-pathfinding/pathing.js b/node_modules/screeps-pathfinding/pathing.js
+index 0bffe5d..9f7db78 100644
+--- a/node_modules/screeps-pathfinding/pathing.js
++++ b/node_modules/screeps-pathfinding/pathing.js
+@@ -1,6 +1,6 @@
+ // github: https://github.com/NesCafe62/screeps-pathfinding
+ 
+-const Utils = require('pathing.utils');
++import Utils from './pathing.utils.js';
+ 
+ const MATRIX_LAYER_TERRAIN = 0;
+ const MATRIX_LAYER_STRUCTURES = 1;
+@@ -59,7 +59,7 @@ const TerrainCache = {
+ 
+ };
+ 
+-class PathingManager {
++export class PathingManager {
+ 
+ 	constructor(options = {}) {
+ 		this.onRoomEnter = options.onRoomEnter;
+@@ -396,6 +396,7 @@ class PathingManager {
+ 			this.cleanup();
+ 			return;
+ 		}
++
+ 		try {
+ 			for (let moves of this.roomMoves.values()) {
+ 				this.moveCreeps(moves);
+@@ -1068,44 +1069,6 @@ const DEFAULT_PATH_STYLE = {stroke: '#fff', lineStyle: 'dashed', opacity: 0.5};
+ // default range:
+ const DEFAULT_RANGE = 1;
+ 
+-const Pathing = new PathingManager({
+-
+-	// list of rooms to avoid globally:
+-	/* avoidRooms: [], */
+-
+-	// this event will be called every time creep enters new room:
+-	/* onRoomEnter(creep, roomName) {
+-		console.log(`Creep ${creep.name} entered room ${roomName}`);
+-	}, */
+-
+-	// manager will use this function to make creeps stay in range of their target
+-	getCreepWorkingTarget(creep) {
+-		const target = creep.memory._t;
+-		if (!target) {
+-			return;
+-		}
+-		const [x, y, roomName] = target.pos;
+-		return {
+-			pos: new RoomPosition(x, y, roomName),
+-			range: target.range,
+-			priority: target.priority,
+-		};
+-	},
+-
+-	// get creep GameObject from creep wrapper object
+-	/* getCreepInstance(creep) {
+-		return creep;
+-	}, */
+-
+-	// get creep wrapper object from creep GameObject
+-	/* getCreepEntity(instance) {
+-		return instance;
+-	}, */
+-
+-});
+-module.exports = Pathing;
+-
+-
+ global.IN_RANGE = 1;
+ global.IN_ROOM = 2;
+ 
+@@ -1186,4 +1149,4 @@ PowerCreep.prototype.clearWorkingTarget = Creep.prototype.clearWorkingTarget;
+ 
+ 
+ // comment this line to disable registering PathingManager globally
+-global.Pathing = Pathing;
++// global.Pathing = Pathing;

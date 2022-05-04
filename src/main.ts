@@ -89,6 +89,7 @@ import util from "./util";
 import visualize from "./visualize";
 import { Role } from "./roles/meta";
 import profiler from "screeps-profiler";
+import { PathingManager } from "screeps-pathfinding";
 
 // @ts-expect-error hasn't been converted yet
 import roleHarvester from "roles/role.harvester.js";
@@ -154,6 +155,23 @@ global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
 /** @deprecated: use `util.printException()` instead */
 const printException = util.printException;
+
+const Pathing = new PathingManager({
+	getCreepWorkingTarget(creep: Creep) {
+		// @ts-ignore
+		const target = creep.memory._t;
+		if (!target) {
+			return;
+		}
+		const [x, y, roomName] = target.pos;
+		return {
+			pos: new RoomPosition(x, y, roomName),
+			range: target.range,
+			priority: target.priority,
+		};
+	},
+});
+global.Pathing = Pathing;
 
 function printStatus() {
 	const rooms = util.getOwnedRooms();
@@ -1951,6 +1969,8 @@ function main() {
 			delete Memory.forceCreepSpawn;
 		}
 	}
+
+	Pathing.runMoves();
 
 	// manual testing for room planning
 	if (Game.flags.planWalls) {

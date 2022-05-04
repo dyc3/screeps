@@ -1,6 +1,7 @@
 import type { RemoteMiningTarget } from "./remotemining";
 import type { ObserveQueue } from "./observequeue";
 import type { Role } from "./roles/meta";
+import type { MoveOptions, IN_ROOM, IN_RANGE, PathingManager } from "screeps-pathfinding"
 
 declare global {
 	/*
@@ -51,6 +52,15 @@ declare global {
 	interface Creep {
 		travelTo(pos: RoomPosition): ScreepsReturnCode;
 		travelTo(pos: RoomPosition, opts: any): ScreepsReturnCode;
+		moveOffRoad(target: RoomPosition | AnyStructure, options?: MoveOptions): ScreepsReturnCode;
+		moveToRoom(roomName: string, options?: MoveOptions): ScreepsReturnCode | typeof IN_ROOM;
+		clearWorkingTarget(): void;
+	}
+
+	interface PowerCreep {
+		moveOffRoad(target: RoomPosition | AnyStructure, options?: MoveOptions): ScreepsReturnCode;
+		moveToRoom(roomName: string, options?: MoveOptions): ScreepsReturnCode | typeof IN_ROOM;
+		clearWorkingTarget(): void;
 	}
 
 	interface CreepMemory {
@@ -89,6 +99,7 @@ declare global {
 			CONTROLLER_UPGRADE_RANGE: number;
 			DROPPED_ENERGY_GATHER_MINIMUM: number;
 			ObserveQueue: ObserveQueue;
+			Pathing: PathingManager;
 		}
 	}
 }

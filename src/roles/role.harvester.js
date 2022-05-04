@@ -460,11 +460,11 @@ const roleHarvester = {
 					creep.harvest(harvestTarget);
 				}
 				else {
-					creep.travelTo(harvestPos);
+					creep.moveTo(harvestPos, { range: 0, priority: 5000 });
 				}
 			}
 			else {
-				creep.travelTo(new RoomPosition(25,25,harvestTarget.room.name), {visualizePathStyle:{}});
+				creep.moveToRoom(harvestTarget.room.name, {visualizePathStyle:{}});
 			}
 		}
 		else {
