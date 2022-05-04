@@ -1,5 +1,5 @@
 diff --git a/node_modules/screeps-pathfinding/pathing.js b/node_modules/screeps-pathfinding/pathing.js
-index 0bffe5d..9f7db78 100644
+index 0bffe5d..d763682 100644
 --- a/node_modules/screeps-pathfinding/pathing.js
 +++ b/node_modules/screeps-pathfinding/pathing.js
 @@ -1,6 +1,6 @@
@@ -19,7 +19,18 @@ index 0bffe5d..9f7db78 100644
  
  	constructor(options = {}) {
  		this.onRoomEnter = options.onRoomEnter;
-@@ -396,6 +396,7 @@ class PathingManager {
+@@ -113,6 +113,10 @@ class PathingManager {
+ 		const {range = 1, priority = 0, allowIncomplete = true} = defaultOptions;
+ 		let options = defaultOptions;
+ 
++		if (creep.pos.inRangeTo(targetPos, range)) {
++			return IN_RANGE;
++		}
++
+ 		if (!fatigue) {
+ 			let newPath = false;
+ 			let blocked = false;
+@@ -396,6 +400,7 @@ class PathingManager {
  			this.cleanup();
  			return;
  		}
@@ -27,7 +38,32 @@ index 0bffe5d..9f7db78 100644
  		try {
  			for (let moves of this.roomMoves.values()) {
  				this.moveCreeps(moves);
-@@ -1068,44 +1069,6 @@ const DEFAULT_PATH_STYLE = {stroke: '#fff', lineStyle: 'dashed', opacity: 0.5};
+@@ -493,14 +498,13 @@ class PathingManager {
+ 							obstacleCreep._offRoadTime = 0;
+ 							preferOffRoad = true;
+ 						}
+-						const obstacleCreepPos = obstacleInstance.pos;
+ 						const targetInfo = this.getCreepTargetInfo(obstacleCreep, obstacleInstance.room.name);
+ 						let moveDirection, movePos;
+ 						if (targetInfo || pushed || this.hasMove(creepPos, moves, priority)) {
+ 							// determine blocking creep move direction
+ 							const pushPos = this.getCreepPushPos(obstacleInstance, preferOffRoad, priority, moves, targetInfo);
+ 							movePos = pushPos || move.pos;
+-							moveDirection = pushPos ? Utils.getDirection(obstacleCreepPos, pushPos) : 0;
++							moveDirection = pushPos ? Utils.getDirection(obstacleInstance.pos, pushPos) : 0;
+ 						} else {
+ 							// swap positions
+ 							movePos = Utils.posToCoords(creepPos);
+@@ -508,7 +512,7 @@ class PathingManager {
+ 						}
+ 						const obstacleCreepMove = {
+ 							creep: obstacleCreep,
+-							creepPos: obstacleCreepPos,
++							creepPos: obstacleInstance.pos,
+ 							direction: moveDirection,
+ 							priority,
+ 							pushed: true,
+@@ -1068,44 +1072,6 @@ const DEFAULT_PATH_STYLE = {stroke: '#fff', lineStyle: 'dashed', opacity: 0.5};
  // default range:
  const DEFAULT_RANGE = 1;
  
@@ -72,7 +108,7 @@ index 0bffe5d..9f7db78 100644
  global.IN_RANGE = 1;
  global.IN_ROOM = 2;
  
-@@ -1186,4 +1149,4 @@ PowerCreep.prototype.clearWorkingTarget = Creep.prototype.clearWorkingTarget;
+@@ -1186,4 +1152,4 @@ PowerCreep.prototype.clearWorkingTarget = Creep.prototype.clearWorkingTarget;
  
  
  // comment this line to disable registering PathingManager globally
