@@ -147,8 +147,7 @@ import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
 
-// @ts-expect-error needs to be deprecated for a better solution
-global.WHOAMI = _.find(Game.structures).owner.username as string;
+global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
