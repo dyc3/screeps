@@ -2020,6 +2020,7 @@ function main() {
 		visualize.drawQuotas();
 		visualize.doVisualize();
 		visualize.drawMapVision();
+		visualize.drawNukeRange();
 	}
 }
 

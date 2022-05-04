@@ -302,5 +302,21 @@ export default {
 				opacity: 0.5,
 			})
 		}
-	}
+	},
+
+	drawNukeRange() {
+		const rooms = util.getOwnedRooms();
+		for (let room of rooms) {
+			let nukers = room.find(FIND_MY_STRUCTURES, { filter: s => s.structureType === STRUCTURE_NUKER }) as StructureNuker[];
+			for (let nuker of nukers) {
+				Game.map.visual.circle(nuker.pos, {
+					fill: 'transparent',
+					radius: NUKE_RANGE*50,
+					stroke: nuker.cooldown > 0 ? '#ffbb00' : '#bb7700',
+					opacity: 0.3,
+					strokeWidth: 3,
+				});
+			}
+		}
+	},
 };
