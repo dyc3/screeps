@@ -383,14 +383,14 @@ module.exports = {
 
 			if (!!Game.rooms[task._targetRoom]) {
 				const foundInvaderCore = _.first(task.targetRoom.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }));
-				if (foundInvaderCore && foundInvaderCore.effects.length > 0) {
+				if (foundInvaderCore && foundInvaderCore.level > 0 && foundInvaderCore.effects.length > 0) {
 					let collapseEffect = _.find(foundInvaderCore.effects, effect => effect.effect === EFFECT_COLLAPSE_TIMER);
 					if (!collapseEffect) {
-						console.log("[guard] Found invader core, it's spawning in. We'll have to evacuate soon.");
+						console.log("[guard] Found main invader core, it's spawning in. We'll have to evacuate soon.");
 						continue;
 					}
 					task.disableUntil = Game.time + collapseEffect.ticksRemaining;
-					console.log("[guard] Found invader core, disabling task " + task.id + " until " + task.disableUntil);
+					console.log("[guard] Found main invader core, disabling task " + task.id + " until " + task.disableUntil);
 					continue;
 				}
 			}
