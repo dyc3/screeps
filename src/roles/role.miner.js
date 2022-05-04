@@ -107,7 +107,7 @@ const roleMiner = {
 			switch (creep.harvest(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget)) {
 				case ERR_NOT_IN_RANGE:
 				case ERR_NOT_ENOUGH_RESOURCES:
-					creep.travelTo(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget);
+					creep.moveTo(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget, { priority: 5000 });
 					break;
 				default:
 
@@ -140,7 +140,7 @@ const roleMiner = {
 				}
 			}
 			else {
-				creep.travelTo(storageTarget);
+				creep.moveTo(storageTarget);
 			}
 		}
 	}

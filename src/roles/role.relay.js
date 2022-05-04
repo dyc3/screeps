@@ -1,4 +1,3 @@
-import "../traveler.js";
 import util from "../util";
 
 // FIXME: When new structures are built around relays, fillTargetIds does not get updated

@@ -48,51 +48,38 @@ const roleUpgrader = {
 
 		if (creep.room.name != creep.memory.targetRoom) {
 			if (Game.rooms[creep.memory.targetRoom]) {
-				creep.travelTo(Game.rooms[creep.memory.targetRoom].controller, { range: 3 });
+				creep.moveTo(Game.rooms[creep.memory.targetRoom].controller, { range: 3 });
 			}
 			else {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { range: 20 });
+				creep.moveToRoom(creep.memory.targetRoom);
 			}
 			return;
 		}
 
-		if(creep.memory.upgrading && creep.carry.energy == 0) {
+		if(creep.memory.upgrading && creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
 			creep.memory.upgrading = false;
 			creep.say('gathering');
 		}
-		else if(!creep.memory.upgrading && creep.carry.energy == creep.carryCapacity) {
+		else if(!creep.memory.upgrading && creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
 			creep.memory.upgrading = true;
 			creep.say('upgrading');
 		}
 
 		if(creep.memory.upgrading) {
 			if (creep.room.controller.my) {
-				// dont get in the way of the sources while we dont need them
-				let energySources = creep.pos.findInRange(FIND_SOURCES, 1);
-				if (energySources.length > 0) {
-					creep.travelTo(creep.room.controller);
-				}
-				else {
-					if (creep.room.controller.level < 8) {
-						if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-							creep.travelTo(creep.room.controller, { range: 3, maxRooms: 1 });
-						}
-					}
-					else {
-						if (creep.room.controller.ticksToDowngrade < 50000 || creep.room.storage.store[RESOURCE_ENERGY] > 500000) {
-							creep.upgradeController(creep.room.controller);
-						}
-						if (!creep.pos.inRangeTo(creep.room.controller, 3)) {
-							creep.travelTo(creep.room.controller, { range: 3, maxRooms: 1 });
-						}
-					}
-					if (creep.pos.findInRange(FIND_CREEPS, 2).length > 2) {
-						creep.travelTo(creep.room.controller, { maxRooms: 1 });
+				const shouldUpgrade = creep.room.controller.level < 8 || creep.room.controller.ticksToDowngrade < 50000 || creep.room.storage.store[RESOURCE_ENERGY] > 500000
+
+				if (shouldUpgrade) {
+					if (!creep.pos.inRangeTo(creep.room.controller, 3)) {
+						creep.moveTo(creep.room.controller, { range: 3, maxRooms: 1 });
+					} else {
+						creep.moveOffRoad();
+						creep.upgradeController(creep.room.controller);
 					}
 				}
 			}
 			else {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { range: 20 });
+				creep.moveToRoom(creep.memory.targetRoom);
 			}
 		}
 		else {

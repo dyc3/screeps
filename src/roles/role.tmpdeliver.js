@@ -105,8 +105,6 @@ const roleTmpDelivery = {
 			}
 		}
 
-		let obstacles = util.getCreeps("harvester", "relay");
-
 		if (creep.memory.recycle) {
 			// recycle this creep at the nearest spawn
 			// only occurs if recycleAfterDelivery === true
@@ -133,7 +131,7 @@ const roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(spawn, { obstacles });
+				creep.moveTo(spawn, { obstacles });
 			}
 		}
 		else if (creep.memory.delivering) {
@@ -178,7 +176,7 @@ const roleTmpDelivery = {
 					}
 				}
 				else {
-					creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
+					creep.moveTo(targetPos, { visualizePathStyle:{}, ensurePath: true });
 				}
 			}
 		}
@@ -214,7 +212,7 @@ const roleTmpDelivery = {
 				}
 			}
 			else {
-				creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
+				creep.moveTo(targetPos, { visualizePathStyle:{}, ensurePath: true });
 			}
 		}
 	}

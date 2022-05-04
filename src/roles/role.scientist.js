@@ -157,7 +157,7 @@ const roleScientist = {
 		// FIXME: what the fuck does this if statement mean? why is it here?
 		if (creep.store[creep.memory.targetResource] === 0 && (isStructureFull(depositTarget) || (withdrawTarget.store && withdrawTarget.store[creep.memory.targetResource] == 0) || isStructureEmpty(withdrawTarget))) {
 			if (creep.transfer(withdrawTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(withdrawTarget);
+				creep.moveTo(withdrawTarget);
 			}
 			if (!creep.carry[creep.memory.targetResource] || creep.carry[creep.memory.targetResource] <= 0) {
 				delete creep.memory.targetStruct;
@@ -178,13 +178,13 @@ const roleScientist = {
 
 		if (creep.store[creep.memory.targetResource] > 0 || _.sum(creep.store) > 0) {
 			if (creep.transfer(depositTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(depositTarget);
+				creep.moveTo(depositTarget);
 			}
 		}
 		else {
 			switch (creep.withdraw(withdrawTarget, creep.memory.targetResource)) {
 				case ERR_NOT_IN_RANGE:
-					creep.travelTo(withdrawTarget);
+					creep.moveTo(withdrawTarget);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
 					creep.log("withdraw: NOT ENOUGH RESOURCES");
@@ -374,8 +374,6 @@ const roleScientist = {
 			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource}`}`);
 		}
 
-		let obstacles = util.getCreeps("harvester", "relay");
-
 		if (creep.memory.transporting) {
 			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
 			if (!depositTarget) {
@@ -388,7 +386,7 @@ const roleScientist = {
 					creep.transfer(depositTarget, creep.memory.route.resource);
 				}
 				else {
-					creep.travelTo(depositTarget, { obstacles, ensurePath: true });
+					creep.moveTo(depositTarget, { ensurePath: true });
 				}
 			}
 			else {
@@ -413,7 +411,7 @@ const roleScientist = {
 					}
 				}
 				else {
-					creep.travelTo(withdrawTarget, { obstacles, ensurePath: true });
+					creep.moveTo(withdrawTarget, { ensurePath: true });
 				}
 			}
 			else {

@@ -72,12 +72,12 @@ let roleCarrier = {
 			let harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget.id);
 
 			if (!creep.memory.delivering && creep.room.name !== harvestTarget.roomName && harvestTarget.danger === 0) {
-				creep.travelTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
+				creep.moveTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
 				return;
 			}
 			else if (!creep.memory.delivering && harvestTarget.danger > 0) {
 				let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
-				creep.travelTo(dangerPos, { range: 1 });
+				creep.moveTo(dangerPos, { range: 1 });
 				return;
 			}
 			let harvestPos = new RoomPosition(harvestTarget.harvestPos.x, harvestTarget.harvestPos.y, harvestTarget.roomName);
@@ -94,10 +94,10 @@ let roleCarrier = {
 				}
 			}
 
-			if (creep.memory.delivering && _.sum(creep.store) == 0) {
+			if (creep.memory.delivering && creep.store.getUsedCapacity() === 0) {
 				creep.memory.delivering = false;
 			}
-			else if (!creep.memory.delivering && _.sum(creep.store) == creep.store.getCapacity()) {
+			else if (!creep.memory.delivering && creep.store.getFreeCapacity() === 0) {
 				creep.memory.delivering = true;
 			}
 
@@ -107,19 +107,10 @@ let roleCarrier = {
 					creep.transfer(depositTarget, RESOURCE_ENERGY);
 				}
 				else {
-					let obstacles = util.getCreeps("harvester", "relay");
-					creep.travelTo(depositTarget, {
-						obstacles,
-						ensurePath: true,
-					});
+					creep.moveTo(depositTarget);
 				}
 			}
 			else {
-				if (creep.pos.isEqualTo(harvestPos)) {
-					creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
-					return;
-				}
-
 				if (harvestTarget.danger > 0) {
 					creep.say("flee");
 					if (creep.store[RESOURCE_ENERGY] > 0) {
@@ -127,7 +118,7 @@ let roleCarrier = {
 					}
 					else {
 						let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
-						creep.travelTo(dangerPos, { range: 1 });
+						creep.moveTo(dangerPos, { range: 1 });
 					}
 					return;
 				}
@@ -146,9 +137,7 @@ let roleCarrier = {
 					delete creep.memory.droppedEnergyId;
 				}
 				if (!creep.pos.isNearTo(harvestPos)) {
-					let obstacles = util.getCreeps("harvester", "relay");
-					creep.travelTo(harvestPos, { obstacles });
-					// creep.travelTo(harvestPos);
+					creep.moveTo(harvestPos);
 				}
 				else if (dropped) {
 					creep.pickup(dropped);
@@ -187,12 +176,12 @@ let roleCarrier = {
 					}
 				}
 				else {
-					creep.travelTo(depositTarget);
+					creep.moveTo(depositTarget);
 				}
 			}
 			else {
 				if (creep.room.name !== creep.memory.targetRoom) {
-					creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+					creep.moveToRoom(creep.memory.targetRoom);
 					return;
 				}
 
@@ -214,7 +203,7 @@ let roleCarrier = {
 						}
 					}
 					else {
-						creep.travelTo(target);
+						creep.moveTo(target);
 					}
 				}
 				else {

@@ -478,7 +478,7 @@ const roleHarvester = {
 							creep.harvest(harvestTarget);
 						}
 						else {
-							creep.travelTo(harvestPos);
+							creep.moveTo(harvestPos, { range: 0, priority: 5000 });
 						}
 						creep.memory.depositMode = this.getDepositMode(creep);
 					}
@@ -487,7 +487,7 @@ const roleHarvester = {
 							creep.harvest(harvestTarget);
 						}
 						else {
-							creep.travelTo(harvestPos);
+							creep.moveTo(harvestPos, { range: 0, priority: 5000 });
 						}
 					}
 					else {
@@ -509,7 +509,7 @@ const roleHarvester = {
 				delete creep.memory.transferTarget;
 			}
 			else if (transfer_result === ERR_NOT_IN_RANGE) {
-				creep.travelTo(target, {visualizePathStyle:{}});
+				creep.moveTo(target, {visualizePathStyle:{}});
 			}
 			else if (transfer_result === ERR_FULL) {
 				console.log(creep.name, "failed to transfer: target full");

@@ -12,13 +12,13 @@ let roleRemoteHarvester = {
 		if (harvestTarget.danger > 0) {
 			creep.say("flee");
 			let dangerPos = new RoomPosition(harvestTarget.dangerPos[harvestTarget.danger].x, harvestTarget.dangerPos[harvestTarget.danger].y, harvestTarget.dangerPos[harvestTarget.danger].roomName);
-			creep.travelTo(dangerPos);
+			creep.moveTo(dangerPos);
 			return;
 		}
 
 		// console.log(creep.name, "observe result:", observer.observeRoom(creep.memory.harvestTarget.roomName));
 		if (creep.room.name !== harvestTarget.roomName) {
-			creep.travelTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
+			creep.moveTo(new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
 			return;
 		}
 
@@ -37,7 +37,7 @@ let roleRemoteHarvester = {
 		// TODO: cache path to harvest target
 		let harvestPos = new RoomPosition(harvestTarget.harvestPos.x, harvestTarget.harvestPos.y, harvestTarget.roomName);
 		if (!creep.pos.isEqualTo(harvestPos)) {
-			creep.travelTo(harvestPos);
+			creep.moveTo(harvestPos, { range: 0, priority: 5000 });
 			return;
 		}
 

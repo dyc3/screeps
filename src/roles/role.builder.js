@@ -56,9 +56,10 @@ let roleBuilder = {
 				if (target) {
 					if (creep.pos.inRangeTo(target, 3)) {
 						creep.build(target)
+						creep.moveOffRoad()
 					}
 					else {
-						creep.travelTo(target);
+						creep.moveTo(target, { range: 3, priority: 10 });
 					}
 				}
 				else {

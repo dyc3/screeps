@@ -181,7 +181,7 @@ const taskRenew = {
 		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
-			creep.travelTo(renewTarget, {visualizePathStyle:{}});
+			creep.moveTo(renewTarget, {visualizePathStyle:{}, priority: 10000 });
 		}
 		else if (creep.ticksToLive < maxTicks) {
 			if (creep instanceof Creep) {
