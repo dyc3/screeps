@@ -500,11 +500,6 @@ module.exports = {
 					continue;
 				}
 
-				if (!task.currentTarget && creep.room.name !== task._targetRoom && !Game.rooms[task._targetRoom]) {
-					creep.travelTo(new RoomPosition(25, 25, task._targetRoom), { range: 5 });
-					continue;
-				}
-
 				if (creep.getActiveBodyparts(HEAL) > 0) {
 					if (creep.hits < creep.hitsMax) {
 						creep.log("[guard] healing self");
@@ -544,6 +539,11 @@ module.exports = {
 							}
 						}
 					}
+				}
+
+				if (!task.currentTarget && creep.room.name !== task._targetRoom && !Game.rooms[task._targetRoom]) {
+					creep.moveTo(task._targetRoom, { priority: 100 });
+					continue;
 				}
 
 				if (task.currentTarget) {
@@ -609,19 +609,19 @@ module.exports = {
 							let remoteMiningTarget = _.find(Memory.remoteMining.targets, { roomName: task._targetRoom })
 							if (remoteMiningTarget) {
 								let dangerPos = new RoomPosition(remoteMiningTarget.dangerPos[2].x, remoteMiningTarget.dangerPos[2].y, remoteMiningTarget.dangerPos[2].roomName);
-								creep.travelTo(dangerPos, { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
+								creep.moveTo(dangerPos, { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
 							}
 							else {
 								if (!creep.memory.stagingObjectId) {
 									creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id;
 								}
-								creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId), { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
+								creep.moveTo(Game.getObjectById(creep.memory.stagingObjectId), { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
 							}
 						}
 						else {
 							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true, stuckValue: 1 });
+								creep.moveTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
 							}
 						}
 					}
@@ -649,13 +649,13 @@ module.exports = {
 
 						let minRange = 1;
 						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-							creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
+							creep.moveTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
 						}
 					}
 					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							creep.travelTo(task.currentTarget, { range: 2 });
+							creep.moveTo(task.currentTarget, { range: 2 });
 						}
 					}
 					else if (task.guardType === "invader-subcore" && task.currentTarget instanceof StructureInvaderCore) {
@@ -665,7 +665,7 @@ module.exports = {
 							}
 						}
 						else {
-							creep.travelTo(task.currentTarget, { range: 1 });
+							creep.moveTo(task.currentTarget, { range: 1 });
 						}
 					}
 					else {

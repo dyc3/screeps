@@ -1970,8 +1970,6 @@ function main() {
 		}
 	}
 
-	Pathing.runMoves();
-
 	// manual testing for room planning
 	if (Game.flags.planWalls) {
 		if (Game.cpu.bucket > 9000) {
@@ -2030,6 +2028,7 @@ function main() {
 
 	brainLogistics.finalize();
 
+	Pathing.runMoves();
 	ObserveQueue.consumeObservations();
 	PortalScanner.finalize();
 
