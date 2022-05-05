@@ -62,13 +62,33 @@ let roleTower = {
 
 				console.log("MAX HEALER EFFECTIVENESS: " + maxHealPower);
 				let target = hostiles[0];
+				while (hostiles.length > 0) {
+					// predict damage to target
+					let totalDamage = towers.map(t => TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(t.pos.getRangeTo(target)));
+					if (maxHealPower >= totalDamage) {
+						hostiles.pop(0);
+						target = hostiles[0];
+						continue;
+					}
+					break;
+				}
+
+				if (hostiles.length === 0) {
+					console.log("WARN: all hostiles can heal faster than towers can attack");
+					return;
+				}
+
+
+				let damageDealt = 0; // damage dealt to the current target
 				for (let tower of towers) {
 					let dist = tower.pos.getRangeTo(target);
 					let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
-					if (target.hits <= damage) {
-						target = hostiles[1];
-					}
 					tower.attack(target);
+					damageDealt += damage;
+					if (target.hits <= damageDealt) {
+						hostiles.pop(0);
+						damageDealt = 0;
+					}
 				}
 			}
 
