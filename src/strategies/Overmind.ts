@@ -6,6 +6,10 @@ import { olog } from "../offense/util";
 import { ObserveQueue } from "../observequeue";
 
 /**
+ * Bait hives into spawning very large and expensive creeps.
+ *
+ * Capable of baiting zerglings, hydralisks, into spawning.
+ *
  * 1. bait overmind into spawning a guard with a 1 ATTACK creep
  * 2. wait for guard to enter room, and then get sufficiently close to getting in range
  * 3. move our creep out of the room
@@ -185,5 +189,47 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 			Game.map.visual.circle(creep.pos, { stroke: "#ffff00", fill: "transparent", radius: 1 });
 			Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), creep.pos, { color: "#ffff00" });
 		}
+	}
+}
+
+/**
+ * Destroys an Overmind hive. Simple as that. WIP.
+ *
+ * Fully fortified hives are very tough. They have ramparts across the entire base.
+ *
+ * Types of creeps:
+ * - Zergling: melee attacker, a little bit of healing
+ * - Hydralisk: ranged attacker, a little bit of healing
+ * - Transfuser: Fuck tons of heal, hella boosted
+ *
+ * Behavior documentation:
+ * - If there are any enemies within 2 squares, of any critical structures (spawns, storage, terminal), it will activate a safe mode.
+ * - When it activates the safe mode, it will evacuate all the resources in the terminal to another room.
+ * - When a nuclear launch is detected, it will reinforce the ramparts in the impact area.
+ * - If it sees enemy creeps in it's remote mining rooms, it will spawn zerglings and hydralisks defense creeps, even if there are already zerglings or hydralisks present and available.
+ * - Infusers are only spawned for offensive action.
+ * - Nukes will trigger immediate retaliation.
+ */
+export class OffenseStrategyHiveBuster extends OffenseStrategy {
+	/**
+	 * The room name that the target hive is in.
+	 */
+	hive: string;
+
+	constructor(mem: any) {
+		super(mem);
+		this.hive = mem.hive;
+		Object.assign(this, mem);
+	}
+
+	/**
+	 * Indicates if the hive can activate a safe mode
+	 */
+	canSafeModeBeTriggered(controller: StructureController): boolean {
+		return controller.safeModeAvailable > 0 && !controller.safeMode && !controller.safeModeCooldown;
+	}
+
+	act(creeps: Creep[]) {
+
 	}
 }
