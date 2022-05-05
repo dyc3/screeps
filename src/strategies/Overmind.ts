@@ -7,7 +7,7 @@ import { ObserveQueue } from "../observequeue";
 
 /**
  * 1. bait overmind into spawning a guard with a 1 ATTACK creep
- * 2. wait for guard to enter room
+ * 2. wait for guard to enter room, and then get sufficiently close to getting in range
  * 3. move our creep out of the room
  * 4. remote observe mining room, wait for guard to despawn or leave room
  * 5. move our creep back into the room
@@ -34,6 +34,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	objective: "travel" | "bait" | "flee";
 	lastObservationTime: number = 0;
 	outsideOfObservationRange: boolean = false;
+	baitPosition: RoomPosition | undefined;
 
 	constructor(mem: any) {
 		super(mem);
@@ -42,6 +43,9 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		this.spawningRoom = "";
 		this.objective = "travel";
 		Object.assign(this, mem);
+		if (mem.baitPosition) {
+			this.baitPosition = new RoomPosition(mem.baitPosition.x, mem.baitPosition.y, mem.baitPosition.roomName);
+		}
 	}
 
 	get neededCreeps() {
@@ -62,6 +66,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	act(creeps: Creep[]): void {
 		// act on creeps based on objective
 		let creep = creeps[0];
+		creep.say(this.objective);
 		if (creep) {
 			if (creep.memory.renewing) {
 				taskRenew.run(creep);
@@ -93,6 +98,9 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 					avoidRooms: this.getKnownBadRooms(),
 					preferHighway: true,
 				});
+
+				// TODO: calculate baitPosition and waitPosition ahead of time and cache them
+				this.baitPosition = creep.pos; // HACK: save the position of the bait
 			} else if (this.objective === "flee") {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
 				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), {
@@ -125,7 +133,11 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				let enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
 				let hostiles = enemyCreeps.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0);
 				if (hostiles.length > 0) {
-					this.objective = "flee";
+					let closestDist = hostiles.map(c => c.pos.getRangeTo(creep)).reduce((a, b) => Math.min(a, b));
+					olog(`bait: ${creep.name} is ${closestDist} away from an enemy.`);
+					if (closestDist <= 12) {
+						this.objective = "flee";
+					}
 				}
 			}
 		} else if (this.objective === "flee") {
@@ -135,6 +147,15 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				let hostiles = enemyCreeps.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0);
 				if (hostiles.length === 0) {
 					this.objective = "bait";
+				}
+				if (this.baitPosition) {
+					if (hostiles.length > 0) {
+						let closestDist = hostiles.map(c => c.pos.getRangeTo(this.baitPosition as RoomPosition)).reduce((a, b) => Math.min(a, b));
+						olog(`flee: enemy is ${closestDist} away from the bait position.`);
+						if (closestDist > 30) {
+							this.objective = "bait";
+						}
+					}
 				}
 				this.lastObservationTime = Game.time;
 			} else {
