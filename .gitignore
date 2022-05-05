@@ -8,6 +8,8 @@ screeps-multimeter.json
 
 *.log
 
+.yarn/
+
 # Ignore basic folders
 /dist
 /.rpt2_cache
