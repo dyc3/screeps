@@ -26,6 +26,7 @@ export function calcEffectiveness(creep: Creep | BodyPartDefinition[], part: Bod
 			} else {
 				throw new Error("Invalid action: " + action);
 			}
+			break;
 		default:
 			throw new Error("Unsupported part: " + part);
 	}
