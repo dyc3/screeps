@@ -115,7 +115,8 @@ global.Logistics = {
 			amount = Math.min(Game.rooms[from].terminal.store.getCapacity(resource), Game.rooms[to].terminal.store.getFreeCapacity(resource));
 		}
 		console.log(`Transfering ${amount} ${resource} from ${from} to ${to}`);
-		return Game.rooms[from].terminal.send(resource, amount, to);
+		let result = Game.rooms[from].terminal.send(resource, amount, to)
+		return util.errorCodeToString(result);
 	},
 
 	sendEnergy(from, to, amount=75000) {
