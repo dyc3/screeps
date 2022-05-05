@@ -11,7 +11,9 @@ let brainAutoPlanner = {
 			if (!room.memory.structures) {
 				this.planRoom(room);
 			}
-			this.applyRoomPlans(room);
+			if (room.memory.defcon === 0) {
+				this.applyRoomPlans(room);
+			}
 
 			// if ((!Memory.rooms[room.name].walls || !Memory.rooms[room.name].ramparts) && Game.cpu.bucket > 9000) {
 			//	this.planWalls(room, true);
