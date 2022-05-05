@@ -168,49 +168,52 @@ function collectAllResourceSources() {
 
 	let rooms = util.getOwnedRooms();
 	for (let room of rooms) {
-		let dropped = room.find(FIND_DROPPED_RESOURCES, {
-			filter: d => {
-				if (util.isDistFromEdge(d.pos, 4)) {
-					return d.pos.findInRange(FIND_SOURCES, 1).length > 0 && d.amount > 0;
-				}
+		if (room.memory.defcon === 0) {
+			let dropped = room.find(FIND_DROPPED_RESOURCES, {
+				filter: d => {
+					if (util.isDistFromEdge(d.pos, 4)) {
+						return d.pos.findInRange(FIND_SOURCES, 1).length > 0 && d.amount > 0;
+					}
 
-				return d.amount > 0;
-			}
-		});
-		for (let drop of dropped) {
-			let source = new ResourceSource({
-				resource: drop.resourceType,
-				objectId: drop.id,
-				roomName: drop.pos.roomName,
+					return d.amount > 0;
+				}
 			});
-			if (source.amount <= 0) {
-				continue;
-			}
-			sources.push(source);
-		}
-
-		let tombstones = room.find(FIND_TOMBSTONES, {
-			filter: (tomb) => {
-				if (util.isDistFromEdge(tomb.pos, 4)) {
-					return false;
-				}
-
-				return tomb.store.getUsedCapacity() > 0;
-			}
-		});
-		for (let tombstone of tombstones) {
-			for (let resource in tombstone.store) {
+			for (let drop of dropped) {
 				let source = new ResourceSource({
-					resource,
-					objectId: tombstone.id,
-					roomName: tombstone.pos.roomName,
+					resource: drop.resourceType,
+					objectId: drop.id,
+					roomName: drop.pos.roomName,
 				});
 				if (source.amount <= 0) {
 					continue;
 				}
 				sources.push(source);
 			}
+
+			let tombstones = room.find(FIND_TOMBSTONES, {
+				filter: (tomb) => {
+					if (util.isDistFromEdge(tomb.pos, 4)) {
+						return false;
+					}
+
+					return tomb.store.getUsedCapacity() > 0;
+				}
+			});
+			for (let tombstone of tombstones) {
+				for (let resource in tombstone.store) {
+					let source = new ResourceSource({
+						resource,
+						objectId: tombstone.id,
+						roomName: tombstone.pos.roomName,
+					});
+					if (source.amount <= 0) {
+						continue;
+					}
+					sources.push(source);
+				}
+			}
 		}
+
 
 		let sourceStructures = room.find(FIND_STRUCTURES, {
 			filter: struct => {
