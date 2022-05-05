@@ -17,6 +17,16 @@ var roleRepairer = {
 		else {
 			room = creep.room;
 		}
+		if (Game.flags["repairme"]) {
+			let flag = Game.flags["repairme"]
+			if (flag.pos.roomName === room.name) {
+				let target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+				if (target) {
+					creep.memory.repairTarget = target.id;
+					return;
+				}
+			}
+		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: struct => {
 				if (struct.owner && struct.my) {
@@ -91,6 +101,16 @@ var roleRepairer = {
 		}
 		else {
 			room = creep.room;
+		}
+		if (Game.flags["repairme"]) {
+			let flag = Game.flags["repairme"]
+			if (flag.pos.roomName === room.name) {
+				let target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+				if (target) {
+					creep.memory.repairTarget = target.id;
+					return;
+				}
+			}
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: (struct) => {
@@ -289,7 +309,7 @@ var roleRepairer = {
 			// }
 			if(repairTarget) {
 				if(creep.repair(repairTarget) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(repairTarget, { visualizePathStyle:{} });
+					creep.travelTo(repairTarget, { visualizePathStyle:{}, range: 3 });
 				}
 			}
 			else {
@@ -302,7 +322,7 @@ var roleRepairer = {
 					}})
 					if (constructionSite) {
 						if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
-							creep.travelTo(constructionSite);
+							creep.travelTo(constructionSite, { range: 3 });
 						}
 					}
 					else {
