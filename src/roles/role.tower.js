@@ -2,59 +2,76 @@ import util from "../util";
 import toolFriends from "../tool.friends.js";
 import combatCalc from "../combat/calc";
 
+const NAIVE_BAIT_FILTER = false;
+const SWARM_DEFENSE = false;
+
 let roleTower = {
 	run: function(room) {
 		let towers = util.getStructures(room, STRUCTURE_TOWER);
 
 		let hostiles = room.find(FIND_HOSTILE_CREEPS, {
 			filter: function(c) {
-				if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
-					if (util.isDistFromEdge(c.pos, 0)) {
-						return false;
+				if (NAIVE_BAIT_FILTER) {
+					if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
+						if (util.isDistFromEdge(c.pos, 0)) {
+							return false;
+						}
 					}
-				}
-				else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
-					if (util.isDistFromEdge(c.pos, 0)) {
-						return false;
+					else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
+						if (util.isDistFromEdge(c.pos, 0)) {
+							return false;
+						}
 					}
-				}
-				else if (c.getActiveBodyparts(HEAL) > 0) {
-					if (util.isDistFromEdge(c.pos, 0)) {
-						return false;
+					else if (c.getActiveBodyparts(HEAL) > 0) {
+						if (util.isDistFromEdge(c.pos, 0)) {
+							return false;
+						}
 					}
-				}
-				else {
-					if (util.isDistFromEdge(c.pos, 7)) {
-						return false;
+					else {
+						if (util.isDistFromEdge(c.pos, 7)) {
+							return false;
+						}
 					}
 				}
 				return !toolFriends.isCreepFriendly(c);
 			}
 		});
 		if (hostiles.length > 0) {
-			let healers = hostiles.filter(c => c.getActiveBodyparts(HEAL) > 0);
-			let maxHealPower = healers
-				.map(c => combatCalc.calcEffectiveness(c, HEAL, "heal"))
-				.reduce((a, b) => Math.max(a, b), 0);
+			if (SWARM_DEFENSE) {
+				hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse()
+				for (let i = 0; i < towers.length; i++) {
+					let tower = towers[i];
+					let target = hostiles[0];
+					let dist = tower.pos.getRangeTo(target);
+					let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
+					if (target.hits <= damage) {
+						hostiles.pop(0)
+					}
+					tower.attack(target);
 
-			console.log("MAX HEALER EFFECTIVENESS: " + maxHealPower);
-
-			hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse()
-			for (let i = 0; i < towers.length; i++) {
-				let tower = towers[i];
-				let target = hostiles[0];
-				let dist = tower.pos.getRangeTo(target);
-				let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
-				if (target.hits <= damage) {
-					hostiles.pop(0)
+					if (hostiles.length === 0) {
+						break;
+					}
 				}
-				tower.attack(target);
+				return;
+			} else {
+				let healers = hostiles.filter(c => c.getActiveBodyparts(HEAL) > 0);
+				let maxHealPower = healers
+					.map(c => combatCalc.calcEffectiveness(c, HEAL, "heal"))
+					.reduce((a, b) => Math.max(a, b), 0);
 
-				if (hostiles.length === 0) {
-					break;
+				console.log("MAX HEALER EFFECTIVENESS: " + maxHealPower);
+				let target = hostiles[0];
+				for (let tower of towers) {
+					let dist = tower.pos.getRangeTo(target);
+					let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
+					if (target.hits <= damage) {
+						target = hostiles[1];
+					}
+					tower.attack(target);
 				}
 			}
-			return;
+
 		}
 
 		let damagedCreeps = room.find(FIND_MY_CREEPS, {
