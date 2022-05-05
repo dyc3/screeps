@@ -1,5 +1,6 @@
 import util from "../util";
 import toolFriends from "../tool.friends.js";
+import combatCalc from "../combat/calc";
 
 let roleTower = {
 	run: function(room) {
@@ -7,22 +8,18 @@ let roleTower = {
 
 		let hostiles = room.find(FIND_HOSTILE_CREEPS, {
 			filter: function(c) {
-				// HACK: stop this cock teasing energy drainer
-				if (c.name.toLowerCase().includes("drainer")) {
-					return !util.isDistFromEdge(c.pos, 7)
-				}
 				if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
 					if (util.isDistFromEdge(c.pos, 0)) {
 						return false;
 					}
 				}
 				else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
-					if (util.isDistFromEdge(c.pos, 1)) {
+					if (util.isDistFromEdge(c.pos, 0)) {
 						return false;
 					}
 				}
 				else if (c.getActiveBodyparts(HEAL) > 0) {
-					if (util.isDistFromEdge(c.pos, 5)) {
+					if (util.isDistFromEdge(c.pos, 0)) {
 						return false;
 					}
 				}
@@ -35,12 +32,19 @@ let roleTower = {
 			}
 		});
 		if (hostiles.length > 0) {
+			let healers = hostiles.filter(c => c.getActiveBodyparts(HEAL) > 0);
+			let maxHealPower = healers
+				.map(c => combatCalc.calcEffectiveness(c, HEAL, "heal"))
+				.reduce((a, b) => Math.max(a, b), 0);
+
+			console.log("MAX HEALER EFFECTIVENESS: " + maxHealPower);
+
 			hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse()
 			for (let i = 0; i < towers.length; i++) {
 				let tower = towers[i];
 				let target = hostiles[0];
 				let dist = tower.pos.getRangeTo(target);
-				let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(dist);
+				let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
 				if (target.hits <= damage) {
 					hostiles.pop(0)
 				}

@@ -340,20 +340,9 @@ export const util = {
 	},
 
 	/**
-	 * Calculate the effectiveness of a given part on a creep.
-	 */
-	calcEffectiveness(creep: Creep, part: string) {
-		const groups = _.groupBy(
-			creep.body.filter(p => p.type === part),
-			p => p.boost
-		);
-		// TODO: finish
-		// TODO: write tests
-	},
-
-	/**
 	 * Gets the damage multiplier for tower damage
 	 * @example let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(10)
+	 * @deprecated use combat.calc.towerImpactFactor
 	 */
 	towerImpactFactor(distance: number) {
 		if (distance <= TOWER_OPTIMAL_RANGE) {
