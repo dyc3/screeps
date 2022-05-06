@@ -89,6 +89,7 @@ declare global {
 			CONTROLLER_UPGRADE_RANGE: number;
 			DROPPED_ENERGY_GATHER_MINIMUM: number;
 			ObserveQueue: ObserveQueue;
+			TmpDefense: any;
 		}
 	}
 }

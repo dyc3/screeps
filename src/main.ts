@@ -146,6 +146,7 @@ import { RemoteMiningTarget } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
+import TmpDefense from "./tmpdefense";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1730,7 +1731,7 @@ function main() {
 			continue;
 		}
 
-		if (creep.memory.role === Role.Offense) {
+		if (creep.memory.role === Role.Offense || creep.memory.role === Role.TmpDefense) {
 			continue;
 		}
 
@@ -2011,6 +2012,12 @@ function main() {
 
 	ObserveQueue.consumeObservations();
 	PortalScanner.finalize();
+
+	try {
+		TmpDefense.run();
+	} catch (e) {
+		util.printException(e);
+	}
 
 	printStatus();
 
