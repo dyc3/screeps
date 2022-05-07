@@ -147,6 +147,7 @@ import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
 import TmpDefense from "./tmpdefense";
+import RoomLords from "./room/lord";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1682,6 +1683,12 @@ function main() {
 
 	try {
 		brainOffense.run();
+	} catch (e) {
+		util.printException(e);
+	}
+
+	try {
+		RoomLords.run();
 	} catch (e) {
 		util.printException(e);
 	}
