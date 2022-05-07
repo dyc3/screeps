@@ -74,7 +74,18 @@ export function towerImpactFactor(distance: number) {
 	return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile;
 }
 
+export function getMaxAttackRange(creep: Creep): number {
+	if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
+		return 3;
+	}
+	if (creep.getActiveBodyparts(ATTACK) > 0) {
+		return 1;
+	}
+	return 0;
+}
+
 export default {
 	calcEffectiveness,
 	towerImpactFactor,
+	getMaxAttackRange,
 }

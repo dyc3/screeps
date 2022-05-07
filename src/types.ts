@@ -79,6 +79,17 @@ declare global {
 		storagePos: any; // TODO: define this
 		/** @deprecated not sure if this is actually being used */
 		storagePosDirection?: DirectionConstant;
+
+		defense: {
+			alertUntil: number;
+			/** The list of creep/powercreep IDs to focus fire on.
+			 * If any of these are in range of anything, these objects
+			 * will get prioritized. It's a list because creeps could
+			 * blink in and out of the room.
+			 */
+			focusQueue: Id<Creep | PowerCreep>[];
+			defenderCreeps: Id<Creep>[];
+		}
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")

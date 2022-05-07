@@ -1698,13 +1698,13 @@ function main() {
 	// do tower stuff and process power
 	for (const room of rooms) {
 		const rcl = room.controller?.level ?? 0;
-		if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rcl] > 0) {
-			try {
-				roleTower.run(room);
-			} catch (e) {
-				util.printException(e);
-			}
-		}
+		// if (CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rcl] > 0) {
+		// 	try {
+		// 		roleTower.run(room);
+		// 	} catch (e) {
+		// 		util.printException(e);
+		// 	}
+		// }
 
 		// TODO: make something a little more robust/dynamic for limiting the amount of energy spent on power.
 		if (CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][rcl] > 0) {
