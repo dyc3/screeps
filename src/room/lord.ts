@@ -1,8 +1,24 @@
 import util from "../util";
 import combatCalc from "../combat/calc";
+// @ts-expect-error not converted to ts yet
+import taskGather from "../task.gather.js";
 
 /** How long to remain on alert. */
 const ALERT_DURATION = 100;
+
+export enum WorkerTask {
+	Upgrade,
+	Build,
+	Repair,
+	Fortify,
+}
+
+const WORK_ACTIONS: Record<WorkerTask, "build" | "upgradeController" | "repair"> = {
+	[WorkerTask.Upgrade]: "upgradeController",
+	[WorkerTask.Build]: "build",
+	[WorkerTask.Repair]: "repair",
+	[WorkerTask.Fortify]: "repair",
+};
 
 export class RoomLord {
 	room: Room;
@@ -91,6 +107,63 @@ export class RoomLord {
 		}
 	}
 
+	/** Get creeps to do work.
+	 *
+	 * Tasks:
+	 * - Upgrade
+	 * - Build
+	 * - Repair
+	 * - Fortify
+	 */
+	workCreeps() {
+		// Reallocate workers
+		// TODO: use heuristics or something to be smart about creep allocation
+		const sites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
+		const damangedStructures = this.room.find(FIND_STRUCTURES, {
+			filter(struct) {
+				if (struct.structureType === STRUCTURE_RAMPART || struct.structureType === STRUCTURE_WALL) {
+					return false;
+				}
+				return struct.hits < struct.hitsMax;
+			}
+		})
+		const desiredWorkers: Record<WorkerTask, number> = {
+			[WorkerTask.Upgrade]: 1,
+			[WorkerTask.Build]: sites.length > 0 ? 1 : 0,
+			[WorkerTask.Repair]: damangedStructures.length > 0 ? 1 : 0,
+			[WorkerTask.Fortify]: damangedStructures.length < 10 ? 1 : 0,
+		};
+
+		// Execute tasks
+		for (let workerId of this.room.memory.workers) {
+			let creep = Game.getObjectById(workerId);
+			if (!creep) {
+				continue;
+			}
+
+			if (creep.room.name !== this.room.name) {
+				creep.travelTo(new RoomPosition(25, 25, this.room.name), { range: 22 });
+				continue;
+			}
+
+			if (creep.memory.working) {
+				const workTarget = this.getWorkTarget(creep.memory.workTask);
+				if (!workTarget) {
+					continue;
+				}
+
+				if (creep.pos.inRangeTo(workTarget, 3)) {
+					// @ts-ignore This is OK, because it doesn't matter what the target is. This is type checked appropriately in other places.
+					creep[WORK_ACTIONS[creep.memory.workTask]](workTarget);
+				} else {
+					creep.travelTo(workTarget, { range: 3, maxRooms: 1 });
+				}
+			} else {
+				taskGather.run(creep);
+			}
+		}
+	}
+
 	getAvailableFocusTargets(): (Creep | PowerCreep)[] {
 		let creeps = [];
 		for (let id of this.room.memory.defense.focusQueue) {
@@ -133,7 +206,33 @@ export class RoomLord {
 		}
 		return ERR_NOT_IN_RANGE;
 	}
+
+	getWorkTarget(worktask: WorkerTask): RoomObject | null | undefined {
+		switch (worktask) {
+			case WorkerTask.Upgrade:
+				return this.room.controller;
+			case WorkerTask.Build:
+				if (!this.room.memory.buildTargetId) {
+					return undefined;
+				}
+				return Game.getObjectById(this.room.memory.buildTargetId);
+			case WorkerTask.Repair:
+				if (!this.room.memory.repairTargetId) {
+					return undefined;
+				}
+				return Game.getObjectById(this.room.memory.repairTargetId);
+			case WorkerTask.Fortify:
+				if (!this.room.memory.fortifyTargetId) {
+					return undefined;
+				}
+				return Game.getObjectById(this.room.memory.fortifyTargetId);
+			default:
+				return undefined;
+		}
+	}
 }
+
+
 
 /**
  * Run lords for all owned rooms.

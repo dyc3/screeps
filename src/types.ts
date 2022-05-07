@@ -1,6 +1,7 @@
 import type { RemoteMiningTarget } from "./remotemining";
 import type { ObserveQueue } from "./observequeue";
 import type { Role } from "./roles/meta";
+import { WorkerTask } from "room/lord";
 
 declare global {
 	/*
@@ -49,8 +50,8 @@ declare global {
 	}
 
 	interface Creep {
-		travelTo(pos: RoomPosition): ScreepsReturnCode;
-		travelTo(pos: RoomPosition, opts: any): ScreepsReturnCode;
+		travelTo(pos: RoomPosition | RoomObject): ScreepsReturnCode;
+		travelTo(pos: RoomPosition | RoomObject, opts: any): ScreepsReturnCode;
 	}
 
 	interface CreepMemory {
@@ -61,6 +62,8 @@ declare global {
 		renewing: boolean;
 		renew_force_amount: number | undefined;
 		renewTarget: Id<StructureSpawn>;
+		working: boolean;
+		workTask: WorkerTask;
 
 		// TODO: make role-specific memory types
 		depositMode?: any;
@@ -90,6 +93,10 @@ declare global {
 			focusQueue: Id<Creep | PowerCreep>[];
 			defenderCreeps: Id<Creep>[];
 		}
+		workers: Id<Creep>[];
+		buildTargetId: Id<ConstructionSite> | undefined;
+		repairTargetId: Id<Structure> | undefined;
+		fortifyTargetId: Id<StructureWall | StructureRampart> | undefined;
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
