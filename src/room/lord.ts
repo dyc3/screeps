@@ -219,6 +219,7 @@ export class RoomLord {
 	allocateWorkers() {
 		const workers = this.getWorkers();
 		const currentAllocations = this.getCurrentAllocations();
+		this.log(`current allocations: ${JSON.stringify(currentAllocations)}`);
 		const neededNewAllocations: Record<WorkerTask, number> = {
 			[WorkerTask.Upgrade]: this.room.memory.workerAllocations[WorkerTask.Upgrade] - currentAllocations[WorkerTask.Upgrade],
 			[WorkerTask.Build]: this.room.memory.workerAllocations[WorkerTask.Build] - currentAllocations[WorkerTask.Build],
@@ -239,7 +240,7 @@ export class RoomLord {
 		}
 
 		// allocate workers for underfilled tasks
-		let unallocatedWorkers = workers.filter(worker => !worker.memory.workTask);
+		let unallocatedWorkers = workers.filter(worker => worker.memory.workTask === undefined);
 		for (const task of [WorkerTask.Upgrade, WorkerTask.Build, WorkerTask.Repair, WorkerTask.Fortify]) {
 			while (neededNewAllocations[task] > 0 && unallocatedWorkers.length > 0) {
 				let worker = unallocatedWorkers.pop();
@@ -278,7 +279,7 @@ export class RoomLord {
 				continue;
 			}
 
-			if (!creep.memory.workTask) {
+			if (creep.memory.workTask === undefined) {
 				continue;
 			}
 
@@ -292,6 +293,13 @@ export class RoomLord {
 					creep.memory.working = true;
 				}
 			}
+
+			this.room.visual.circle(creep.pos, {
+				fill: 'transparent',
+				radius: 0.5,
+				stroke: creep.memory.working ? '#00ff00' : '#ff0000',
+			});
+			this.room.visual.text(`${creep.memory.workTask}`, creep.pos.x, creep.pos.y - 0.5, );
 
 			// act on state
 			if (creep.memory.working) {
@@ -384,12 +392,13 @@ export class RoomLord {
 	}
 
 	getCurrentAllocations(): Record<WorkerTask, number> {
-		const workersGroups = _.groupBy(this.getWorkers(), "workTask");
+		const workersGroups = _.countBy(this.getWorkers().map(c => c.memory.workTask));
+		this.log(`Worker groups: ${JSON.stringify(workersGroups)}`);
 		const allocations: Record<WorkerTask, number> = {
-			[WorkerTask.Upgrade]: workersGroups[WorkerTask.Upgrade]?.length ?? 0,
-			[WorkerTask.Build]: workersGroups[WorkerTask.Build]?.length ?? 0,
-			[WorkerTask.Repair]: workersGroups[WorkerTask.Repair]?.length ?? 0,
-			[WorkerTask.Fortify]: workersGroups[WorkerTask.Fortify]?.length ?? 0,
+			[WorkerTask.Upgrade]: workersGroups[WorkerTask.Upgrade] ?? 0,
+			[WorkerTask.Build]: workersGroups[WorkerTask.Build] ?? 0,
+			[WorkerTask.Repair]: workersGroups[WorkerTask.Repair] ?? 0,
+			[WorkerTask.Fortify]: workersGroups[WorkerTask.Fortify] ?? 0,
 		};
 		return allocations;
 	}
