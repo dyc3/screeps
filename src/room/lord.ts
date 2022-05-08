@@ -41,13 +41,17 @@ export class RoomLord {
 	}
 
 	setupMemory() {
-		if (!this.room.memory.defense) {
-			this.room.memory.defense = {
+		_.defaultsDeep(this.room.memory, {
+			defense: {
 				alertUntil: 0,
 				focusQueue: [],
 				defenderCreeps: [],
-			}
-		}
+			},
+			workers: [],
+			findBuildTargetAt: 0,
+			findRepairTargetAt: 0,
+			findFortifyTargetAt: 0,
+		})
 	}
 
 	log(...args: any[]) {
