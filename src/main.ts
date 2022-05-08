@@ -1873,6 +1873,8 @@ function main() {
 				case "testlogistics":
 					require("./role.testlogistics.js").run(creep);
 					break;
+				case Role.Worker:
+					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");
 					console.log("Parsing role from name...");

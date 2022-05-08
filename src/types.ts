@@ -93,7 +93,7 @@ declare global {
 			focusQueue: Id<Creep | PowerCreep>[];
 			defenderCreeps: Id<Creep>[];
 		}
-		workers: Id<Creep>[];
+		workers: string[];
 		buildTargetId: Id<ConstructionSite> | undefined;
 		findBuildTargetAt: number;
 		repairTargetId: Id<Structure> | undefined;
@@ -111,6 +111,7 @@ declare global {
 			DROPPED_ENERGY_GATHER_MINIMUM: number;
 			ObserveQueue: ObserveQueue;
 			TmpDefense: any;
+			Lords: any;
 		}
 	}
 }

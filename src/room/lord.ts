@@ -2,6 +2,7 @@ import util from "../util";
 import combatCalc from "../combat/calc";
 // @ts-expect-error not converted to ts yet
 import taskGather from "../task.gather.js";
+import { Role } from "../roles/meta";
 
 /** How long to remain on alert. */
 const ALERT_DURATION = 100;
@@ -212,9 +213,9 @@ export class RoomLord {
 		};
 
 		// Execute tasks
-		for (let workerId of this.room.memory.workers) {
-			let creep = Game.getObjectById(workerId);
-			if (!creep) {
+		for (let creepName of this.room.memory.workers) {
+			let creep = Game.creeps[creepName];
+			if (!creep || creep.spawning) {
 				continue;
 			}
 
@@ -319,7 +320,38 @@ export class RoomLord {
 				return undefined;
 		}
 	}
+
+	public adoptCreep(creepName: string) {
+		this.room.memory.workers.push(creepName);
+	}
 }
+
+global.Lords = {
+	/** Testing function to quickly spawn a worker for testing. */
+	forceSpawnWorker(roomName: string) {
+		const room = Game.rooms[roomName];
+		let spawn = room.find(FIND_MY_SPAWNS)[0];
+		const creepName = `worker_${Game.time.toString(16)}`;
+		spawn.spawnCreep([WORK, CARRY, MOVE], creepName, {
+			// @ts-ignore
+			memory: {
+				role: Role.Worker,
+				room: roomName,
+				keepAlive: true,
+				renewing: false,
+				stage: 0,
+				working: false,
+			},
+		});
+
+		const lord = new RoomLord(room);
+		lord.adoptCreep(creepName);
+	},
+
+	get(roomName: string): RoomLord {
+		return new RoomLord(Game.rooms[roomName]);
+	}
+};
 
 
 
