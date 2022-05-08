@@ -5,6 +5,10 @@ import taskGather from "../task.gather.js";
 
 /** How long to remain on alert. */
 const ALERT_DURATION = 100;
+/** If there are no build targets, wait for this many ticks before searching for a new build target. */
+const BUILD_TARGET_SEARCH_DELAY = 20;
+const REPAIR_TARGET_SEARCH_DELAY = 20;
+const FORTIFY_TARGET_SEARCH_DELAY = 20;
 
 export enum WorkerTask {
 	Upgrade,
@@ -30,6 +34,10 @@ export class RoomLord {
 	public run() {
 		this.setupMemory();
 		this.defendRoom();
+		this.findBuildTarget();
+		this.findRepairTarget();
+		this.findFortifyTarget();
+		this.workCreeps();
 	}
 
 	setupMemory() {
@@ -105,6 +113,71 @@ export class RoomLord {
 			// combat is over, clear memory
 			this.room.memory.defense.focusQueue = [];
 		}
+	}
+
+	findBuildTarget() {
+		if (Game.time < this.room.memory.findBuildTargetAt) {
+			return;
+		}
+		if (this.room.memory.buildTargetId && !!Game.getObjectById(this.room.memory.buildTargetId)) {
+			return;
+		}
+
+		let sites = this.room.find(FIND_CONSTRUCTION_SITES);
+
+		if (sites.length === 0) {
+			this.room.memory.findBuildTargetAt = Game.time + BUILD_TARGET_SEARCH_DELAY;
+			return;
+		}
+
+		sites = _.sortByOrder(sites, [
+			site => site.structureType === STRUCTURE_SPAWN,
+			site => site.structureType === STRUCTURE_TERMINAL,
+			site => site.structureType === STRUCTURE_STORAGE,
+			site => site.structureType !== STRUCTURE_ROAD,
+		], ["desc", "desc", "desc", "desc"]);
+
+		this.room.memory.buildTargetId = sites[0].id;
+	}
+
+	findRepairTarget() {
+		if (Game.time < this.room.memory.findRepairTargetAt) {
+			return;
+		}
+		if (this.room.memory.repairTargetId && !!Game.getObjectById(this.room.memory.repairTargetId)) {
+			return;
+		}
+
+		let structures = this.room.find(FIND_STRUCTURES, {
+			filter: struct => struct.structureType !== STRUCTURE_WALL && struct.structureType !== STRUCTURE_RAMPART && struct.hits < struct.hitsMax,
+		});
+
+		if (structures.length === 0) {
+			this.room.memory.findRepairTargetAt = Game.time + REPAIR_TARGET_SEARCH_DELAY;
+			return;
+		}
+
+		this.room.memory.repairTargetId = structures[0].id;
+	}
+
+	findFortifyTarget() {
+		if (Game.time < this.room.memory.findFortifyTargetAt) {
+			return;
+		}
+		if (this.room.memory.fortifyTargetId && !!Game.getObjectById(this.room.memory.fortifyTargetId)) {
+			return;
+		}
+
+		let structures = this.room.find(FIND_STRUCTURES, {
+			filter: struct => (struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) && struct.hits < struct.hitsMax,
+		}) as (StructureWall | StructureRampart)[];
+
+		if (structures.length === 0) {
+			this.room.memory.findFortifyTargetAt = Game.time + FORTIFY_TARGET_SEARCH_DELAY;
+			return;
+		}
+
+		this.room.memory.fortifyTargetId = structures[0].id;
 	}
 
 	/** Get creeps to do work.

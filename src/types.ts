@@ -95,8 +95,11 @@ declare global {
 		}
 		workers: Id<Creep>[];
 		buildTargetId: Id<ConstructionSite> | undefined;
+		findBuildTargetAt: number;
 		repairTargetId: Id<Structure> | undefined;
+		findRepairTargetAt: number;
 		fortifyTargetId: Id<StructureWall | StructureRampart> | undefined;
+		findFortifyTargetAt: number;
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
