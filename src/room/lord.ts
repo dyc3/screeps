@@ -10,6 +10,8 @@ const ALERT_DURATION = 100;
 const BUILD_TARGET_SEARCH_DELAY = 20;
 const REPAIR_TARGET_SEARCH_DELAY = 20;
 const FORTIFY_TARGET_SEARCH_DELAY = 20;
+const MIN_FORIFY_HITS = 20000;
+const FORTIFY_UPDATE_TARGET_HITS_INTERVAL = 200;
 
 export enum WorkerTask {
 	Upgrade,
@@ -38,6 +40,7 @@ export class RoomLord {
 		this.defendRoom();
 		this.findBuildTarget();
 		this.findRepairTarget();
+		this.updateFortifyTargetHits();
 		this.findFortifyTarget();
 		this.calcWorkerAllocations();
 		this.allocateWorkers();
@@ -56,6 +59,8 @@ export class RoomLord {
 			findBuildTargetAt: 0,
 			findRepairTargetAt: 0,
 			findFortifyTargetAt: 0,
+			fortifyTargetHits: MIN_FORIFY_HITS,
+			updateFortifyTargetHitsAt: 0,
 		})
 	}
 
@@ -203,6 +208,32 @@ export class RoomLord {
 		], ["desc", "asc"]);
 
 		this.room.memory.fortifyTargetId = structures[0].id;
+	}
+
+	updateFortifyTargetHits() {
+		if (Game.time < this.room.memory.updateFortifyTargetHitsAt) {
+			return;
+		}
+
+		let structures = this.room.find(FIND_STRUCTURES, {
+			filter: struct => (struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) && struct.hits < struct.hitsMax,
+		}) as (StructureWall | StructureRampart)[];
+
+		let avgHits = structures.reduce((sum, struct) => sum + struct.hits, 0) / structures.length;
+		if (avgHits >= this.room.memory.fortifyTargetHits) {
+			this.room.memory.fortifyTargetHits = avgHits * 1.05;
+		}
+
+		this.room.memory.fortifyTargetHits = this.room.memory.fortifyTargetHits.clamp(MIN_FORIFY_HITS, WALL_HITS_MAX);
+
+		let target = this.getWorkTarget(WorkerTask.Fortify) as Structure;
+		if (target) {
+			if (target.hits >= this.room.memory.fortifyTargetHits) {
+				delete this.room.memory.fortifyTargetId;
+			}
+		}
+
+		this.room.memory.updateFortifyTargetHitsAt = Game.time + FORTIFY_UPDATE_TARGET_HITS_INTERVAL;
 	}
 
 	/** Determines which job should get how many creeps.

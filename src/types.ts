@@ -101,6 +101,8 @@ declare global {
 		findRepairTargetAt: number;
 		fortifyTargetId: Id<StructureWall | StructureRampart> | undefined;
 		findFortifyTargetAt: number;
+		fortifyTargetHits: number;
+		updateFortifyTargetHitsAt: number;
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
