@@ -34,10 +34,13 @@ export class RoomLord {
 
 	public run() {
 		this.setupMemory();
+		this.cleanUpDeadWorkers();
 		this.defendRoom();
 		this.findBuildTarget();
 		this.findRepairTarget();
 		this.findFortifyTarget();
+		this.calcWorkerAllocations();
+		this.allocateWorkers();
 		this.workCreeps();
 	}
 
@@ -56,7 +59,7 @@ export class RoomLord {
 	}
 
 	log(...args: any[]) {
-		console.log(`${this.room.name} lord: `, ...args)
+		console.log(`<span style="color: teal">${this.room.name} lord: `, ...args, "</span>")
 	}
 
 	defendRoom() {
@@ -185,16 +188,9 @@ export class RoomLord {
 		this.room.memory.fortifyTargetId = structures[0].id;
 	}
 
-	/** Get creeps to do work.
-	 *
-	 * Tasks:
-	 * - Upgrade
-	 * - Build
-	 * - Repair
-	 * - Fortify
-	 */
-	workCreeps() {
-		// Reallocate workers
+	calcWorkerAllocations() {
+		this.log("Calculating worker allocations");
+
 		// TODO: use heuristics or something to be smart about creep allocation
 		const sites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
 		const damangedStructures = this.room.find(FIND_STRUCTURES, {
@@ -211,16 +207,73 @@ export class RoomLord {
 			[WorkerTask.Repair]: damangedStructures.length > 0 ? 1 : 0,
 			[WorkerTask.Fortify]: damangedStructures.length < 10 ? 1 : 0,
 		};
+		this.room.memory.workerAllocations = desiredWorkers;
+	}
 
+	/**
+	 * This solves for the "Partition problem".
+	 */
+	allocateWorkers() {
+		this.log("allocating workers");
+		const workers = this.getWorkers();
+		const currentAllocations = this.getCurrentAllocations();
+		const neededNewAllocations: Record<WorkerTask, number> = {
+			[WorkerTask.Upgrade]: this.room.memory.workerAllocations[WorkerTask.Upgrade] - currentAllocations[WorkerTask.Upgrade],
+			[WorkerTask.Build]: this.room.memory.workerAllocations[WorkerTask.Build] - currentAllocations[WorkerTask.Build],
+			[WorkerTask.Repair]: this.room.memory.workerAllocations[WorkerTask.Repair] - currentAllocations[WorkerTask.Repair],
+			[WorkerTask.Fortify]: this.room.memory.workerAllocations[WorkerTask.Fortify] - currentAllocations[WorkerTask.Fortify],
+		}
+		// unallocate workers for overfilled tasks
+		for (const task of [WorkerTask.Upgrade, WorkerTask.Build, WorkerTask.Repair, WorkerTask.Fortify]) {
+			if (neededNewAllocations[task] < 0) {
+				let workersOfTask = workers.filter(worker => worker.memory.workTask === task);
+				let workersToUnallocate = workersOfTask.slice(0, -neededNewAllocations[task]);
+				this.log(`unallocating ${workersToUnallocate.length} workers for ${task}`);
+				workersToUnallocate.forEach(worker => {
+					delete worker.memory.workTask;
+				});
+				neededNewAllocations[task] += workersToUnallocate.length;
+			}
+		}
+
+		// allocate workers for underfilled tasks
+		let unallocatedWorkers = workers.filter(worker => !worker.memory.workTask);
+		for (const task of [WorkerTask.Upgrade, WorkerTask.Build, WorkerTask.Repair, WorkerTask.Fortify]) {
+			while (neededNewAllocations[task] > 0 && unallocatedWorkers.length > 0) {
+				let worker = unallocatedWorkers.pop();
+				if (!worker) {
+					break;
+				}
+				this.log(`allocating worker ${worker.name} for task ${task}`);
+				worker.memory.workTask = task;
+				neededNewAllocations[task] -= 1;
+			}
+		}
+	}
+
+	getWorkers(): Creep[] {
+		return this.room.memory.workers.map(name => Game.creeps[name]).filter(creep => !!creep);
+	}
+
+	cleanUpDeadWorkers() {
+		this.room.memory.workers = this.room.memory.workers.filter(name => !!Game.creeps[name]);
+	}
+
+	/** Get creeps to do work.
+	 */
+	workCreeps() {
 		// Execute tasks
-		for (let creepName of this.room.memory.workers) {
-			let creep = Game.creeps[creepName];
-			if (!creep || creep.spawning) {
+		for (const creep of this.getWorkers()) {
+			if (creep.spawning) {
 				continue;
 			}
 
 			if (creep.room.name !== this.room.name) {
 				creep.travelTo(new RoomPosition(25, 25, this.room.name), { range: 22 });
+				continue;
+			}
+
+			if (!creep.memory.workTask) {
 				continue;
 			}
 
@@ -324,6 +377,17 @@ export class RoomLord {
 	public adoptCreep(creepName: string) {
 		this.room.memory.workers.push(creepName);
 	}
+
+	getCurrentAllocations(): Record<WorkerTask, number> {
+		const workersGroups = _.groupBy(this.getWorkers(), "workTask");
+		const allocations: Record<WorkerTask, number> = {
+			[WorkerTask.Upgrade]: workersGroups[WorkerTask.Upgrade]?.length ?? 0,
+			[WorkerTask.Build]: workersGroups[WorkerTask.Build]?.length ?? 0,
+			[WorkerTask.Repair]: workersGroups[WorkerTask.Repair]?.length ?? 0,
+			[WorkerTask.Fortify]: workersGroups[WorkerTask.Fortify]?.length ?? 0,
+		};
+		return allocations;
+	}
 }
 
 global.Lords = {
@@ -332,7 +396,7 @@ global.Lords = {
 		const room = Game.rooms[roomName];
 		let spawn = room.find(FIND_MY_SPAWNS)[0];
 		const creepName = `worker_${Game.time.toString(16)}`;
-		spawn.spawnCreep([WORK, CARRY, MOVE], creepName, {
+		spawn.spawnCreep([WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], creepName, {
 			// @ts-ignore
 			memory: {
 				role: Role.Worker,

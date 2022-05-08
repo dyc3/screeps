@@ -63,7 +63,7 @@ declare global {
 		renew_force_amount: number | undefined;
 		renewTarget: Id<StructureSpawn>;
 		working: boolean;
-		workTask: WorkerTask;
+		workTask?: WorkerTask;
 
 		// TODO: make role-specific memory types
 		depositMode?: any;
@@ -94,6 +94,7 @@ declare global {
 			defenderCreeps: Id<Creep>[];
 		}
 		workers: string[];
+		workerAllocations: Record<WorkerTask, number>,
 		buildTargetId: Id<ConstructionSite> | undefined;
 		findBuildTargetAt: number;
 		repairTargetId: Id<Structure> | undefined;
