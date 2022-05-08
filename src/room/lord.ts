@@ -223,6 +223,18 @@ export class RoomLord {
 				continue;
 			}
 
+			// switch state
+			if (creep.memory.working) {
+				if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+					creep.memory.working = false;
+				}
+			} else {
+				if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+					creep.memory.working = true;
+				}
+			}
+
+			// act on state
 			if (creep.memory.working) {
 				const workTarget = this.getWorkTarget(creep.memory.workTask);
 				if (!workTarget) {
