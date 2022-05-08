@@ -42,6 +42,7 @@ export class RoomLord {
 		this.calcWorkerAllocations();
 		this.allocateWorkers();
 		this.workCreeps();
+		this.visualize();
 	}
 
 	setupMemory() {
@@ -60,6 +61,17 @@ export class RoomLord {
 
 	log(...args: any[]) {
 		console.log(`<span style="color: lime">${this.room.name} lord: `, ...args, "</span>")
+	}
+
+	visualize() {
+		let fortifyTarget = this.getWorkTarget(WorkerTask.Fortify);
+		if (fortifyTarget) {
+			this.room.visual.circle(fortifyTarget.pos, {
+				fill: "transparent",
+				radius: 0.75,
+				stroke: "#ffff00",
+			});
+		}
 	}
 
 	defendRoom() {
