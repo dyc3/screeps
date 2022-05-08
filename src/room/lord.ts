@@ -59,7 +59,7 @@ export class RoomLord {
 	}
 
 	log(...args: any[]) {
-		console.log(`<span style="color: teal">${this.room.name} lord: `, ...args, "</span>")
+		console.log(`<span style="color: lime">${this.room.name} lord: `, ...args, "</span>")
 	}
 
 	defendRoom() {
@@ -188,9 +188,11 @@ export class RoomLord {
 		this.room.memory.fortifyTargetId = structures[0].id;
 	}
 
+	/** Determines which job should get how many creeps.
+	 * This does not take into account the number of workers that already exist.
+	 * This is what determines the number of workers that should exist.
+	 */
 	calcWorkerAllocations() {
-		this.log("Calculating worker allocations");
-
 		// TODO: use heuristics or something to be smart about creep allocation
 		const sites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
 		const damangedStructures = this.room.find(FIND_STRUCTURES, {
@@ -202,19 +204,19 @@ export class RoomLord {
 			}
 		})
 		const desiredWorkers: Record<WorkerTask, number> = {
-			[WorkerTask.Upgrade]: 1,
-			[WorkerTask.Build]: sites.length > 0 ? 1 : 0,
+			[WorkerTask.Upgrade]: 3,
+			[WorkerTask.Build]: sites.length > 0 ? 2 : 0,
 			[WorkerTask.Repair]: damangedStructures.length > 0 ? 1 : 0,
-			[WorkerTask.Fortify]: damangedStructures.length < 10 ? 1 : 0,
+			[WorkerTask.Fortify]: 1,
 		};
 		this.room.memory.workerAllocations = desiredWorkers;
+		this.log(`allocations: ${JSON.stringify(desiredWorkers)}`);
 	}
 
 	/**
 	 * This solves for the "Partition problem".
 	 */
 	allocateWorkers() {
-		this.log("allocating workers");
 		const workers = this.getWorkers();
 		const currentAllocations = this.getCurrentAllocations();
 		const neededNewAllocations: Record<WorkerTask, number> = {
@@ -248,6 +250,9 @@ export class RoomLord {
 				worker.memory.workTask = task;
 				neededNewAllocations[task] -= 1;
 			}
+		}
+		if (unallocatedWorkers.length > 0) {
+			this.log(`WARN: still have unallocated workers: ${unallocatedWorkers.map(worker => worker.name).join(", ")}`);
 		}
 	}
 
