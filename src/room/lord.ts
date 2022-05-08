@@ -185,6 +185,11 @@ export class RoomLord {
 			return;
 		}
 
+		structures = _.sortByOrder(structures, [
+			struct => struct.structureType === STRUCTURE_RAMPART,
+			struct => struct.hits,
+		], ["desc", "asc"]);
+
 		this.room.memory.fortifyTargetId = structures[0].id;
 	}
 
