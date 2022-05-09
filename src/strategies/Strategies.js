@@ -33,6 +33,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		super(mem);
 		this.currentTargetId = "";
 		this.targetRoom = "";
+		this.rangedCount = 0;
 		this.attackerCount = 0;
 		this.healerCount = 0;
 		Object.assign(this, mem);
@@ -42,6 +43,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		return {
 			"generic-attack": this.attackerCount,
 			"healer": this.healerCount,
+			"ranged": this.rangedCount,
 		};
 	}
 
@@ -111,12 +113,6 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 
 		attackers.forEach((creep, idx) => {
 			if (this.currentTargetId !== "") {
-				if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
-					creep.rangedAttack(this.currentTarget);
-				}
-				else {
-					creep.rangedMassAttack();
-				}
 				if (creep.pos.isNearTo(this.currentTarget)) {
 					if (creep.getActiveBodyparts(ATTACK) > 0) {
 						creep.attack(this.currentTarget);
@@ -125,6 +121,8 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 						creep.rangedMassAttack();
 					}
 					creep.move(creep.pos.getDirectionTo(this.currentTarget));
+				} else if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
+					creep.rangedMassAttack();
 				} else {
 					creep.travelTo(this.currentTarget);
 				}
