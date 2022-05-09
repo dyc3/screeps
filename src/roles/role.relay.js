@@ -315,6 +315,25 @@ const roleRelay = {
 		}
 
 		// this.visualizeState(creep);
+
+		this.autoCorrectRenewTarget(creep);
+	},
+
+	/** Force the renew target to be the spawn next to the relay. */
+	autoCorrectRenewTarget(creep) {
+		if (!creep.memory.fillTargetIds) {
+			return;
+		}
+
+		for (let id of creep.memory.fillTargetIds) {
+			let struct = Game.getObjectById(id);
+			if (!struct) {
+				continue;
+			}
+			if (struct.structureType === STRUCTURE_SPAWN) {
+				creep.memory.renewTarget = id;
+			}
+		}
 	}
 };
 
