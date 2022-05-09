@@ -52,7 +52,7 @@ export class OffenseTask {
 
 			// HACK: hardcoded position
 			this.creeps.filter(c => !c.memory.renewing).forEach((creep, idx) => {
-				creep.travelTo(new RoomPosition(27 + idx, 6 + task_idx, "W17N11"))
+				creep.travelTo(new RoomPosition(14 + idx, 7 + task_idx, "W16N8"))
 
 				// healing
 				// FIXME: reduce duplicated code
