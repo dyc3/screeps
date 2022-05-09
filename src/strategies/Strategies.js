@@ -1,4 +1,5 @@
 import { OffenseStrategy } from "../strategies/BaseStrategy";
+import { olog } from "../offense/util";
 
 const STRATEGY_ACT_TRAVEL = -1
 const STRATEGY_ACT_LURE = 0
@@ -21,6 +22,7 @@ function visTarget(pos) {
 
 /**
  * `attackerCount`: number of attackers
+ * @example Offense.create("SimpleManual", init={attackerCount: 2, targetRoom: "W18N8"})
  */
 export class OffenseStrategySimpleManual extends OffenseStrategy {
 	static get strategyName() {
@@ -101,8 +103,6 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 			else {
 				visTarget(this.currentTarget.pos);
 			}
-		} else {
-			creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20 });
 		}
 
 		healers.forEach((creep, idx) => {
@@ -129,8 +129,8 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 					creep.travelTo(this.currentTarget);
 				}
 			} else {
-				olog("moving to ready position")
-				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20 });
+				olog(`traveling: ${creep.name} to ${this.targetRoom}, current pos: ${creep.pos}`)
+				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20, useFindRoute: true });
 			}
 		})
 	}
