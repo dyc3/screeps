@@ -137,7 +137,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		});
 
 		attackers.forEach((creep, idx) => {
-			if (this.currentTargetId !== "") {
+			if (targetRoomVision && this.currentTargetId !== "") {
 				if (creep.pos.isNearTo(this.currentTarget)) {
 					if (creep.getActiveBodyparts(ATTACK) > 0) {
 						creep.attack(this.currentTarget);
