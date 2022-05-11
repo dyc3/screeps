@@ -16,15 +16,14 @@ export class OffenseTask {
 	creepNames: string[];
 	state: typeof TASK_PREPARE | typeof TASK_RUN;
 	manualStart = false;
-	autoSpawn = false;
+	autoSpawn = true;
+	autoStart = false;
 	strategyName: string;
 	strategy: unknown;
 
 	public constructor(mem: { strategyName: string }) {
 		this.creepNames = [];
 		this.state = TASK_PREPARE;
-		this.manualStart = false;
-		this.autoSpawn = false;
 		this.strategyName = mem.strategyName;
 		this.strategy = {};
 		Object.assign(this, mem);
@@ -87,7 +86,13 @@ export class OffenseTask {
 					}
 				});
 
-			if (this.manualStart && strat.areCreepRequirementsMet(this.creeps)) {
+			if (
+				this.autoStart &&
+				strat.areCreepRequirementsMet(this.creeps) &&
+				areAllCreepsInRange(this.creeps, STAGING_POSITION, Math.ceil(this.creeps.length / 2))
+			) {
+				this.setState(TASK_RUN);
+			} else if (this.manualStart && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN);
 			} else if (strat.strategyName === "OvermindRemoteMinerBait" && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN);
