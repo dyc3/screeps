@@ -79,7 +79,6 @@ export default {
 			const xOffset = 0.3;
 			const xSpacing = 1.4;
 			const spawnRadius = 0.5;
-			const rooms = util.getOwnedRooms();
 			for (let r = 0; r < rooms.length; r++) {
 				const room = rooms[r];
 
@@ -132,7 +131,7 @@ export default {
 			let row = 0;
 			for (const source of Memory.remoteMining.targets) {
 				vis.text(
-					`${source.roomName}: harvester: ${source.creepHarvester} carriers: ${
+					`${source.roomName}: harvester: ${source.creepHarvester ?? "none"} carriers: ${
 						source.creepCarriers ? source.creepCarriers.length : 0
 					}/${source.neededCarriers} danger: ${source.danger}`,
 					baseX,
@@ -237,23 +236,21 @@ export default {
 		}
 	},
 
-	drawQuotas() {
+	drawQuotas(): void {
 		toolEnergySource.drawAssignedCounts();
 
 		const rooms = util.getOwnedRooms();
-		for (let r = 0; r < rooms.length; r++) {
-			const room = rooms[r];
-
+		for (const room of rooms) {
 			// draw upgrader quotas on controllers
 			const count = util.getCreeps(Role.Upgrader).filter(creep => creep.memory.targetRoom === room.name).length;
 			const max = toolCreepUpgrader.getUpgraderQuota(room);
-			const text = count + "/" + max;
+			const text = `${count}/${max}`;
 			const color = count <= max ? "#11dd11" : "#dd1111";
-			const pos = room.controller?.pos as RoomPosition;
-			room.visual.text(text, pos, { color, font: 0.4, stroke: "#000" });
+			const controllerPos = room.controller?.pos as RoomPosition;
+			room.visual.text(text, controllerPos, { color, font: 0.4, stroke: "#000" });
 
 			// mark the room's rootPos, assists autoplanner debugging
-			const root = room.memory.rootPos;
+			const root = room.memory.rootPos as { x: number; y: number } | undefined;
 			if (root) {
 				room.visual.rect(root.x - 0.45, root.y - 0.45, 0.9, 0.9, { fill: "#44dd44" });
 			}
@@ -294,7 +291,7 @@ export default {
 		}
 	},
 
-	drawMapVision() {
+	drawMapVision(): void {
 		const rooms = Object.values(Game.rooms);
 		for (const room of rooms) {
 			const pos = room.getPositionAt(2, 2) as RoomPosition;
@@ -306,7 +303,7 @@ export default {
 		}
 	},
 
-	drawNukeRange() {
+	drawNukeRange(): void {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
 			const nukers = room.find(FIND_MY_STRUCTURES, {

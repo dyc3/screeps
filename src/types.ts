@@ -66,7 +66,7 @@ declare global {
 		depositMode?: any;
 		harvestTarget?: any;
 		targetRoom?: any;
-		assignedPos?: any;
+		assignedPos?: { x: number; y: number };
 		mode?: any;
 	}
 
@@ -75,8 +75,8 @@ declare global {
 		defcon: number;
 		rootLink?: Id<StructureLink>;
 		storageLink?: Id<StructureLink>;
-		rootPos: any; // TODO: define this
-		storagePos: any; // TODO: define this
+		rootPos?: { x: number; y: number };
+		storagePos?: { x: number; y: number };
 		/** @deprecated not sure if this is actually being used */
 		storagePosDirection?: DirectionConstant;
 	}
