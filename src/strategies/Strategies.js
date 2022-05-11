@@ -137,6 +137,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), {
 					range: 20,
 					useFindRoute: true,
+					stuckValue: 4,
 				});
 			}
 		});
