@@ -10,7 +10,7 @@ const TASK_PREPARE = 0;
 const TASK_RUN = 1;
 
 // FIXME: hard coded for now
-const STAGING_POSITION = new RoomPosition(14, 7, "W16N8");
+const STAGING_POSITION = new RoomPosition(6, 42, "W16N9");
 
 export class OffenseTask {
 	creepNames: string[];
@@ -59,7 +59,7 @@ export class OffenseTask {
 				.filter(c => !c.memory.renewing)
 				.forEach((creep, idx) => {
 					const stagingPos = new RoomPosition(
-						STAGING_POSITION.x + idx - Math.floor(this.creeps.length / 2),
+						(STAGING_POSITION.x - Math.floor(this.creeps.length / 2)).clamp(1, 48) + idx,
 						STAGING_POSITION.y + task_idx,
 						STAGING_POSITION.roomName
 					);
