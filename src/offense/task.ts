@@ -127,12 +127,13 @@ export function autoSpawn(task_idx: number) {
 		if (haveCount < needCount) {
 			// TODO: really need some kind of spawn queue to generalize spawning creeps
 
+			const closestRooms = util.findClosestOwnedRooms(STAGING_POSITION).map(r => r.name);
 			let spawns = Object.values(Game.spawns).filter(s => !s.spawning);
 			if (spawns.length === 0) {
 				olog(`Failed to auto spawn for task ${task_idx} ${task.strategyName}`);
 				return;
 			}
-			spawns = util.shuffle(spawns);
+			spawns = _.sortBy(spawns, s => closestRooms.indexOf(s.room.name));
 
 			const creepName = `offense_${Game.time.toString(16)}`; // _${Math.floor(Math.random() * 64).toString(16)}
 			for (const spawn of spawns) {
