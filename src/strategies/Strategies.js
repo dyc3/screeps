@@ -118,10 +118,10 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 					this.currentTargetId = towers[0].id;
 				} else if (extensions.length > 0) {
 					this.currentTargetId = extensions[0].id;
-				} else if (hostiles.length > 0) {
-					this.currentTargetId = hostiles[0].id;
 				} else if (spawns.length > 0) {
 					this.currentTargetId = spawns[0].id;
+				} else if (hostiles.length > 0) {
+					this.currentTargetId = hostiles[0].id;
 				} else if (hostileStructures.length > 0) {
 					this.currentTargetId = hostileStructures[0].id;
 				} else {
