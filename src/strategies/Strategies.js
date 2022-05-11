@@ -128,7 +128,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 					}
 					creep.move(creep.pos.getDirectionTo(this.currentTarget));
 				} else if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
-					creep.rangedMassAttack();
+					creep.rangedAttack(this.currentTarget);
 				} else {
 					creep.travelTo(this.currentTarget);
 				}
