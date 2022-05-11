@@ -4,9 +4,13 @@ import { OffenseStrategy } from "../strategies/BaseStrategy";
 import { Strategies } from "../strategies/all";
 import { CREEP_BODIES, olog } from "./util";
 import { NotImplementedException } from "utils/exceptions";
+import { areAllCreepsInRange } from "combat/movement";
 
 const TASK_PREPARE = 0;
 const TASK_RUN = 1;
+
+// FIXME: hard coded for now
+const STAGING_POSITION = new RoomPosition(14, 7, "W16N8");
 
 export class OffenseTask {
 	creepNames: string[];
@@ -55,7 +59,12 @@ export class OffenseTask {
 			this.creeps
 				.filter(c => !c.memory.renewing)
 				.forEach((creep, idx) => {
-					creep.travelTo(new RoomPosition(14 + idx, 7 + task_idx, "W16N8"));
+					const stagingPos = new RoomPosition(
+						STAGING_POSITION.x + idx - Math.floor(this.creeps.length / 2),
+						STAGING_POSITION.y + task_idx,
+						STAGING_POSITION.roomName
+					);
+					creep.travelTo(stagingPos);
 
 					// healing
 					// FIXME: reduce duplicated code
@@ -77,6 +86,7 @@ export class OffenseTask {
 						}
 					}
 				});
+
 			if (this.manualStart && strat.areCreepRequirementsMet(this.creeps)) {
 				this.setState(TASK_RUN);
 			} else if (strat.strategyName === "OvermindRemoteMinerBait" && strat.areCreepRequirementsMet(this.creeps)) {
