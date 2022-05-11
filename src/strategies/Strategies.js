@@ -105,7 +105,9 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 			let dangerousHostiles = hostiles.filter(
 				c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(HEAL) > 0
 			);
-			let hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
+			let hostileStructures = room.find(FIND_HOSTILE_STRUCTURES, {
+				filter: s => s.structureType !== STRUCTURE_CONTROLLER,
+			});
 			let towers = hostileStructures.filter(s => s.structureType === STRUCTURE_TOWER);
 			let spawns = hostileStructures.filter(s => s.structureType === STRUCTURE_SPAWN);
 			let extensions = hostileStructures.filter(s => s.structureType === STRUCTURE_EXTENSION);
