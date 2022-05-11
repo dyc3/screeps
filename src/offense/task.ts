@@ -2,7 +2,8 @@ import util from "../util";
 import { Role } from "../roles/meta";
 import { OffenseStrategy } from "../strategies/BaseStrategy";
 import { Strategies } from "../strategies/all";
-import { CREEP_BODIES } from "./util";
+import { CREEP_BODIES, olog } from "./util";
+import { NotImplementedException } from "utils/exceptions";
 
 const TASK_PREPARE = 0;
 const TASK_RUN = 1;
@@ -15,7 +16,7 @@ export class OffenseTask {
 	strategyName: string;
 	strategy: unknown;
 
-	constructor(mem: { strategyName: string }) {
+	public constructor(mem: { strategyName: string }) {
 		this.creepNames = [];
 		this.state = TASK_PREPARE;
 		this.manualStart = false;
@@ -25,22 +26,22 @@ export class OffenseTask {
 		Object.assign(this, mem);
 	}
 
-	get creeps(): Creep[] {
+	public get creeps(): Creep[] {
 		return this.creepNames.map(name => Game.creeps[name]);
 	}
 
-	setState(s: typeof this.state) {
+	public setState(s: typeof this.state): void {
 		console.log(`Offense task: state ${this.state} => ${s}`);
 		this.state = s;
 	}
 
-	getStrategy(): OffenseStrategy {
+	public getStrategy(): OffenseStrategy {
 		const Strategy = _.find(Strategies, { strategyName: this.strategyName });
 		const strat = new Strategy(this.strategy);
 		return strat;
 	}
 
-	run(task_idx: number) {
+	public run(task_idx: number): void {
 		// HACK: force creep role
 		this.creeps.forEach(creep => (creep.memory.role = Role.Offense));
 
@@ -93,6 +94,11 @@ export class OffenseTask {
 		}
 		this.strategy = strat;
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	public setTarget(target: _HasId): void {
+		throw new NotImplementedException("OffenseTask.setTarget");
+	}
 }
 
 /** Quick and dirty automated spawner for Offense tasks. Should be good enough for now. */
@@ -108,7 +114,6 @@ export function autoSpawn(task_idx: number) {
 
 			let spawns = Object.values(Game.spawns).filter(s => !s.spawning);
 			if (spawns.length === 0) {
-				// @ts-expect-error
 				olog(`Failed to auto spawn for task ${task_idx} ${task.strategyName}`);
 				return;
 			}
