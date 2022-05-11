@@ -1,5 +1,6 @@
 import { OffenseStrategy } from "../strategies/BaseStrategy";
 import { olog } from "../offense/util";
+import { unitCohesion } from "../combat/movement";
 
 const STRATEGY_ACT_TRAVEL = -1;
 const STRATEGY_ACT_LURE = 0;
@@ -40,6 +41,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		this.attackerCount = 0;
 		this.healerCount = 0;
 		this.bigHealerCount = 0;
+		this.regroup = false;
 		Object.assign(this, mem);
 	}
 
@@ -57,6 +59,8 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 	}
 
 	act(creeps) {
+		olog(`Unit Cohesion: ${unitCohesion(creeps)}`);
+
 		let healers = creeps.filter(c => c.getActiveBodyparts(HEAL) > 0);
 		let attackers = creeps.filter(c => c.getActiveBodyparts(ATTACK) > 0 || c.getActiveBodyparts(RANGED_ATTACK) > 0);
 		let targetRoomVision = !!Game.rooms[this.targetRoom];
@@ -138,6 +142,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 					range: 20,
 					useFindRoute: true,
 					stuckValue: 4,
+					ensurePath: true,
 				});
 			}
 		});
