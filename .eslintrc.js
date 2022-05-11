@@ -62,7 +62,7 @@ module.exports = {
     "id-blacklist": ["error", "any", "Number", "number", "String", "string", "Boolean", "boolean", "Undefined"],
     "id-match": "error",
     "linebreak-style": "off",
-    "max-classes-per-file": ["error", 1],
+    // "max-classes-per-file": ["error", 1],
     "new-parens": "off",
     "newline-per-chained-call": "off",
     "no-bitwise": "error",
