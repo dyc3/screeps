@@ -134,7 +134,11 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 				}
 			} else {
 				olog(`traveling: ${creep.name} to ${this.targetRoom}, current pos: ${creep.pos}`);
-				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), { range: 20, useFindRoute: true });
+				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), {
+					range: 20,
+					useFindRoute: true,
+					offRoad: true,
+				});
 			}
 		});
 	}
