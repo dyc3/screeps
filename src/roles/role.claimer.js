@@ -24,7 +24,11 @@ let roleClaimer = {
 		}
 		if (!creep.memory.claimTarget && creep.memory.targetRoom) {
 			if (creep.room.name !== creep.memory.targetRoom) {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { ensurePath: true });
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), {
+					ensurePath: true,
+					range: 23,
+					useFindRoute: true,
+				});
 				return;
 			}
 			creep.memory.claimTarget = creep.room.controller.id;
