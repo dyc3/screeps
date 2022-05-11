@@ -39,6 +39,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		this.rangedCount = 0;
 		this.attackerCount = 0;
 		this.healerCount = 0;
+		this.bigHealerCount = 0;
 		Object.assign(this, mem);
 	}
 
@@ -47,6 +48,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 			"generic-attack": this.attackerCount,
 			healer: this.healerCount,
 			ranged: this.rangedCount,
+			"big-healer": this.bigHealerCount,
 		};
 	}
 
