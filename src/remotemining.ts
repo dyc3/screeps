@@ -5,7 +5,7 @@ export interface RemoteMiningTarget {
 	y: number;
 	/** The room that the source is in. */
 	roomName: string;
-	harvestPos: { x: number, y: number };
+	harvestPos: { x: number; y: number };
 	/** Creep name of the harvester. */
 	creepHarvester: string | undefined;
 	/** Creep names of the carriers. */

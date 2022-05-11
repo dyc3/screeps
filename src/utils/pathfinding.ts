@@ -3,7 +3,7 @@ import PortalScanner from "intel/PortalScanner";
 export default {
 	getConnections(from: string): Set<string> {
 		let exits = new Set(Object.values(Game.map.describeExits(from)));
-		let portalExits = PortalScanner.interroomPortals.get(from);
+		const portalExits = PortalScanner.interroomPortals.get(from);
 		if (portalExits) {
 			// if (!Array.isArray(portalExits)) {
 			// 	portalExits = [portalExits];
@@ -14,9 +14,9 @@ export default {
 	},
 
 	roomNameToXY(roomName: string): [number, number] | undefined {
-		const match = roomName.match(/^[WE]([0-9]+)[NS]([0-9]+)$/);
+		const match = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
 		if (match) {
-			return [parseInt(match[1]), parseInt(match[2])]
+			return [parseInt(match[1]), parseInt(match[2])];
 		}
 		return undefined;
 	},
@@ -139,4 +139,4 @@ export default {
 
 	// 	return ERR_NO_PATH;
 	// },
-}
+};

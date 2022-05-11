@@ -1136,8 +1136,8 @@ function commandRemoteMining() {
 		if (
 			target.creepHarvester &&
 			(!Game.creeps[target.creepHarvester] ||
-			!Game.creeps[target.creepHarvester].memory.harvestTarget ||
-			Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id)
+				!Game.creeps[target.creepHarvester].memory.harvestTarget ||
+				Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id)
 		) {
 			delete target.creepHarvester;
 		}
@@ -1608,7 +1608,7 @@ const jobs = {
 		requestObservations: PortalScanner.requestObservations,
 		run: PortalScanner.scanVisibleRooms,
 		interval: 10,
-	}
+	},
 };
 
 function queueJob(job: any) {

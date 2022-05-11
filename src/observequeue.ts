@@ -9,11 +9,13 @@ export class ObserveQueue {
 	}
 
 	private static getObservers(): StructureObserver[] {
-		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o) as StructureObserver[]
+		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o) as StructureObserver[];
 	}
 
 	public static updateCachedObserverIds(): void {
-		Memory.observe.observers =  (_.filter(Game.structures, s => s.structureType === STRUCTURE_OBSERVER) as StructureObserver[]).map(o => o.id);
+		Memory.observe.observers = (
+			_.filter(Game.structures, s => s.structureType === STRUCTURE_OBSERVER) as StructureObserver[]
+		).map(o => o.id);
 	}
 
 	public static queue(roomName: string): void {
@@ -28,12 +30,12 @@ export class ObserveQueue {
 		}
 
 		let anySuccess = false;
-		for (let observer of this.getObservers()) {
+		for (const observer of this.getObservers()) {
 			if (Memory.observe.queue.length === 0) {
 				break;
 			}
-			let target = Memory.observe.queue[0];
-			let result = observer.observeRoom(target);
+			const target = Memory.observe.queue[0];
+			const result = observer.observeRoom(target);
 			if (result !== OK) {
 				console.log(`Observer ${observer.id} in ${observer.room} failed to observe ${target}`);
 				continue;

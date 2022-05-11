@@ -5,19 +5,18 @@ import util from "../util";
  * Scans highway rooms for portals, and stores the information in memory for later pathfinding.
  */
 export default class PortalScanner {
-
 	/** Have the maps been loaded from memory? */
 	static loaded = false;
 	/** Have the maps been modified since they've been loaded? If so, they need to be saved to memory. */
 	static dirty = false;
-	static intershardPortals: Map<string, { shard: string, room: string }> = new Map();
+	static intershardPortals: Map<string, { shard: string; room: string }> = new Map();
 	static interroomPortals: Map<string, string> = new Map();
 
 	public static initialize() {
 		if (!Memory.portals) {
 			Memory.portals = {
 				intershard: [],
-				interroom: []
+				interroom: [],
 			};
 		}
 	}
@@ -58,15 +57,17 @@ export default class PortalScanner {
 		if (rooms.length === 0) {
 			return;
 		}
-		let intershardDestinations: typeof PortalScanner.intershardPortals = new Map();
-		let interroomDestinations: typeof PortalScanner.interroomPortals = new Map();
-		for (let room of rooms) {
-			let portals: StructurePortal[] = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_PORTAL });
+		const intershardDestinations: typeof PortalScanner.intershardPortals = new Map();
+		const interroomDestinations: typeof PortalScanner.interroomPortals = new Map();
+		for (const room of rooms) {
+			const portals: StructurePortal[] = room.find(FIND_STRUCTURES, {
+				filter: s => s.structureType === STRUCTURE_PORTAL,
+			});
 			if (portals.length === 0) {
 				continue;
 			}
 
-			for (let portal of portals) {
+			for (const portal of portals) {
 				if (portal.destination instanceof RoomPosition) {
 					interroomDestinations.set(room.name, portal.destination.roomName);
 				} else {
@@ -80,10 +81,10 @@ export default class PortalScanner {
 		}
 
 		PortalScanner.loadMaps();
-		for (let [roomName, dst] of intershardDestinations.entries()) {
+		for (const [roomName, dst] of intershardDestinations.entries()) {
 			PortalScanner.intershardPortals.set(roomName, dst);
 		}
-		for (let [entry, exit] of interroomDestinations.entries()) {
+		for (const [entry, exit] of interroomDestinations.entries()) {
 			PortalScanner.interroomPortals.set(entry, exit);
 		}
 		PortalScanner.dirty = true;

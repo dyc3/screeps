@@ -37,15 +37,15 @@ declare global {
 		attackTarget: string;
 		offense: {
 			tasks: any[]; // TODO: convert to typescript
-		}
+		};
 		observe: {
 			observers: Id<StructureObserver>[];
 			queue: string[];
-		}
+		};
 		portals: {
-			intershard: [string, { shard: string, room: string }][];
+			intershard: [string, { shard: string; room: string }][];
 			interroom: [string, string][];
-		}
+		};
 	}
 
 	interface Creep {

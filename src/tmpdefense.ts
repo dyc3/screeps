@@ -3,7 +3,58 @@ import { Role } from "roles/meta";
 // @ts-ignore
 import taskRenew from "./task.renew.js";
 
-const rangedBody = [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK]
+const rangedBody = [
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	MOVE,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+	RANGED_ATTACK,
+];
 
 const defendRoom = "W16N7";
 
@@ -15,15 +66,15 @@ export function run() {
 	const creeps = util.getCreeps(Role.TmpDefense);
 	const room = Game.rooms[defendRoom];
 	dlog(`Defending room ${defendRoom} - creeps: ${creeps.length}`);
-	let hostiles = room.find(FIND_HOSTILE_CREEPS);
+	const hostiles = room.find(FIND_HOSTILE_CREEPS);
 
-	for (let creep of creeps) {
+	for (const creep of creeps) {
 		if (creep.room.name !== defendRoom) {
 			creep.travelTo(new RoomPosition(27, 31, defendRoom), { range: 3 });
 			continue;
 		}
 
-		if (creep.ticksToLive as number < 200) {
+		if ((creep.ticksToLive as number) < 200) {
 			creep.memory.renewing = true;
 		}
 
@@ -65,13 +116,12 @@ export function run() {
 			}
 		}
 
-
-		let hostilesInRange = hostiles.filter(h => h.pos.inRangeTo(creep.pos, 3));
+		const hostilesInRange = hostiles.filter(h => h.pos.inRangeTo(creep.pos, 3));
 		if (hostilesInRange.length === 0) {
 			continue;
 		}
 
-		let target = hostilesInRange[0];
+		const target = hostilesInRange[0];
 		dlog(`${creep.name} attacking ${target.name}`);
 		if (creep.pos.isNearTo(target)) {
 			creep.rangedMassAttack();
@@ -82,30 +132,29 @@ export function run() {
 }
 
 function spawnTmpDefense(spawnName: string) {
-	let spawn = Game.spawns[spawnName];
+	const spawn = Game.spawns[spawnName];
 
-	let result = spawn.spawnCreep(rangedBody, `tmpdefense_${Game.time.toString(16)}`, {
+	const result = spawn.spawnCreep(rangedBody, `tmpdefense_${Game.time.toString(16)}`, {
 		// @ts-ignore
 		memory: {
 			role: Role.TmpDefense,
 			keepAlive: true,
 			renewing: false,
 			stage: 0,
-		}
+		},
 	});
 
 	if (typeof result === "string") {
-		return result
-	}
-	else {
-		return util.errorCodeToString(result)
+		return result;
+	} else {
+		return util.errorCodeToString(result);
 	}
 }
 
 global.TmpDefense = {
 	spawnTmpDefense,
-}
+};
 
 export default {
 	run,
-}
+};

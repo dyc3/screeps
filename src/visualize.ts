@@ -158,14 +158,16 @@ export default {
 				const enabled = task.disableUntil < Game.time;
 				const disabledText = enabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`;
 				let spawningText = "";
-				for (let creepName of task.assignedCreeps) {
+				for (const creepName of task.assignedCreeps) {
 					const creep = Game.creeps[creepName];
 					if (creep && creep.spawning) {
-						let spawn = Object.values(Game.spawns).find((s) => s.spawning?.name === creep.name);
+						const spawn = Object.values(Game.spawns).find(s => s.spawning?.name === creep.name);
 						if (!spawn || !spawn.spawning) {
 							continue;
 						}
-						spawningText += `spawning: ${creep.name} (${(spawn.spawning.remainingTime / spawn.spawning.needTime).toLocaleString(undefined,{style: 'percent'})}%, ETA: ${spawn.spawning.remainingTime}) `;
+						spawningText += `spawning: ${creep.name} (${(
+							spawn.spawning.remainingTime / spawn.spawning.needTime
+						).toLocaleString(undefined, { style: "percent" })}%, ETA: ${spawn.spawning.remainingTime}) `;
 					}
 				}
 				vis.text(
@@ -294,25 +296,27 @@ export default {
 
 	drawMapVision() {
 		const rooms = Object.values(Game.rooms);
-		for (let room of rooms) {
-			let pos = room.getPositionAt(2, 2) as RoomPosition;
+		for (const room of rooms) {
+			const pos = room.getPositionAt(2, 2) as RoomPosition;
 			Game.map.visual.rect(pos, 46, 46, {
 				fill: "transparent",
 				stroke: "#0047AB",
 				opacity: 0.5,
-			})
+			});
 		}
 	},
 
 	drawNukeRange() {
 		const rooms = util.getOwnedRooms();
-		for (let room of rooms) {
-			let nukers = room.find(FIND_MY_STRUCTURES, { filter: s => s.structureType === STRUCTURE_NUKER }) as StructureNuker[];
-			for (let nuker of nukers) {
+		for (const room of rooms) {
+			const nukers = room.find(FIND_MY_STRUCTURES, {
+				filter: s => s.structureType === STRUCTURE_NUKER,
+			});
+			for (const nuker of nukers) {
 				Game.map.visual.circle(nuker.pos, {
-					fill: 'transparent',
-					radius: NUKE_RANGE*50,
-					stroke: nuker.cooldown > 0 ? '#ffbb00' : '#bb7700',
+					fill: "transparent",
+					radius: NUKE_RANGE * 50,
+					stroke: nuker.cooldown > 0 ? "#ffbb00" : "#bb7700",
 					opacity: 0.3,
 					strokeWidth: 3,
 				});

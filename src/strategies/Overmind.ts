@@ -36,8 +36,8 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	/** The room the enemy is probably spawning the guard creeps from. */
 	spawningRoom: string;
 	objective: "travel" | "bait" | "flee";
-	lastObservationTime: number = 0;
-	outsideOfObservationRange: boolean = false;
+	lastObservationTime = 0;
+	outsideOfObservationRange = false;
 	baitPosition: RoomPosition | undefined;
 
 	constructor(mem: any) {
@@ -59,7 +59,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	}
 
 	getKnownBadRooms(): string[] {
-		let badRooms: string[] = [
+		const badRooms: string[] = [
 			this.spawningRoom,
 			...Memory.remoteMining.targets.filter(t => t.danger > 0).map(t => t.roomName),
 			...Memory.offense.tasks.filter(t => t.strategyName === this.strategyName).map(t => t.spawningRoom),
@@ -69,7 +69,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 
 	act(creeps: Creep[]): void {
 		// act on creeps based on objective
-		let creep = creeps[0];
+		const creep = creeps[0];
 		creep.say(this.objective);
 		if (creep) {
 			if (creep.memory.renewing) {
@@ -89,8 +89,8 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 					// if we are adjacent to the mining room, and we don't know what our waiting room is,
 					// then we can assume that the current room is the waiting room.
 
-					let exits = creep.room.find(FIND_EXIT);
-					for (let exit of exits) {
+					const exits = creep.room.find(FIND_EXIT);
+					for (const exit of exits) {
 						if (exit.roomName === this.miningRoom) {
 							this.waitingRoom = creep.room.name;
 							break;
@@ -132,12 +132,14 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				this.objective = "flee";
 			}
 		} else if (this.objective === "bait") {
-			let miningRoom = Game.rooms[this.miningRoom];
+			const miningRoom = Game.rooms[this.miningRoom];
 			if (miningRoom) {
-				let enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
-				let hostiles = enemyCreeps.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0);
+				const enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
+				const hostiles = enemyCreeps.filter(
+					c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0
+				);
 				if (hostiles.length > 0) {
-					let closestDist = hostiles.map(c => c.pos.getRangeTo(creep)).reduce((a, b) => Math.min(a, b));
+					const closestDist = hostiles.map(c => c.pos.getRangeTo(creep)).reduce((a, b) => Math.min(a, b));
 					olog(`bait: ${creep.name} is ${closestDist} away from an enemy.`);
 					if (closestDist <= 12) {
 						this.objective = "flee";
@@ -145,16 +147,20 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				}
 			}
 		} else if (this.objective === "flee") {
-			let miningRoom = Game.rooms[this.miningRoom];
+			const miningRoom = Game.rooms[this.miningRoom];
 			if (miningRoom) {
-				let enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
-				let hostiles = enemyCreeps.filter(c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0);
+				const enemyCreeps = miningRoom.find(FIND_HOSTILE_CREEPS);
+				const hostiles = enemyCreeps.filter(
+					c => c.getActiveBodyparts(ATTACK) + c.getActiveBodyparts(RANGED_ATTACK) > 0
+				);
 				if (hostiles.length === 0) {
 					this.objective = "bait";
 				}
 				if (this.baitPosition) {
 					if (hostiles.length > 0) {
-						let closestDist = hostiles.map(c => c.pos.getRangeTo(this.baitPosition as RoomPosition)).reduce((a, b) => Math.min(a, b));
+						const closestDist = hostiles
+							.map(c => c.pos.getRangeTo(this.baitPosition as RoomPosition))
+							.reduce((a, b) => Math.min(a, b));
 						olog(`flee: enemy is ${closestDist} away from the bait position.`);
 						if (closestDist > 30) {
 							this.objective = "bait";
@@ -177,12 +183,16 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 	}
 
 	visualize(creep: Creep | undefined): void {
-		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), { color: "#ff0000" });
-		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), { color: "#0000ff" });
-		let color = {
-			"bait": "#00ff00",
-			"flee" : "#ff0000",
-			"travel": "#ffff00",
+		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), {
+			color: "#ff0000",
+		});
+		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.spawningRoom), {
+			color: "#0000ff",
+		});
+		const color = {
+			bait: "#00ff00",
+			flee: "#ff0000",
+			travel: "#ffff00",
 		}[this.objective];
 		Game.map.visual.circle(new RoomPosition(25, 25, this.miningRoom), { stroke: color, fill: "transparent" });
 		if (creep) {
@@ -229,7 +239,5 @@ export class OffenseStrategyHiveBuster extends OffenseStrategy {
 		return controller.safeModeAvailable > 0 && !controller.safeMode && !controller.safeModeCooldown;
 	}
 
-	act(creeps: Creep[]) {
-
-	}
+	act(creeps: Creep[]) {}
 }

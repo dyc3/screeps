@@ -74,7 +74,7 @@ export class ErrorMapper {
 				loop();
 			} catch (e) {
 				if (e instanceof Error) {
-					let errorText = this.renderError(e);
+					const errorText = this.renderError(e);
 					console.log(errorText);
 				} else {
 					// can't handle it
