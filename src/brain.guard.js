@@ -70,7 +70,7 @@ class GuardTask {
 	get isEnabled() {
 		return this.disableUntil !== undefined && this.disableUntil < Game.time;
 	}
-};
+}
 
 module.exports = {
 	tasks: [],
@@ -113,17 +113,35 @@ module.exports = {
 	updateGuardTasks() {
 		// search unguarded rooms and create new guard tasks
 		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
-		let roomsToSearch = _.map(_.filter(Memory.remoteMining.targets, miningTarget => !_.includes(guardedRooms, miningTarget.roomName) && _.keys(Game.rooms).includes(miningTarget.roomName)), miningTarget => new Room(miningTarget.roomName));
+		let roomsToSearch = _.map(
+			_.filter(
+				Memory.remoteMining.targets,
+				miningTarget =>
+					!_.includes(guardedRooms, miningTarget.roomName) &&
+					_.keys(Game.rooms).includes(miningTarget.roomName)
+			),
+			miningTarget => new Room(miningTarget.roomName)
+		);
 		for (let room of roomsToSearch) {
 			if (guardedRooms.includes(room.name)) {
 				continue;
 			}
 			let newTask = new GuardTask();
 			const isTreasureRoom = util.isTreasureRoom(room.name);
-			const foundInvaderCore = _.first(room.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }))
+			const foundInvaderCore = _.first(
+				room.find(FIND_HOSTILE_STRUCTURES, {
+					filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
+				})
+			);
 			const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
 			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
-			const hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
+			const hostiles = allEnemyCreeps.filter(
+				creep =>
+					creep.getActiveBodyparts(ATTACK) +
+						creep.getActiveBodyparts(RANGED_ATTACK) +
+						creep.getActiveBodyparts(HEAL) >
+					0
+			);
 			if (!isTreasureRoom) {
 				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
 					continue;
@@ -136,8 +154,7 @@ module.exports = {
 			if (isTreasureRoom) {
 				newTask.guardType = "treasure";
 				newTask.neededCreeps = 2;
-			}
-			else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
+			} else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
 				newTask.guardType = "invader-subcore";
 				newTask.neededCreeps = 1;
 			} else if (isRemoteMiningRoom) {
@@ -147,7 +164,12 @@ module.exports = {
 				} else {
 					// TODO: I really need to figure out a better way to build creeps that can counter an arbitrary amount of creeps
 					for (let creep of hostiles) {
-						if (creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 12) {
+						if (
+							creep.getActiveBodyparts(ATTACK) +
+								creep.getActiveBodyparts(RANGED_ATTACK) +
+								creep.getActiveBodyparts(HEAL) >
+							12
+						) {
 							newTask.guardType = "remote-miner-huge";
 							newTask.neededCreeps = 2;
 							break;
@@ -164,9 +186,9 @@ module.exports = {
 
 		// TODO: benchmark this method, see if this is faster than doing it normally
 		let grouped = _.groupBy(this.tasks, "complete");
-		if (grouped[true]) {
+		if (grouped.true) {
 			// clean up completed tasks
-			for (let task of grouped[true]) {
+			for (let task of grouped.true) {
 				if (task.guardType === "invader-subcore") {
 					for (let creepName of task.assignedCreeps) {
 						Game.creeps[creepName].suicide();
@@ -174,11 +196,10 @@ module.exports = {
 				}
 			}
 		}
-		if (grouped[false]) {
+		if (grouped.false) {
 			// remove completed guard tasks
-			this.tasks = grouped[false];
-		}
-		else {
+			this.tasks = grouped.false;
+		} else {
 			this.tasks = [];
 		}
 
@@ -190,13 +211,16 @@ module.exports = {
 			}
 
 			if (task.guardType === "treasure") {
-				const foundInvaderCore = _.first(task.targetRoom.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }));
+				const foundInvaderCore = _.first(
+					task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
+						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
+					})
+				);
 				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 				let invaders = _.filter(hostiles, c => c.owner.username === "Invader");
 				if (invaders.length > 0 || foundInvaderCore) {
 					newTask.neededCreeps = 3;
-				}
-				else {
+				} else {
 					newTask.neededCreeps = 2;
 				}
 			} else if (task.guardType === "remote-miner-cheap" || task.guardType === "remote-miner-huge") {
@@ -205,8 +229,16 @@ module.exports = {
 				// this needs to be generalized to all possible scenarios
 				// maybe it would be a good idea to have a mechanism to
 				// hand the task over to the Offense manager if it gets a little too bloody.
-				const allEnemyCreeps = task.targetRoom.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
-				const hostiles = allEnemyCreeps.filter(creep => creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 0);
+				const allEnemyCreeps = task.targetRoom
+					.find(FIND_HOSTILE_CREEPS)
+					.filter(creep => !toolFriends.isCreepFriendly(creep));
+				const hostiles = allEnemyCreeps.filter(
+					creep =>
+						creep.getActiveBodyparts(ATTACK) +
+							creep.getActiveBodyparts(RANGED_ATTACK) +
+							creep.getActiveBodyparts(HEAL) >
+						0
+				);
 
 				if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
 					task.guardType = "remote-miner-cheap";
@@ -214,7 +246,12 @@ module.exports = {
 				} else {
 					let bigBoys = 0;
 					for (let creep of hostiles) {
-						if (creep.getActiveBodyparts(ATTACK) + creep.getActiveBodyparts(RANGED_ATTACK) + creep.getActiveBodyparts(HEAL) > 12) {
+						if (
+							creep.getActiveBodyparts(ATTACK) +
+								creep.getActiveBodyparts(RANGED_ATTACK) +
+								creep.getActiveBodyparts(HEAL) >
+							12
+						) {
 							bigBoys++;
 							task.guardType = "remote-miner-huge";
 						}
@@ -223,7 +260,9 @@ module.exports = {
 						task.neededCreeps = bigBoys + 1;
 					}
 					if (bigBoys > 3) {
-						console.log(`[guard] [${task.id}] has a lot of really big enemy creeps. Maybe we should hand it over to the offense manager? (TODO)`);
+						console.log(
+							`[guard] [${task.id}] has a lot of really big enemy creeps. Maybe we should hand it over to the offense manager? (TODO)`
+						);
 						task.neededCreeps = 0;
 					}
 				}
@@ -254,25 +293,34 @@ module.exports = {
 		}
 
 		// assign guardians to tasks
-		let unfulfilledTasks = _.filter(this.tasks, task => !task.complete && task.assignedCreeps.length < task.neededCreeps);
+		let unfulfilledTasks = _.filter(
+			this.tasks,
+			task => !task.complete && task.assignedCreeps.length < task.neededCreeps
+		);
 		for (let task of unfulfilledTasks) {
 			if (!task.isEnabled) {
 				continue;
 			}
 			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId);
-			let idleGuardiansMatching = _.filter(idleGuardians, guardian => guardian.memory.guardType == task.guardType);
+			let idleGuardiansMatching = _.filter(
+				idleGuardians,
+				guardian => guardian.memory.guardType == task.guardType
+			);
 
 			if (idleGuardiansMatching.length > 0) {
 				idleGuardiansMatching[0].memory.taskId = task.id;
 				task.assignedCreeps.push(idleGuardiansMatching[0].name);
-			}
-			else if (idleGuardians.length > 0) {
+			} else if (idleGuardians.length > 0) {
 				idleGuardians[0].memory.taskId = task.id;
 				task.assignedCreeps.push(idleGuardians[0].name);
-			}
-			else {
+			} else {
 				let creepBody = this.getGuardianBody(task.guardType);
-				let targetSpawnRooms = util.findClosestOwnedRooms(new RoomPosition(25, 25, task._targetRoom), room => room.energyAvailable >= room.energyCapacityAvailable * 0.8 && room.energyAvailable >= util.getCreepSpawnCost(creepBody));
+				let targetSpawnRooms = util.findClosestOwnedRooms(
+					new RoomPosition(25, 25, task._targetRoom),
+					room =>
+						room.energyAvailable >= room.energyCapacityAvailable * 0.8 &&
+						room.energyAvailable >= util.getCreepSpawnCost(creepBody)
+				);
 				let targetSpawn = null;
 				for (let room of targetSpawnRooms) {
 					let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
@@ -294,7 +342,7 @@ module.exports = {
 					keepAlive: false,
 					renewing: false,
 					taskId: task.id,
-					guardType: task.guardType
+					guardType: task.guardType,
 				};
 				if (task.guardType === "treasure") {
 					newCreepMem.keepAlive = true;
@@ -303,8 +351,7 @@ module.exports = {
 					console.log(`[guardians] Spawned new ${task.guardType} guardian for ${task.id}`);
 					task.assignedCreeps.push(creepName);
 					Memory.guard.guardiansSpawned++;
-				}
-				else {
+				} else {
 					console.log("[guardians] Failed to spawn guardian creep for unknown reasons");
 				}
 			}
@@ -314,26 +361,27 @@ module.exports = {
 	getGuardianBody(guardType) {
 		if (guardType == "max") {
 			// TODO: build the biggest creep possible
+			// eslint-disable-next-line prettier/prettier
 			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
-		}
-		else if (guardType == "treasure") {
+		} else if (guardType == "treasure") {
+			// eslint-disable-next-line prettier/prettier
 			return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,HEAL,MOVE];
-		}
-		else if (guardType === "invader-subcore") {
+		} else if (guardType === "invader-subcore") {
 			// used for killing invader cores that have expanded out from the main one.
+			// eslint-disable-next-line prettier/prettier
 			return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
-		}
-		else if (guardType === "remote-miner-cheap") {
+		} else if (guardType === "remote-miner-cheap") {
+			// eslint-disable-next-line prettier/prettier
 			return [MOVE, MOVE, ATTACK, ATTACK, MOVE]
-		}
-		else if (guardType === "remote-miner-huge") {
+		} else if (guardType === "remote-miner-huge") {
+			// eslint-disable-next-line prettier/prettier
 			return [RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,MOVE];
-		}
-		else {
+		} else {
 			if (util.getOwnedRooms().length > 2) {
+				// eslint-disable-next-line prettier/prettier
 				return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK];
-			}
-			else {
+			} else {
+				// eslint-disable-next-line prettier/prettier
 				return [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
 			}
 		}
@@ -344,7 +392,11 @@ module.exports = {
 			if (task.complete) {
 				continue;
 			}
-			console.log(`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${task.waiting ? "waiting" : "active"} ${task.isEnabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`}`);
+			console.log(
+				`[guard] running task ${task.id} - creeps: ${task.assignedCreeps.length}/${task.neededCreeps} ${
+					task.waiting ? "waiting" : "active"
+				} ${task.isEnabled ? "enabled" : `disabled (${task.disableUntil - Game.time} remaining)`}`
+			);
 			if (!task.isEnabled) {
 				continue;
 			}
@@ -354,25 +406,31 @@ module.exports = {
 
 			if (task.currentTarget) {
 				console.log(`[guard] [${task.id}] currentTarget: ${task.currentTarget} at ${task.currentTarget.pos}`);
-				const offset = .7;
-				new RoomVisual(task.currentTarget.pos.roomName).poly([
-					[task.currentTarget.pos.x, task.currentTarget.pos.y - offset],
-					[task.currentTarget.pos.x + offset, task.currentTarget.pos.y],
-					[task.currentTarget.pos.x, task.currentTarget.pos.y + offset],
-					[task.currentTarget.pos.x - offset, task.currentTarget.pos.y],
-					[task.currentTarget.pos.x, task.currentTarget.pos.y - offset]
-				], {
-					stroke: '#ffff00',
-					strokeWidth: .07,
-					opacity: .5,
-				});
+				const offset = 0.7;
+				new RoomVisual(task.currentTarget.pos.roomName).poly(
+					[
+						[task.currentTarget.pos.x, task.currentTarget.pos.y - offset],
+						[task.currentTarget.pos.x + offset, task.currentTarget.pos.y],
+						[task.currentTarget.pos.x, task.currentTarget.pos.y + offset],
+						[task.currentTarget.pos.x - offset, task.currentTarget.pos.y],
+						[task.currentTarget.pos.x, task.currentTarget.pos.y - offset],
+					],
+					{
+						stroke: "#ffff00",
+						strokeWidth: 0.07,
+						opacity: 0.5,
+					}
+				);
 			}
 
 			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
 			let guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
 
 			if (task.waiting) {
-				if ((task.currentTarget && task.currentTarget.owner.username === "Source Keeper") || (guardsUnavailable === 0 && creeps.length === task.neededCreeps)) {
+				if (
+					(task.currentTarget && task.currentTarget.owner.username === "Source Keeper") ||
+					(guardsUnavailable === 0 && creeps.length === task.neededCreeps)
+				) {
 					task.waiting = false;
 				}
 			} else {
@@ -381,16 +439,25 @@ module.exports = {
 				}
 			}
 
-			if (!!Game.rooms[task._targetRoom]) {
-				const foundInvaderCore = _.first(task.targetRoom.find(FIND_HOSTILE_STRUCTURES, { filter: struct => struct.structureType === STRUCTURE_INVADER_CORE }));
+			if (Game.rooms[task._targetRoom]) {
+				const foundInvaderCore = _.first(
+					task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
+						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
+					})
+				);
 				if (foundInvaderCore && foundInvaderCore.level > 0 && foundInvaderCore.effects.length > 0) {
-					let collapseEffect = _.find(foundInvaderCore.effects, effect => effect.effect === EFFECT_COLLAPSE_TIMER);
+					let collapseEffect = _.find(
+						foundInvaderCore.effects,
+						effect => effect.effect === EFFECT_COLLAPSE_TIMER
+					);
 					if (!collapseEffect) {
 						console.log("[guard] Found main invader core, it's spawning in. We'll have to evacuate soon.");
 						continue;
 					}
 					task.disableUntil = Game.time + collapseEffect.ticksRemaining;
-					console.log("[guard] Found main invader core, disabling task " + task.id + " until " + task.disableUntil);
+					console.log(
+						"[guard] Found main invader core, disabling task " + task.id + " until " + task.disableUntil
+					);
 					continue;
 				}
 			}
@@ -407,85 +474,103 @@ module.exports = {
 					let towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
 					if (towers.length > 0) {
 						task._currentTarget = towers[0].id;
-					}
-					else {
-						let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, { filter: hostile => {
-							if (hostile.owner.username !== "Source Keeper") {
-								return true;
-							}
-							let struct = _.first(hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, { filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR }));
-							if (struct) {
-								return !!_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
-							}
-							else {
-								return true;
-							}
-						}});
+					} else {
+						let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, {
+							filter: hostile => {
+								if (hostile.owner.username !== "Source Keeper") {
+									return true;
+								}
+								let struct = _.first(
+									hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {
+										filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
+									})
+								);
+								if (struct) {
+									return !!_.find(
+										Memory.remoteMining.targets,
+										target => target.keeperLairId === struct.id
+									);
+								} else {
+									return true;
+								}
+							},
+						});
 
 						if (hostiles.length > 0) {
 							// prioritize creeps that can heal
-							hostiles = _.sortByOrder(hostiles, [
-							c => {
-								return c.owner.username !== "Source Keeper";
-							},
-							c => {
-								return c.getActiveBodyparts(HEAL);
-							},
-							c => {
-								return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
-							}
-							], ["desc", "desc", "desc"]);
+							hostiles = _.sortByOrder(
+								hostiles,
+								[
+									c => {
+										return c.owner.username !== "Source Keeper";
+									},
+									c => {
+										return c.getActiveBodyparts(HEAL);
+									},
+									c => {
+										return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
+									},
+								],
+								["desc", "desc", "desc"]
+							);
 
 							task._currentTarget = hostiles[0].id;
-						}
-						else {
-							let keeperLairs = hostileStructures.filter(struct => struct.structureType === STRUCTURE_KEEPER_LAIR && _.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id));
+						} else {
+							let keeperLairs = hostileStructures.filter(
+								struct =>
+									struct.structureType === STRUCTURE_KEEPER_LAIR &&
+									_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
+							);
 							if (keeperLairs) {
 								keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
 								task._currentTarget = keeperLairs[0].id;
 							}
 						}
 					}
-				}
-				else if (task.guardType === "invader-subcore") {
+				} else if (task.guardType === "invader-subcore") {
 					let invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
-						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE
+						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
 					});
 					if (invaderCores.length > 0) {
 						task._currentTarget = invaderCores[0].id;
-					}
-					else {
+					} else {
 						task.complete = true;
 						console.log("[guard] task", task.id, "completed");
 						continue;
 					}
-				}
-				else {
+				} else {
 					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
 					if (hostiles.length == 0) {
 						task.complete = true;
 						console.log("[guard] task", task.id, "completed");
 						continue;
-					}
-					else {
+					} else {
 						if (!task.currentTarget) {
 							delete task._currentTarget;
 						}
-						hostiles = _.sortByOrder(hostiles, [
-							c => {
-								return c.getActiveBodyparts(HEAL);
-							},
-							c => {
-								return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
-							}
-						], ["desc", "desc"]);
+						hostiles = _.sortByOrder(
+							hostiles,
+							[
+								c => {
+									return c.getActiveBodyparts(HEAL);
+								},
+								c => {
+									return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
+								},
+							],
+							["desc", "desc"]
+						);
 						task._currentTarget = hostiles[0].id;
 					}
 				}
 			}
 
-			if (task.guardType == "treasure" && task.currentTarget instanceof StructureKeeperLair && !task.currentTarget.ticksToSpawn) {
+			if (
+				task.guardType == "treasure" &&
+				task.currentTarget instanceof StructureKeeperLair &&
+				!task.currentTarget.ticksToSpawn
+			) {
 				let hostiles = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
 				if (hostiles.length > 0) {
 					task._currentTarget = hostiles[0].id;
@@ -509,8 +594,7 @@ module.exports = {
 					if (creep.hits < creep.hitsMax) {
 						creep.log("[guard] healing self");
 						creep.heal(creep);
-					}
-					else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
+					} else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
 						let creepsNeedHeal = _.filter(creeps, c => {
 							if (c.name === creep.name) {
 								return false;
@@ -521,13 +605,11 @@ module.exports = {
 							if (creep.pos.isNearTo(creepsNeedHeal[0])) {
 								creep.log("[guard] healing other guard");
 								creep.heal(creepsNeedHeal[0]);
-							}
-							else {
+							} else {
 								creep.log("[guard] ranged healing other guard");
 								creep.rangedHeal(creepsNeedHeal[0]);
 							}
-						}
-						else {
+						} else {
 							// passively heal other friendly creeps in range.
 							let otherCreepsNeedHeal = creep.pos.findInRange(FIND_CREEPS, 3).filter(c => {
 								return toolFriends.isCreepFriendly(c) && c.hits < c.hitsMax;
@@ -536,8 +618,7 @@ module.exports = {
 								if (creep.pos.isNearTo(otherCreepsNeedHeal[0])) {
 									creep.log("[guard] healing other friendly creep");
 									creep.heal(otherCreepsNeedHeal[0]);
-								}
-								else {
+								} else {
 									creep.log("[guard] ranged healing friendly creep");
 									creep.rangedHeal(otherCreepsNeedHeal[0]);
 								}
@@ -551,10 +632,17 @@ module.exports = {
 					let isTargetInRange = rangeToTarget <= 3;
 					let hostilesAdjacent = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 1));
 					let hostilesInRange = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3));
-					let hostileHealdersInRange = _.filter(hostilesInRange, hostile => hostile.getActiveBodyparts(HEAL) > 0);
+					let hostileHealdersInRange = _.filter(
+						hostilesInRange,
+						hostile => hostile.getActiveBodyparts(HEAL) > 0
+					);
 					let rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
-					let rangedMassAttackEffectiveness = rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] || 0); // Estimation of how much damage we will do to the target with a mass attack.
-					let targetHealEffectiveness = task.currentTarget instanceof Creep ? task.currentTarget.getActiveBodyparts(HEAL) * HEAL_POWER : 0;
+					let rangedMassAttackEffectiveness =
+						rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] || 0); // Estimation of how much damage we will do to the target with a mass attack.
+					let targetHealEffectiveness =
+						task.currentTarget instanceof Creep
+							? task.currentTarget.getActiveBodyparts(HEAL) * HEAL_POWER
+							: 0;
 
 					let shouldMassAttack = false;
 					// Needs to prioritize focusing down creeps that can heal
@@ -562,18 +650,14 @@ module.exports = {
 						if (isTargetInRange) {
 							if (rangeToTarget === 1 && hostilesInRange.length > 1) {
 								shouldMassAttack = true;
-							}
-							else if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
+							} else if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
 								shouldMassAttack = false;
-							}
-							else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
+							} else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
+								shouldMassAttack = true;
+							} else if (rangeToTarget === 1) {
 								shouldMassAttack = true;
 							}
-							else if (rangeToTarget === 1) {
-								shouldMassAttack = true;
-							}
-						}
-						else if (hostilesInRange.length >= 2) {
+						} else if (hostilesInRange.length >= 2) {
 							shouldMassAttack = true;
 						}
 					}
@@ -586,11 +670,9 @@ module.exports = {
 								if (rangeToTarget === 1) {
 									creep.move(creep.pos.getDirectionTo(task.currentTarget));
 								}
-							}
-							else if (isTargetInRange) {
+							} else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
-							}
-							else if (hostilesInRange.length == 1) {
+							} else if (hostilesInRange.length == 1) {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
@@ -606,26 +688,48 @@ module.exports = {
 						if (task.waiting) {
 							creep.say("waiting");
 							creep.log("waiting for other guards to finish spawning");
-							let remoteMiningTarget = _.find(Memory.remoteMining.targets, { roomName: task._targetRoom })
+							let remoteMiningTarget = _.find(Memory.remoteMining.targets, {
+								roomName: task._targetRoom,
+							});
 							if (remoteMiningTarget) {
-								let dangerPos = new RoomPosition(remoteMiningTarget.dangerPos[2].x, remoteMiningTarget.dangerPos[2].y, remoteMiningTarget.dangerPos[2].roomName);
-								creep.travelTo(dangerPos, { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
-							}
-							else {
+								let dangerPos = new RoomPosition(
+									remoteMiningTarget.dangerPos[2].x,
+									remoteMiningTarget.dangerPos[2].y,
+									remoteMiningTarget.dangerPos[2].roomName
+								);
+								creep.travelTo(dangerPos, {
+									range: 3,
+									ensurePath: true,
+									avoidRooms: [task._targetRoom],
+								});
+							} else {
 								if (!creep.memory.stagingObjectId) {
-									creep.memory.stagingObjectId = util.getSpawn(util.findClosestOwnedRooms(creep.pos)[0]).id;
+									creep.memory.stagingObjectId = util.getSpawn(
+										util.findClosestOwnedRooms(creep.pos)[0]
+									).id;
 								}
-								creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId), { range: 3, ensurePath: true, avoidRooms: [task._targetRoom] });
+								creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId), {
+									range: 3,
+									ensurePath: true,
+									avoidRooms: [task._targetRoom],
+								});
 							}
-						}
-						else {
-							let minRange = task.currentTarget.getActiveBodyparts(ATTACK) > 0 && creep.getActiveBodyparts(RANGED_ATTACK) > 0 ? 2 : 1;
+						} else {
+							let minRange =
+								task.currentTarget.getActiveBodyparts(ATTACK) > 0 &&
+								creep.getActiveBodyparts(RANGED_ATTACK) > 0
+									? 2
+									: 1;
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true, stuckValue: 1 });
+								creep.travelTo(task.currentTarget, {
+									ignoreCreeps: false,
+									range: minRange,
+									movingTarget: true,
+									stuckValue: 1,
+								});
 							}
 						}
-					}
-					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureTower) {
+					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureTower) {
 						console.log(`[guard] attacking tower, range=${rangeToTarget}`);
 
 						if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
@@ -634,11 +738,9 @@ module.exports = {
 								if (rangeToTarget === 1) {
 									creep.move(creep.pos.getDirectionTo(task.currentTarget));
 								}
-							}
-							else if (isTargetInRange) {
+							} else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
-							}
-							else if (hostilesInRange.length == 1) {
+							} else if (hostilesInRange.length == 1) {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
@@ -649,26 +751,29 @@ module.exports = {
 
 						let minRange = 1;
 						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-							creep.travelTo(task.currentTarget, { ignoreCreeps: false, range: minRange, movingTarget: true });
+							creep.travelTo(task.currentTarget, {
+								ignoreCreeps: false,
+								range: minRange,
+								movingTarget: true,
+							});
 						}
-					}
-					else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
+					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
 							creep.travelTo(task.currentTarget, { range: 2 });
 						}
-					}
-					else if (task.guardType === "invader-subcore" && task.currentTarget instanceof StructureInvaderCore) {
+					} else if (
+						task.guardType === "invader-subcore" &&
+						task.currentTarget instanceof StructureInvaderCore
+					) {
 						if (creep.pos.isNearTo(task.currentTarget)) {
 							if (creep.getActiveBodyparts(ATTACK)) {
 								creep.attack(task.currentTarget);
 							}
-						}
-						else {
+						} else {
 							creep.travelTo(task.currentTarget, { range: 1 });
 						}
-					}
-					else {
+					} else {
 						console.log("[guard] ERR: unknown current target");
 					}
 				}
