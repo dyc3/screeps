@@ -41,7 +41,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		this.attackerCount = 0;
 		this.healerCount = 0;
 		this.bigHealerCount = 0;
-		this.regroup = false;
+		this.regroupPos = undefined;
 		Object.assign(this, mem);
 	}
 
@@ -56,6 +56,10 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 
 	get currentTarget() {
 		return Game.getObjectById(this.currentTargetId);
+	}
+
+	get shouldRegroup() {
+		return this.regroupPos !== undefined;
 	}
 
 	act(creeps) {
@@ -83,6 +87,17 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 				}
 			}
 		});
+
+		if (this.shouldRegroup) {
+			olog(`Regrouping`);
+			let regroupPos = new RoomPosition(this.regroupPos.x, this.regroupPos.y, this.regroupPos.roomName);
+			creeps.forEach(creep => {
+				creep.travelTo(regroupPos, {
+					ensurePath: true,
+				});
+			});
+			return;
+		}
 
 		if (targetRoomVision) {
 			let room = Game.rooms[this.targetRoom];
