@@ -928,8 +928,7 @@ function doAutoTrading() {
 		[RESOURCE_OPS]: 4.7,
 	};
 
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		if (!room.terminal) {
 			continue;
 		}
@@ -937,8 +936,7 @@ function doAutoTrading() {
 			continue;
 		}
 
-		for (let m = 0; m < Memory.mineralsToSell.length; m++) {
-			const mineral = Memory.mineralsToSell[m];
+		for (const mineral of Memory.mineralsToSell) {
 			// @ts-expect-error FIXME: this could use a refactor to type check better
 			if (!minimumPrice[mineral]) {
 				console.log("WARN: could not find", mineral, "in minimumPrice");
@@ -1016,12 +1014,10 @@ function doAutoPlanning() {
 	}
 
 	// place extractors when able
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		if (room.controller?.level ?? 0 >= 6) {
 			const minerals = room.find(FIND_MINERALS);
-			for (const m in minerals) {
-				const mineral = minerals[m];
+			for (const mineral of minerals) {
 				if (
 					// @ts-expect-error FIXME: this should work normally, type definitions are wrong?
 					mineral.pos.lookFor(LOOK_STRUCTURES, {
@@ -1044,8 +1040,7 @@ function doAutoPlanning() {
 
 function doWorkLabs() {
 	const rooms = util.getOwnedRooms();
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		if (room.controller?.level ?? 0 < 6) {
 			continue;
 		}
@@ -2049,4 +2044,5 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		main();
 	});
 });
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 module.exports.loop = loop;
