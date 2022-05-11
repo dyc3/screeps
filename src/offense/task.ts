@@ -5,6 +5,7 @@ import { Strategies } from "../strategies/all";
 import { CREEP_BODIES, olog } from "./util";
 import { NotImplementedException } from "utils/exceptions";
 import { areAllCreepsInRange } from "combat/movement";
+import { ObserveQueue } from "../observequeue";
 
 const TASK_PREPARE = 0;
 const TASK_RUN = 1;
@@ -151,5 +152,32 @@ export function autoSpawn(task_idx: number) {
 				}
 			}
 		}
+	}
+}
+
+export function hackAutoControllerAttack(): void {
+	const targetRoom = "W18N8";
+	const room = Game.rooms[targetRoom];
+	const claimers = util.getCreeps(Role.Claimer);
+	if (claimers.filter(c => c.memory.targetRoom === targetRoom).length > 0) {
+		olog("Claimer spawned, waiting");
+		return;
+	}
+
+	if (room) {
+		const controller = room.controller;
+		if (!controller) {
+			return;
+		}
+		// account for travel time
+		if (controller.upgradeBlocked > 250) {
+			olog("Waiting for controller to be attackable");
+			return;
+		}
+
+		Memory.expansionTarget = targetRoom;
+		olog(`Setting expansion target to ${targetRoom} to spawn a claimer.`);
+	} else {
+		ObserveQueue.queue(targetRoom);
 	}
 }

@@ -1,9 +1,9 @@
 import util from "./util";
-import { OffenseTask } from "./offense/task";
+import { OffenseTask, hackAutoControllerAttack } from "./offense/task";
 import { CREEP_BODIES } from "./offense/util";
 
-const TASK_PREPARE = 0
-const TASK_RUN = 1
+const TASK_PREPARE = 0;
+const TASK_RUN = 1;
 
 module.exports = {
 	run() {
@@ -17,7 +17,7 @@ module.exports = {
 		let vis = new RoomVisual();
 
 		for (let i = 0; i < Memory.offense.tasks.length; i++) {
-			Memory.offense.tasks[i].creepNames = Memory.offense.tasks[i].creepNames.filter(c => !!Game.creeps[c])
+			Memory.offense.tasks[i].creepNames = Memory.offense.tasks[i].creepNames.filter(c => !!Game.creeps[c]);
 			let task = new OffenseTask(Memory.offense.tasks[i]);
 			try {
 				task.run(i);
@@ -26,39 +26,47 @@ module.exports = {
 			}
 			Memory.offense.tasks[i] = _.omit(task, "creeps");
 
-			vis.text(`${task.strategyName}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${task.creeps.length} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`, 25, 30 + i)
+			vis.text(
+				`${task.strategyName}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${
+					task.creeps.length
+				} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`,
+				25,
+				30 + i
+			);
 		}
+
+		hackAutoControllerAttack();
 	},
-}
+};
 
 global.Offense = {
-	spawn(taskIdx, creepType, spawnName="Spawn6") {
+	spawn(taskIdx, creepType, spawnName = "Spawn6") {
 		// HACK: kinda hardcoded spawn
-		let creepName = `offense_${Game.time.toString(16)}` // _${Math.floor(Math.random() * 64).toString(16)}
+		let creepName = `offense_${Game.time.toString(16)}`; // _${Math.floor(Math.random() * 64).toString(16)}
 		let result = Game.spawns[spawnName].spawnCreep(CREEP_BODIES[creepType], creepName, {
 			memory: {
 				role: "offense",
 				keepAlive: true,
 				type: creepType,
-			}
-		})
+			},
+		});
 		if (result === OK) {
 			Memory.offense.tasks[taskIdx].creepNames.push(creepName);
 		}
 
-		return `Spawn result ${result}: ${creepName}`
+		return `Spawn result ${result}: ${creepName}`;
 	},
 
 	renewAll(taskIdx) {
 		Memory.offense.tasks[taskIdx].creepNames.forEach(name => {
 			Game.creeps[name].memory.renewing = true;
 			Game.creeps[name].memory.renew_force_amount = 1400;
-		})
+		});
 	},
 
-	create(strategyName, init={}) {
+	create(strategyName, init = {}) {
 		let task = new OffenseTask({
-			strategyName: strategyName,
+			strategyName,
 			strategy: init,
 		});
 		Memory.offense.tasks.push(_.omit(task, "creeps"));
@@ -67,43 +75,45 @@ global.Offense = {
 	pause(taskIdx) {
 		Object.assign(Memory.offense.tasks[taskIdx], {
 			state: TASK_PREPARE,
-			manualStart: false
-		})
+			manualStart: false,
+		});
 	},
 
 	reset(taskIdx) {
 		Object.assign(Memory.offense.tasks[taskIdx], {
 			state: TASK_PREPARE,
-			manualStart: false
-		})
+			manualStart: false,
+		});
 		if (Memory.offense.tasks[taskIdx].strategyName === "LureHarrass") {
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				state: 0,
-				currentTargetId: ""
-			})
+				currentTargetId: "",
+			});
 		}
 	},
 
 	start(taskIdx) {
 		Object.assign(Memory.offense.tasks[taskIdx], {
-			manualStart: true
-		})
+			manualStart: true,
+		});
 	},
 
 	/**
 	 * If applicable, set the target object of the task.
 	 */
 	setTarget(taskIdx, target) {
-		if (Memory.offense.tasks[taskIdx].strategyName === "LureHarrass" || Memory.offense.tasks[taskIdx].strategyName === "SimpleManual") {
+		if (
+			Memory.offense.tasks[taskIdx].strategyName === "LureHarrass" ||
+			Memory.offense.tasks[taskIdx].strategyName === "SimpleManual"
+		) {
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
-				currentTargetId: target
-			})
-			return "Target was set."
+				currentTargetId: target,
+			});
+			return "Target was set.";
+		} else {
+			return "setTarget is not available for this strategy.";
 		}
-		else {
-			return "setTarget is not available for this strategy."
-		}
-	}
-}
+	},
+};
 
 export default module.exports;
