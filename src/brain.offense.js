@@ -35,7 +35,7 @@ module.exports = {
 			);
 		}
 
-		hackAutoControllerAttack();
+		// hackAutoControllerAttack();
 	},
 };
 
