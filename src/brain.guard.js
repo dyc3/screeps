@@ -668,7 +668,14 @@ module.exports = {
 							if (shouldMassAttack) {
 								creep.rangedMassAttack();
 								if (rangeToTarget === 1) {
-									creep.move(creep.pos.getDirectionTo(task.currentTarget));
+									let dir = creep.pos.getDirectionTo(task.currentTarget);
+									if (
+										task.currentTarget.getActiveBodyparts(ATTACK) > 0 &&
+										creep.getActiveBodyparts(ATTACK) === 0
+									) {
+										dir = util.getOppositeDirection(dir);
+									}
+									creep.move(dir);
 								}
 							} else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
