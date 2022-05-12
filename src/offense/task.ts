@@ -169,6 +169,10 @@ export function hackAutoControllerAttack(): void {
 		if (!controller) {
 			return;
 		}
+		if (controller.my) {
+			olog("Controller is already aquired");
+			return;
+		}
 		// account for travel time
 		if (controller.upgradeBlocked > 250) {
 			olog("Waiting for controller to be attackable");
