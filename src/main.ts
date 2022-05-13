@@ -653,6 +653,10 @@ function doCreepSpawning() {
 	}
 
 	function spawnCreepOfRole(role: RoleMetadata, spawns: StructureSpawn[], room: Room | undefined = undefined) {
+		if (room && room.memory.defcon > 0) {
+			console.log(`${room.name} defcon is greater than 0, not spawning ${role.name}`);
+			return false;
+		}
 		const target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
