@@ -14,4 +14,6 @@ export interface RemoteMiningTarget {
 	danger: number;
 	dangerPos: { [danger: number]: RoomPosition } | undefined;
 	keeperLairId: Id<StructureKeeperLair> | undefined;
+	/** Indicates that the target should not be operated on. */
+	paused: boolean;
 }

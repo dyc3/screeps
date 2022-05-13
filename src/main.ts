@@ -1131,6 +1131,9 @@ function commandRemoteMining() {
 	let neededCarriers = 0;
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		const target = Memory.remoteMining.targets[t];
+		if (target.paused) {
+			continue;
+		}
 		// remove invalid creep references, and initialize potentially missing or invalid memory
 		if (
 			target.creepHarvester &&
@@ -1313,8 +1316,9 @@ function commandRemoteMining() {
 		console.log("[remote mining]", "need to spawn", neededCarriers, "carriers");
 	}
 
-	Memory.remoteMining.needHarvesterCount = Memory.remoteMining.targets.length;
-	Memory.remoteMining.needCarrierCount = _.sum(Memory.remoteMining.targets, "neededCarriers");
+	const unpausedTargets = Memory.remoteMining.targets.filter(t => t.paused);
+	Memory.remoteMining.needHarvesterCount = unpausedTargets.length;
+	Memory.remoteMining.needCarrierCount = _.sum(unpausedTargets, "neededCarriers");
 
 	// handle spawning claimers
 	let targetRooms = _.uniq(
