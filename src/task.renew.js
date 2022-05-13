@@ -49,18 +49,22 @@ const taskRenew = {
 							closestRooms: closestRooms.map(r => r.name),
 						};
 					} catch (e) {
-						creep.memory.renewTarget = (
+						let targetStruct =
 							creep instanceof Creep
 								? util.getSpawn(closestRooms[1])
-								: _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN))
-						).id;
-						creep.memory._renewDebug = {
-							startTime: Game.time,
-							renewTargetSetBy: "checkRenew branch 1",
-							targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
-							targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
-							closestRooms: closestRooms.map(r => r.name),
-						};
+								: _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN));
+						if (targetStruct) {
+							creep.memory.renewTarget = targetStruct.id;
+							creep.memory._renewDebug = {
+								startTime: Game.time,
+								renewTargetSetBy: "checkRenew branch 1",
+								targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+								targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+								closestRooms: closestRooms.map(r => r.name),
+							};
+						} else {
+							creep.log("No spawn found to renew");
+						}
 					}
 					creep.memory._lastCheckForCloseSpawn = Game.time;
 				}
