@@ -1,17 +1,12 @@
 const toolFriends = {
-	friends: [
-		"Segmentation_Fault",
-		"Azrules",
-		"ragingblizzard",
-		"choudama",
-	],
+	friends: ["Segmentation_Fault", "Azrules", "ragingblizzard", "choudama", "KennsworthS", "Mototroller"],
 
 	// TODO: condense isCreepFriendly and isStructureFriendly into one function
-	isCreepFriendly: function (creep) {
+	isCreepFriendly(creep) {
 		if (creep.my) {
 			return true;
 		}
-		for (var friend in this.friends) {
+		for (let friend in this.friends) {
 			if (creep.owner.username == friend) {
 				return true;
 			}
@@ -19,18 +14,18 @@ const toolFriends = {
 		return false;
 	},
 
-	isStructureFriendly: function (struct) {
+	isStructureFriendly(struct) {
 		if (struct.my) {
 			return true;
 		}
-		for (var friend in this.friends) {
+		for (let friend in this.friends) {
 			if (struct.owner.username == friend) {
 				return true;
 			}
 		}
 		return false;
-	}
-}
+	},
+};
 
 module.exports = toolFriends;
 export default toolFriends;
