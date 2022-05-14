@@ -696,6 +696,16 @@ function doCreepSpawning() {
 					// @ts-expect-error this is valid
 					target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				}
+			} else if (role.name === Role.Harvester && hiStage === role.stages.length - 1) {
+				// HACK: if the harvester is going to another room, do not spawn the super optimized creep because it will be ultimately less effective.
+				if (target_spawn.room.name !== newCreepMemory.targetRoom) {
+					console.log("[spawning] spawning harvester with extra move");
+					body.push([MOVE, MOVE, MOVE, MOVE, MOVE]);
+				}
+				const result = target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+				if (result !== OK) {
+					return false;
+				}
 			} else {
 				// @ts-expect-error this is valid
 				target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
