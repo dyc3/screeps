@@ -1,7 +1,11 @@
 /**
  * Calculate the effectiveness of a given part on a creep, taking hits and boosts into account.
  */
-export function calcEffectiveness(creep: Creep | BodyPartDefinition[], part: BodyPartConstant, action?: "attack" | "rangedAttack" | "heal" | "rangedHeal") {
+export function calcEffectiveness(
+	creep: Creep | BodyPartDefinition[],
+	part: BodyPartConstant,
+	action?: "attack" | "rangedAttack" | "heal" | "rangedHeal"
+): number {
 	const body: BodyPartDefinition[] = creep instanceof Creep ? creep.body : creep;
 	// const boosts = _.groupBy(
 	// 	body.filter(p => p.type === part),
@@ -88,4 +92,4 @@ export default {
 	calcEffectiveness,
 	towerImpactFactor,
 	getMaxAttackRange,
-}
+};

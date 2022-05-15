@@ -38,15 +38,15 @@ declare global {
 		attackTarget: string;
 		offense: {
 			tasks: any[]; // TODO: convert to typescript
-		}
+		};
 		observe: {
 			observers: Id<StructureObserver>[];
 			queue: string[];
-		}
+		};
 		portals: {
-			intershard: [string, { shard: string, room: string }][];
+			intershard: [string, { shard: string; room: string }][];
 			interroom: [string, string][];
-		}
+		};
 	}
 
 	interface Creep {
@@ -92,9 +92,9 @@ declare global {
 			 */
 			focusQueue: Id<Creep | PowerCreep>[];
 			defenderCreeps: Id<Creep>[];
-		}
+		};
 		workers: string[];
-		workerAllocations: Record<WorkerTask, number>,
+		workerAllocations: Record<WorkerTask, number>;
 		buildTargetId: Id<ConstructionSite> | undefined;
 		findBuildTargetAt: number;
 		repairTargetId: Id<Structure> | undefined;
@@ -106,6 +106,7 @@ declare global {
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
+	// eslint-disable-next-line @typescript-eslint/no-namespace
 	namespace NodeJS {
 		interface Global {
 			log: any;

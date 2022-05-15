@@ -28,13 +28,13 @@ const WORK_ACTIONS: Record<WorkerTask, "build" | "upgradeController" | "repair">
 };
 
 export class RoomLord {
-	room: Room;
+	public room: Room;
 
-	constructor(public r: Room) {
+	public constructor(public r: Room) {
 		this.room = r;
 	}
 
-	public run() {
+	public run(): void {
 		this.setupMemory();
 		this.cleanUpDeadWorkers();
 		this.defendRoom();
@@ -48,7 +48,7 @@ export class RoomLord {
 		this.visualize();
 	}
 
-	setupMemory() {
+	private setupMemory() {
 		_.defaultsDeep(this.room.memory, {
 			defense: {
 				alertUntil: 0,
@@ -64,11 +64,11 @@ export class RoomLord {
 		});
 	}
 
-	log(...args: any[]) {
+	private log(...args: any[]) {
 		console.log(`<span style="color: lime">${this.room.name} lord: `, ...args, "</span>");
 	}
 
-	visualize() {
+	private visualize() {
 		const fortifyTarget = this.getWorkTarget(WorkerTask.Fortify);
 		if (fortifyTarget) {
 			this.room.visual.circle(fortifyTarget.pos, {
@@ -79,7 +79,7 @@ export class RoomLord {
 		}
 	}
 
-	defendRoom() {
+	private defendRoom() {
 		// TODO: handle swarm attacks
 
 		const towers = this.room.find<StructureTower>(FIND_MY_STRUCTURES, {
@@ -140,7 +140,7 @@ export class RoomLord {
 		}
 	}
 
-	findBuildTarget() {
+	private findBuildTarget() {
 		if (Game.time < this.room.memory.findBuildTargetAt) {
 			return;
 		}
@@ -169,7 +169,7 @@ export class RoomLord {
 		this.room.memory.buildTargetId = sites[0].id;
 	}
 
-	findRepairTarget() {
+	private findRepairTarget() {
 		if (Game.time < this.room.memory.findRepairTargetAt) {
 			return;
 		}
@@ -192,7 +192,7 @@ export class RoomLord {
 		this.room.memory.repairTargetId = structures[0].id;
 	}
 
-	findFortifyTarget() {
+	private findFortifyTarget() {
 		if (Game.time < this.room.memory.findFortifyTargetAt) {
 			return;
 		}
@@ -220,7 +220,7 @@ export class RoomLord {
 		this.room.memory.fortifyTargetId = structures[0].id;
 	}
 
-	updateFortifyTargetHits() {
+	private updateFortifyTargetHits() {
 		if (Game.time < this.room.memory.updateFortifyTargetHitsAt) {
 			return;
 		}
@@ -252,7 +252,7 @@ export class RoomLord {
 	 * This does not take into account the number of workers that already exist.
 	 * This is what determines the number of workers that should exist.
 	 */
-	calcWorkerAllocations() {
+	private calcWorkerAllocations() {
 		// TODO: use heuristics or something to be smart about creep allocation
 		const sites = this.room.find(FIND_MY_CONSTRUCTION_SITES);
 		const damangedStructures = this.room.find(FIND_STRUCTURES, {
@@ -276,7 +276,7 @@ export class RoomLord {
 	/**
 	 * This solves for the "Partition problem".
 	 */
-	allocateWorkers() {
+	private allocateWorkers() {
 		const workers = this.getWorkers();
 		const currentAllocations = this.getCurrentAllocations();
 		this.log(`current allocations: ${JSON.stringify(currentAllocations)}`);
@@ -323,17 +323,17 @@ export class RoomLord {
 		}
 	}
 
-	getWorkers(): Creep[] {
+	private getWorkers(): Creep[] {
 		return this.room.memory.workers.map(name => Game.creeps[name]).filter(creep => !!creep);
 	}
 
-	cleanUpDeadWorkers() {
+	private cleanUpDeadWorkers() {
 		this.room.memory.workers = this.room.memory.workers.filter(name => !!Game.creeps[name]);
 	}
 
 	/** Get creeps to do work.
 	 */
-	workCreeps() {
+	private workCreeps() {
 		// Execute tasks
 		for (const creep of this.getWorkers()) {
 			if (creep.spawning) {
@@ -375,7 +375,7 @@ export class RoomLord {
 				}
 
 				if (creep.pos.inRangeTo(workTarget, 3)) {
-					// @ts-ignore This is OK, because it doesn't matter what the target is. This is type checked appropriately in other places.
+					// @ts-expect-error This is OK, because it doesn't matter what the target is. This is type checked appropriately in other places.
 					creep[WORK_ACTIONS[creep.memory.workTask]](workTarget);
 				} else {
 					creep.travelTo(workTarget, { range: 3, maxRooms: 1 });
@@ -386,7 +386,7 @@ export class RoomLord {
 		}
 	}
 
-	getAvailableFocusTargets(): (Creep | PowerCreep)[] {
+	private getAvailableFocusTargets(): (Creep | PowerCreep)[] {
 		const creeps = [];
 		for (const id of this.room.memory.defense.focusQueue) {
 			const creep = Game.getObjectById(id);
@@ -401,16 +401,16 @@ export class RoomLord {
 		return creeps;
 	}
 
-	pingAlertRoom() {
+	private pingAlertRoom() {
 		this.room.memory.defense.alertUntil = Game.time + ALERT_DURATION;
 	}
 
-	isAlerted() {
+	public isAlerted(): boolean {
 		return Game.time < this.room.memory.defense.alertUntil;
 	}
 
 	/** An optimized attack for a creep against a target. */
-	creepAttackOptimized(creep: Creep, target: Creep | PowerCreep): ScreepsReturnCode {
+	private creepAttackOptimized(creep: Creep, target: Creep | PowerCreep): ScreepsReturnCode {
 		const dist = creep.pos.getRangeTo(target);
 		const attackRange = combatCalc.getMaxAttackRange(creep);
 		if (dist > attackRange) {
@@ -429,7 +429,7 @@ export class RoomLord {
 		return ERR_NOT_IN_RANGE;
 	}
 
-	getWorkTarget(worktask: WorkerTask): RoomObject | null | undefined {
+	private getWorkTarget(worktask: WorkerTask): RoomObject | null | undefined {
 		switch (worktask) {
 			case WorkerTask.Upgrade:
 				return this.room.controller;
