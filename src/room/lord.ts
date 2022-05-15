@@ -200,11 +200,12 @@ export class RoomLord {
 			return;
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- The assertion is necessary.
 		let structures = this.room.find(FIND_STRUCTURES, {
 			filter: struct =>
 				(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
 				struct.hits < struct.hitsMax,
-		});
+		}) as (StructureWall | StructureRampart)[];
 
 		if (structures.length === 0) {
 			this.room.memory.findFortifyTargetAt = Game.time + FORTIFY_TARGET_SEARCH_DELAY;
@@ -453,11 +454,11 @@ export class RoomLord {
 		}
 	}
 
-	public adoptCreep(creepName: string) {
+	public adoptCreep(creepName: string): void {
 		this.room.memory.workers.push(creepName);
 	}
 
-	getCurrentAllocations(): Record<WorkerTask, number> {
+	private getCurrentAllocations(): Record<WorkerTask, number> {
 		const workersGroups = _.countBy(this.getWorkers().map(c => c.memory.workTask));
 		this.log(`Worker groups: ${JSON.stringify(workersGroups)}`);
 		const allocations: Record<WorkerTask, number> = {
@@ -477,8 +478,9 @@ global.Lords = {
 		const spawn = room.find(FIND_MY_SPAWNS)[0];
 		const creepName = `worker_${Game.time.toString(16)}`;
 		spawn.spawnCreep([WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], creepName, {
-			// @ts-ignore
+			// @ts-expect-error the missing fields are undefined
 			memory: {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- this is safe
 				role: Role.Worker,
 				room: roomName,
 				keepAlive: true,

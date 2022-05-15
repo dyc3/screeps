@@ -60,8 +60,9 @@ declare global {
 		keepAlive: boolean;
 		stage: number;
 		renewing: boolean;
+		// eslint-disable-next-line camelcase
 		renew_force_amount: number | undefined;
-		renewTarget: Id<StructureSpawn>;
+		renewTarget: Id<StructureSpawn> | undefined;
 		working: boolean;
 		workTask?: WorkerTask;
 
