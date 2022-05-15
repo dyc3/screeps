@@ -61,15 +61,15 @@ export class RoomLord {
 			findFortifyTargetAt: 0,
 			fortifyTargetHits: MIN_FORIFY_HITS,
 			updateFortifyTargetHitsAt: 0,
-		})
+		});
 	}
 
 	log(...args: any[]) {
-		console.log(`<span style="color: lime">${this.room.name} lord: `, ...args, "</span>")
+		console.log(`<span style="color: lime">${this.room.name} lord: `, ...args, "</span>");
 	}
 
 	visualize() {
-		let fortifyTarget = this.getWorkTarget(WorkerTask.Fortify);
+		const fortifyTarget = this.getWorkTarget(WorkerTask.Fortify);
 		if (fortifyTarget) {
 			this.room.visual.circle(fortifyTarget.pos, {
 				fill: "transparent",
@@ -82,12 +82,12 @@ export class RoomLord {
 	defendRoom() {
 		// TODO: handle swarm attacks
 
-		let towers = this.room.find<StructureTower>(FIND_MY_STRUCTURES, {
-			filter: { structureType: STRUCTURE_TOWER }
+		const towers = this.room.find<StructureTower>(FIND_MY_STRUCTURES, {
+			filter: { structureType: STRUCTURE_TOWER },
 		});
-		let hostiles = this.room.find(FIND_HOSTILE_CREEPS);
+		const hostiles = this.room.find(FIND_HOSTILE_CREEPS);
 		if (this.room.controller?.isPowerEnabled) {
-			let powerhostiles = this.room.find(FIND_HOSTILE_POWER_CREEPS);
+			const powerhostiles = this.room.find(FIND_HOSTILE_POWER_CREEPS);
 		}
 
 		if (hostiles.length > 0) {
@@ -98,14 +98,14 @@ export class RoomLord {
 			this.log(`defending room`);
 
 			// defender creeps that are still idle
-			let  idleDefenders: Set<Id<Creep>> = new Set(this.room.memory.defense.defenderCreeps);
+			const idleDefenders: Set<Id<Creep>> = new Set(this.room.memory.defense.defenderCreeps);
 
-			let focusTargets = this.getAvailableFocusTargets();
+			const focusTargets = this.getAvailableFocusTargets();
 			if (focusTargets.length === 0) {
-				this.log("looking for focus targets")
+				this.log("looking for focus targets");
 				// this is a pretty naive selection, this could be a little bit smarter
 				if (hostiles.length > 0) {
-					let hostile = hostiles[0];
+					const hostile = hostiles[0];
 					this.room.memory.defense.focusQueue.push(hostile.id);
 					focusTargets.push(hostile);
 				}
@@ -114,19 +114,19 @@ export class RoomLord {
 
 			if (focusTargets.length > 0) {
 				// attack focus target with towers
-				for (let tower of towers) {
+				for (const tower of towers) {
 					tower.attack(focusTargets[0]);
 				}
 
 				// attack focus targets using defense creeps
-				for (let id of idleDefenders) {
-					let creep = Game.getObjectById(id);
+				for (const id of idleDefenders) {
+					const creep = Game.getObjectById(id);
 					if (!creep) {
 						// TODO: remove creep ids that don't exist anymore.
 						continue;
 					}
-					for (let focusTarget of focusTargets) {
-						let result = this.creepAttackOptimized(creep, focusTarget);
+					for (const focusTarget of focusTargets) {
+						const result = this.creepAttackOptimized(creep, focusTarget);
 						if (result === OK) {
 							idleDefenders.delete(creep.id);
 							continue;
@@ -155,12 +155,16 @@ export class RoomLord {
 			return;
 		}
 
-		sites = _.sortByOrder(sites, [
-			site => site.structureType === STRUCTURE_SPAWN,
-			site => site.structureType === STRUCTURE_TERMINAL,
-			site => site.structureType === STRUCTURE_STORAGE,
-			site => site.structureType !== STRUCTURE_ROAD,
-		], ["desc", "desc", "desc", "desc"]);
+		sites = _.sortByOrder(
+			sites,
+			[
+				site => site.structureType === STRUCTURE_SPAWN,
+				site => site.structureType === STRUCTURE_TERMINAL,
+				site => site.structureType === STRUCTURE_STORAGE,
+				site => site.structureType !== STRUCTURE_ROAD,
+			],
+			["desc", "desc", "desc", "desc"]
+		);
 
 		this.room.memory.buildTargetId = sites[0].id;
 	}
@@ -173,8 +177,11 @@ export class RoomLord {
 			return;
 		}
 
-		let structures = this.room.find(FIND_STRUCTURES, {
-			filter: struct => struct.structureType !== STRUCTURE_WALL && struct.structureType !== STRUCTURE_RAMPART && struct.hits < struct.hitsMax,
+		const structures = this.room.find(FIND_STRUCTURES, {
+			filter: struct =>
+				struct.structureType !== STRUCTURE_WALL &&
+				struct.structureType !== STRUCTURE_RAMPART &&
+				struct.hits < struct.hitsMax,
 		});
 
 		if (structures.length === 0) {
@@ -194,18 +201,21 @@ export class RoomLord {
 		}
 
 		let structures = this.room.find(FIND_STRUCTURES, {
-			filter: struct => (struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) && struct.hits < struct.hitsMax,
-		}) as (StructureWall | StructureRampart)[];
+			filter: struct =>
+				(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
+				struct.hits < struct.hitsMax,
+		});
 
 		if (structures.length === 0) {
 			this.room.memory.findFortifyTargetAt = Game.time + FORTIFY_TARGET_SEARCH_DELAY;
 			return;
 		}
 
-		structures = _.sortByOrder(structures, [
-			struct => struct.structureType === STRUCTURE_RAMPART,
-			struct => struct.hits,
-		], ["desc", "asc"]);
+		structures = _.sortByOrder(
+			structures,
+			[struct => struct.structureType === STRUCTURE_RAMPART, struct => struct.hits],
+			["desc", "asc"]
+		);
 
 		this.room.memory.fortifyTargetId = structures[0].id;
 	}
@@ -215,18 +225,20 @@ export class RoomLord {
 			return;
 		}
 
-		let structures = this.room.find(FIND_STRUCTURES, {
-			filter: struct => (struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) && struct.hits < struct.hitsMax,
-		}) as (StructureWall | StructureRampart)[];
+		const structures = this.room.find(FIND_STRUCTURES, {
+			filter: struct =>
+				(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
+				struct.hits < struct.hitsMax,
+		});
 
-		let avgHits = structures.reduce((sum, struct) => sum + struct.hits, 0) / structures.length;
+		const avgHits = structures.reduce((sum, struct) => sum + struct.hits, 0) / structures.length;
 		if (avgHits >= this.room.memory.fortifyTargetHits) {
 			this.room.memory.fortifyTargetHits = avgHits * 1.05;
 		}
 
 		this.room.memory.fortifyTargetHits = this.room.memory.fortifyTargetHits.clamp(MIN_FORIFY_HITS, WALL_HITS_MAX);
 
-		let target = this.getWorkTarget(WorkerTask.Fortify) as Structure;
+		const target = this.getWorkTarget(WorkerTask.Fortify) as Structure;
 		if (target) {
 			if (target.hits >= this.room.memory.fortifyTargetHits) {
 				delete this.room.memory.fortifyTargetId;
@@ -249,8 +261,8 @@ export class RoomLord {
 					return false;
 				}
 				return struct.hits < struct.hitsMax;
-			}
-		})
+			},
+		});
 		const desiredWorkers: Record<WorkerTask, number> = {
 			[WorkerTask.Upgrade]: 3,
 			[WorkerTask.Build]: sites.length > 0 ? 2 : 0,
@@ -269,16 +281,20 @@ export class RoomLord {
 		const currentAllocations = this.getCurrentAllocations();
 		this.log(`current allocations: ${JSON.stringify(currentAllocations)}`);
 		const neededNewAllocations: Record<WorkerTask, number> = {
-			[WorkerTask.Upgrade]: this.room.memory.workerAllocations[WorkerTask.Upgrade] - currentAllocations[WorkerTask.Upgrade],
-			[WorkerTask.Build]: this.room.memory.workerAllocations[WorkerTask.Build] - currentAllocations[WorkerTask.Build],
-			[WorkerTask.Repair]: this.room.memory.workerAllocations[WorkerTask.Repair] - currentAllocations[WorkerTask.Repair],
-			[WorkerTask.Fortify]: this.room.memory.workerAllocations[WorkerTask.Fortify] - currentAllocations[WorkerTask.Fortify],
-		}
+			[WorkerTask.Upgrade]:
+				this.room.memory.workerAllocations[WorkerTask.Upgrade] - currentAllocations[WorkerTask.Upgrade],
+			[WorkerTask.Build]:
+				this.room.memory.workerAllocations[WorkerTask.Build] - currentAllocations[WorkerTask.Build],
+			[WorkerTask.Repair]:
+				this.room.memory.workerAllocations[WorkerTask.Repair] - currentAllocations[WorkerTask.Repair],
+			[WorkerTask.Fortify]:
+				this.room.memory.workerAllocations[WorkerTask.Fortify] - currentAllocations[WorkerTask.Fortify],
+		};
 		// unallocate workers for overfilled tasks
 		for (const task of [WorkerTask.Upgrade, WorkerTask.Build, WorkerTask.Repair, WorkerTask.Fortify]) {
 			if (neededNewAllocations[task] < 0) {
-				let workersOfTask = workers.filter(worker => worker.memory.workTask === task);
-				let workersToUnallocate = workersOfTask.slice(0, -neededNewAllocations[task]);
+				const workersOfTask = workers.filter(worker => worker.memory.workTask === task);
+				const workersToUnallocate = workersOfTask.slice(0, -neededNewAllocations[task]);
 				this.log(`unallocating ${workersToUnallocate.length} workers for ${task}`);
 				workersToUnallocate.forEach(worker => {
 					delete worker.memory.workTask;
@@ -288,10 +304,10 @@ export class RoomLord {
 		}
 
 		// allocate workers for underfilled tasks
-		let unallocatedWorkers = workers.filter(worker => worker.memory.workTask === undefined);
+		const unallocatedWorkers = workers.filter(worker => worker.memory.workTask === undefined);
 		for (const task of [WorkerTask.Upgrade, WorkerTask.Build, WorkerTask.Repair, WorkerTask.Fortify]) {
 			while (neededNewAllocations[task] > 0 && unallocatedWorkers.length > 0) {
-				let worker = unallocatedWorkers.pop();
+				const worker = unallocatedWorkers.pop();
 				if (!worker) {
 					break;
 				}
@@ -301,7 +317,9 @@ export class RoomLord {
 			}
 		}
 		if (unallocatedWorkers.length > 0) {
-			this.log(`WARN: still have unallocated workers: ${unallocatedWorkers.map(worker => worker.name).join(", ")}`);
+			this.log(
+				`WARN: still have unallocated workers: ${unallocatedWorkers.map(worker => worker.name).join(", ")}`
+			);
 		}
 	}
 
@@ -343,11 +361,11 @@ export class RoomLord {
 			}
 
 			this.room.visual.circle(creep.pos, {
-				fill: 'transparent',
+				fill: "transparent",
 				radius: 0.5,
-				stroke: creep.memory.working ? '#00ff00' : '#ff0000',
+				stroke: creep.memory.working ? "#00ff00" : "#ff0000",
 			});
-			this.room.visual.text(`${creep.memory.workTask}`, creep.pos.x, creep.pos.y - 0.5, );
+			this.room.visual.text(`${creep.memory.workTask}`, creep.pos.x, creep.pos.y - 0.5);
 
 			// act on state
 			if (creep.memory.working) {
@@ -369,9 +387,9 @@ export class RoomLord {
 	}
 
 	getAvailableFocusTargets(): (Creep | PowerCreep)[] {
-		let creeps = [];
-		for (let id of this.room.memory.defense.focusQueue) {
-			let creep = Game.getObjectById(id);
+		const creeps = [];
+		for (const id of this.room.memory.defense.focusQueue) {
+			const creep = Game.getObjectById(id);
 			if (!creep) {
 				continue;
 			}
@@ -393,8 +411,8 @@ export class RoomLord {
 
 	/** An optimized attack for a creep against a target. */
 	creepAttackOptimized(creep: Creep, target: Creep | PowerCreep): ScreepsReturnCode {
-		let dist = creep.pos.getRangeTo(target);
-		let attackRange = combatCalc.getMaxAttackRange(creep);
+		const dist = creep.pos.getRangeTo(target);
+		const attackRange = combatCalc.getMaxAttackRange(creep);
 		if (dist > attackRange) {
 			return ERR_NOT_IN_RANGE;
 		}
@@ -456,7 +474,7 @@ global.Lords = {
 	/** Testing function to quickly spawn a worker for testing. */
 	forceSpawnWorker(roomName: string) {
 		const room = Game.rooms[roomName];
-		let spawn = room.find(FIND_MY_SPAWNS)[0];
+		const spawn = room.find(FIND_MY_SPAWNS)[0];
 		const creepName = `worker_${Game.time.toString(16)}`;
 		spawn.spawnCreep([WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], creepName, {
 			// @ts-ignore
@@ -476,21 +494,19 @@ global.Lords = {
 
 	get(roomName: string): RoomLord {
 		return new RoomLord(Game.rooms[roomName]);
-	}
+	},
 };
-
-
 
 /**
  * Run lords for all owned rooms.
  */
 export function run() {
-	for (let room of util.getOwnedRooms()) {
-		let lord = new RoomLord(room);
+	for (const room of util.getOwnedRooms()) {
+		const lord = new RoomLord(room);
 		lord.run();
 	}
 }
 
 export default {
 	run,
-}
+};
