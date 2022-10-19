@@ -129,7 +129,7 @@ const taskRenew = {
 		if (!creep.memory.renewTarget) {
 			if (creep instanceof Creep) {
 				let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-					filter: struct => struct.structureType == STRUCTURE_SPAWN && !struct.spawning,
+					filter: struct => struct.structureType === STRUCTURE_SPAWN && !struct.spawning && struct.isActive(),
 				});
 				if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
 					closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)

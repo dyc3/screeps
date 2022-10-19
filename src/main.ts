@@ -837,7 +837,7 @@ function doCreepSpawning() {
 					const target_room = otherRooms[0];
 					spawns = util
 						.getStructures(target_room, STRUCTURE_SPAWN)
-						.filter(s => !(s as StructureSpawn).spawning)
+						.filter(s => !(s as StructureSpawn).spawning && s.isActive())
 						.filter(
 							s =>
 								util
@@ -884,7 +884,7 @@ function doCreepSpawning() {
 
 			const spawns = util
 				.getStructures(target_room, STRUCTURE_SPAWN)
-				.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
+				.filter(s => !(s as StructureSpawn).spawning && s.isActive()) as StructureSpawn[];
 			if (spawns.length === 0) {
 				continue;
 			}
