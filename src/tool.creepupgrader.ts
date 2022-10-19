@@ -500,7 +500,7 @@ const creepUpgrader = {
 	roles,
 
 	getRoleMetadata(role: Role): RoleMetadata {
-		return roles[role] as RoleMetadata;
+		return roles[role];
 	},
 
 	// returns -1 if stage not found

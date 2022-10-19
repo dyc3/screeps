@@ -9,7 +9,7 @@ export class ObserveQueue {
 	}
 
 	private static getObservers(): StructureObserver[] {
-		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o) as StructureObserver[];
+		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o);
 	}
 
 	public static updateCachedObserverIds(): void {

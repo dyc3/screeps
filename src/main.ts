@@ -318,7 +318,7 @@ function calculateDefcon(room: Room) {
 function determineDefconLevels() {
 	if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
 		console.log("skipping defcon calculation to save cpu");
-		return;
+		return 0;
 	}
 
 	// NOTE: I don't think all this defcon stuff actually works. Redo it in a module called brain.defense
@@ -365,7 +365,7 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const rootLink = Game.getObjectById(room.memory.rootLink as Id<StructureLink>);
+			const rootLink = Game.getObjectById(room.memory.rootLink);
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
@@ -602,8 +602,8 @@ function commandEnergyRelays() {
 			continue;
 		}
 
-		const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2) as RoomPosition;
-		const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y) as RoomPosition;
+		const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+		const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
 		// HACK: because the way the storage module is placed is STILL jank af, rooms can opt in to change the relay position for the storage
 		const storagePosRelayDirection = room.memory.storagePosDirection ?? RIGHT;
 		const relayPositions = [
@@ -623,7 +623,7 @@ function commandEnergyRelays() {
 				const assignedPos = new RoomPosition(
 					creep.memory.assignedPos.x,
 					creep.memory.assignedPos.y,
-					creep.memory.assignedPos.roomName
+					creep.memory.targetRoom
 				);
 				if (pos.isEqualTo(assignedPos)) {
 					return false;
@@ -1229,7 +1229,7 @@ function commandRemoteMining() {
 			ObserveQueue.queue(target.roomName);
 			continue;
 		}
-		const source = Game.getObjectById(target.id) as Source;
+		const source = Game.getObjectById(target.id);
 		const hostiles = room.find(FIND_HOSTILE_CREEPS);
 		let keeperLair: StructureKeeperLair | undefined;
 		if (
@@ -1249,10 +1249,10 @@ function commandRemoteMining() {
 			if (!target.keeperLairId) {
 				keeperLair = source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
 					filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
-				}) as StructureKeeperLair;
+				});
 				target.keeperLairId = keeperLair.id;
 			} else {
-				keeperLair = Game.getObjectById(target.keeperLairId) as StructureKeeperLair;
+				keeperLair = Game.getObjectById(target.keeperLairId);
 			}
 
 			const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
@@ -1337,7 +1337,7 @@ function commandRemoteMining() {
 	// handle spawning claimers
 	let targetRooms = _.uniq(
 		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
-			target => Game.getObjectById(target.id)?.room.name as string
+			target => Game.getObjectById(target.id)?.room.name
 		)
 	);
 	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));

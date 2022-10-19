@@ -215,7 +215,7 @@ export default {
 				Object.keys(room.memory.harvestPositions).forEach(id => {
 					const source = Game.getObjectById(id as Id<_HasId>) as Source;
 					const { x, y } = room.memory.harvestPositions[id];
-					const pos = room.getPositionAt(x, y) as RoomPosition;
+					const pos = room.getPositionAt(x, y);
 					room.visual.circle(pos, {
 						stroke: "#ffff00",
 						fill: "transparent",
@@ -246,7 +246,7 @@ export default {
 			const max = toolCreepUpgrader.getUpgraderQuota(room);
 			const text = `${count}/${max}`;
 			const color = count <= max ? "#11dd11" : "#dd1111";
-			const controllerPos = room.controller?.pos as RoomPosition;
+			const controllerPos = room.controller?.pos;
 			room.visual.text(text, controllerPos, { color, font: 0.4, stroke: "#000" });
 
 			// mark the room's rootPos, assists autoplanner debugging
@@ -294,7 +294,7 @@ export default {
 	drawMapVision(): void {
 		const rooms = Object.values(Game.rooms);
 		for (const room of rooms) {
-			const pos = room.getPositionAt(2, 2) as RoomPosition;
+			const pos = room.getPositionAt(2, 2);
 			Game.map.visual.rect(pos, 46, 46, {
 				fill: "transparent",
 				stroke: "#0047AB",

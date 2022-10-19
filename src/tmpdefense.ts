@@ -74,7 +74,7 @@ export function run() {
 			continue;
 		}
 
-		if ((creep.ticksToLive as number) < 200) {
+		if (creep.ticksToLive < 200) {
 			creep.memory.renewing = true;
 		}
 
