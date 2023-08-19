@@ -63,6 +63,7 @@ export function dlog(...args: any[]) {
 }
 
 export function run() {
+	return;
 	const creeps = util.getCreeps(Role.TmpDefense);
 	const room = Game.rooms[defendRoom];
 	dlog(`Defending room ${defendRoom} - creeps: ${creeps.length}`);
