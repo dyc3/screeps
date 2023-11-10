@@ -1330,7 +1330,7 @@ function commandRemoteMining() {
 		console.log("[remote mining]", "need to spawn", neededCarriers, "carriers");
 	}
 
-	const unpausedTargets = Memory.remoteMining.targets.filter(t => t.paused);
+	const unpausedTargets = Memory.remoteMining.targets.filter(t => !t.paused);
 	Memory.remoteMining.needHarvesterCount = unpausedTargets.length;
 	Memory.remoteMining.needCarrierCount = _.sum(unpausedTargets, "neededCarriers");
 
