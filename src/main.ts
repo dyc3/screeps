@@ -340,7 +340,7 @@ function doLinkTransfers() {
 	/**
 	 * Shuffles array in place. ES6 version
 	 */
-	function shuffle(a: any[]) {
+	function shuffle<T>(a: T[]) {
 		for (let i = a.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[a[i], a[j]] = [a[j], a[i]];
@@ -348,8 +348,7 @@ function doLinkTransfers() {
 		return a;
 	}
 
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		const links = shuffle(util.getStructures(room, STRUCTURE_LINK));
 		if (links.length > 0) {
 			if (!room.memory.rootLink) {
