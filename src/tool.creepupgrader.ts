@@ -104,24 +104,21 @@ export function getRelayQuota(room: Room) {
 	return count;
 }
 
-export function getMinerQuota() {
-	// 	let count = 0;
-	// 	if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller.level] > 0) {
-	// 		let extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
-	// 		for (let i = 0; i < extractors.length; i++) {
-	// 			let struct = extractors[i];
-	// 			let mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
-	// 			if (mineral) {
-	// 				count++;
-	// 			}
-	// 		}
-	// 	}
-	// 	return count;
-	// FIXME: miner quota is broken
-	if (Game.shard.name === "shard0") {
-		return 2;
+export function getMinerQuota(): number {
+	let mineable = 0;
+	const rooms = util.getOwnedRooms();
+	for (const room of rooms) {
+		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller?.level ?? 0] > 0) {
+			const extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
+			for (const struct of extractors) {
+				const mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
+				if (mineral) {
+					mineable++;
+				}
+			}
+		}
 	}
-	return 0;
+	return Math.ceil(mineable / 2);
 }
 
 export function getRepairerQuota(room: Room) {
