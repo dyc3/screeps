@@ -225,8 +225,8 @@ export const util = {
 		}
 	},
 
-	/** @deprecated */
-	getSources(room: Room) {
+	/** @deprecated: Just use `room.find(FIND_SOURCES)` */
+	getSources(room: Room): Source[] {
 		return room.find(FIND_SOURCES);
 	},
 
