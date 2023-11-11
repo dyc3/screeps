@@ -7,6 +7,9 @@ import util from "../util";
  */
 
 const roleMiner = {
+	/**
+	 * @param {Creep} creep
+	 */
 	findMineralTarget(creep) {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
@@ -30,6 +33,7 @@ const roleMiner = {
 	/**
 	 * Finds where to store minerals. Sets creeps memory for storage target.
 	 * Target must be in the same room.
+	 * @param {Creep} creep
 	 * @returns {Structure} The structure to store the mined minerals in.
 	 **/
 	getTargetStorage(creep) {
@@ -68,6 +72,10 @@ const roleMiner = {
 		return creep.room.storage;
 	},
 
+	/**
+	 * @param {Creep} creep
+	 * @returns {void}
+	 */
 	run(creep) {
 		if (!creep.memory.mineralTarget) {
 			if (Game.cpu.bucket <= 100) {
