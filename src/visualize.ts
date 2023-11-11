@@ -88,7 +88,7 @@ export default {
 					color: "#fff",
 				});
 
-				const spawns = util.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
+				const spawns = util.getStructures(room, STRUCTURE_SPAWN);
 				for (let s = 0; s < spawns.length; s++) {
 					const spawn = spawns[s];
 					vis.circle(baseX + xSpacing * s + xOffset, baseY + ySpacing * r + yOffset, {

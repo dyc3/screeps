@@ -49,7 +49,8 @@ export function getScientistQuota(room: Room) {
 	}
 	if (
 		room.controller.level >= 6 &&
-		(util.getStructures(room, STRUCTURE_LAB).length > 0 || util.getStructures(room, STRUCTURE_FACTORY).length > 0)
+		(util.getStructuresOld(room, STRUCTURE_LAB).length > 0 ||
+			util.getStructuresOld(room, STRUCTURE_FACTORY).length > 0)
 	) {
 		return 1;
 	}
@@ -109,7 +110,7 @@ export function getMinerQuota(): number {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
 		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller?.level ?? 0] > 0) {
-			const extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
+			const extractors = util.getStructuresOld(room, STRUCTURE_EXTRACTOR);
 			for (const struct of extractors) {
 				const mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
 				if (mineral) {

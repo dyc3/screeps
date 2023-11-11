@@ -226,8 +226,8 @@ function calculateDefcon(room: Room) {
 		console.log("safe mode is active, defcon 0");
 		return 0;
 	}
-	const towers = util.getStructures(room, STRUCTURE_TOWER) as StructureTower[];
-	const spawns = util.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
+	const towers = util.getStructuresOld(room, STRUCTURE_TOWER) as StructureTower[];
+	const spawns = util.getStructuresOld(room, STRUCTURE_SPAWN) as StructureSpawn[];
 	if (towers.length > 0) {
 		const hostileCreeps = room.find(FIND_HOSTILE_CREEPS, {
 			filter: (creep: Creep) =>
@@ -363,7 +363,7 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const rootLink = Game.getObjectById(room.memory.rootLink);
+			const rootLink = Game.getObjectById<StructureLink>(room.memory.rootLink) as StructureLink | null;
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
@@ -375,12 +375,11 @@ function doLinkTransfers() {
 				rootLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
 			) {
 				console.log(room.name, "[link-transfer] rootLink below threshold");
-				for (let i = 0; i < links.length; i++) {
-					const link = links[i];
+				for (const link of links) {
 					if (link.id === rootLink.id) {
 						continue;
 					}
-					if (link.cooldown > 0 || link.energy === 0) {
+					if (link.cooldown > 0 || link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 						continue;
 					}
 					console.log("[link-transfer] transfer from", link.pos, "to rootLink");
@@ -411,8 +410,7 @@ function doLinkTransfers() {
 				storageLink.store.getUsedCapacity(RESOURCE_ENERGY) <
 				storageLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
 			) {
-				for (let i = 0; i < links.length; i++) {
-					const link = links[i];
+				for (const link of links) {
 					if (link.id === storageLink.id || link.id === rootLink.id) {
 						continue;
 					}
@@ -787,7 +785,7 @@ function doCreepSpawning() {
 				let needOtherRoomSpawns = false;
 				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(roleMeta.name);
 				let spawns = util
-					.getStructures(room, STRUCTURE_SPAWN)
+					.getStructuresOld(room, STRUCTURE_SPAWN)
 					.filter(s => !(s as StructureSpawn).spawning)
 					.filter(
 						s =>
@@ -834,7 +832,7 @@ function doCreepSpawning() {
 					// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
 					const target_room = otherRooms[0];
 					spawns = util
-						.getStructures(target_room, STRUCTURE_SPAWN)
+						.getStructuresOld(target_room, STRUCTURE_SPAWN)
 						.filter(s => !(s as StructureSpawn).spawning && s.isActive())
 						.filter(
 							s =>
@@ -881,7 +879,7 @@ function doCreepSpawning() {
 			}
 
 			const spawns = util
-				.getStructures(target_room, STRUCTURE_SPAWN)
+				.getStructuresOld(target_room, STRUCTURE_SPAWN)
 				.filter(s => !(s as StructureSpawn).spawning && s.isActive()) as StructureSpawn[];
 			if (spawns.length === 0) {
 				continue;
@@ -1060,7 +1058,7 @@ function doWorkLabs() {
 		if (room.controller?.level ?? 0 < 6) {
 			continue;
 		}
-		const labs = util.getStructures(room, STRUCTURE_LAB) as StructureLab[];
+		const labs = util.getStructuresOld(room, STRUCTURE_LAB) as StructureLab[];
 
 		for (let l = 0; l < labs.length; l++) {
 			const workFlag = util.getWorkFlag(labs[l].pos);
@@ -1340,7 +1338,7 @@ function commandRemoteMining() {
 	);
 	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
 	for (const room of targetRooms) {
-		const controller = util.getStructures(new Room(room), STRUCTURE_CONTROLLER)[0] as StructureController;
+		const controller = util.getStructuresOld(new Room(room), STRUCTURE_CONTROLLER)[0] as StructureController;
 		if (!controller) {
 			console.log("[remote mining] ERR: can't find controller");
 		}
@@ -1447,7 +1445,7 @@ function satisfyClaimTargets() {
 		}
 		console.log("Spawning claimer in room", spawnRoom.name, "targetting room", target.room);
 		const spawns = util
-			.getStructures(spawnRoom, STRUCTURE_SPAWN)
+			.getStructuresOld(spawnRoom, STRUCTURE_SPAWN)
 			.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
 		if (spawns.length === 0) {
 			console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
@@ -1474,7 +1472,7 @@ function satisfyClaimTargets() {
 function doWorkFactories() {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
-		const factory = util.getStructures(room, STRUCTURE_FACTORY)[0] as StructureFactory;
+		const factory = util.getStructuresOld(room, STRUCTURE_FACTORY)[0] as StructureFactory;
 
 		if (!factory || factory.cooldown > 0) {
 			continue;

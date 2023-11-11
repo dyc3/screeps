@@ -4,6 +4,30 @@ import type { Role } from "./roles/meta";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
+interface StructureMap {
+	[STRUCTURE_SPAWN]: StructureSpawn;
+	[STRUCTURE_EXTENSION]: StructureExtension;
+	[STRUCTURE_ROAD]: StructureRoad;
+	[STRUCTURE_WALL]: StructureWall;
+	[STRUCTURE_RAMPART]: StructureRampart;
+	[STRUCTURE_KEEPER_LAIR]: StructureKeeperLair;
+	[STRUCTURE_PORTAL]: StructurePortal;
+	[STRUCTURE_CONTROLLER]: StructureController;
+	[STRUCTURE_LINK]: StructureLink;
+	[STRUCTURE_STORAGE]: StructureStorage;
+	[STRUCTURE_TOWER]: StructureTower;
+	[STRUCTURE_OBSERVER]: StructureObserver;
+	[STRUCTURE_POWER_BANK]: StructurePowerBank;
+	[STRUCTURE_POWER_SPAWN]: StructurePowerSpawn;
+	[STRUCTURE_EXTRACTOR]: StructureExtractor;
+	[STRUCTURE_LAB]: StructureLab;
+	[STRUCTURE_TERMINAL]: StructureTerminal;
+	[STRUCTURE_CONTAINER]: StructureContainer;
+	[STRUCTURE_NUKER]: StructureNuker;
+	[STRUCTURE_FACTORY]: StructureFactory;
+	[STRUCTURE_INVADER_CORE]: StructureInvaderCore;
+}
+
 export const util = {
 	errorCodeToString(errorCode: ScreepsReturnCode): string {
 		const errors = {
@@ -235,8 +259,11 @@ export const util = {
 		return pos.lookFor(LOOK_TERRAIN)[0];
 	},
 
-	/** @deprecated */
-	getStructures(room: Room, type: string | undefined = undefined) {
+	/** @deprecated: Use getStructures for better type checking */
+	getStructuresOld<S extends StructureConstant>(
+		room: Room,
+		type: StructureConstant | undefined = undefined
+	): Structure<S>[] | AnyStructure[] {
 		if (type) {
 			return room.find(FIND_STRUCTURES, { filter: struct => struct.structureType === type });
 		} else {
@@ -244,8 +271,14 @@ export const util = {
 		}
 	},
 
+	getStructures<S extends StructureConstant>(room: Room, type: S): ConcreteStructure<S>[] {
+		return room.find(FIND_STRUCTURES, {
+			filter: struct => struct.structureType === type,
+		}) as unknown as ConcreteStructure<S>[];
+	},
+
 	getSpawn(room: Room): StructureSpawn {
-		const spawns = this.getStructures(room, STRUCTURE_SPAWN) as StructureSpawn[];
+		const spawns = this.getStructures(room, STRUCTURE_SPAWN);
 		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 
@@ -254,7 +287,7 @@ export const util = {
 		if (type) {
 			return room.find(FIND_CONSTRUCTION_SITES, {
 				filter: site => {
-					return site.structureType == type;
+					return site.structureType === type;
 				},
 			});
 		} else {
