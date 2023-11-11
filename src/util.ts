@@ -4,30 +4,6 @@ import type { Role } from "./roles/meta";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
-interface StructureMap {
-	[STRUCTURE_SPAWN]: StructureSpawn;
-	[STRUCTURE_EXTENSION]: StructureExtension;
-	[STRUCTURE_ROAD]: StructureRoad;
-	[STRUCTURE_WALL]: StructureWall;
-	[STRUCTURE_RAMPART]: StructureRampart;
-	[STRUCTURE_KEEPER_LAIR]: StructureKeeperLair;
-	[STRUCTURE_PORTAL]: StructurePortal;
-	[STRUCTURE_CONTROLLER]: StructureController;
-	[STRUCTURE_LINK]: StructureLink;
-	[STRUCTURE_STORAGE]: StructureStorage;
-	[STRUCTURE_TOWER]: StructureTower;
-	[STRUCTURE_OBSERVER]: StructureObserver;
-	[STRUCTURE_POWER_BANK]: StructurePowerBank;
-	[STRUCTURE_POWER_SPAWN]: StructurePowerSpawn;
-	[STRUCTURE_EXTRACTOR]: StructureExtractor;
-	[STRUCTURE_LAB]: StructureLab;
-	[STRUCTURE_TERMINAL]: StructureTerminal;
-	[STRUCTURE_CONTAINER]: StructureContainer;
-	[STRUCTURE_NUKER]: StructureNuker;
-	[STRUCTURE_FACTORY]: StructureFactory;
-	[STRUCTURE_INVADER_CORE]: StructureInvaderCore;
-}
-
 export const util = {
 	errorCodeToString(errorCode: ScreepsReturnCode): string {
 		const errors = {
@@ -112,7 +88,7 @@ export const util = {
 		return rooms;
 	},
 
-	clearAllDebugFlags() {
+	clearAllDebugFlags(): void {
 		for (const flag in Game.flags) {
 			if (flag.includes("debug")) {
 				Game.flags[flag].remove();
@@ -121,7 +97,7 @@ export const util = {
 	},
 
 	/** A highway room is a room with no controllers and no sources, but sometimes contain power banks. **/
-	isHighwayRoom(roomName: string) {
+	isHighwayRoom(roomName: string): boolean {
 		const matches = roomName.match(/\d+/g);
 		if (!matches) {
 			// invalid room
@@ -133,7 +109,7 @@ export const util = {
 	},
 
 	/** A treasue room is a room with no controllers, but contain sources with an extra 1000 energy, and a mineral deposit. **/
-	isTreasureRoom(roomName: string) {
+	isTreasureRoom(roomName: string): boolean {
 		const matches = roomName.match(/\d+/g);
 		if (!matches) {
 			// invalid room
@@ -154,7 +130,7 @@ export const util = {
 	 *
 	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
 	 */
-	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull = false) {
+	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull = false): number {
 		if (creep instanceof PowerCreep) {
 			return path.length;
 		}
@@ -224,7 +200,7 @@ export const util = {
 	 * @param {array} body The creep's body
 	 * @returns {Number} The energy cost to renew the creep.
 	 */
-	getRenewCost(body: BodyPartDefinition[]) {
+	getRenewCost(body: BodyPartDefinition[]): number {
 		if (body.length === 0) {
 			throw new Error("Invalid body");
 		}
