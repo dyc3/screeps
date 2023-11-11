@@ -323,8 +323,7 @@ function determineDefconLevels() {
 	// NOTE: I don't think all this defcon stuff actually works. Redo it in a module called brain.defense
 	const rooms = util.getOwnedRooms();
 	let highestDefcon = 0;
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		const defcon = calculateDefcon(room);
 		highestDefcon = Math.max(defcon, highestDefcon);
 		room.memory.defcon = defcon;
@@ -434,7 +433,7 @@ function doFlagCommandsAndStuff() {
 	if (
 		Game.flags.planStart &&
 		Game.flags.planEnd &&
-		(Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket == 10000)
+		(Game.cpu.getUsed() < Game.cpu.limit || Game.cpu.bucket === 10000)
 	) {
 		toolRoadPlanner.planPath(Game.flags.planStart.pos, Game.flags.planEnd.pos);
 		toolRoadPlanner.clearAllPlanFlags();
