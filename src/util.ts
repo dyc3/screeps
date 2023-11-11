@@ -44,7 +44,7 @@ export const util = {
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(29, 43, "W15N9"))
 	 * @example require("util").findClosestOwnedRooms(new RoomPosition(8, 15, "W15N9"))
 	 */
-	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback = (room: Room) => true) {
+	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback = (room: Room) => true): Room[] {
 		let rooms = this.getOwnedRooms();
 		rooms = _.filter(rooms, filterCallback)
 			// HACK: exclude certain room combos because they suck so much
@@ -208,7 +208,7 @@ export const util = {
 	},
 
 	/** @deprecated */
-	getConstructionAt(pos: RoomPosition, type = undefined) {
+	getConstructionAt(pos: RoomPosition, type = undefined): ConstructionSite[] {
 		if (type) {
 			return pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(site => site.structureType === type);
 		} else {
@@ -217,7 +217,10 @@ export const util = {
 	},
 
 	/** @deprecated */
-	getStructuresAt(pos: RoomPosition, type: string | undefined = undefined) {
+	getStructuresAt<S extends StructureConstant>(
+		pos: RoomPosition,
+		type: S | undefined = undefined
+	): ConcreteStructure<S>[] | Structure[] {
 		if (type) {
 			return pos.lookFor(LOOK_STRUCTURES).filter(struct => struct.structureType === type);
 		} else {
@@ -231,7 +234,7 @@ export const util = {
 	},
 
 	/** @deprecated */
-	getTerrainAt(pos: RoomPosition) {
+	getTerrainAt(pos: RoomPosition): Terrain {
 		return pos.lookFor(LOOK_TERRAIN)[0];
 	},
 
@@ -259,7 +262,7 @@ export const util = {
 	},
 
 	/** @deprecated */
-	getConstruction(room: Room, type = undefined) {
+	getConstruction(room: Room, type = undefined): ConstructionSite[] {
 		if (type) {
 			return room.find(FIND_CONSTRUCTION_SITES, {
 				filter: site => {
@@ -287,22 +290,22 @@ export const util = {
 		}
 	},
 
-	getWorkFlag(pos: RoomPosition) {
+	getWorkFlag(pos: RoomPosition): Flag {
 		return pos.lookFor(LOOK_FLAGS).filter(f => f.name.includes("make"))[0];
 	},
 
-	isOnEdge(pos: RoomPosition) {
-		return pos.x == 0 || pos.y == 0 || pos.x == 49 || pos.y == 49;
+	isOnEdge(pos: RoomPosition): boolean {
+		return pos.x === 0 || pos.y === 0 || pos.x === 49 || pos.y === 49;
 	},
 
-	isDistFromEdge(pos: RoomPosition, dist: number) {
+	isDistFromEdge(pos: RoomPosition, dist: number): boolean {
 		return pos.x < dist || pos.y < dist || pos.x >= 49 - dist || pos.y >= 49 - dist;
 	},
 
 	/**
 	 * Gets the mode of an array of numbers
 	 */
-	mode(arr: number[]) {
+	mode(arr: number[]): number | undefined {
 		return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop();
 	},
 
@@ -311,7 +314,7 @@ export const util = {
 		const adjacent = [];
 		for (let y = pos.y - 1; y <= pos.y + 1; y++) {
 			for (let x = pos.x - 1; x <= pos.x + 1; x++) {
-				if (pos.x == x && pos.y == y) {
+				if (pos.x === x && pos.y === y) {
 					continue;
 				}
 				adjacent.push(new RoomPosition(x, y, pos.roomName));

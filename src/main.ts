@@ -338,6 +338,8 @@ function doLinkTransfers() {
 
 	/**
 	 * Shuffles array in place. ES6 version
+	 *
+	 * @deprecated use util shuffle instead
 	 */
 	function shuffle<T>(a: T[]) {
 		for (let i = a.length - 1; i > 0; i--) {
