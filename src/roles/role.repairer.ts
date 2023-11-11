@@ -1,27 +1,28 @@
 import "../traveler.js";
-import util from "../util";
+import util from "../util.js";
 import taskGather from "../task.gather.js";
 import taskDismantle from "../task.dismantle.js";
 
-// get number of repairers assigned to a room
-function getRepairerCount(room) {
+/**
+ * get number of repairers assigned to a room
+ */
+function getRepairerCount(room: Room) {
 	return _.filter(Game.creeps, creep => creep.memory.role === "repairer" && creep.memory.targetRoom === room.name)
 		.length;
 }
 
-let roleRepairer = {
-	/** @param {Creep} creep **/
-	findRepairTargetNew(creep) {
+const roleRepairer = {
+	findRepairTargetNew(creep: Creep): void {
 		let room;
-		if (Game.rooms[creep.memory.targetRoom]) {
-			room = Game.rooms[creep.memory.targetRoom];
+		if (Game.rooms[creep.memory.targetRoom as string]) {
+			room = Game.rooms[creep.memory.targetRoom as string];
 		} else {
 			room = creep.room;
 		}
 		if (Game.flags.repairme) {
-			let flag = Game.flags.repairme;
+			const flag = Game.flags.repairme;
 			if (flag.pos.roomName === room.name) {
-				let target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+				const target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
 				if (target) {
 					creep.memory.repairTarget = target.id;
 					return;
@@ -33,7 +34,7 @@ let roleRepairer = {
 				if (struct.owner && struct.my) {
 					return false;
 				}
-				let flags = struct.pos.lookFor(LOOK_FLAGS);
+				const flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 						return false;
@@ -59,7 +60,7 @@ let roleRepairer = {
 			let avgWallHits = 0;
 			let sumWallHits = 0;
 			let countWalls = 0;
-			for (let target of targets) {
+			for (const target of targets) {
 				if (target.structureType !== STRUCTURE_WALL && target.structureType !== STRUCTURE_RAMPART) {
 					continue;
 				}
@@ -103,8 +104,7 @@ let roleRepairer = {
 		}
 	},
 
-	/** @param {Creep} creep **/
-	findRepairTarget(creep) {
+	findRepairTarget(creep: Creep): void {
 		let room;
 		if (Game.rooms[creep.memory.targetRoom]) {
 			room = Game.rooms[creep.memory.targetRoom];
@@ -112,9 +112,9 @@ let roleRepairer = {
 			room = creep.room;
 		}
 		if (Game.flags.repairme) {
-			let flag = Game.flags.repairme;
+			const flag = Game.flags.repairme;
 			if (flag.pos.roomName === room.name) {
-				let target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+				const target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
 				if (target) {
 					creep.memory.repairTarget = target.id;
 					return;
@@ -126,7 +126,7 @@ let roleRepairer = {
 				if (struct.owner && struct.my) {
 					return false;
 				}
-				let flags = struct.pos.lookFor(LOOK_FLAGS);
+				const flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 						return false;
@@ -148,8 +148,8 @@ let roleRepairer = {
 			},
 		});
 		targets.sort(function (a, b) {
-			let aScore = a.hits + creep.pos.getRangeTo(a) * 1000;
-			let bScore = b.hits + creep.pos.getRangeTo(b) * 1000;
+			const aScore = a.hits + creep.pos.getRangeTo(a) * 1000;
+			const bScore = b.hits + creep.pos.getRangeTo(b) * 1000;
 
 			if (aScore < bScore) {
 				return -1;
@@ -165,7 +165,7 @@ let roleRepairer = {
 					if (struct.owner && struct.my) {
 						return false;
 					}
-					let flags = struct.pos.lookFor(LOOK_FLAGS);
+					const flags = struct.pos.lookFor(LOOK_FLAGS);
 					if (flags.length > 0) {
 						if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 							return false;
@@ -197,7 +197,7 @@ let roleRepairer = {
 				let avgWallHits = 0;
 				let sumWallHits = 0;
 				let countWalls = 0;
-				for (let target of targets) {
+				for (const target of targets) {
 					if (target.structureType != STRUCTURE_WALL && target.structureType != STRUCTURE_RAMPART) {
 						continue;
 					}
@@ -212,7 +212,7 @@ let roleRepairer = {
 					);
 				});
 
-				let structPriority = {};
+				const structPriority = {};
 				structPriority[STRUCTURE_SPAWN] = 2;
 				structPriority[STRUCTURE_STORAGE] = 3;
 				structPriority[STRUCTURE_ROAD] = 4;
@@ -242,8 +242,7 @@ let roleRepairer = {
 		}
 	},
 
-	/** @param {Creep} creep **/
-	run(creep) {
+	run(creep: Creep): void {
 		// make sure we are in our assigned room first
 		if (creep.memory.role === "repairer") {
 			// exclude builders
@@ -267,7 +266,7 @@ let roleRepairer = {
 		}
 
 		if (creep.memory.repairTarget) {
-			let repairTarget = Game.getObjectById(creep.memory.repairTarget);
+			const repairTarget = Game.getObjectById<Structure>(creep.memory.repairTarget);
 			// console.log("repairTarget:",repairTarget);
 			if (repairTarget) {
 				creep.room.visual.circle(repairTarget.pos, { fill: "transparent", radius: 0.5, stroke: "#ffff00" });
@@ -283,16 +282,20 @@ let roleRepairer = {
 						(repairTarget.hits >= 100000 && repairTarget.hits <= 105000) ||
 						repairTarget.hits >= 200000)
 				) {
-					if (Game.time % 10 === 0) delete creep.memory.repairTarget;
+					if (Game.time % 10 === 0) {
+						delete creep.memory.repairTarget;
+					}
 				} else if (
 					repairTarget.structureType === STRUCTURE_RAMPART &&
 					((repairTarget.hits >= 80000 && repairTarget.hits <= 85000) ||
 						(repairTarget.hits >= 105000 && repairTarget.hits <= 110000) ||
 						repairTarget.hits >= 200000)
 				) {
-					if (Game.time % 18 == 0) delete creep.memory.repairTarget;
+					if (Game.time % 18 === 0) {
+						delete creep.memory.repairTarget;
+					}
 				} else {
-					let weakRamparts = creep.room.find(FIND_STRUCTURES, {
+					const weakRamparts = creep.room.find(FIND_STRUCTURES, {
 						filter(struct) {
 							return struct.structureType === STRUCTURE_RAMPART && struct.hits < 3000;
 						},
@@ -324,7 +327,7 @@ let roleRepairer = {
 		}
 
 		if (creep.memory.repairing) {
-			let repairTarget = Game.getObjectById(creep.memory.repairTarget);
+			const repairTarget = Game.getObjectById<Structure>(creep.memory.repairTarget);
 			// if (creep.memory.role == "repairer") {
 			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
 			// }
@@ -336,7 +339,7 @@ let roleRepairer = {
 				if (taskDismantle.run(creep)) {
 					creep.say("dismantle");
 				} else {
-					let constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
+					const constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
 						filter(site) {
 							return site.structureType === STRUCTURE_WALL || site.structureType === STRUCTURE_RAMPART;
 						},
@@ -347,9 +350,9 @@ let roleRepairer = {
 						}
 					} else {
 						// move out of the way of other creeps
-						let nearbyCreeps = creep.pos.findInRange(FIND_CREEPS, 1).filter(c => c.id !== creep.id);
+						const nearbyCreeps = creep.pos.findInRange(FIND_CREEPS, 1).filter(c => c.id !== creep.id);
 						if (nearbyCreeps.length > 0) {
-							let direction = creep.pos.getDirectionTo(nearbyCreeps[0]);
+							const direction = creep.pos.getDirectionTo(nearbyCreeps[0]);
 							// console.log(creep.name, "found creep in direction:", direction);
 							creep.move(util.getOppositeDirection(direction));
 						} else {

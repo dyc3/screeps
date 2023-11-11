@@ -98,8 +98,7 @@ import roleUpgrader from "roles/role.upgrader.js";
 import roleManager from "roles/role.manager.js";
 // @ts-expect-error hasn't been converted yet
 import roleBuilder from "roles/role.builder.js";
-// @ts-expect-error hasn't been converted yet
-import roleRepairer from "roles/role.repairer.js";
+import roleRepairer from "roles/role.repairer";
 // @ts-expect-error hasn't been converted yet
 import roleClaimer from "roles/role.claimer.js";
 // @ts-expect-error hasn't been converted yet
