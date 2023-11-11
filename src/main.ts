@@ -899,21 +899,21 @@ function doCreepSpawning() {
 
 function doAutoTrading() {
 	// HACK: hardcoded logistics things
-	if (Game.shard.name === "shard0") {
-		try {
-			// @ts-ignore
-			Game.rooms.W13N11.terminal.send(
-				RESOURCE_ZYNTHIUM,
-				// @ts-ignore
-				Game.rooms.W13N11.terminal.store[RESOURCE_ZYNTHIUM],
-				"W16N9"
-			);
-			// @ts-ignore
-			Game.rooms.W16N7.terminal.send(RESOURCE_UTRIUM, Game.rooms.W16N7.terminal.store[RESOURCE_UTRIUM], "W15N8");
-		} catch (e) {
-			console.log("Failed to do hard coded logistics");
-		}
-	}
+	// if (Game.shard.name === "shard0") {
+	// 	try {
+	// 		// @ts-ignore
+	// 		Game.rooms.W13N11.terminal.send(
+	// 			RESOURCE_ZYNTHIUM,
+	// 			// @ts-ignore
+	// 			Game.rooms.W13N11.terminal.store[RESOURCE_ZYNTHIUM],
+	// 			"W16N9"
+	// 		);
+	// 		// @ts-ignore
+	// 		Game.rooms.W16N7.terminal.send(RESOURCE_UTRIUM, Game.rooms.W16N7.terminal.store[RESOURCE_UTRIUM], "W15N8");
+	// 	} catch (e) {
+	// 		console.log("Failed to do hard coded logistics");
+	// 	}
+	// }
 
 	const rooms = util.getOwnedRooms();
 
