@@ -66,7 +66,7 @@ declare global {
 
 		// TODO: make role-specific memory types
 		depositMode?: any;
-		harvestTarget?: any;
+		harvestTarget?: Id<Source>;
 		targetRoom?: any;
 		assignedPos?: { x: number; y: number };
 		mode?: any;

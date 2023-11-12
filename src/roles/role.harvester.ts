@@ -201,7 +201,7 @@ const roleHarvester = {
 			if (
 				Object.keys(Game.creeps).length <= 3 ||
 				harvestTarget.room.controller.level < 4 ||
-				util.getCreeps("manager").length === 0
+				util.getCreeps(Role.Manager).length === 0
 			) {
 				return "recovery";
 			}
@@ -212,18 +212,18 @@ const roleHarvester = {
 
 	/** Get the harvester creep's harvest position. The creep must have `harvestTarget` set. */
 	getHarvestPosition(creep: Creep): RoomPosition {
-		const harvestTarget = Game.getObjectById<Source>(creep.memory.harvestTarget);
+		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget as Id<Source>);
 		if (!harvestTarget) {
 			creep.log("ERROR: Can't get harvest position because this creep does not have a harvestTarget");
-			throw new Error("Can't get harvest position because this creep does not have a harvestTarget");
+			return creep.pos;
 		}
 		const targetRoom = harvestTarget.room;
-		const { x, y } = targetRoom.memory.harvestPositions[creep.memory.harvestTarget];
-		return targetRoom.getPositionAt(x, y);
+		const { x, y } = targetRoom.memory.harvestPositions[harvestTarget.id];
+		return targetRoom.getPositionAt(x, y) ?? creep.pos;
 	},
 
 	/** Meant to replace findTransferTargets **/
-	getTransferTarget(creep) {
+	getTransferTarget(creep: Creep): (AnyStructure & { store: Store<RESOURCE_ENERGY, false> }) | undefined {
 		// check adjacent positions for empty extensions
 		if (!creep.memory.refresh_fill_targets) {
 			creep.memory.refresh_fill_targets = Game.time - 50;
@@ -279,20 +279,20 @@ const roleHarvester = {
 							return false;
 						}
 					}
-					if (struct.structureType == STRUCTURE_LINK) {
+					if (struct.structureType === STRUCTURE_LINK) {
 						if (struct.room.storage && struct.pos.inRangeTo(struct.room.storage, 2)) {
 							return false;
 						}
 						if (creep.pos.inRangeTo(struct, 4)) {
-							return struct.energy < struct.energyCapacity;
+							return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 						}
-					} else if (!(creep.getActiveBodyparts(MOVE) == 1 && creep.getActiveBodyparts(WORK) >= 5)) {
+					} else if (!(creep.getActiveBodyparts(MOVE) === 1 && creep.getActiveBodyparts(WORK) >= 5)) {
 						// check if creep is "optimized"
-						if (struct.structureType == STRUCTURE_EXTENSION) {
+						if (struct.structureType === STRUCTURE_EXTENSION) {
 							if (!creep.pos.inRangeTo(struct, 8)) {
 								return false;
 							}
-						} else if (struct.structureType == STRUCTURE_SPAWN) {
+						} else if (struct.structureType === STRUCTURE_SPAWN) {
 							if (
 								CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 &&
 								creep.pos.inRangeTo(struct, 3)
@@ -304,14 +304,13 @@ const roleHarvester = {
 					const a =
 						(struct.structureType === STRUCTURE_EXTENSION ||
 							(struct.structureType === STRUCTURE_SPAWN &&
-								(creep.room.controller.level == 1 ||
+								(creep.room.controller?.level === 1 ||
 									struct.store.getFreeCapacity(RESOURCE_ENERGY) > 5)) ||
 							struct.structureType === STRUCTURE_TOWER) &&
 						struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 					const b =
-						(struct.structureType == STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE) &&
-						// _.sum(struct.store) == struct.store[RESOURCE_ENERGY] &&
-						_.sum(struct.store) < struct.storeCapacity;
+						(struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE) &&
+						struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 					return a || b;
 				},
 			});
@@ -354,11 +353,11 @@ const roleHarvester = {
 				});
 				return targets[0];
 			}
-			return;
 		}
+		return undefined;
 	},
 
-	passiveMaintainContainer(creep) {
+	passiveMaintainContainer(creep: Creep): void {
 		if (creep.store[RESOURCE_ENERGY] === 0) {
 			return;
 		}
@@ -377,50 +376,34 @@ const roleHarvester = {
 		}
 	},
 
-	/** @param {Creep} creep **/
-	run(creep) {
+	run(creep: Creep): void {
 		// console.log(creep.name, "pos:", creep.memory.harvestPos, "mode:", creep.memory.depositMode, "harvestTarget:", creep.memory.harvestTarget, "transferTarget:", creep.memory.transferTarget, "link:", creep.memory.dedicatedLinkId);
 
 		if (!creep.memory.harvestTarget) {
 			creep.memory.harvestTarget = this.findHarvestTarget(creep);
 		}
+		if (!creep.memory.harvestTarget) {
+			creep.log("ERROR: Can't run harvester without harvestTarget");
+			creep.say("error");
+			return;
+		}
 
 		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		if (!harvestTarget) {
+			creep.log("ERROR: harvestTarget invalid");
+			creep.say("error");
+			delete creep.memory.harvestTarget;
+			return;
+		}
 		const targetRoom = harvestTarget.room;
-
-		// OLD HARVEST POSITION FINDING CODE, REMOVE WHEN NEW SOLUTION IS KNOWN TO BE GOOD
-		// if (!creep.memory.harvestPos) {
-		// 	let brainAutoPlanner = require("brain.autoplanner");
-		// 	let adj = util.getAdjacent(harvestTarget.pos).filter(pos => {
-		// 		let lookResult = pos.look();
-		// 		for (let l = 0; l < lookResult.length; l++) {
-		// 			let look = lookResult[l];
-		// 			if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
-		// 				continue;
-		// 			}
-
-		// 			if (look.type === LOOK_TERRAIN && look.terrain === 'wall') {
-		// 				return false;
-		// 			}
-		// 			else if (look.type === LOOK_STRUCTURES) {
-		// 				if (look.structure.structureType !== STRUCTURE_ROAD && look.structure.structureType !== STRUCTURE_CONTAINER && look.structure.structureType !== STRUCTURE_RAMPART) {
-		// 					return false;
-		// 				}
-		// 			}
-		// 		}
-		// 		planned = brainAutoPlanner.getPlansAtPosition(pos);
-		// 		return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
-		// 	});
-		// 	adj = _.sortByOrder(adj, [
-		// 		pos => !util.isDistFromEdge(pos, 2),
-		// 		pos => brainAutoPlanner.getPlansAtPosition(pos) === STRUCTURE_CONTAINER,
-		// 	],
-		// 	["desc", "desc"]);
-		// 	creep.memory.harvestPos = adj[0];
-		// }
 
 		const { x, y } = targetRoom.memory.harvestPositions[harvestTarget.id];
 		const harvestPos = targetRoom.getPositionAt(x, y);
+		if (!harvestPos) {
+			creep.log("ERROR: harvestPos invalid");
+			creep.say("error");
+			return;
+		}
 
 		if (harvestPos.roomName !== creep.memory.targetRoom) {
 			creep.memory.targetRoom = harvestPos.roomName;
@@ -436,7 +419,7 @@ const roleHarvester = {
 
 		if (
 			creep.room.name === creep.memory.targetRoom &&
-			CONTROLLER_STRUCTURES[STRUCTURE_LINK][creep.room.controller.level] > 0
+			CONTROLLER_STRUCTURES[STRUCTURE_LINK][creep.room.controller?.level ?? 0] > 0
 		) {
 			if (
 				!creep.memory.last_check_for_dedicated_link ||
@@ -445,7 +428,7 @@ const roleHarvester = {
 			) {
 				const nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 					filter: struct => {
-						return struct.structureType == STRUCTURE_LINK;
+						return struct.structureType === STRUCTURE_LINK;
 					},
 				});
 				if (nearbyLinks.length > 0) {
@@ -469,7 +452,7 @@ const roleHarvester = {
 		} else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
 			const nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, {
 				filter: struct => {
-					return struct.structureType == STRUCTURE_LINK;
+					return struct.structureType === STRUCTURE_LINK;
 				},
 			});
 			if (nearbyLinks.length > 0) {
@@ -555,20 +538,20 @@ const roleHarvester = {
 				delete creep.memory.transferTarget;
 			}
 
-			const transfer_result = creep.transfer(target, RESOURCE_ENERGY);
-			if (transfer_result === OK && creep.memory.depositMode === "recovery") {
+			const transferResult = creep.transfer(target, RESOURCE_ENERGY);
+			if (transferResult === OK && creep.memory.depositMode === "recovery") {
 				delete creep.memory.transferTarget;
-			} else if (transfer_result === ERR_NOT_IN_RANGE) {
+			} else if (transferResult === ERR_NOT_IN_RANGE) {
 				creep.travelTo(target, { visualizePathStyle: {} });
-			} else if (transfer_result === ERR_FULL) {
+			} else if (transferResult === ERR_FULL) {
 				console.log(creep.name, "failed to transfer: target full");
 				creep.memory.harvesting = true;
 				delete creep.memory.transferTarget;
 				if (creep.memory.depositMode === "link") {
 					creep.drop(RESOURCE_ENERGY);
 				}
-			} else if (transfer_result !== OK) {
-				console.log(creep.name, "failed to transfer:", transfer_result);
+			} else if (transferResult !== OK) {
+				console.log(creep.name, "failed to transfer:", transferResult);
 			}
 		}
 
