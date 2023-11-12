@@ -190,7 +190,8 @@ export const util = {
 	 */
 	getRenewTickIncrease(body: BodyPartDefinition[]): number {
 		if (body.length === 0) {
-			throw new Error("Invalid body");
+			console.log("[util][getRenewTickIncrease] Invalid body");
+			return 0;
 		}
 		return Math.floor(600 / body.length);
 	},
@@ -202,7 +203,8 @@ export const util = {
 	 */
 	getRenewCost(body: BodyPartDefinition[]): number {
 		if (body.length === 0) {
-			throw new Error("Invalid body");
+			console.log("[util][getRenewCost] Invalid body");
+			return Infinity;
 		}
 		return Math.ceil(this.getCreepSpawnCost(body) / 2.5 / body.length);
 	},

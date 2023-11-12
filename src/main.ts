@@ -2029,6 +2029,7 @@ profiler.registerObject(roleBuilder, "role.builder");
 profiler.registerObject(roleRemoteHarvester, "role.remoteharvester");
 profiler.registerObject(roleCarrier, "role.carrier");
 profiler.registerObject(visualize, "visualize");
+profiler.registerObject(util, "util");
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
