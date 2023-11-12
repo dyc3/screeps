@@ -1,4 +1,5 @@
 import "../traveler.js";
+import * as cartographer from "screeps-cartographer";
 import util from "../util";
 import brainLogistics from "../brain.logistics.js";
 import brainAutoPlanner from "../brain.autoplanner.js";
@@ -48,7 +49,7 @@ function doAquire(creep, passively = false) {
 					creep.log("ERR: I don't know how to withdraw from", aquireTarget);
 				}
 			} else {
-				let travelResult = creep.travelTo(aquireTarget, { visualizePathStyle: {} });
+				let travelResult = cartographer.moveTo(creep, aquireTarget, { visualizePathStyle: {} });
 				if (travelResult.incomplete) {
 					creep.log("Path to aquireTarget is incomplete, skipping...");
 					delete creep.memory.aquireTarget;
@@ -91,7 +92,7 @@ function doAquire(creep, passively = false) {
 			creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
 			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
 				creep.memory.aquireTarget = closest.id;
-				creep.travelTo(closest, { visualizePathStyle: {} });
+				cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 			}
 		}
 	} else {
@@ -135,7 +136,7 @@ function doAquire(creep, passively = false) {
 				}
 				creep.withdraw(target, RESOURCE_ENERGY);
 			} else {
-				creep.travelTo(target, { visualizePathStyle: {} });
+				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
 			}
 		} else {
 			let filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
@@ -162,7 +163,7 @@ function doAquire(creep, passively = false) {
 					creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
 					// console.log("NEARBY FILLED HARVESTER",closest.pos,"dist =",creep.pos.getRangeTo(closest))
 					if (closest.transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.travelTo(closest, { visualizePathStyle: {} });
+						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 					}
 				} else {
 					console.log(creep.name, "no path to target harvester");
@@ -308,7 +309,7 @@ function doAquire(creep, passively = false) {
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
 						creep.memory.aquireTarget = closest.id;
-						creep.travelTo(closest, { visualizePathStyle: {} });
+						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 					} else {
 						if (closest) {
 							creep.memory.lastWithdrawStructure = closest.id;
@@ -340,7 +341,7 @@ function doAquire(creep, passively = false) {
 						});
 						if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 							creep.memory.aquireTarget = closest.id;
-							creep.travelTo(closest, { visualizePathStyle: {} });
+							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 						} else {
 							creep.memory.lastWithdrawStructure = closest.id;
 						}
@@ -412,7 +413,9 @@ let roleManager = {
 
 			if (creep.room.name != creep.memory.targetRoom) {
 				//  && creep.carry[RESOURCE_ENERGY] > 200
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle: {} });
+				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), {
+					visualizePathStyle: {},
+				});
 				return;
 			}
 		}
@@ -468,7 +471,7 @@ let roleManager = {
 							creep.log("ERR: I don't know how to transfer to", transportTarget);
 						}
 					} else {
-						let travelResult = creep.travelTo(transportTarget, { visualizePathStyle: {} });
+						let travelResult = cartographer.moveTo(creep, transportTarget, { visualizePathStyle: {} });
 						if (travelResult.incomplete) {
 							creep.log("Path to transportTarget is incomplete, skipping...");
 							delete creep.memory.transportTarget;
@@ -624,7 +627,7 @@ let roleManager = {
 				if (closest) {
 					creep.room.visual.circle(closest.pos, { stroke: "#00ff00", fill: "transparent", radius: 1 });
 					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						creep.travelTo(closest, { visualizePathStyle: {} });
+						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 					} else {
 						creep.memory.lastDepositStructure = closest.id;
 						passivelyWithdrawOtherResources(creep, closest);
@@ -661,7 +664,7 @@ let roleManager = {
 						creep.memory.transportTarget = closest.id;
 						creep.room.visual.circle(closest.pos, { stroke: "#00ff00", fill: "transparent", radius: 1 });
 						if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-							creep.travelTo(closest, { visualizePathStyle: {} });
+							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 						}
 					}
 				} else {
@@ -675,7 +678,7 @@ let roleManager = {
 					if (creep.room.energyAvailable < creep.room.energyCapacityAvailable * 0.1) {
 						delete creep.memory.lastWithdrawStructure;
 					}
-					creep.travelTo(creep.room.storage, { visualizePathStyle: {} });
+					cartographer.moveTo(creep, creep.room.storage, { visualizePathStyle: {} });
 				}
 			}
 
@@ -861,7 +864,7 @@ let roleManager = {
 			}
 
 			// if (creep.room.name !== creep.memory.targetRoom) {
-			// 	creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
+			// 	cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
 			// 	return;
 			// }
 		}
@@ -950,7 +953,7 @@ let roleManager = {
 				if (creep.room.name === transportTarget.room.name) {
 					opts.maxRooms = 1;
 				}
-				let result = creep.travelTo(transportTarget, opts);
+				let result = cartographer.moveTo(creep, transportTarget, opts);
 				if (result.incomplete) {
 					creep.log("Incomplete path to transport target, clearing");
 					creep.memory.excludeTransport.push(creep.memory.transportTarget);
@@ -994,7 +997,7 @@ let roleManager = {
 				if (creep.room.name === aquireTarget.room.name) {
 					opts.maxRooms = 1;
 				}
-				creep.travelTo(aquireTarget, opts);
+				cartographer.moveTo(creep, aquireTarget, opts);
 			}
 		}
 	},
