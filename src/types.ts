@@ -28,8 +28,7 @@ declare global {
 			room: string;
 			mode: "claim" | "reserve";
 		}[];
-		job_queue: any[]; // TODO: define this
-		job_last_run: any; // TODO: define this
+		jobLastRun: { [jobName: string]: number };
 		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 		creepSpawnLog: string[];
 		guard: {

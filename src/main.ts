@@ -146,6 +146,7 @@ import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
 import TmpDefense from "./tmpdefense";
+import { Job, JobRunner } from "jobs";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -153,6 +154,8 @@ global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
 /** @deprecated: use `util.printException()` instead */
 const printException = util.printException;
+
+const runner = JobRunner.getInstance();
 
 function printStatus() {
 	const rooms = util.getOwnedRooms();
@@ -1148,7 +1151,7 @@ function doWorkLabs() {
 }
 
 function commandRemoteMining() {
-	// Force job to run: Memory.job_last_run["command-remote-mining"] = 0
+	// Force job to run: Memory.jobLastRun["command-remote-mining"] = 0
 	let neededHarvesters = 0;
 	let neededCarriers = 0;
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
@@ -1287,7 +1290,7 @@ function commandRemoteMining() {
 			} else if (
 				keeperLair &&
 				keeperLair.ticksToSpawn &&
-				keeperLair.ticksToSpawn <= jobs["command-remote-mining"].interval + 5
+				keeperLair.ticksToSpawn <= (runner.getInterval("command-remote-mining") ?? 0) + 5
 			) {
 				target.danger = 1;
 			} else {
@@ -1558,91 +1561,78 @@ function doWorkFactories() {
 	}
 }
 
-const jobs = {
-	"creep-spawning": {
-		name: "creep-spawning",
-		run: doCreepSpawning,
-		interval: 15,
+runner.registerJob({
+	name: "creep-spawning",
+	run: doCreepSpawning,
+	interval: 15,
+});
+runner.registerJob({
+	name: "calc-defcons",
+	run: determineDefconLevels,
+	interval: 3,
+});
+runner.registerJob({
+	name: "flag-commands",
+	run: doFlagCommandsAndStuff,
+	interval: 4,
+});
+runner.registerJob({
+	name: "link-transfers",
+	run: doLinkTransfers,
+	interval: 4,
+});
+runner.registerJob({
+	name: "command-energy-relays",
+	run: commandEnergyRelays,
+	interval: 10,
+});
+runner.registerJob({
+	name: "plan-buildings",
+	run: doAutoPlanning,
+	interval: 30,
+});
+runner.registerJob({
+	name: "auto-trade",
+	run: doAutoTrading,
+	interval: 30,
+});
+runner.registerJob({
+	name: "work-labs",
+	run: doWorkLabs,
+	interval: 30,
+});
+runner.registerJob({
+	name: "command-remote-mining",
+	run: commandRemoteMining,
+	interval: 25,
+});
+runner.registerJob({
+	name: "satisfy-claim-targets",
+	run: satisfyClaimTargets,
+	interval: 50,
+});
+runner.registerJob({
+	name: "work-factories",
+	run: doWorkFactories,
+	interval: 20,
+});
+runner.registerJob({
+	name: "op-guard",
+	run() {
+		brainGuard.updateGuardTasks();
 	},
-	"calc-defcons": {
-		name: "calc-defcons",
-		run: determineDefconLevels,
-		interval: 3,
-	},
-	"flag-commands": {
-		name: "flag-commands",
-		run: doFlagCommandsAndStuff,
-		interval: 4,
-	},
-	"link-transfers": {
-		name: "link-transfers",
-		run: doLinkTransfers,
-		interval: 4,
-	},
-	"command-energy-relays": {
-		name: "command-energy-relays",
-		run: commandEnergyRelays,
-		interval: 10,
-	},
-	"plan-buildings": {
-		name: "plan-buildings",
-		run: doAutoPlanning,
-		interval: 30,
-	},
-	"auto-trade": {
-		name: "auto-trade",
-		run: doAutoTrading,
-		interval: 30,
-	},
-	"work-labs": {
-		name: "work-labs",
-		run: doWorkLabs,
-		interval: 30,
-	},
-	"command-remote-mining": {
-		name: "command-remote-mining",
-		run: commandRemoteMining,
-		interval: 25,
-	},
-	"satisfy-claim-targets": {
-		name: "satisfy-claim-targets",
-		run: satisfyClaimTargets,
-		interval: 50,
-	},
-	"work-factories": {
-		name: "work-factories",
-		run: doWorkFactories,
-		interval: 20,
-	},
-	"op-guard": {
-		name: "op-guard",
-		run() {
-			brainGuard.updateGuardTasks();
-		},
-		interval: 5,
-	},
-	"update-observers": {
-		name: "update-observers",
-		run: ObserveQueue.updateCachedObserverIds,
-		interval: 50,
-	},
-	"portal-scan": {
-		name: "portal-scan",
-		requestObservations: PortalScanner.requestObservations,
-		run: PortalScanner.scanVisibleRooms,
-		interval: 10,
-	},
-};
-
-function queueJob(job: any) {
-	for (let i = 0; i < Memory.job_queue.length; i++) {
-		if (Memory.job_queue[i].startsWith(job.name)) {
-			return;
-		}
-	}
-	console.log("Adding", job.name, "to queue");
-	Memory.job_queue.push(job.name);
-}
+	interval: 5,
+});
+runner.registerJob({
+	name: "update-observers",
+	run: ObserveQueue.updateCachedObserverIds,
+	interval: 50,
+});
+runner.registerJob({
+	name: "portal-scan",
+	run: PortalScanner.scanVisibleRooms,
+	interval: 10,
+});
 
 function main() {
 	if (Game.cpu.bucket > 9500 && !!Game.cpu.generatePixel) {
@@ -1674,31 +1664,7 @@ function main() {
 	ObserveQueue.initialize();
 	PortalScanner.initialize();
 
-	// initialize jobs
-	if (!Memory.job_last_run) {
-		Memory.job_last_run = {};
-	}
-	if (!Memory.job_queue) {
-		Memory.job_queue = [];
-	}
-	for (const job of Object.values(jobs)) {
-		// initialize any new jobs that have not been run yet
-		if (!Memory.job_last_run[job.name]) {
-			console.log("initialize job", job.name);
-			Memory.job_last_run[job.name] = Game.time - job.interval;
-		}
-
-		// queue up job if it needs to be run
-		if (Game.time - Memory.job_last_run[job.name] > job.interval - 1) {
-			if ("requestObservations" in job) {
-				console.log("requesting observations for", job.name);
-				job.requestObservations();
-			}
-		}
-		if (Game.time - Memory.job_last_run[job.name] > job.interval) {
-			queueJob(job);
-		}
-	}
+	runner.queueJobs();
 
 	brainGuard.init();
 	brainHighwayHarvesting.init();
@@ -1950,25 +1916,11 @@ function main() {
 	}
 
 	// process jobs
-	while (Memory.job_queue.length > 0 && (Game.cpu.getUsed() < Game.cpu.limit * 0.7 || util.isSimulationMode())) {
-		const job_to_do = Memory.job_queue[0];
-		console.log("Running job:", job_to_do);
-		// @ts-expect-error FIXME: define types for jobs
-		const job = jobs[job_to_do];
-		try {
-			job.run();
-			Memory.job_queue.shift();
-			Memory.job_last_run[job.name] = Game.time;
-		} catch (e) {
-			console.log("ERR: Job failed", job.name);
-			util.printException(e);
-			break;
-		}
-	}
+	runner.runJobs();
 
 	// force spawning
 	if (Object.keys(Game.creeps).length === 0 || Memory.forceCreepSpawn || Game.flags.forceSpawn) {
-		queueJob(jobs["creep-spawning"]);
+		runner.forceRunNextTick("creep-spawning");
 		if (Memory.forceCreepSpawn) {
 			// @ts-ignore
 			delete Memory.forceCreepSpawn;

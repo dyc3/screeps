@@ -1,3 +1,4 @@
+import { JobRunner } from "jobs";
 import { ObserveQueue } from "../observequeue";
 import util from "../util";
 
@@ -52,7 +53,13 @@ export default class PortalScanner {
 		// TODO: determine rooms to observe based on the portals we know about, and the rooms we already know are closed
 	}
 
-	public static scanVisibleRooms() {
+	public static scanVisibleRooms(doScanning: boolean) {
+		if (!doScanning) {
+			PortalScanner.requestObservations();
+			JobRunner.getInstance().forceRunNextTick("portal-scan", true);
+			return;
+		}
+
 		const rooms = _.filter(Game.rooms, r => util.isHighwayRoom(r.name));
 		if (rooms.length === 0) {
 			return;
