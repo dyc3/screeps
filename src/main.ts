@@ -503,18 +503,16 @@ function doFlagCommandsAndStuff() {
 		}
 
 		try {
-			const lookResult = pos.lookFor(LOOK_SOURCES);
-			if (lookResult.length > 0) {
-				newTarget.id = lookResult[0].id;
+			const lookSource = pos.lookFor(LOOK_SOURCES);
+			if (lookSource.length > 0) {
+				newTarget.id = lookSource[0].id;
 
 				// set harvestPos
-				const adj = util.getAdjacent(pos);
-				for (let i = 0; i < adj.length; i++) {
+				for (const adj of util.getAdjacent(pos)) {
 					// look for structures
-					const lookResult = adj[i].look();
+					const lookResult = adj.look();
 					let isValid = true;
-					for (let l = 0; l < lookResult.length; l++) {
-						const look = lookResult[l];
+					for (const look of lookResult) {
 						if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
 							continue;
 						}
@@ -539,7 +537,7 @@ function doFlagCommandsAndStuff() {
 						continue;
 					}
 
-					newTarget.harvestPos = { x: adj[i].x, y: adj[i].y };
+					newTarget.harvestPos = { x: adj.x, y: adj.y };
 					break;
 				}
 			} else {
@@ -577,7 +575,7 @@ function doFlagCommandsAndStuff() {
 		const flag = Game.flags[f];
 		// check if dismantle and norepair flags have structures under them
 		if (flag.name.startsWith("dismantle") || flag.name.includes("norepair")) {
-			if (Game.rooms[flag.pos.roomName] && flag.pos.lookFor(LOOK_STRUCTURES).length == 0) {
+			if (Game.rooms[flag.pos.roomName] && flag.pos.lookFor(LOOK_STRUCTURES).length === 0) {
 				flag.remove();
 			}
 		}
@@ -656,7 +654,7 @@ function commandEnergyRelays() {
 			}
 			return true;
 		});
-		if (availableRelayPos.length == 0) {
+		if (availableRelayPos.length === 0) {
 			continue;
 		}
 		console.log("# of relay positions available:", availableRelayPos.length);
@@ -1765,7 +1763,7 @@ function main() {
 				continue;
 			}
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 
 		if (creep.memory.role === Role.Guardian) {
