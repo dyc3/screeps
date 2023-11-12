@@ -88,7 +88,7 @@ export function getManagerQuota(room: Room) {
 	return 0;
 }
 
-export function getRelayQuota(room: Room) {
+export function getRelayQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
@@ -97,7 +97,7 @@ export function getRelayQuota(room: Room) {
 		return 0;
 	}
 	let count = linkCount;
-	if (count == 2) {
+	if (count === 2) {
 		count = 3;
 	} else if (count > 5) {
 		count = 5;
@@ -110,7 +110,7 @@ export function getMinerQuota(): number {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
 		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][room.controller?.level ?? 0] > 0) {
-			const extractors = util.getStructuresOld(room, STRUCTURE_EXTRACTOR);
+			const extractors = util.getStructures(room, STRUCTURE_EXTRACTOR);
 			for (const struct of extractors) {
 				const mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
 				if (mineral) {
