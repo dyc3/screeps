@@ -82,6 +82,16 @@ Room memory: `Memory.rooms.ROOMNAME`
 
 */
 
+// @ts-expect-error i want this in the global scope for console access
+global.move = (creep: string, direction: DirectionConstant) => {
+	const c = Game.creeps[creep];
+	if (!c) {
+		console.log("creep not found");
+		return;
+	}
+	c.move(direction);
+};
+
 import "./types";
 import _ from "lodash";
 import "./tools.js";
