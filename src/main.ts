@@ -1482,7 +1482,7 @@ function satisfyClaimTargets() {
 function doWorkFactories() {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
-		const factory = util.getStructuresOld(room, STRUCTURE_FACTORY)[0] as StructureFactory;
+		const factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
 
 		if (!factory || factory.cooldown > 0) {
 			continue;
@@ -1519,26 +1519,26 @@ function doWorkFactories() {
 		for (const productionTarget of productionTargets) {
 			console.log(`[work-factories] production target: ${productionTarget}`);
 			let canProduce = true;
-			if (factory.level && (COMMODITIES[productionTarget].level ?? 0 > factory.level)) {
-				console.log(
-					`[work-factories] factory is level ${factory.level}, but level ${COMMODITIES[productionTarget].level} is required`
-				);
+			const commodity = COMMODITIES[productionTarget];
+			const neededLevel = commodity.level ?? 0;
+			if (factory.level && neededLevel > factory.level) {
+				console.log(`[work-factories] factory is level ${factory.level}, but level ${neededLevel} is required`);
 				canProduce = false;
 				break;
 			}
 
-			for (const _component in COMMODITIES[productionTarget].components) {
+			for (const _component in commodity.components) {
 				const component = _component as CommodityConstant;
 				// console.log(`[work-factories] factory has component ${component}?`);
-				if (!factory.store.hasOwnProperty(component)) {
+				if (factory.store.getUsedCapacity(component) === 0) {
 					console.log(`[work-factories] no ${component} found`);
 					canProduce = false;
 					break;
 				}
 				// console.log(`[work-factories] found ${factory.store[component]} ${component}`);
-				if (factory.store.getUsedCapacity(component) < COMMODITIES[productionTarget].components[component]) {
+				if (factory.store.getUsedCapacity(component) < commodity.components[component]) {
 					console.log(
-						`[work-factories] not enough ${component}, found ${factory.store[component]} need ${COMMODITIES[productionTarget].components[component]}`
+						`[work-factories] not enough ${component}, currently have ${factory.store[component]}/${commodity.components[component]}`
 					);
 					canProduce = false;
 					break;
