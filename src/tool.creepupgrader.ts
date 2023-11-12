@@ -96,13 +96,13 @@ export function getRelayQuota(room: Room): number {
 	if (linkCount === 0) {
 		return 0;
 	}
-	let count = linkCount;
-	if (count === 2) {
-		count = 3;
-	} else if (count > 5) {
-		count = 5;
+	if (linkCount === 2) {
+		return 3;
 	}
-	return count;
+	if (linkCount >= 4) {
+		return 5;
+	}
+	return linkCount;
 }
 
 export function getMinerQuota(): number {
