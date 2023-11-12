@@ -681,6 +681,10 @@ function doCreepSpawning() {
 			console.log(`${room.name} defcon is greater than 0, not spawning ${role.name}`);
 			return false;
 		}
+		if (spawns.length === 0) {
+			console.log("WARNING: no spawns found for room", room?.name);
+			return false;
+		}
 		const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
