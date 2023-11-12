@@ -356,7 +356,7 @@ export const util = {
 	 * @example let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(10)
 	 * @deprecated use combat.calc.towerImpactFactor
 	 */
-	towerImpactFactor(distance: number) {
+	towerImpactFactor(distance: number): number {
 		if (distance <= TOWER_OPTIMAL_RANGE) {
 			return 1;
 		}
@@ -367,7 +367,7 @@ export const util = {
 		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile;
 	},
 
-	printException(e: any, creep: Creep | undefined = undefined) {
+	printException(e: any, creep: Creep | undefined = undefined): void {
 		const msg = errorMild + ErrorMapper.renderError(e);
 		if (creep) {
 			console.log(creep.name, msg);
@@ -377,8 +377,8 @@ export const util = {
 		Game.notify(msg);
 	},
 
-	isSimulationMode() {
-		return Game.rooms.sim != undefined;
+	isSimulationMode(): boolean {
+		return Game.rooms.sim !== undefined;
 	},
 
 	/**

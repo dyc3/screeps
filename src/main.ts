@@ -580,8 +580,7 @@ function commandEnergyRelays() {
 		return;
 	}
 
-	for (let r = 0; r < rooms.length; r++) {
-		const room = rooms[r];
+	for (const room of rooms) {
 		const roleMeta = toolCreepUpgrader.getRoleMetadata(Role.Relay);
 
 		// skip room if it's not supposed to have relays
@@ -593,14 +592,31 @@ function commandEnergyRelays() {
 		if (
 			_.filter(relayCreeps, creep => {
 				return !creep.memory.assignedPos;
-			}).length == 0
+			}).length === 0
 		) {
 			// all relay creeps have positions
 			continue;
 		}
 
+		if (!room.memory.rootPos) {
+			console.log("WARN: room", room.name, "has no rootPos");
+			continue;
+		}
+		if (!room.memory.storagePos) {
+			console.log("WARN: room", room.name, "has no storagePos");
+			continue;
+		}
+
 		const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
 		const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
+		if (!rootLinkPos) {
+			console.log("WARN: room", room.name, "has invalid rootPos");
+			continue;
+		}
+		if (!storagePos) {
+			console.log("WARN: room", room.name, "has invalid storagePos");
+			continue;
+		}
 		// HACK: because the way the storage module is placed is STILL jank af, rooms can opt in to change the relay position for the storage
 		const storagePosRelayDirection = room.memory.storagePosDirection ?? RIGHT;
 		const relayPositions = [
@@ -612,8 +628,7 @@ function commandEnergyRelays() {
 		];
 		relayPositions.splice(roleMeta.quota(room));
 		const availableRelayPos = _.filter(relayPositions, pos => {
-			for (let i = 0; i < relayCreeps.length; i++) {
-				const creep = relayCreeps[i];
+			for (const creep of relayCreeps) {
 				if (!creep.memory.assignedPos) {
 					continue;
 				}
@@ -634,8 +649,7 @@ function commandEnergyRelays() {
 		console.log("# of relay positions available:", availableRelayPos.length);
 
 		// assign an available position to a relay creep
-		for (let i = 0; i < relayCreeps.length; i++) {
-			const creep = relayCreeps[i];
+		for (const creep of relayCreeps) {
 			if (!creep.memory.assignedPos) {
 				creep.memory.assignedPos = availableRelayPos[0];
 				break;
@@ -654,10 +668,10 @@ function doCreepSpawning() {
 			console.log(`${room.name} defcon is greater than 0, not spawning ${role.name}`);
 			return false;
 		}
-		const target_spawn = spawns[Math.floor(Math.random() * spawns.length)];
+		const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
 
 		const newCreepName = role.name + "_" + Game.time.toString(16);
-		const hiStage = toolCreepUpgrader.getHighestStage(role.name, target_spawn.room);
+		const hiStage = toolCreepUpgrader.getHighestStage(role.name, targetSpawn.room);
 		const newCreepMemory: {
 			role: Role;
 			stage: number;
@@ -668,44 +682,44 @@ function doCreepSpawning() {
 		if (role.quota_per_room) {
 			newCreepMemory.targetRoom = room?.name;
 		}
-		if (role.name == Role.Attacker) {
+		if (role.name === Role.Attacker) {
 			newCreepMemory.mode = "defend";
-		} else if (role.name == Role.Claimer || role.name == Role.Scout) {
+		} else if (role.name === Role.Claimer || role.name === Role.Scout) {
 			newCreepMemory.keepAlive = false;
 		}
 
 		if (hiStage >= 0) {
 			console.log("Spawn new creep", newCreepName);
 			Memory.creepSpawnLog.push(
-				`${Game.time} | spawning ${newCreepName} at ${target_spawn.name} (stage ${hiStage}${
-					role.quota_per_room ? ", target room:" + room?.name : ""
+				`${Game.time} | spawning ${newCreepName} at ${targetSpawn.name} (stage ${hiStage}${
+					role.quota_per_room ? `, target room: ${room?.name}` : ""
 				})`
 			);
 			const body = role.stages[hiStage];
 			if (role.name === Role.Upgrader && room?.controller && room.controller.level <= 5 && hiStage > 2) {
 				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
-				const result = target_spawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, {
+				const result = targetSpawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, {
 					// @ts-expect-error this is valid
 					memory: newCreepMemory,
 				});
 				if (result === ERR_NOT_ENOUGH_ENERGY) {
 					// fall back just in case
 					// @ts-expect-error this is valid
-					target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+					targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				}
 			} else if (role.name === Role.Harvester && hiStage === role.stages.length - 1) {
 				// HACK: if the harvester is going to another room, do not spawn the super optimized creep because it will be ultimately less effective.
-				if (target_spawn.room.name !== newCreepMemory.targetRoom) {
+				if (targetSpawn.room.name !== newCreepMemory.targetRoom) {
 					console.log("[spawning] spawning harvester with extra move");
 					body.push([MOVE, MOVE, MOVE, MOVE, MOVE]);
 				}
-				const result = target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+				const result = targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				if (result !== OK) {
 					return false;
 				}
 			} else {
 				// @ts-expect-error this is valid
-				target_spawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
+				targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 			}
 			return true;
 		}
@@ -724,8 +738,8 @@ function doCreepSpawning() {
 			return false;
 		}
 
-		for (let i = 0; i < creeps.length; i++) {
-			if (!creeps[i].memory.keepAlive) {
+		for (const creep of creeps) {
+			if (!creep.memory.keepAlive) {
 				// already marked for death
 				return true;
 			}
@@ -763,18 +777,17 @@ function doCreepSpawning() {
 	console.log("Spawning/upgrading creeps...");
 
 	let rooms = util.getOwnedRooms();
-	for (const role_name in toolCreepUpgrader.roles) {
-		const roleMeta = toolCreepUpgrader.getRoleMetadata(role_name as Role);
-		const creeps_of_role = util.getCreeps(roleMeta.name);
+	for (const roleName in toolCreepUpgrader.roles) {
+		const roleMeta = toolCreepUpgrader.getRoleMetadata(roleName as Role);
+		const creepsOfRole = util.getCreeps(roleMeta.name);
 		if (roleMeta.quota_per_room) {
-			for (let r = 0; r < rooms.length; r++) {
-				const room = rooms[r];
-				const creeps_of_room = _.filter(creeps_of_role, creep => creep.memory.targetRoom === room.name);
-				const role_quota = roleMeta.quota(room);
-				console.log(room.name, roleMeta.name, creeps_of_room.length + "/" + role_quota);
+			for (const room of rooms) {
+				const creepsOfRoom = _.filter(creepsOfRole, creep => creep.memory.targetRoom === room.name);
+				const roleQuota = roleMeta.quota(room);
+				console.log(room.name, roleMeta.name, creepsOfRoom.length + "/" + roleQuota);
 
-				if (creeps_of_room.length >= role_quota) {
-					if (doMarkForDeath(roleMeta, creeps_of_room, role_quota, room)) {
+				if (creepsOfRoom.length >= roleQuota) {
+					if (doMarkForDeath(roleMeta, creepsOfRoom, roleQuota, room)) {
 						if (room.energyAvailable < room.energyCapacityAvailable) {
 							console.log("Waiting for enough energy to safely spawn new creep");
 							return;
@@ -786,8 +799,8 @@ function doCreepSpawning() {
 				let needOtherRoomSpawns = false;
 				let canUseOtherRooms = !["harvester", "manager", "relay"].includes(roleMeta.name);
 				let spawns = util
-					.getStructuresOld(room, STRUCTURE_SPAWN)
-					.filter(s => !(s as StructureSpawn).spawning)
+					.getStructures(room, STRUCTURE_SPAWN)
+					.filter(s => !s.spawning)
 					.filter(
 						s =>
 							util
@@ -797,7 +810,7 @@ function doCreepSpawning() {
 										(c.memory.renewing || (c.ticksToLive && c.ticksToLive < 100)) &&
 										c.memory.renewTarget === s.id
 								).length === 0
-					) as StructureSpawn[];
+					);
 				if (spawns.length === 0) {
 					console.log("WARN: There are no available spawns in this room to spawn creeps");
 					needOtherRoomSpawns = true;
@@ -823,18 +836,18 @@ function doCreepSpawning() {
 						console.log(
 							"WARN: No rooms are above energy threshold. Falling back to use any energy available."
 						);
-						otherRooms = _.filter(util.getOwnedRooms(), room => room.energyAvailable >= 200); // TODO: get minimum possible energy to spawn creep of this role
+						otherRooms = _.filter(util.getOwnedRooms(), r => r.energyAvailable >= 200); // TODO: get minimum possible energy to spawn creep of this role
 						if (otherRooms.length === 0) {
 							console.log("CRITICAL: Unable to spawn creeps! We are all gonna die!");
 							Game.notify("CRITICAL: Unable to spawn creeps! We are all gonna die!");
 						}
-						otherRooms = [_.max(otherRooms, room => room.energyAvailable)];
+						otherRooms = [_.max(otherRooms, r => r.energyAvailable)];
 					}
 					// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
 					const target_room = otherRooms[0];
 					spawns = util
-						.getStructuresOld(target_room, STRUCTURE_SPAWN)
-						.filter(s => !(s as StructureSpawn).spawning && s.isActive())
+						.getStructures(target_room, STRUCTURE_SPAWN)
+						.filter(s => !s.spawning && s.isActive())
 						.filter(
 							s =>
 								util
@@ -844,7 +857,7 @@ function doCreepSpawning() {
 											(c.memory.renewing || (c.ticksToLive && c.ticksToLive < 100)) &&
 											c.memory.renewTarget === s.id
 									).length === 0
-						) as StructureSpawn[];
+						);
 					if (spawns.length === 0) {
 						console.log("WARN: There are no available spawns in the other selected room to spawn creeps");
 						continue;
@@ -860,18 +873,18 @@ function doCreepSpawning() {
 				}
 			}
 		} else {
-			const role_quota = roleMeta.quota();
-			console.log(roleMeta.name, creeps_of_role.length + "/" + role_quota);
+			const roleQuota = roleMeta.quota();
+			console.log(roleMeta.name, `${creepsOfRole.length}/${roleQuota}`);
 
 			rooms = _.filter(rooms, room => room.energyAvailable >= room.energyCapacityAvailable * 0.8);
 			if (rooms.length === 0) {
 				console.log("WARN: There are no rooms available with enough energy to spawn creeps");
 				continue;
 			}
-			const target_room = rooms[Math.floor(Math.random() * rooms.length)];
+			const targetRoom = rooms[Math.floor(Math.random() * rooms.length)];
 
-			if (creeps_of_role.length >= role_quota) {
-				if (doMarkForDeath(roleMeta, creeps_of_role, role_quota, target_room)) {
+			if (creepsOfRole.length >= roleQuota) {
+				if (doMarkForDeath(roleMeta, creepsOfRole, roleQuota, targetRoom)) {
 					if (roleMeta.name !== "scout") {
 						return;
 					}
@@ -879,9 +892,7 @@ function doCreepSpawning() {
 				continue;
 			}
 
-			const spawns = util
-				.getStructuresOld(target_room, STRUCTURE_SPAWN)
-				.filter(s => !(s as StructureSpawn).spawning && s.isActive()) as StructureSpawn[];
+			const spawns = util.getStructures(targetRoom, STRUCTURE_SPAWN).filter(s => !s.spawning && s.isActive());
 			if (spawns.length === 0) {
 				continue;
 			}
@@ -1037,13 +1048,13 @@ function doAutoPlanning() {
 					// @ts-expect-error FIXME: this should work normally, type definitions are wrong?
 					mineral.pos.lookFor(LOOK_STRUCTURES, {
 						filter: (struct: Structure) => struct.structureType === STRUCTURE_EXTRACTOR,
-					}).length == 0
+					}).length === 0
 				) {
 					if (
 						// @ts-expect-error FIXME: this should work normally, type definitions are wrong?
 						mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES, {
 							filter: (site: ConstructionSite) => site.structureType === STRUCTURE_EXTRACTOR,
-						}).length == 0
+						}).length === 0
 					) {
 						mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
 					}
@@ -1059,11 +1070,11 @@ function doWorkLabs() {
 		if (room.controller?.level ?? 0 < 6) {
 			continue;
 		}
-		const labs = util.getStructuresOld(room, STRUCTURE_LAB) as StructureLab[];
+		const labs = util.getStructures(room, STRUCTURE_LAB);
 
-		for (let l = 0; l < labs.length; l++) {
-			const workFlag = util.getWorkFlag(labs[l].pos);
-			if (!workFlag || workFlag.secondaryColor != COLOR_GREEN) {
+		for (const lab of labs) {
+			const workFlag = util.getWorkFlag(lab.pos);
+			if (!workFlag || workFlag.secondaryColor !== COLOR_GREEN) {
 				continue;
 			}
 			// console.log(workFlag)
@@ -1087,48 +1098,48 @@ function doWorkLabs() {
 							needsMinerals = makingWhat.split("") as ResourceConstant[];
 						}
 				}
-				const sourceLabs: StructureLab[] = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: (lab: StructureLab) => {
-						return lab.structureType === STRUCTURE_LAB && _.contains(needsMinerals, lab.mineralType);
+				const sourceLabs: StructureLab[] = lab.pos.findInRange(FIND_STRUCTURES, 2, {
+					filter: (l: StructureLab) => {
+						return l.structureType === STRUCTURE_LAB && _.contains(needsMinerals, l.mineralType);
 					},
 				});
 				// console.log(labs[l], "is making", isMakingWhat, "using", needsMinerals, "from", sourceLabs)
 				try {
-					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[0].pos);
-					new RoomVisual(labs[l].room.name).line(labs[l].pos, sourceLabs[1].pos);
+					new RoomVisual(lab.room.name).line(lab.pos, sourceLabs[0].pos);
+					new RoomVisual(lab.room.name).line(lab.pos, sourceLabs[1].pos);
 				} catch (e) {}
-				if (sourceLabs.length == 2) {
-					labs[l].runReaction(sourceLabs[0], sourceLabs[1]);
+				if (sourceLabs.length === 2) {
+					lab.runReaction(sourceLabs[0], sourceLabs[1]);
 				} else {
 					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
 				}
 			} else if (method === "unmake") {
-				const splitsInto = labs[l].mineralType?.split("") as ResourceConstant[];
-				console.log("[work-labs] unmaking", labs[l].mineralType, "into", splitsInto);
-				let destLabs: StructureLab[] = labs[l].pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: (lab: StructureLab) => {
+				const splitsInto = lab.mineralType?.split("") as ResourceConstant[];
+				console.log("[work-labs] unmaking", lab.mineralType, "into", splitsInto);
+				let destLabs: StructureLab[] = lab.pos.findInRange(FIND_STRUCTURES, 2, {
+					filter: (l: StructureLab) => {
 						return (
-							lab.structureType === STRUCTURE_LAB &&
-							(_.contains(splitsInto, lab.mineralType) || lab.mineralType === undefined)
+							l.structureType === STRUCTURE_LAB &&
+							(_.contains(splitsInto, l.mineralType) || l.mineralType === undefined)
 						);
 					},
 				});
 				destLabs = _.sortBy(
 					destLabs,
-					(lab: StructureLab) => {
+					(l: StructureLab) => {
 						// @ts-expect-error FIXME: this is functional, but doesn't typecheck
-						return _.contains(lab.mineralType, splitsInto);
+						return _.contains(l.mineralType, splitsInto);
 					},
 					"desc"
 				);
 				destLabs = destLabs.slice(0, splitsInto.length);
-				console.log(labs[l], "is unmaking", labs[l].mineralType, "into", splitsInto, "into", destLabs);
+				console.log(lab, "is unmaking", lab.mineralType, "into", splitsInto, "into", destLabs);
 				try {
-					const vis = new RoomVisual(labs[l].room.name);
-					destLabs.forEach((lab: StructureLab) => vis.line(labs[l].pos, lab.pos));
+					const vis = new RoomVisual(lab.room.name);
+					destLabs.forEach((l: StructureLab) => vis.line(l.pos, l.pos));
 				} catch (e) {}
 
-				labs[l].reverseReaction(destLabs[0], destLabs[1]);
+				lab.reverseReaction(destLabs[0], destLabs[1]);
 			} else {
 				console.log("Unknown method:", method);
 			}
@@ -1445,9 +1456,7 @@ function satisfyClaimTargets() {
 			continue;
 		}
 		console.log("Spawning claimer in room", spawnRoom.name, "targetting room", target.room);
-		const spawns = util
-			.getStructuresOld(spawnRoom, STRUCTURE_SPAWN)
-			.filter(s => !(s as StructureSpawn).spawning) as StructureSpawn[];
+		const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
 		if (spawns.length === 0) {
 			console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
 			continue;
@@ -1459,7 +1468,7 @@ function satisfyClaimTargets() {
 			// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
 			claimerBody = [CLAIM, MOVE];
 		}
-		targetSpawn.spawnCreep(claimerBody, "claimer_" + Game.time.toString(16), {
+		targetSpawn.spawnCreep(claimerBody, `claimer_${Game.time.toString(16)}`, {
 			// @ts-expect-error this works, its fine
 			memory: {
 				role: Role.Claimer,

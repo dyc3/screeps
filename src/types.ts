@@ -24,7 +24,10 @@ declare global {
 		expansionTarget: string | undefined;
 		terminalEnergyTarget: number;
 		factoryEnergyTarget: number;
-		claimTargets: any[]; // TODO: define this
+		claimTargets: {
+			room: string;
+			mode: "claim" | "reserve";
+		}[];
 		job_queue: any[]; // TODO: define this
 		job_last_run: any; // TODO: define this
 		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing

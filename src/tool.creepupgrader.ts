@@ -122,7 +122,7 @@ export function getMinerQuota(): number {
 	return Math.ceil(mineable / 2);
 }
 
-export function getRepairerQuota(room: Room) {
+export function getRepairerQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
