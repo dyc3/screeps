@@ -207,20 +207,21 @@ const roleRepairer = {
 				avgWallHits = sumWallHits / countWalls;
 				targets = _.reject(targets, function (struct) {
 					return (
-						(struct.structureType == STRUCTURE_WALL || struct.structureType == STRUCTURE_RAMPART) &&
+						(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
 						struct.hits > avgWallHits * 1.1
 					);
 				});
 
-				const structPriority = {};
-				structPriority[STRUCTURE_SPAWN] = 2;
-				structPriority[STRUCTURE_STORAGE] = 3;
-				structPriority[STRUCTURE_ROAD] = 4;
-				structPriority[STRUCTURE_RAMPART] = 6;
-				structPriority[STRUCTURE_WALL] = 7;
+				const structPriority = {
+					[STRUCTURE_SPAWN]: 2,
+					[STRUCTURE_STORAGE]: 3,
+					[STRUCTURE_ROAD]: 4,
+					[STRUCTURE_RAMPART]: 6,
+					[STRUCTURE_WALL]: 7,
+				};
 				targets.sort(function (a, b) {
 					if (
-						a.structureType != b.structureType &&
+						a.structureType !== b.structureType &&
 						structPriority[a.structureType] &&
 						structPriority[b.structureType]
 					) {
@@ -260,7 +261,10 @@ const roleRepairer = {
 				(creep.room.name !== creep.memory.targetRoom || util.isOnEdge(creep.pos)) &&
 				!creep.memory.repairTarget
 			) {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle: {}, range: 4 });
+				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), {
+					visualizePathStyle: {},
+					range: 10,
+				});
 				return;
 			}
 		}
@@ -355,13 +359,6 @@ const roleRepairer = {
 							const direction = creep.pos.getDirectionTo(nearbyCreeps[0]);
 							// console.log(creep.name, "found creep in direction:", direction);
 							creep.move(util.getOppositeDirection(direction));
-						} else {
-							if (util.isDistFromEdge(creep.pos, 3)) {
-								creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), {
-									range: 10,
-									maxRooms: 1,
-								}); // TODO: avoid pathfinding
-							}
 						}
 					}
 				}
