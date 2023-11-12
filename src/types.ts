@@ -73,7 +73,7 @@ declare global {
 	}
 
 	interface RoomMemory {
-		harvestPositions: any; // TODO: define this
+		harvestPositions: { [id: Id<Source>]: { x: number; y: number } };
 		defcon: number;
 		rootLink?: Id<StructureLink>;
 		storageLink?: Id<StructureLink>;

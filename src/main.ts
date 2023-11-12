@@ -100,8 +100,7 @@ import visualize from "./visualize";
 import { Role } from "./roles/meta";
 import profiler from "screeps-profiler";
 
-// @ts-expect-error hasn't been converted yet
-import roleHarvester from "roles/role.harvester.js";
+import roleHarvester from "roles/role.harvester";
 // @ts-expect-error hasn't been converted yet
 import roleUpgrader from "roles/role.upgrader.js";
 // @ts-expect-error hasn't been converted yet
