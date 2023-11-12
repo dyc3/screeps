@@ -1,9 +1,9 @@
-let traveler = require("traveler");
-let util = require("../util");
-let brainLogistics = require("brain.logistics");
-let taskDepositMaterials = require("task.depositmaterials");
+import traveler from "../traveler.js";
+import util from "../util";
+import brainLogistics from "../brain.logistics.js";
+import taskDepositMaterials from "../task.depositmaterials.js";
 
-module.exports = {
+export default {
 	run(creep) {
 		if (creep.fatigue > 0) {
 			return;
@@ -34,8 +34,11 @@ module.exports = {
 		creep.log("Delivery task:", JSON.stringify(deliveryTask));
 
 		// HACK: deposit materials if the resources held don't match
-		if (creep.store.getFreeCapacity(deliveryTask.resource) + creep.store.getUsedCapacity(deliveryTask.resource) !== creep.store.getCapacity()) {
-			taskDepositMaterials.run(creep, exclude_energy=false);
+		if (
+			creep.store.getFreeCapacity(deliveryTask.resource) + creep.store.getUsedCapacity(deliveryTask.resource) !==
+			creep.store.getCapacity()
+		) {
+			taskDepositMaterials.run(creep, (exclude_energy = false));
 			return;
 		}
 
@@ -50,50 +53,45 @@ module.exports = {
 					if (result === OK) {
 						deliveryTask.registerDelivery(creep.store.getCapacity());
 						creep.memory.delivering = false;
-					}
-					else {
+					} else {
 						creep.log(`FAILED TO TRANSFER: ${result}`);
 					}
-				}
-				else {
+				} else {
 					creep.travelTo(deliveryTask.sink.object);
 				}
-			}
-			else {
+			} else {
 				creep.travelTo(new RoomPosition(25, 25, deliveryTask.sink.roomName));
 			}
-		}
-		else {
+		} else {
 			if (deliveryTask.source.object) {
 				if (creep.pos.isNearTo(deliveryTask.source.object)) {
 					let result;
 					if (deliveryTask.source.object instanceof Resource) {
 						result = creep.pickup(deliveryTask.source.object);
-					}
-					else {
-						result = creep.withdraw(deliveryTask.source.object, deliveryTask.source.resource, Math.min(creep.store.getFreeCapacity(), deliveryTask.amount));
+					} else {
+						result = creep.withdraw(
+							deliveryTask.source.object,
+							deliveryTask.source.resource,
+							Math.min(creep.store.getFreeCapacity(), deliveryTask.amount)
+						);
 					}
 					if (result === OK || result === ERR_FULL) {
 						creep.memory.delivering = true;
-					}
-					else {
+					} else {
 						creep.log(`Unable to withdraw ${deliveryTask.source.resource}: ${result}`);
 					}
-				}
-				else {
+				} else {
 					creep.travelTo(deliveryTask.source.object);
 				}
-			}
-			else {
+			} else {
 				if (Game.rooms[deliveryTask.source.roomName]) {
 					// the source is no longer valid
 					creep.log("Source is gone, deleting task");
 					delete creep.memory.deliveryTaskId;
-				}
-				else {
+				} else {
 					creep.travelTo(new RoomPosition(25, 25, deliveryTask.source.roomName));
 				}
 			}
 		}
-	}
-}
+	},
+};

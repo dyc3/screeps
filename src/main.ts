@@ -125,6 +125,8 @@ import roleScientist from "roles/role.scientist.js";
 import roleRelay from "roles/role.relay.js";
 // @ts-expect-error hasn't been converted yet
 import roleTmpDeliver from "roles/role.tmpdeliver.js";
+// @ts-expect-error hasn't been converted yet
+import roleTestLogistics from "roles/role.testlogistics";
 
 // @ts-expect-error hasn't been converted yet
 import roleTower from "roles/role.tower.js";
@@ -1831,7 +1833,7 @@ function main() {
 					break;
 				case "manager":
 					if (Memory.USE_ADV_LOGISTICS) {
-						require("role.testlogistics").run(creep);
+						roleTestLogistics.run(creep);
 					} else {
 						roleManager.run(creep);
 					}
@@ -1850,7 +1852,7 @@ function main() {
 					break;
 				case "scientist":
 					if (Memory.USE_ADV_LOGISTICS) {
-						require("role.testlogistics").run(creep);
+						roleTestLogistics.run(creep);
 					} else {
 						roleScientist.run(creep);
 					}
@@ -1862,10 +1864,10 @@ function main() {
 					roleTmpDeliver.run(creep);
 					break;
 				case "invaderdestroyer":
-					require("./role.invaderdestroyer.js").run(creep);
+					require("./roles/role.invaderdestroyer.js").run(creep);
 					break;
 				case "testlogistics":
-					require("./role.testlogistics.js").run(creep);
+					roleTestLogistics.run(creep);
 					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");

@@ -3,7 +3,7 @@ import "./traveler.js";
 import brainAutoPlanner from "./brain.autoplanner.js";
 
 class ResourceSink {
-	constructor(args=null) {
+	constructor(args = null) {
 		this.resource = "";
 		this.objectId = "";
 		this.roomName = "";
@@ -19,7 +19,7 @@ class ResourceSink {
 }
 
 class ResourceSource {
-	constructor(args=null) {
+	constructor(args = null) {
 		this.resource = "";
 		this.objectId = "";
 		this.roomName = "";
@@ -45,15 +45,14 @@ class ResourceSource {
 		}
 		if (this.object.structureType === STRUCTURE_TERMINAL && this.resource === RESOURCE_ENERGY) {
 			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.terminalEnergyTarget, 0);
-		}
-		else if (this.object.structureType === STRUCTURE_FACTORY && this.resource === RESOURCE_ENERGY) {
+		} else if (this.object.structureType === STRUCTURE_FACTORY && this.resource === RESOURCE_ENERGY) {
 			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.factoryEnergyTarget, 0);
 		}
 		return amount;
 	}
 }
 
-/** DEPRECATED */
+/** @deprecated */
 class DeliveryTask {
 	constructor(source, sink) {
 		// validate
@@ -101,9 +100,11 @@ class DeliveryTask {
 	 * @returns {Boolean} True if equivalent, otherwise false.
 	 */
 	isEqualTo(other) {
-		return this.resource === other.resource &&
+		return (
+			this.resource === other.resource &&
 			this.sink.objectId === other.sink.objectId &&
-			this.source.objectId === other.sink.objectId;
+			this.source.objectId === other.sink.objectId
+		);
 	}
 
 	serialize() {
@@ -111,7 +112,7 @@ class DeliveryTask {
 			id: this.id,
 			source: this.source,
 			sink: this.sink,
-		}
+		};
 	}
 
 	visualize() {
@@ -131,9 +132,12 @@ class DeliveryTask {
 			width: Math.max(Math.min(0.05 * 0.001 * this.amount, 0.4), 0.02),
 		};
 		if (this.source.object.pos.roomName === this.sink.object.pos.roomName) {
-			new RoomVisual(this.source.object.pos.roomName).line(this.source.object.pos, this.sink.object.pos, lineStyle);
-		}
-		else {
+			new RoomVisual(this.source.object.pos.roomName).line(
+				this.source.object.pos,
+				this.sink.object.pos,
+				lineStyle
+			);
+		} else {
 			new RoomVisual(this.source.object.pos.roomName).circle(this.source.object.pos, {
 				fill: "#0af",
 				stroke: "#0af",
@@ -176,7 +180,7 @@ function collectAllResourceSources() {
 					}
 
 					return d.amount > 0;
-				}
+				},
 			});
 			for (let drop of dropped) {
 				let source = new ResourceSource({
@@ -191,13 +195,13 @@ function collectAllResourceSources() {
 			}
 
 			let tombstones = room.find(FIND_TOMBSTONES, {
-				filter: (tomb) => {
+				filter: tomb => {
 					if (util.isDistFromEdge(tomb.pos, 4)) {
 						return false;
 					}
 
 					return tomb.store.getUsedCapacity() > 0;
-				}
+				},
 			});
 			for (let tombstone of tombstones) {
 				for (let resource in tombstone.store) {
@@ -214,14 +218,17 @@ function collectAllResourceSources() {
 			}
 		}
 
-
 		let sourceStructures = room.find(FIND_STRUCTURES, {
 			filter: struct => {
 				if (struct.structureType === STRUCTURE_CONTAINER) {
 					return struct.pos.getRangeTo(struct.room.controller) > CONTROLLER_UPGRADE_RANGE;
 				}
-				return [STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(struct.structureType) && struct.store;
-			}
+				return (
+					[STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(
+						struct.structureType
+					) && struct.store
+				);
+			},
 		});
 
 		for (let struct of sourceStructures) {
@@ -285,7 +292,7 @@ function collectAllResourceSinks() {
 
 		let flag = Game.flags[flagName];
 
-		let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType != STRUCTURE_ROAD)[0];
+		let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType !== STRUCTURE_ROAD)[0];
 		if (!struct) {
 			console.log("WARN: fill flag does not have structure");
 			continue;
@@ -293,7 +300,10 @@ function collectAllResourceSinks() {
 
 		let flagNameSplit = flag.name.split(":");
 		let resource = flagNameSplit[1];
-		let amount = flagNameSplit.length > 2 ? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource)) : struct.store.getFreeCapacity(resource);
+		let amount =
+			flagNameSplit.length > 2
+				? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource))
+				: struct.store.getFreeCapacity(resource);
 
 		if (amount === 0) {
 			continue;
@@ -316,14 +326,17 @@ function collectAllResourceSinks() {
 			let sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
-						return struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE || brainAutoPlanner.isInRootModule(struct);
+						return (
+							struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE ||
+							brainAutoPlanner.isInRootModule(struct)
+						);
 					}
 					// FIXME: what happens when there are no relay creeps? what happens when the root module doesn't have a link?
 					if (brainAutoPlanner.isInRootModule(struct) && struct.room.controller.level >= 5) {
 						return false;
 					}
 					return ![STRUCTURE_ROAD, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
-				}
+				},
 			});
 
 			for (let struct of sinkStructures) {
@@ -336,10 +349,15 @@ function collectAllResourceSinks() {
 				let amount = struct.store.getFreeCapacity(resource);
 
 				if (struct.structureType === STRUCTURE_TERMINAL) {
-					amount = Math.min(Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
-				}
-				else if (struct.structureType === STRUCTURE_FACTORY) {
-					amount = Math.min(Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource), struct.store.getFreeCapacity(resource));
+					amount = Math.min(
+						Memory.terminalEnergyTarget - struct.store.getUsedCapacity(resource),
+						struct.store.getFreeCapacity(resource)
+					);
+				} else if (struct.structureType === STRUCTURE_FACTORY) {
+					amount = Math.min(
+						Memory.factoryEnergyTarget - struct.store.getUsedCapacity(resource),
+						struct.store.getFreeCapacity(resource)
+					);
 				}
 
 				if (amount <= 0) {
@@ -363,9 +381,7 @@ function collectAllResourceSinks() {
 const brainLogistics = {
 	tasks: [],
 
-	init() {
-
-	},
+	init() {},
 
 	finalize() {
 		// invalidate cache
@@ -390,8 +406,7 @@ const brainLogistics = {
 				let sourceStruct = Game.getObjectById(source.objectId);
 				if (sinkStruct.pos.roomName === sourceStruct.pos.roomName) {
 					return sinkStruct.pos.getRangeTo(sourceStruct.pos);
-				}
-				else {
+				} else {
 					return 50 * Game.map.getRoomLinearDistance(sinkStruct.pos.roomName, sourceStruct.pos.roomName);
 				}
 			});
@@ -404,34 +419,48 @@ const brainLogistics = {
 				let resource = sink.resource;
 
 				if (source.object.structureType !== STRUCTURE_TERMINAL) {
-					tasks.push(new DeliveryTask(source, new ResourceSink({
-						resource,
-						objectId: source.object.room.terminal.id,
-						roomName: source.roomName,
-						amount: sink.amount
-					})));
+					tasks.push(
+						new DeliveryTask(
+							source,
+							new ResourceSink({
+								resource,
+								objectId: source.object.room.terminal.id,
+								roomName: source.roomName,
+								amount: sink.amount,
+							})
+						)
+					);
 				}
 
-				tasks.push(new DeliveryTask(new ResourceSource({
-					resource,
-					objectId: source.object.room.terminal.id,
-					roomName: source.roomName
-				}), new ResourceSink({
-					resource,
-					objectId: sink.object.room.terminal.id,
-					roomName: sink.roomName,
-					amount: sink.amount
-				})));
+				tasks.push(
+					new DeliveryTask(
+						new ResourceSource({
+							resource,
+							objectId: source.object.room.terminal.id,
+							roomName: source.roomName,
+						}),
+						new ResourceSink({
+							resource,
+							objectId: sink.object.room.terminal.id,
+							roomName: sink.roomName,
+							amount: sink.amount,
+						})
+					)
+				);
 
 				if (sink.object.structureType !== STRUCTURE_TERMINAL) {
-					tasks.push(new DeliveryTask(new ResourceSource({
-						resource,
-						objectId: sink.object.room.terminal.id,
-						roomName: sink.roomName
-					}), sink));
+					tasks.push(
+						new DeliveryTask(
+							new ResourceSource({
+								resource,
+								objectId: sink.object.room.terminal.id,
+								roomName: sink.roomName,
+							}),
+							sink
+						)
+					);
 				}
-			}
-			else {
+			} else {
 				let task = new DeliveryTask(source, sink);
 				tasks.push(task);
 			}
@@ -450,7 +479,7 @@ const brainLogistics = {
 	 * Tell the specified creep what delivery task to fulfil.
 	 * @param {Creep} creep The creep to give a task to.
 	 */
-	old_allocateCreep(creep) {
+	allocateCreep(creep) {
 		let availableTasks = _.filter(this.tasks, task => {
 			if (task.isComplete) {
 				return false;
@@ -460,7 +489,10 @@ const brainLogistics = {
 				return false;
 			}
 
-			let alreadyAssignedCreeps = _.filter([].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")), creep => creep.memory.deliveryTaskId === task.id);
+			let alreadyAssignedCreeps = _.filter(
+				[].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")),
+				creep => creep.memory.deliveryTaskId === task.id
+			);
 			if (alreadyAssignedCreeps.length > 0) {
 				if (task.amount <= alreadyAssignedCreeps[0].store.getCapacity() || alreadyAssignedCreeps.length >= 2) {
 					return false;
@@ -468,12 +500,15 @@ const brainLogistics = {
 			}
 
 			// keep managers in their rooms
-			if (creep.memory.role === "manager" && (creep.memory.targetRoom !== task.source.roomName || creep.memory.targetRoom !== task.sink.roomName)) {
+			if (
+				creep.memory.role === "manager" &&
+				(creep.memory.targetRoom !== task.source.roomName || creep.memory.targetRoom !== task.sink.roomName)
+			) {
 				return false;
 			}
 
 			// don't have creeps transfer stuff from terminal to terminal
-			if (task.source.object.structureType === task.sink.object.structureType === STRUCTURE_TERMINAL) {
+			if ((task.source.object.structureType === task.sink.object.structureType) === STRUCTURE_TERMINAL) {
 				return false;
 			}
 
@@ -483,48 +518,56 @@ const brainLogistics = {
 			return null;
 		}
 
-		availableTasks = _.sortByOrder(availableTasks, [
-			task =>
-				(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
-				(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
-			task => {
-				// sort by sink structure priority
-				switch (task.sink.object.structureType) {
-					case STRUCTURE_EXTENSION:
-						return 1;
-					case STRUCTURE_SPAWN:
-						return 1;
-					case STRUCTURE_TOWER:
-						return 2;
-					case STRUCTURE_POWER_SPAWN:
-						return 4;
-					case STRUCTURE_LAB:
-						return 5;
-					case STRUCTURE_FACTORY:
-						return 5;
-					case STRUCTURE_NUKER:
-						return 6;
-					case STRUCTURE_CONTAINER:
-						return 9;
-					case STRUCTURE_STORAGE:
-						return 9;
-					case STRUCTURE_TERMINAL:
-						return 9;
-					default:
-						return 8;
-				}
-			},
-			task => {
-				return task.source.object.pos.getRangeTo(task.sink.object);
-			},
-			"amount"], ["desc", "asc", "asc", "asc"]);
+		availableTasks = _.sortByOrder(
+			availableTasks,
+			[
+				task =>
+					(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
+					(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
+				task => {
+					// sort by sink structure priority
+					switch (task.sink.object.structureType) {
+						case STRUCTURE_EXTENSION:
+							return 1;
+						case STRUCTURE_SPAWN:
+							return 1;
+						case STRUCTURE_TOWER:
+							return 2;
+						case STRUCTURE_POWER_SPAWN:
+							return 4;
+						case STRUCTURE_LAB:
+							return 5;
+						case STRUCTURE_FACTORY:
+							return 5;
+						case STRUCTURE_NUKER:
+							return 6;
+						case STRUCTURE_CONTAINER:
+							return 9;
+						case STRUCTURE_STORAGE:
+							return 9;
+						case STRUCTURE_TERMINAL:
+							return 9;
+						default:
+							return 8;
+					}
+				},
+				task => {
+					return task.source.object.pos.getRangeTo(task.sink.object);
+				},
+				"amount",
+			],
+			["desc", "asc", "asc", "asc"]
+		);
 
 		creep.memory.deliveryTaskId = availableTasks[0].id;
 		return availableTasks[0].id;
 	},
 
 	old_fulfillTerminalTransfers() {
-		let terminalTransferTasks = _.filter(this.tasks, task => task.source.object.structureType === task.sink.object.structureType === STRUCTURE_TERMINAL);
+		let terminalTransferTasks = _.filter(
+			this.tasks,
+			task => (task.source.object.structureType === task.sink.object.structureType) === STRUCTURE_TERMINAL
+		);
 		for (let task of terminalTransferTasks) {
 			if (task.source.object.cooldown > 0) {
 				continue;
@@ -539,11 +582,11 @@ const brainLogistics = {
 	/**
 	 * Find resource sources
 	 * @param {Object} options
-	 * @param {Function} options.resource
-	 * @param {Function} options.roomName
+	 * @param {string} options.resource
+	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSources(options={}) {
+	findSources(options = {}) {
 		let sources = collectAllResourceSources();
 		if (options.resource) {
 			sources = sources.filter(s => s.resource === options.resource);
@@ -560,11 +603,11 @@ const brainLogistics = {
 	/**
 	 * Find resource sinks
 	 * @param {Object} options
-	 * @param {Function} options.resource
-	 * @param {Function} options.roomName
+	 * @param {string} options.resource
+	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSinks(options={}) {
+	findSinks(options = {}) {
 		let sinks = collectAllResourceSinks();
 		if (options.resource) {
 			sinks = sinks.filter(s => s.resource === options.resource);
@@ -577,7 +620,6 @@ const brainLogistics = {
 		}
 		return sinks;
 	},
-}
+};
 
-module.exports = brainLogistics;
 export default brainLogistics;
