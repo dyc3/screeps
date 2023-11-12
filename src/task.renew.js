@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import traveler from "./traveler.js";
 import util from "./util";
 import taskGather from "./task.gather.js";
@@ -214,7 +215,7 @@ const taskRenew = {
 		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
-			creep.travelTo(renewTarget, { visualizePathStyle: {} });
+			cartographer.moveTo(creep, renewTarget, { visualizePathStyle: {} });
 		} else if (creep.ticksToLive < maxTicks) {
 			if (creep instanceof Creep) {
 				switch (renewTarget.renewCreep(creep)) {

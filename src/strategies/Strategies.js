@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import { OffenseStrategy } from "../strategies/BaseStrategy";
 import { olog } from "../offense/util";
 import { unitCohesion } from "../combat/movement";
@@ -92,7 +93,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 			olog(`Regrouping`);
 			let regroupPos = new RoomPosition(this.regroupPos.x, this.regroupPos.y, this.regroupPos.roomName);
 			creeps.forEach(creep => {
-				creep.travelTo(regroupPos, {
+				cartographer.moveTo(creep, regroupPos, {
 					ensurePath: true,
 				});
 			});
@@ -135,7 +136,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 		}
 
 		healers.forEach((creep, idx) => {
-			creep.travelTo(attackers[idx % 2], { movingTarget: true });
+			cartographer.moveTo(creep, attackers[idx % 2], { movingTarget: true });
 		});
 
 		attackers.forEach((creep, idx) => {
@@ -151,11 +152,11 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 				} else if (creep.getActiveBodyparts(RANGED_ATTACK) > 0 && creep.pos.inRangeTo(this.currentTarget, 3)) {
 					creep.rangedAttack(this.currentTarget);
 				} else {
-					creep.travelTo(this.currentTarget);
+					cartographer.moveTo(creep, this.currentTarget);
 				}
 			} else {
 				olog(`traveling: ${creep.name} to ${this.targetRoom}, current pos: ${creep.pos}`);
-				creep.travelTo(new RoomPosition(25, 25, this.targetRoom), {
+				cartographer.moveTo(creep, new RoomPosition(25, 25, this.targetRoom), {
 					range: 20,
 					useFindRoute: true,
 					stuckValue: 4,
@@ -289,7 +290,7 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 			creeps.forEach(creep => {
 				if (creep.room.name === "W16N3") {
 					olog("going to W16N2");
-					creep.travelTo(new RoomPosition(4, 4, "W16N2"));
+					cartographer.moveTo(creep, new RoomPosition(4, 4, "W16N2"));
 				} else {
 					let walls = Game.rooms.W16N2
 						? [
@@ -308,15 +309,15 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 							if (creep.pos.isNearTo(wall)) {
 								creep.attack(wall);
 							} else {
-								creep.travelTo(wall);
+								cartographer.moveTo(creep, wall);
 							}
 						} else {
 							olog("waiting");
-							creep.travelTo(new RoomPosition(4, 4, "W16N2"));
+							cartographer.moveTo(creep, new RoomPosition(4, 4, "W16N2"));
 						}
 					} else {
 						olog(`going to fromRoom ${this.fromRoom}`);
-						creep.travelTo(new RoomPosition(45, 5, this.fromRoom), {
+						cartographer.moveTo(creep, new RoomPosition(45, 5, this.fromRoom), {
 							freshMatrix: true,
 						});
 					}
@@ -326,13 +327,13 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 			if (this.mode === 0) {
 				const baseX = 26;
 				healers.forEach((creep, idx) => {
-					creep.travelTo(new RoomPosition(baseX + idx, 2, this.fromRoom));
+					cartographer.moveTo(creep, new RoomPosition(baseX + idx, 2, this.fromRoom));
 				});
 				attackers.forEach((creep, idx) => {
 					if (creep.hitsMax - creep.hits > 800) {
-						creep.travelTo(new RoomPosition(baseX + idx, 1, this.fromRoom));
+						cartographer.moveTo(creep, new RoomPosition(baseX + idx, 1, this.fromRoom));
 					} else {
-						creep.travelTo(new RoomPosition(baseX + idx, 48, this.targetRoom));
+						cartographer.moveTo(creep, new RoomPosition(baseX + idx, 48, this.targetRoom));
 						// creep.attack(this.currentTarget);
 						// creep.attack(Game.getObjectById("601efbde533d3d0c290bf9d2"));
 					}
@@ -341,15 +342,15 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 				const baseY = 11;
 				healers.forEach((creep, idx) => {
 					let opts = creep.room.name === this.targetRoom ? { maxRooms: 1 } : {};
-					creep.travelTo(new RoomPosition(47, baseY + idx, this.fromRoom), opts);
+					cartographer.moveTo(creep, new RoomPosition(47, baseY + idx, this.fromRoom), opts);
 				});
 				attackers.forEach((creep, idx) => {
 					let opts = creep.room.name === this.targetRoom ? { maxRooms: 1 } : {};
 					if (creep.hitsMax - creep.hits > 400) {
-						creep.travelTo(new RoomPosition(48, baseY + idx, this.fromRoom), opts);
+						cartographer.moveTo(creep, new RoomPosition(48, baseY + idx, this.fromRoom), opts);
 					} else {
-						// creep.travelTo(new RoomPosition(48, baseY + idx, "W17N2"), opts)
-						creep.travelTo(new RoomPosition(1, baseY + idx, this.targetRoom), opts);
+						// cartographer.moveTo(creep, new RoomPosition(48, baseY + idx, "W17N2"), opts)
+						cartographer.moveTo(creep, new RoomPosition(1, baseY + idx, this.targetRoom), opts);
 					}
 				});
 			} else {
@@ -357,7 +358,7 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 			}
 		} else if (this.state === STRATEGY_ACT_ATTACK) {
 			healers.forEach((creep, idx) => {
-				creep.travelTo(attackers[idx % 2], { movingTarget: true });
+				cartographer.moveTo(creep, attackers[idx % 2], { movingTarget: true });
 			});
 
 			attackers.forEach((creep, idx) => {
@@ -376,11 +377,11 @@ export class OffenseStrategyLureHarrass extends OffenseStrategy {
 						}
 						creep.move(creep.pos.getDirectionTo(this.currentTarget));
 					} else {
-						creep.travelTo(this.currentTarget);
+						cartographer.moveTo(creep, this.currentTarget);
 					}
 				} else {
 					olog("moving to ready position");
-					creep.travelTo(new RoomPosition(28, 44, this.targetRoom));
+					cartographer.moveTo(creep, new RoomPosition(28, 44, this.targetRoom));
 				}
 			});
 		} else {
@@ -454,13 +455,13 @@ export class OffenseStrategyBreakAltPath extends OffenseStrategy {
 				if (creep.pos.isNearTo(this.breakWallPos)) {
 					creep.dismantle(this.wallObj);
 				} else {
-					creep.travelTo(this.breakWallPos);
+					cartographer.moveTo(creep, this.breakWallPos);
 				}
 			});
 		} else {
 			olog("reached end of queue");
 			breakers.forEach(creep => {
-				creep.travelTo(new RoomPosition(8, 47, "W16N3"));
+				cartographer.moveTo(creep, new RoomPosition(8, 47, "W16N3"));
 			});
 		}
 	}

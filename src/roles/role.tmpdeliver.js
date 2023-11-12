@@ -1,16 +1,19 @@
 // This is a tool creep used to set up delivery routes for energy
 
+import * as cartographer from "screeps-cartographer";
 import traveler from "../traveler.js";
 import util from "../util";
 
-String.prototype.hashCode = function() {
-	var hash = 0, i, chr;
+String.prototype.hashCode = function () {
+	let hash = 0;
+	let i;
+	let chr;
 	if (this.length === 0) {
 		return hash;
 	}
 	for (i = 0; i < this.length; i++) {
 		chr = this.charCodeAt(i);
-		hash = ((hash << 5) - hash) + chr;
+		hash = (hash << 5) - hash + chr;
 		hash |= 0; // Convert to 32bit integer
 	}
 	return hash;
@@ -45,7 +48,11 @@ const roleTmpDelivery = {
 		if (!creep.memory._routeDistance) {
 			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
-			creep.memory._routeDistance = util.calculateEta(creep, traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path, true);
+			creep.memory._routeDistance = util.calculateEta(
+				creep,
+				traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path,
+				true
+			);
 		}
 
 		if (creep.memory.renewAtWithdraw) {
@@ -79,9 +86,8 @@ const roleTmpDelivery = {
 		let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 
 		if (withdrawTarget) {
-			creep.memory.withdrawCachePos = withdrawTarget.pos
-		}
-		else {
+			creep.memory.withdrawCachePos = withdrawTarget.pos;
+		} else {
 			// if (creep.memory.withdrawCachePos && Game.rooms[creep.memory.withdrawCachePos.roomName]) {
 			// 	delete creep.memory.withdrawTargetId;
 			// }
@@ -92,9 +98,8 @@ const roleTmpDelivery = {
 			}
 		}
 		if (depositTarget) {
-			creep.memory.depositCachePos = depositTarget.pos
-		}
-		else {
+			creep.memory.depositCachePos = depositTarget.pos;
+		} else {
 			// if (creep.memory.depositCachePos && Game.rooms[creep.memory.depositCachePos.roomName]) {
 			// 	delete creep.memory.depositTargetId;
 			// }
@@ -131,12 +136,10 @@ const roleTmpDelivery = {
 				if (!dontRecycleJustYet) {
 					spawn.recycleCreep(creep);
 				}
+			} else {
+				cartographer.moveTo(creep, spawn, { obstacles });
 			}
-			else {
-				creep.travelTo(spawn, { obstacles });
-			}
-		}
-		else if (creep.memory.delivering) {
+		} else if (creep.memory.delivering) {
 			let _cache = creep.memory.depositCachePos;
 			let targetPos = depositTarget ? depositTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
 			if (creep.pos.isNearTo(targetPos)) {
@@ -148,8 +151,7 @@ const roleTmpDelivery = {
 							break;
 						}
 					}
-				}
-				else {
+				} else {
 					transferResult = creep.transfer(depositTarget, RESOURCE_ENERGY);
 				}
 				if (transferResult !== ERR_FULL && creep.store.getUsedCapacity() < creep.store.getCapacity() * 0.25) {
@@ -168,21 +170,18 @@ const roleTmpDelivery = {
 				if (!creep.memory.renewAtWithdraw && this.shouldRenew(creep)) {
 					creep.memory.renewing = true;
 				}
-			}
-			else {
+			} else {
 				if (creep.store.getUsedCapacity() === 0) {
 					creep.memory.delivering = false;
 
 					if (this.shouldRenew(creep)) {
 						creep.memory.renewing = true;
 					}
-				}
-				else {
-					creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
+				} else {
+					cartographer.moveTo(creep, targetPos, { obstacles, visualizePathStyle: {}, ensurePath: true });
 				}
 			}
-		}
-		else {
+		} else {
 			let _cache = creep.memory.withdrawCachePos;
 			let targetPos = withdrawTarget ? withdrawTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
 			if (creep.pos.isNearTo(targetPos)) {
@@ -196,12 +195,10 @@ const roleTmpDelivery = {
 						}
 						creep.withdraw(withdrawTarget, resource);
 					}
-				}
-				else {
+				} else {
 					if (withdrawTarget instanceof Resource) {
 						creep.pickup(withdrawTarget);
-					}
-					else {
+					} else {
 						creep.withdraw(withdrawTarget, RESOURCE_ENERGY);
 					}
 				}
@@ -212,13 +209,12 @@ const roleTmpDelivery = {
 						creep.memory.renewing = true;
 					}
 				}
-			}
-			else {
-				creep.travelTo(targetPos, { obstacles, visualizePathStyle:{}, ensurePath: true });
+			} else {
+				cartographer.moveTo(creep, targetPos, { obstacles, visualizePathStyle: {}, ensurePath: true });
 			}
 		}
-	}
-}
+	},
+};
 
 module.exports = roleTmpDelivery;
 export default roleTmpDelivery;

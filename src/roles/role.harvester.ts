@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util.js";
 import toolEnergySource from "../tool.energysource.js";
@@ -495,10 +496,12 @@ const roleHarvester = {
 				if (creep.pos.isEqualTo(harvestPos)) {
 					creep.harvest(harvestTarget);
 				} else {
-					creep.travelTo(harvestPos);
+					cartographer.moveTo(creep, harvestPos);
 				}
 			} else {
-				creep.travelTo(new RoomPosition(25, 25, harvestTarget.room.name), { visualizePathStyle: {} });
+				cartographer.moveTo(creep, new RoomPosition(25, 25, harvestTarget.room.name), {
+					visualizePathStyle: {},
+				});
 			}
 		} else {
 			let target = Game.getObjectById(creep.memory.transferTarget);
@@ -513,14 +516,14 @@ const roleHarvester = {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							creep.travelTo(harvestPos);
+							cartographer.moveTo(creep, harvestPos);
 						}
 						creep.memory.depositMode = this.getDepositMode(creep);
 					} else if (creep.memory.depositMode === "drop") {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							creep.travelTo(harvestPos);
+							cartographer.moveTo(creep, harvestPos);
 						}
 					} else {
 						creep.memory.depositMode = this.getDepositMode(creep);
@@ -542,7 +545,7 @@ const roleHarvester = {
 			if (transferResult === OK && creep.memory.depositMode === "recovery") {
 				delete creep.memory.transferTarget;
 			} else if (transferResult === ERR_NOT_IN_RANGE) {
-				creep.travelTo(target, { visualizePathStyle: {} });
+				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
 			} else if (transferResult === ERR_FULL) {
 				console.log(creep.name, "failed to transfer: target full");
 				creep.memory.harvesting = true;

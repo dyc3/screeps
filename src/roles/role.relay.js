@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 
@@ -136,7 +137,7 @@ const roleRelay = {
 
 		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
 		if (!creep.pos.isEqualTo(assignedPos)) {
-			let result = creep.travelTo(assignedPos);
+			let result = cartographer.moveTo(creep, assignedPos);
 			if (result != 0) {
 				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}

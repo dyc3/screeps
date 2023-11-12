@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 import taskDepositMaterials from "task.depositmaterials.js";
@@ -10,11 +11,10 @@ import brainAutoPlanner from "../brain.autoplanner.js";
  * @deprecated
  */
 function doNoJobsStuff(creep) {
-	if (taskDepositMaterials.checkForMaterials(creep, exclude_energy=true)) {
-		taskDepositMaterials.run(creep, exclude_energy=true);
-	}
-	else {
-// 		console.log(creep.name, "pretending to be a manager");
+	if (taskDepositMaterials.checkForMaterials(creep, (exclude_energy = true))) {
+		taskDepositMaterials.run(creep, (exclude_energy = true));
+	} else {
+		// 		console.log(creep.name, "pretending to be a manager");
 		let roleManager = require("role.manager");
 		roleManager.run(creep);
 	}
@@ -85,8 +85,8 @@ const roleScientist = {
 		// look for where to grab the resource from
 		if (!creep.memory.targetStorage) {
 			creep.log("looking for target storage");
-			let targetStorage = undefined;
-			let _mineral = undefined;
+			let targetStorage;
+			let _mineral;
 			for (let i = 0; i < _.keys(neededMinerals).length; i++) {
 				let key = _.keys(neededMinerals)[i];
 				_mineral = key;
@@ -121,7 +121,12 @@ const roleScientist = {
 					}
 
 					// exclude all structures that are not storage, terminal, or container
-					if (struct.structureType != STRUCTURE_STORAGE && struct.structureType != STRUCTURE_TERMINAL && struct.structureType != STRUCTURE_CONTAINER && struct.structureType != STRUCTURE_FACTORY) {
+					if (
+						struct.structureType != STRUCTURE_STORAGE &&
+						struct.structureType != STRUCTURE_TERMINAL &&
+						struct.structureType != STRUCTURE_CONTAINER &&
+						struct.structureType != STRUCTURE_FACTORY
+					) {
 						return false;
 					}
 					return struct.store.getUsedCapacity(_mineral) > 0;
@@ -134,7 +139,7 @@ const roleScientist = {
 				}
 
 				if (targetStorage) {
-				// 	console.log(creep.name, "found target storage:",targetStorage,"has",_mineral);
+					// 	console.log(creep.name, "found target storage:",targetStorage,"has",_mineral);
 					creep.memory.targetStruct = neededMinerals[_mineral].id;
 					creep.memory.targetStorage = targetStorage.id;
 					creep.memory.targetResource = _mineral;
@@ -155,9 +160,14 @@ const roleScientist = {
 		creep.log("transfer", creep.memory.targetResource, "from", withdrawTarget, "=>", depositTarget);
 
 		// FIXME: what the fuck does this if statement mean? why is it here?
-		if (creep.store[creep.memory.targetResource] === 0 && (isStructureFull(depositTarget) || (withdrawTarget.store && withdrawTarget.store[creep.memory.targetResource] == 0) || isStructureEmpty(withdrawTarget))) {
+		if (
+			creep.store[creep.memory.targetResource] === 0 &&
+			(isStructureFull(depositTarget) ||
+				(withdrawTarget.store && withdrawTarget.store[creep.memory.targetResource] == 0) ||
+				isStructureEmpty(withdrawTarget))
+		) {
 			if (creep.transfer(withdrawTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(withdrawTarget);
+				cartographer.moveTo(creep, withdrawTarget);
 			}
 			if (!creep.carry[creep.memory.targetResource] || creep.carry[creep.memory.targetResource] <= 0) {
 				delete creep.memory.targetStruct;
@@ -170,7 +180,7 @@ const roleScientist = {
 
 		// make sure we don't have any energy on us
 		if (creep.store[RESOURCE_ENERGY] > 0) {
-			taskDepositMaterials.run(creep, exclude_energy=false);
+			taskDepositMaterials.run(creep, (exclude_energy = false));
 			return;
 		}
 
@@ -178,13 +188,12 @@ const roleScientist = {
 
 		if (creep.store[creep.memory.targetResource] > 0 || _.sum(creep.store) > 0) {
 			if (creep.transfer(depositTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(depositTarget);
+				cartographer.moveTo(creep, depositTarget);
 			}
-		}
-		else {
+		} else {
 			switch (creep.withdraw(withdrawTarget, creep.memory.targetResource)) {
 				case ERR_NOT_IN_RANGE:
-					creep.travelTo(withdrawTarget);
+					cartographer.moveTo(creep, withdrawTarget);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
 					creep.log("withdraw: NOT ENOUGH RESOURCES");
@@ -208,11 +217,11 @@ const roleScientist = {
 
 			for (const resource in creep.store) {
 				let sinks = brainLogistics.findSinks({ resource });
-				sinks = _.sortByOrder(sinks, [
-					s => s.roomName === creep.memory.targetRoom,
-					s => creep.pos.getRangeTo(s.object),
-				],
-				["desc", "asc"]);
+				sinks = _.sortByOrder(
+					sinks,
+					[s => s.roomName === creep.memory.targetRoom, s => creep.pos.getRangeTo(s.object)],
+					["desc", "asc"]
+				);
 
 				if (sinks.length === 0) {
 					creep.log(`WARN: Can't find any sinks for ${resource}`);
@@ -226,16 +235,18 @@ const roleScientist = {
 					depositTargetId: depositTarget.id,
 				};
 			}
-		}
-		else {
+		} else {
 			creep.log("Finding source and sink");
 			let sinks = brainLogistics.findSinks();
-			sinks = _.sortByOrder(sinks, [
-				s => s.roomName === creep.memory.targetRoom,
-				s => s.resource !== RESOURCE_ENERGY,
-				s => creep.pos.getRangeTo(s.object),
-			],
-			["desc", "desc", "asc"]);
+			sinks = _.sortByOrder(
+				sinks,
+				[
+					s => s.roomName === creep.memory.targetRoom,
+					s => s.resource !== RESOURCE_ENERGY,
+					s => creep.pos.getRangeTo(s.object),
+				],
+				["desc", "desc", "asc"]
+			);
 
 			for (let i = 0; i < sinks.length; i++) {
 				const depositSink = sinks[i];
@@ -246,8 +257,12 @@ const roleScientist = {
 					resource: targetResource,
 					filter: s => {
 						if (targetResource === RESOURCE_ENERGY) {
-							if ((brainAutoPlanner.isInRootModule(s.object) || s.object.structureType === STRUCTURE_STORAGE) &&
-								(brainAutoPlanner.isInRootModule(depositSink.object) || depositSink.object.structureType === STRUCTURE_STORAGE)) {
+							if (
+								(brainAutoPlanner.isInRootModule(s.object) ||
+									s.object.structureType === STRUCTURE_STORAGE) &&
+								(brainAutoPlanner.isInRootModule(depositSink.object) ||
+									depositSink.object.structureType === STRUCTURE_STORAGE)
+							) {
 								return false;
 							}
 							if (depositSink.roomName !== s.roomName) {
@@ -257,12 +272,15 @@ const roleScientist = {
 						return s.objectId !== depositSink.objectId;
 					},
 				});
-				sources = _.sortByOrder(sources, [
-					s => s.roomName === depositSink.roomName,
-					s => creep.pos.getRangeTo(s.object),
-					s => depositTarget.pos.getRangeTo(s.object),
-				],
-				["desc", "asc", "asc"]);
+				sources = _.sortByOrder(
+					sources,
+					[
+						s => s.roomName === depositSink.roomName,
+						s => creep.pos.getRangeTo(s.object),
+						s => depositTarget.pos.getRangeTo(s.object),
+					],
+					["desc", "asc", "asc"]
+				);
 
 				if (sources.length === 0) {
 					continue;
@@ -280,10 +298,9 @@ const roleScientist = {
 	run(creep) {
 		if (creep.memory.route) {
 			if (creep.memory.route.depositTargetId === creep.memory.route.withdrawTargetId) {
-				creep.log("withdraw and deposit targets are the same, removing route")
+				creep.log("withdraw and deposit targets are the same, removing route");
 				delete creep.memory.route;
-			}
-			else if (creep.memory.transporting && creep.store.getUsedCapacity(creep.memory.route.resource) === 0) {
+			} else if (creep.memory.transporting && creep.store.getUsedCapacity(creep.memory.route.resource) === 0) {
 				creep.log("currently transporting 0 of the resource, deleting route");
 				delete creep.memory.route;
 			}
@@ -297,13 +314,11 @@ const roleScientist = {
 		if (creep.memory.route === undefined) {
 			creep.memory.route = this.getDeliveryRoute(creep);
 			creep.memory.transporting = false;
-		}
-		else {
+		} else {
 			if (!creep.memory.transporting && creep.store.getUsedCapacity() > 0) {
 				creep.memory.transporting = true;
 				creep.say("transport");
-			}
-			else if (creep.memory.transporting && creep.store.getUsedCapacity() === 0) {
+			} else if (creep.memory.transporting && creep.store.getUsedCapacity() === 0) {
 				creep.memory.transporting = false;
 				creep.say("aquiring");
 			}
@@ -316,8 +331,7 @@ const roleScientist = {
 		if (creep.memory.route === undefined) {
 			creep.log("No route found");
 			return;
-		}
-		else {
+		} else {
 			// visualize route
 			const depositColor = "#00ff00";
 			const withdrawColor = "#ff0000";
@@ -328,8 +342,7 @@ const roleScientist = {
 						color: depositColor,
 						lineStyle: "dotted",
 					});
-				}
-				else {
+				} else {
 					creep.room.visual.circle(depositTarget.pos, {
 						stroke: depositColor,
 						fill: "transparent",
@@ -347,8 +360,7 @@ const roleScientist = {
 							color: withdrawColor,
 							lineStyle: "dotted",
 						});
-					}
-					else {
+					} else {
 						creep.room.visual.circle(withdrawTarget.pos, {
 							stroke: withdrawColor,
 							fill: "transparent",
@@ -368,10 +380,27 @@ const roleScientist = {
 		}
 
 		if (creep.memory.route.withdrawTargetId) {
-			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource} from ${Game.getObjectById(creep.memory.route.withdrawTargetId)}`}`);
-		}
-		else {
-			creep.log(`${creep.memory.transporting ? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(creep.memory.route.depositTargetId)}` : `aquiring ${creep.memory.route.resource}`}`);
+			creep.log(
+				`${
+					creep.memory.transporting
+						? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(
+								creep.memory.route.depositTargetId
+						  )}`
+						: `aquiring ${creep.memory.route.resource} from ${Game.getObjectById(
+								creep.memory.route.withdrawTargetId
+						  )}`
+				}`
+			);
+		} else {
+			creep.log(
+				`${
+					creep.memory.transporting
+						? `transporting ${creep.memory.route.resource} to ${Game.getObjectById(
+								creep.memory.route.depositTargetId
+						  )}`
+						: `aquiring ${creep.memory.route.resource}`
+				}`
+			);
 		}
 
 		let obstacles = util.getCreeps("harvester", "relay");
@@ -386,43 +415,42 @@ const roleScientist = {
 			if (depositTarget.store.getFreeCapacity(creep.memory.route.resource) > 0) {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, creep.memory.route.resource);
+				} else {
+					cartographer.moveTo(creep, depositTarget, { obstacles, ensurePath: true });
 				}
-				else {
-					creep.travelTo(depositTarget, { obstacles, ensurePath: true });
-				}
-			}
-			else {
+			} else {
 				creep.log("deposit target is full, deleting route");
 				delete creep.memory.route;
 			}
-		}
-		else {
+		} else {
 			let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 			if (!withdrawTarget) {
 				creep.log("withdraw target does not exist, removing route");
 				delete creep.memory.route;
 				return;
 			}
-			if (withdrawTarget && (withdrawTarget instanceof Resource ? withdrawTarget.amount : withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0) {
+			if (
+				withdrawTarget &&
+				(withdrawTarget instanceof Resource
+					? withdrawTarget.amount
+					: withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0
+			) {
 				if (creep.pos.isNearTo(withdrawTarget)) {
 					if (withdrawTarget instanceof Resource) {
 						creep.pickup(withdrawTarget);
-					}
-					else {
+					} else {
 						creep.withdraw(withdrawTarget, creep.memory.route.resource);
 					}
+				} else {
+					cartographer.moveTo(creep, withdrawTarget, { obstacles, ensurePath: true });
 				}
-				else {
-					creep.travelTo(withdrawTarget, { obstacles, ensurePath: true });
-				}
-			}
-			else {
+			} else {
 				creep.log("withdraw target is empty, deleting route");
 				delete creep.memory.route;
 			}
 		}
 	},
-}
+};
 
 module.exports = roleScientist;
 export default roleScientist;

@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import util from "../util";
 import { Role } from "../roles/meta";
 import { OffenseStrategy } from "../strategies/BaseStrategy";
@@ -64,7 +65,7 @@ export class OffenseTask {
 						STAGING_POSITION.y + task_idx,
 						STAGING_POSITION.roomName
 					);
-					creep.travelTo(stagingPos);
+					cartographer.moveTo(creep, stagingPos);
 
 					// healing
 					// FIXME: reduce duplicated code

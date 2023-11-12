@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 
@@ -152,7 +153,7 @@ const roleMiner = {
 			switch (creep.harvest(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget)) {
 				case ERR_NOT_IN_RANGE:
 				case ERR_NOT_ENOUGH_RESOURCES:
-					creep.travelTo(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget);
+					cartographer.moveTo(creep, creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget);
 					break;
 				default:
 			}
@@ -186,7 +187,7 @@ const roleMiner = {
 					}
 				}
 			} else {
-				creep.travelTo(storageTarget);
+				cartographer.moveTo(creep, storageTarget);
 			}
 		}
 	},

@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "./traveler.js";
 import util from "./util.ts";
 import toolEnergySource from "./tool.energysource.ts";
@@ -10,12 +11,15 @@ let taskGather = {
 	 * @deprecated
 	 */
 	run_old(creep) {
-
 		if (!creep.room.storage || (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] < 100000)) {
 			// Pick up dropped resources
 			let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 30, {
-				filter: (drop) => {
-					if (creep.memory.role !== "manager" && creep.memory.role !== "scientist" && drop.resourceType !== RESOURCE_ENERGY) {
+				filter: drop => {
+					if (
+						creep.memory.role !== "manager" &&
+						creep.memory.role !== "scientist" &&
+						drop.resourceType !== RESOURCE_ENERGY
+					) {
 						return false;
 					}
 					if (creep.pos.getRangeTo(drop.pos) <= 2) {
@@ -32,43 +36,49 @@ let taskGather = {
 					}
 
 					if (creep.room.storage && creep.room.controller.level > 4) {
-						if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
-							drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+						if (
+							drop.pos.findInRange(FIND_SOURCES, 1).length > 0 &&
+							drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK)
+								.length > 0
+						) {
 							return false;
 						}
 					}
 
-					//console.log("ENERGY DROP",drop.id,drop.amount);
+					// console.log("ENERGY DROP",drop.id,drop.amount);
 					return creep.pos.findPathTo(drop).length < drop.amount - global.DROPPED_ENERGY_GATHER_MINIMUM;
-				}
+				},
 			});
 			if (droppedResources.length > 0) {
 				let closest = creep.pos.findClosestByPath(droppedResources);
 				if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(closest);
+					cartographer.moveTo(creep, closest);
 				}
 				return;
 			}
 
 			let ruins = creep.pos.findInRange(FIND_RUINS, 40, {
-				filter: (ruin) => {
-					return ruin.store[RESOURCE_ENERGY] > 0
-				}
+				filter: ruin => {
+					return ruin.store[RESOURCE_ENERGY] > 0;
+				},
 			});
 			if (ruins.length > 0) {
 				let closest = creep.pos.findClosestByPath(ruins);
 				if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(closest);
+					cartographer.moveTo(creep, closest);
 				}
 				return;
 			}
 		}
 
-
 		// Pick up resources from tombstones
-		if (creep.memory.role == "manager" || creep.memory.role == "scientist" || (creep.room.controller && creep.room.controller.level < 6)) {
+		if (
+			creep.memory.role == "manager" ||
+			creep.memory.role == "scientist" ||
+			(creep.room.controller && creep.room.controller.level < 6)
+		) {
 			let tombstones = creep.room.find(FIND_TOMBSTONES, {
-				filter: (tomb) => {
+				filter: tomb => {
 					if (tomb.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(tomb)) {
 						return true;
 					}
@@ -83,13 +93,15 @@ let taskGather = {
 					}
 
 					return tomb.store.getUsedCapacity() > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
-				}
+				},
 			});
 			if (tombstones.length > 0) {
-				tombstones = tombstones.sort((a, b) => { return _.sum(b.store) - _.sum(a.store); });
+				tombstones = tombstones.sort((a, b) => {
+					return _.sum(b.store) - _.sum(a.store);
+				});
 				let target = tombstones[0];
 				if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(target);
+					cartographer.moveTo(creep, target);
 				}
 				return;
 			}
@@ -98,19 +110,19 @@ let taskGather = {
 		// Only builders dismantle marked structures
 		if (creep.memory.role === "builder") {
 			let dismantleTargets = creep.room.find(FIND_STRUCTURES, {
-				filter: function(struct) {
-					var flags = struct.pos.lookFor(LOOK_FLAGS);
+				filter(struct) {
+					let flags = struct.pos.lookFor(LOOK_FLAGS);
 					if (flags.length > 0) {
 						return flags[0].name.includes("dismantle");
 					}
 					return false;
-				}
+				},
 			});
 			if (dismantleTargets.length > 0) {
-				//console.log("dismatle targets");
+				// console.log("dismatle targets");
 				let closest = creep.pos.findClosestByPath(dismantleTargets);
 				if (creep.dismantle(closest) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(closest);
+					cartographer.moveTo(creep, closest);
 				}
 				return;
 			}
@@ -118,7 +130,7 @@ let taskGather = {
 
 		// extract energy from storage
 		let targets = creep.room.find(FIND_STRUCTURES, {
-			filter: (structure) => {
+			filter: structure => {
 				if (structure.structureType !== STRUCTURE_CONTAINER && structure.structureType !== STRUCTURE_STORAGE) {
 					return false;
 				}
@@ -126,8 +138,7 @@ let taskGather = {
 				if (structure.structureType === STRUCTURE_STORAGE) {
 					if (structure.owner.my) {
 						return structure.store[RESOURCE_ENERGY] > 0;
-					}
-					else {
+					} else {
 						return structure.room.controller.level >= 4;
 					}
 				}
@@ -136,24 +147,31 @@ let taskGather = {
 					return false;
 				}
 
-				if (creep.room.storage && creep.room.controller.level > 4 && structure.structureType === STRUCTURE_CONTAINER) {
+				if (
+					creep.room.storage &&
+					creep.room.controller.level > 4 &&
+					structure.structureType === STRUCTURE_CONTAINER
+				) {
 					if (structure.pos.findInRange(FIND_SOURCES, 1).length > 0) {
 						if (structure.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
 							return false;
-						}
-						else if (structure.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK).length > 0) {
+						} else if (
+							structure.pos
+								.findInRange(FIND_STRUCTURES, 1)
+								.filter(s => s.structureType === STRUCTURE_LINK).length > 0
+						) {
 							return false;
 						}
 					}
 				}
 
 				return structure.store[RESOURCE_ENERGY] > 0;
-			}
+			},
 		});
 		if (targets.length > 0) {
 			let closest = creep.pos.findClosestByPath(targets);
 			if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(closest);
+				cartographer.moveTo(creep, closest);
 			}
 			return;
 		}
@@ -162,33 +180,43 @@ let taskGather = {
 		let spawn = util.getSpawn(creep.room);
 		let haveContainer = false;
 		if (spawn) {
-			haveContainer = spawn.room.find(FIND_STRUCTURES, {
-				filter: (struct) => {
-					return (struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE);
-				}
-			}).length > 0;
+			haveContainer =
+				spawn.room.find(FIND_STRUCTURES, {
+					filter: struct => {
+						return struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE;
+					},
+				}).length > 0;
 			if (!haveContainer && spawn.energy >= spawn.energyCapacity * 0.9 && creep.pos.inRangeTo(spawn, 3)) {
 				if (creep.withdraw(spawn, RESOURCE_ENERGY, 50) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(spawn);
+					cartographer.moveTo(creep, spawn);
 				}
 			}
 		}
 
 		// harvest energy from sources
-		if (!spawn || !haveContainer || creep.room.controller.level <= 3 || !creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] <= 0) {
+		if (
+			!spawn ||
+			!haveContainer ||
+			creep.room.controller.level <= 3 ||
+			!creep.room.storage ||
+			creep.room.storage.store[RESOURCE_ENERGY] <= 0
+		) {
 			let controllerHasContainerNearby = false;
 			if (creep.memory.role == "upgrader" && creep.room.controller && creep.room.controller.my) {
 				let controller = creep.room.controller;
-				controllerHasContainerNearby = controller.pos.findInRange(FIND_STRUCTURES, 3, {
-					filter: function(struct) {
-						return struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE
-					}
-				}).length > 0;
+				controllerHasContainerNearby =
+					controller.pos.findInRange(FIND_STRUCTURES, 3, {
+						filter(struct) {
+							return (
+								struct.structureType == STRUCTURE_CONTAINER || struct.structureType == STRUCTURE_STORAGE
+							);
+						},
+					}).length > 0;
 			}
 			if (creep.getActiveBodyparts(WORK) > 0) {
 				// FIXME: dear god the CPU usage on this is terrible
 				let closest = creep.pos.findClosestByPath(FIND_SOURCES, {
-					filter: function(source) {
+					filter(source) {
 						if (creep.memory.role == "upgrader" && controllerHasContainerNearby) {
 							return false;
 						}
@@ -196,10 +224,10 @@ let taskGather = {
 							return false;
 						}
 						return source.energy > 0;
-					}
+					},
 				});
-				if(creep.harvest(closest) == ERR_NOT_IN_RANGE) {
-					creep.travelTo(closest);
+				if (creep.harvest(closest) == ERR_NOT_IN_RANGE) {
+					cartographer.moveTo(creep, closest);
 				}
 			}
 		}
@@ -207,7 +235,7 @@ let taskGather = {
 
 	getGatherTarget(creep) {
 		if (creep.memory.force_gather_target) {
-			creep.memory.gatherTarget = creep.memory.force_gather_target
+			creep.memory.gatherTarget = creep.memory.force_gather_target;
 		}
 
 		let gatherTarget;
@@ -215,8 +243,7 @@ let taskGather = {
 			gatherTarget = Game.getObjectById(creep.memory.gatherTarget);
 			if (gatherTarget && (!gatherTarget.store || gatherTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)) {
 				return gatherTarget;
-			}
-			else {
+			} else {
 				delete creep.memory.gatherTarget;
 				gatherTarget = null;
 			}
@@ -227,22 +254,26 @@ let taskGather = {
 			roomName: creep.memory.targetRoom,
 			filter: s => s.amount > 30,
 		});
-		sources = _.sortByOrder(sources, [
-			s => creep.pos.getRangeTo(s.object),
-		],
-		["asc"]);
+		sources = _.sortByOrder(sources, [s => creep.pos.getRangeTo(s.object)], ["asc"]);
 
 		if (sources.length > 0) {
 			let selectedSource = _.first(sources);
 			creep.memory.gatherTarget = selectedSource.objectId;
 			return selectedSource.object;
-		}
-		else if (creep.getActiveBodyparts(WORK) > 0) {
+		} else if (creep.getActiveBodyparts(WORK) > 0) {
 			let spawn = util.getSpawn(creep.room);
-			let haveContainer = creep.room.find(FIND_STRUCTURES, {
-				filter: struct => struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE,
-			}).length > 0;
-			if (!spawn || !haveContainer || creep.room.controller.level <= 3 || !creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] <= 0) {
+			let haveContainer =
+				creep.room.find(FIND_STRUCTURES, {
+					filter: struct =>
+						struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE,
+				}).length > 0;
+			if (
+				!spawn ||
+				!haveContainer ||
+				creep.room.controller.level <= 3 ||
+				!creep.room.storage ||
+				creep.room.storage.store[RESOURCE_ENERGY] <= 0
+			) {
 				let source = creep.pos.findClosestByPath(FIND_SOURCES, {
 					filter: s => s.energy > 0,
 				});
@@ -259,7 +290,10 @@ let taskGather = {
 	 * @param {Creep} creep
 	 */
 	run(creep) {
-		if (!creep.memory.rememberGatherTarget && (!creep.memory._gatherLastRun || Game.time - 1 > creep.memory._gatherLastRun)) {
+		if (
+			!creep.memory.rememberGatherTarget &&
+			(!creep.memory._gatherLastRun || Game.time - 1 > creep.memory._gatherLastRun)
+		) {
 			delete creep.memory.gatherTarget;
 		}
 		let gatherTarget = this.getGatherTarget(creep);
@@ -267,28 +301,24 @@ let taskGather = {
 		if (creep.pos.isNearTo(gatherTarget)) {
 			if (gatherTarget instanceof Source) {
 				creep.harvest(gatherTarget);
-			}
-			else if (gatherTarget instanceof Resource) {
+			} else if (gatherTarget instanceof Resource) {
 				creep.pickup(gatherTarget);
-			}
-			else if (gatherTarget.store) {
+			} else if (gatherTarget.store) {
 				creep.withdraw(gatherTarget, RESOURCE_ENERGY);
-			}
-			else {
+			} else {
 				creep.log(`Don't know how to grab ${gatherTarget}`);
 			}
-		}
-		else {
+		} else {
 			let opts = {};
 			if (creep.room.name === gatherTarget.room.name) {
 				opts = { maxRooms: 1 };
 			}
-			creep.travelTo(gatherTarget, opts);
+			cartographer.moveTo(creep, gatherTarget, opts);
 		}
 
 		creep.memory._gatherLastRun = Game.time;
 	},
-}
+};
 
 module.exports = taskGather;
 export default taskGather;

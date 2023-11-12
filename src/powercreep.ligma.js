@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "./traveler.js";
 import util from "./util";
 import taskRenew from "./task.renew.js";
@@ -21,17 +22,15 @@ module.exports = {
 		}
 
 		if (creep.memory.renewing) {
-// 			taskRenew.run(creep);
+			// 			taskRenew.run(creep);
 			if (creep.pos.isNearTo(powerSpawn)) {
 				creep.renew(powerSpawn);
 				creep.memory.renewing = false;
-			}
-			else {
-				creep.travelTo(powerSpawn);
+			} else {
+				cartographer.moveTo(creep, powerSpawn);
 			}
 			return;
-		}
-		else {
+		} else {
 			creep.memory.renewing = taskRenew.checkRenew(creep);
 		}
 
@@ -39,9 +38,8 @@ module.exports = {
 			creep.log(`Enabling power usage for room ${creep.room.name}`);
 			if (creep.pos.isNearTo(creep.room.controller)) {
 				creep.enableRoom(creep.room.controller);
-			}
-			else {
-				creep.travelTo(creep.room.controller);
+			} else {
+				cartographer.moveTo(creep, creep.room.controller);
 			}
 			return;
 		}
@@ -51,34 +49,30 @@ module.exports = {
 			creep.log(`generate ops result: ${result}`);
 		}
 
-
-
 		if (creep.store.getUsedCapacity(RESOURCE_POWER) > 0) {
 			if (creep.pos.isNearTo(powerSpawn)) {
 				creep.transfer(powerSpawn, RESOURCE_POWER);
+			} else {
+				cartographer.moveTo(creep, new RoomPosition(23, 33, "W15N8"));
 			}
-			else {
-				creep.travelTo(new RoomPosition(23, 33, "W15N8"));
-			}
-		}
-		else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0 || creep.store.getUsedCapacity(RESOURCE_OPS) >= 200) {
+		} else if (
+			creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0 ||
+			creep.store.getUsedCapacity(RESOURCE_OPS) >= 200
+		) {
 			if (creep.pos.isNearTo(creep.room.terminal)) {
 				if (creep.store.getUsedCapacity(RESOURCE_OPS) > 0) {
 					creep.transfer(creep.room.terminal, RESOURCE_OPS);
-				}
-				else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+				} else if (creep.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
 					creep.withdraw(creep.room.terminal, RESOURCE_POWER);
 				}
+			} else {
+				cartographer.moveTo(creep, creep.room.terminal);
 			}
-			else {
-				creep.travelTo(creep.room.terminal);
-			}
+		} else {
+			// cartographer.moveTo(creep, powerSpawn);
+			cartographer.moveTo(creep, new RoomPosition(23, 33, "W15N8"));
 		}
-		else {
-			// creep.travelTo(powerSpawn);
-			creep.travelTo(new RoomPosition(23, 33, "W15N8"));
-		}
-	}
-}
+	},
+};
 
 export default module.exports;

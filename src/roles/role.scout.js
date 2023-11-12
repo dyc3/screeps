@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 import toolEnergySource from "../tool.energysource.js";
@@ -249,7 +250,7 @@ const roleScout = {
 					creep.dismantle(lookResult[0]);
 				}
 			} else {
-				creep.travelTo(Game.flags.scoutdismantle);
+				cartographer.moveTo(creep, Game.flags.scoutdismantle);
 			}
 			return;
 		}
@@ -282,7 +283,7 @@ const roleScout = {
 
 				let roomPos = new RoomPosition(25, 25, nextRoom);
 				let destinationPos = Game.flags.roomToScore ? Game.flags.roomToScore.pos : roomPos;
-				let moveResult = creep.travelTo(destinationPos);
+				let moveResult = cartographer.moveTo(creep, destinationPos);
 				if (moveResult == ERR_NO_PATH) {
 					console.log(
 						creep.name,
@@ -302,7 +303,7 @@ const roleScout = {
 				if (Game.flags.roomToScore && creep.room.name == Game.flags.roomToScore.room.name) {
 					Game.flags.roomToScore.remove();
 				}
-				creep.travelTo(new RoomPosition(25, 25, creep.room.name)); // prevent moving out before scouting is complete
+				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.room.name)); // prevent moving out before scouting is complete
 				Memory.roomInfo[creep.room.name] = {};
 				Memory.roomInfo[creep.room.name].timestamp = Game.time;
 				Memory.roomInfo[creep.room.name].score = this.getRoomScore(creep.room);

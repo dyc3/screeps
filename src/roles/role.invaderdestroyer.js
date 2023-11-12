@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 let traveler = require("traveler");
 let util = require("../util");
 
@@ -13,23 +14,111 @@ let roleInvaderDestroyer = {
 	getBodyFor(destroyerType) {
 		if (destroyerType === "damage") {
 			return [
-				TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
-				RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-				RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,
-				HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
-				MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				RANGED_ATTACK,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
 			];
-		}
-		else if (destroyerType === "heal") {
+		} else if (destroyerType === "heal") {
 			return [
-				TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
-				HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
-				HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
-				HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,HEAL,
-				MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				TOUGH,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				HEAL,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
 			];
-		}
-		else {
+		} else {
 			console.log("[invaderdestroyer] Unknown body type: ", destroyerType);
 			return null;
 		}
@@ -49,8 +138,7 @@ let roleInvaderDestroyer = {
 					creep.log("WARN: current attack target is a keeper lair, which is invalid.");
 				}
 				return target;
-			}
-			else {
+			} else {
 				delete Memory.attack.currentTarget;
 			}
 		}
@@ -59,7 +147,7 @@ let roleInvaderDestroyer = {
 			let hostileTargets = Game.rooms[Memory.attack.targetRoom].find(FIND_HOSTILE_STRUCTURES);
 			hostileTargets = hostileTargets.filter(struct => {
 				return struct.structureType !== STRUCTURE_KEEPER_LAIR;
-			})
+			});
 			hostileTargets.sort((a, b) => {
 				if (a.structureType === b.structureType) {
 					return a.hits - b.hits;
@@ -70,8 +158,7 @@ let roleInvaderDestroyer = {
 			});
 			Memory.attack.currentTarget = hostileTargets[0].id;
 			return hostileTargets[0];
-		}
-		else {
+		} else {
 			return Game.getObjectById(Memory.attack.currentTarget);
 		}
 	},
@@ -93,7 +180,7 @@ let roleInvaderDestroyer = {
 		}
 
 		if (creep.room.name !== creep.memory.targetRoom) {
-			creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom));
+			cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom));
 			if (creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) > 0) {
 				creep.heal(creep);
 			}
@@ -107,12 +194,10 @@ let roleInvaderDestroyer = {
 			}
 			if (creep.pos.inRangeTo(currentTarget, 3)) {
 				creep.rangedAttack(currentTarget);
+			} else {
+				cartographer.moveTo(creep, currentTarget, { range: 3 });
 			}
-			else {
-				creep.travelTo(currentTarget, { range: 3 });
-			}
-		}
-		else if (creep.memory.mode === "heal") {
+		} else if (creep.memory.mode === "heal") {
 			let creeps = util.getCreeps("invaderdestroyer");
 			let damageCreeps = _.filter(creeps, c => c.memory.mode === "damage");
 			let healCreeps = _.filter(creeps, c => c.memory.mode === "heal");
@@ -123,15 +208,13 @@ let roleInvaderDestroyer = {
 			if (damageCreeps.length > 0 && damageCreeps[0].hits < damageCreeps[0].hitsMax) {
 				if (creep.pos.isNearTo(damageCreeps[0])) {
 					creep.heal(damageCreeps[0]);
-				}
-				else if (creep.pos.inRangeTo(damageCreeps[0], 3)) {
+				} else if (creep.pos.inRangeTo(damageCreeps[0], 3)) {
 					creep.rangedHeal(damageCreeps[0]);
 				}
-			}
-			else if (creep.hits < creep.hitsMax) {
+			} else if (creep.hits < creep.hitsMax) {
 				creep.heal(creep);
 			}
-			creep.travelTo(damageCreeps[0].pos);
+			cartographer.moveTo(creep, damageCreeps[0].pos);
 		}
 	},
 };
