@@ -152,7 +152,7 @@ const roleRelay = {
 				// HACK: cartographer.moveTo doesn't work when the target is a walkable position
 				creep.move(creep.pos.getDirectionTo(assignedPos));
 			} else {
-				let result = cartographer.moveTo(creep, assignedPos);
+				let result = cartographer.moveTo(creep, assignedPos, { priority: 100 });
 				if (result != 0) {
 					console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 				}
