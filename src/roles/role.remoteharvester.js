@@ -49,7 +49,13 @@ let roleRemoteHarvester = {
 			harvestTarget.roomName
 		);
 		if (!creep.pos.isEqualTo(harvestPos)) {
-			cartographer.moveTo(creep, harvestPos);
+			if (creep.pos.inRangeTo(harvestPos, 1)) {
+				// HACK: cartographer doesn't path to the harvest position
+				// see: https://github.com/glitchassassin/screeps-cartographer/issues/45
+				creep.move(creep.pos.getDirectionTo(harvestPos));
+			} else {
+				cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
+			}
 			return;
 		}
 

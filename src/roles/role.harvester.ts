@@ -496,10 +496,23 @@ const roleHarvester = {
 				if (creep.pos.isEqualTo(harvestPos)) {
 					creep.harvest(harvestTarget);
 				} else {
-					cartographer.moveTo(creep, harvestPos);
+					if (creep.pos.inRangeTo(harvestPos, 1)) {
+						// HACK: cartographer doesn't path to the harvest position
+						// see: https://github.com/glitchassassin/screeps-cartographer/issues/45
+						creep.move(creep.pos.getDirectionTo(harvestPos));
+					} else {
+						cartographer.moveTo(
+							creep,
+							{ pos: harvestPos, range: 0 },
+							{
+								priority: 100,
+							}
+						);
+					}
 				}
 			} else {
 				cartographer.moveTo(creep, new RoomPosition(25, 25, harvestTarget.room.name), {
+					priority: 100,
 					visualizePathStyle: {},
 				});
 			}
@@ -516,14 +529,28 @@ const roleHarvester = {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							cartographer.moveTo(creep, harvestPos);
+							if (creep.pos.inRangeTo(harvestPos, 1)) {
+								// HACK: cartographer doesn't path to the harvest position
+								// see: https://github.com/glitchassassin/screeps-cartographer/issues/45
+								creep.move(creep.pos.getDirectionTo(harvestPos));
+							} else {
+								cartographer.moveTo(
+									creep,
+									{ pos: harvestPos, range: 0 },
+									{
+										priority: 100,
+									}
+								);
+							}
 						}
 						creep.memory.depositMode = this.getDepositMode(creep);
 					} else if (creep.memory.depositMode === "drop") {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							cartographer.moveTo(creep, harvestPos);
+							cartographer.moveTo(creep, harvestPos, {
+								priority: 100,
+							});
 						}
 					} else {
 						creep.memory.depositMode = this.getDepositMode(creep);
@@ -545,7 +572,7 @@ const roleHarvester = {
 			if (transferResult === OK && creep.memory.depositMode === "recovery") {
 				delete creep.memory.transferTarget;
 			} else if (transferResult === ERR_NOT_IN_RANGE) {
-				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
+				cartographer.moveTo(creep, target, { visualizePathStyle: {}, priority: 100 });
 			} else if (transferResult === ERR_FULL) {
 				console.log(creep.name, "failed to transfer: target full");
 				creep.memory.harvesting = true;
