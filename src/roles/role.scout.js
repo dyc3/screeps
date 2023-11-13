@@ -1,3 +1,5 @@
+// TODO: throw out this code, it doesn't work anymore
+
 import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
