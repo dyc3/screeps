@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import traveler from "../traveler.js";
 import util from "../util";
 import brainLogistics from "../brain.logistics.js";
@@ -57,10 +58,10 @@ export default {
 						creep.log(`FAILED TO TRANSFER: ${result}`);
 					}
 				} else {
-					creep.travelTo(deliveryTask.sink.object);
+					cartographer.moveTo(creep, deliveryTask.sink.object);
 				}
 			} else {
-				creep.travelTo(new RoomPosition(25, 25, deliveryTask.sink.roomName));
+				cartographer.moveTo(creep, new RoomPosition(25, 25, deliveryTask.sink.roomName));
 			}
 		} else {
 			if (deliveryTask.source.object) {
@@ -81,7 +82,7 @@ export default {
 						creep.log(`Unable to withdraw ${deliveryTask.source.resource}: ${result}`);
 					}
 				} else {
-					creep.travelTo(deliveryTask.source.object);
+					cartographer.moveTo(creep, deliveryTask.source.object);
 				}
 			} else {
 				if (Game.rooms[deliveryTask.source.roomName]) {
@@ -89,7 +90,7 @@ export default {
 					creep.log("Source is gone, deleting task");
 					delete creep.memory.deliveryTaskId;
 				} else {
-					creep.travelTo(new RoomPosition(25, 25, deliveryTask.source.roomName));
+					cartographer.moveTo(creep, new RoomPosition(25, 25, deliveryTask.source.roomName));
 				}
 			}
 		}

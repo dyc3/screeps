@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import { OffenseStrategy } from "./BaseStrategy";
 import util from "../util";
 // @ts-expect-error not converted yet
@@ -78,7 +79,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				// move to the waiting room
 				olog(`travel: moving to ${this.waitingRoom}`);
 
-				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), {
+				cartographer.moveTo(creep, new RoomPosition(25, 25, this.waitingRoom), {
 					range: 20,
 					avoidRooms: this.getKnownBadRooms(),
 					preferHighway: true,
@@ -97,7 +98,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 						}
 					}
 				}
-				creep.travelTo(new RoomPosition(25, 25, this.miningRoom), {
+				cartographer.moveTo(creep, new RoomPosition(25, 25, this.miningRoom), {
 					range: 20,
 					avoidRooms: this.getKnownBadRooms(),
 					preferHighway: true,
@@ -107,7 +108,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				this.baitPosition = creep.pos; // HACK: save the position of the bait
 			} else if (this.objective === "flee") {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
-				creep.travelTo(new RoomPosition(25, 25, this.waitingRoom), {
+				cartographer.moveTo(creep, new RoomPosition(25, 25, this.waitingRoom), {
 					range: 20,
 					avoidRooms: this.getKnownBadRooms(),
 					preferHighway: true,

@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 
@@ -27,7 +28,11 @@ const roleRelay = {
 		const colorDeposit = "#0f0";
 		const colorBadTransfer = "#f00"; // used when last withdraw id is the same as last deposit id
 		let vis = creep.room.visual;
-		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
+		let assignedPos = new RoomPosition(
+			creep.memory.assignedPos.x,
+			creep.memory.assignedPos.y,
+			creep.memory.assignedPos.roomName
+		);
 
 		// draw lines to storage and link
 		let storage = Game.getObjectById(creep.memory.storageId);
@@ -40,8 +45,7 @@ const roleRelay = {
 			if (creep.memory._lastDepositId === storage.id) {
 				storageColor = colorBadTransfer;
 			}
-		}
-		else if (creep.memory._lastDepositId === storage.id) {
+		} else if (creep.memory._lastDepositId === storage.id) {
 			storageColor = colorDeposit;
 		}
 
@@ -51,8 +55,7 @@ const roleRelay = {
 			if (creep.memory._lastDepositId === link.id) {
 				linkColor = colorBadTransfer;
 			}
-		}
-		else if (creep.memory._lastDepositId === link.id) {
+		} else if (creep.memory._lastDepositId === link.id) {
 			linkColor = colorDeposit;
 		}
 
@@ -79,13 +82,12 @@ const roleRelay = {
 				if (creep.memory._lastDepositId === target.id) {
 					color = colorBadTransfer;
 				}
-			}
-			else if (creep.memory._lastDepositId === target.id) {
+			} else if (creep.memory._lastDepositId === target.id) {
 				color = colorDeposit;
 			}
 
 			vis.line(assignedPos, target.pos, {
-				color: color,
+				color,
 				opacity: 0.7,
 			});
 		}
@@ -97,8 +99,7 @@ const roleRelay = {
 				stroke: "#0f0",
 				fill: "#0f0",
 			});
-		}
-		else {
+		} else {
 			vis.rect(assignedPos.x - 0.3, assignedPos.y - 0.3, 0.6, 0.6, {
 				stroke: "#f00",
 				fill: "#f00",
@@ -114,7 +115,7 @@ const roleRelay = {
 	 * @param {Creep} creep Relay creep
 	 * @param {Structure} overfilledStruct Structure to withdraw resource from
 	 */
-	withdrawOverfillTarget(creep, overfilledStruct, resource=RESOURCE_ENERGY) {
+	withdrawOverfillTarget(creep, overfilledStruct, resource = RESOURCE_ENERGY) {
 		let fillTargetAmount = 0;
 		switch (overfilledStruct.structureType) {
 			case STRUCTURE_TERMINAL:
@@ -124,19 +125,30 @@ const roleRelay = {
 				fillTargetAmount = Memory.factoryEnergyTarget;
 				break;
 		}
-		let r = creep.withdraw(overfilledStruct, resource, Math.min(Math.max(0, overfilledStruct.store.getUsedCapacity(resource) - fillTargetAmount), creep.store.getFreeCapacity()));
+		let r = creep.withdraw(
+			overfilledStruct,
+			resource,
+			Math.min(
+				Math.max(0, overfilledStruct.store.getUsedCapacity(resource) - fillTargetAmount),
+				creep.store.getFreeCapacity()
+			)
+		);
 		creep.memory._lastWithdrawId = overfilledStruct.id; // used for visualizeState
 	},
 
-	run: function(creep) {
+	run(creep) {
 		if (!creep.memory.assignedPos) {
 			creep.say("needs pos");
 			return;
 		}
 
-		let assignedPos = new RoomPosition(creep.memory.assignedPos.x, creep.memory.assignedPos.y, creep.memory.assignedPos.roomName);
+		let assignedPos = new RoomPosition(
+			creep.memory.assignedPos.x,
+			creep.memory.assignedPos.y,
+			creep.memory.assignedPos.roomName
+		);
 		if (!creep.pos.isEqualTo(assignedPos)) {
-			let result = creep.travelTo(assignedPos);
+			let result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
 			if (result != 0) {
 				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}
@@ -148,22 +160,25 @@ const roleRelay = {
 		}
 
 		if (!creep.memory.linkId || !creep.memory.storageId) {
-			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {
-				return s.structureType == STRUCTURE_LINK;
-			}});
+			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+				filter: s => {
+					return s.structureType == STRUCTURE_LINK;
+				},
+			});
 			if (foundLinks.length == 0) {
 				console.log(creep.name, "ERR: no link structures found");
 				return;
 			}
 			creep.memory.linkId = foundLinks[0].id;
 
-			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (s) => {
-				return s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE;
-			}});
+			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+				filter: s => {
+					return s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE;
+				},
+			});
 			if (foundStorage.length > 0) {
 				creep.memory.storageId = foundStorage[0].id;
-			}
-			else {
+			} else {
 				console.log(creep.name, "WARN: no found storage");
 			}
 		}
@@ -177,14 +192,28 @@ const roleRelay = {
 			creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
 		}
 
-		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length == 0 || creep.memory._needFillTargetRefresh) {
-			let adjacentStructs = _.filter(creep.room.lookForAtArea(LOOK_STRUCTURES, creep.pos.y - 1, creep.pos.x - 1, creep.pos.y + 1, creep.pos.x + 1, true), (result) =>
-				result.structure.structureType != STRUCTURE_CONTAINER &&
-				result.structure.structureType != STRUCTURE_STORAGE &&
-				result.structure.structureType != STRUCTURE_ROAD &&
-				result.structure.structureType != STRUCTURE_RAMPART &&
-				result.structure.structureType != STRUCTURE_WALL &&
-				result.structure.structureType != STRUCTURE_LINK);
+		if (
+			!creep.memory.fillTargetIds ||
+			creep.memory.fillTargetIds.length == 0 ||
+			creep.memory._needFillTargetRefresh
+		) {
+			let adjacentStructs = _.filter(
+				creep.room.lookForAtArea(
+					LOOK_STRUCTURES,
+					creep.pos.y - 1,
+					creep.pos.x - 1,
+					creep.pos.y + 1,
+					creep.pos.x + 1,
+					true
+				),
+				result =>
+					result.structure.structureType != STRUCTURE_CONTAINER &&
+					result.structure.structureType != STRUCTURE_STORAGE &&
+					result.structure.structureType != STRUCTURE_ROAD &&
+					result.structure.structureType != STRUCTURE_RAMPART &&
+					result.structure.structureType != STRUCTURE_WALL &&
+					result.structure.structureType != STRUCTURE_LINK
+			);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
 			let targets = [];
 			for (let i = 0; i < adjacentStructs.length; i++) {
@@ -207,11 +236,11 @@ const roleRelay = {
 			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
 				rootNeedsEnergy = true;
 			}
-			//creep.log("rootNeedsEnergy:", rootNeedsEnergy);
+			// creep.log("rootNeedsEnergy:", rootNeedsEnergy);
 		}
 
 		// check if all the fill targets are full.
-		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, (id) => {
+		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, id => {
 			let struct = Game.getObjectById(id);
 			if (!struct) {
 				creep.log("WARN: structure with id", id, "no longer exists!");
@@ -226,8 +255,7 @@ const roleRelay = {
 				default:
 					if (struct.store) {
 						return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-					}
-					else {
+					} else {
 						return false;
 					}
 			}
@@ -249,7 +277,7 @@ const roleRelay = {
 				default:
 					return false;
 			}
-		})
+		});
 
 		// if the root needs energy, put it in the link
 		if (rootNeedsEnergy) {
@@ -257,8 +285,7 @@ const roleRelay = {
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
 					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0]));
-				}
-				else {
+				} else {
 					creep.withdraw(storage, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
 				}
@@ -278,18 +305,23 @@ const roleRelay = {
 					} else {
 						creep.log("No storage present.");
 					}
-				}
-				else {
+				} else {
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
 			}
 
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
-				if (target.structureType == STRUCTURE_TERMINAL && Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
-					creep.transfer(target, RESOURCE_ENERGY, Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]);
-				}
-				else {
+				if (
+					target.structureType == STRUCTURE_TERMINAL &&
+					Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()
+				) {
+					creep.transfer(
+						target,
+						RESOURCE_ENERGY,
+						Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]
+					);
+				} else {
 					creep.transfer(target, RESOURCE_ENERGY);
 				}
 				creep.memory._lastDepositId = target.id; // used for visualizeState
@@ -301,8 +333,7 @@ const roleRelay = {
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
 					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0]));
-				}
-				else if (link.store[RESOURCE_ENERGY] > 0) {
+				} else if (link.store[RESOURCE_ENERGY] > 0) {
 					creep.withdraw(link, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
@@ -334,7 +365,7 @@ const roleRelay = {
 				creep.memory.renewTarget = id;
 			}
 		}
-	}
+	},
 };
 
 module.exports = roleRelay;

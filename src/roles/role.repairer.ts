@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util.js";
 import taskGather from "../task.gather.js";
@@ -261,7 +262,7 @@ const roleRepairer = {
 				(creep.room.name !== creep.memory.targetRoom || util.isOnEdge(creep.pos)) &&
 				!creep.memory.repairTarget
 			) {
-				creep.travelTo(new RoomPosition(25, 25, creep.memory.targetRoom), {
+				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), {
 					visualizePathStyle: {},
 					range: 10,
 				});
@@ -337,7 +338,7 @@ const roleRepairer = {
 			// }
 			if (repairTarget) {
 				if (creep.repair(repairTarget) === ERR_NOT_IN_RANGE) {
-					creep.travelTo(repairTarget, { visualizePathStyle: {}, range: 3 });
+					cartographer.moveTo(creep, repairTarget, { visualizePathStyle: {}, range: 3 });
 				}
 			} else {
 				if (taskDismantle.run(creep)) {
@@ -350,7 +351,7 @@ const roleRepairer = {
 					});
 					if (constructionSite) {
 						if (creep.build(constructionSite) === ERR_NOT_IN_RANGE) {
-							creep.travelTo(constructionSite, { range: 3 });
+							cartographer.moveTo(creep, constructionSite, { range: 3 });
 						}
 					} else {
 						// move out of the way of other creeps

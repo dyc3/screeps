@@ -1,4 +1,6 @@
+import * as cartographer from "screeps-cartographer";
 import { ErrorMapper } from "utils/ErrorMapper";
+import profiler from "screeps-profiler";
 
 // https://wiki.screepspl.us/index.php/Private_Server_Common_Tasks
 // https://lodash.com/docs/3.10.1
@@ -98,7 +100,6 @@ import "./tools.js";
 import util from "./util";
 import visualize from "./visualize";
 import { Role } from "./roles/meta";
-import profiler from "screeps-profiler";
 
 import roleHarvester from "roles/role.harvester";
 // @ts-expect-error hasn't been converted yet
@@ -1681,6 +1682,8 @@ function main() {
 	brainGuard.init();
 	brainHighwayHarvesting.init();
 
+	cartographer.preTick();
+
 	try {
 		brainOffense.run();
 	} catch (e) {
@@ -1926,6 +1929,8 @@ function main() {
 			util.printException(e, creep);
 		}
 	}
+
+	cartographer.reconcileTraffic();
 
 	// process jobs
 	runner.runJobs();

@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import * as taskDepositMaterials from "task.depositmaterials";
 import util from "../util";
@@ -166,7 +167,7 @@ const roleScientist = {
 				isStructureEmpty(withdrawTarget))
 		) {
 			if (creep.transfer(withdrawTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(withdrawTarget);
+				cartographer.moveTo(creep, withdrawTarget);
 			}
 			if (!creep.carry[creep.memory.targetResource] || creep.carry[creep.memory.targetResource] <= 0) {
 				delete creep.memory.targetStruct;
@@ -187,12 +188,12 @@ const roleScientist = {
 
 		if (creep.store[creep.memory.targetResource] > 0 || _.sum(creep.store) > 0) {
 			if (creep.transfer(depositTarget, creep.memory.targetResource) == ERR_NOT_IN_RANGE) {
-				creep.travelTo(depositTarget);
+				cartographer.moveTo(creep, depositTarget);
 			}
 		} else {
 			switch (creep.withdraw(withdrawTarget, creep.memory.targetResource)) {
 				case ERR_NOT_IN_RANGE:
-					creep.travelTo(withdrawTarget);
+					cartographer.moveTo(creep, withdrawTarget);
 					break;
 				case ERR_NOT_ENOUGH_RESOURCES:
 					creep.log("withdraw: NOT ENOUGH RESOURCES");
@@ -415,7 +416,7 @@ const roleScientist = {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, creep.memory.route.resource);
 				} else {
-					creep.travelTo(depositTarget, { obstacles, ensurePath: true });
+					cartographer.moveTo(creep, depositTarget, { obstacles, ensurePath: true });
 				}
 			} else {
 				creep.log("deposit target is full, deleting route");
@@ -441,7 +442,7 @@ const roleScientist = {
 						creep.withdraw(withdrawTarget, creep.memory.route.resource);
 					}
 				} else {
-					creep.travelTo(withdrawTarget, { obstacles, ensurePath: true });
+					cartographer.moveTo(creep, withdrawTarget, { obstacles, ensurePath: true });
 				}
 			} else {
 				creep.log("withdraw target is empty, deleting route");

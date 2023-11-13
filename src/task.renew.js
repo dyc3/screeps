@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import traveler from "./traveler.js";
 import util from "./util";
 import taskGather from "./task.gather.js";
@@ -214,7 +215,33 @@ const taskRenew = {
 		}
 
 		if (!creep.pos.isNearTo(renewTarget)) {
-			creep.travelTo(renewTarget, { visualizePathStyle: {} });
+			cartographer.moveTo(creep, renewTarget, {
+				visualizePathStyle: {},
+				avoidTargets: roomName => {
+					// FIXME: this code is duplicated in commandEnergyRelays job, and should be moved to a common place
+					const room = Game.rooms[roomName];
+					if (room) {
+						if (!room.memory.rootPos || !room.memory.storagePos) {
+							return [];
+						}
+						const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+						const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
+						let storagePosRelayDirection = RIGHT;
+						if (room.memory.storagePosDirection) {
+							storagePosRelayDirection = room.memory.storagePosDirection;
+						}
+						const relayPositions = [
+							{ pos: util.getPositionInDirection(rootLinkPos, TOP_LEFT), range: 0 },
+							{ pos: util.getPositionInDirection(storagePos, storagePosRelayDirection), range: 0 },
+							{ pos: util.getPositionInDirection(rootLinkPos, TOP_RIGHT), range: 0 },
+							{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT), range: 0 },
+							{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT), range: 0 },
+						];
+						return relayPositions;
+					}
+					return [];
+				},
+			});
 		} else if (creep.ticksToLive < maxTicks) {
 			if (creep instanceof Creep) {
 				switch (renewTarget.renewCreep(creep)) {

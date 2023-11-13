@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import util from "./util";
 import { Role } from "roles/meta";
 // @ts-ignore
@@ -71,7 +72,7 @@ export function run() {
 
 	for (const creep of creeps) {
 		if (creep.room.name !== defendRoom) {
-			creep.travelTo(new RoomPosition(27, 31, defendRoom), { range: 3 });
+			cartographer.moveTo(creep, new RoomPosition(27, 31, defendRoom), { range: 3 });
 			continue;
 		}
 
@@ -109,11 +110,11 @@ export function run() {
 		if (!attackPos) {
 			creep.say("no pos");
 			dlog(`No attack position for ${creep.name}`);
-			creep.travelTo(new RoomPosition(27, 31, defendRoom), { range: 3 });
+			cartographer.moveTo(creep, new RoomPosition(27, 31, defendRoom), { range: 3 });
 		} else {
 			if (!creep.pos.isEqualTo(attackPos)) {
 				dlog(`${creep.name} moving to ${attackPos.x},${attackPos.y}`);
-				creep.travelTo(attackPos, { range: 0 });
+				cartographer.moveTo(creep, attackPos, { range: 0 });
 			}
 		}
 

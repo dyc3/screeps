@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import util from "../util";
 import taskGather from "../task.gather.js";
@@ -58,7 +59,7 @@ let roleBuilder = {
 						creep.build(target)
 					}
 					else {
-						creep.travelTo(target);
+						cartographer.moveTo(creep, target);
 					}
 				}
 				else {

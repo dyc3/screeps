@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import util from "./util";
 import toolFriends from "./tool.friends.js";
 
@@ -586,7 +587,7 @@ module.exports = {
 				}
 
 				if (!task.currentTarget && creep.room.name !== task._targetRoom && !Game.rooms[task._targetRoom]) {
-					creep.travelTo(new RoomPosition(25, 25, task._targetRoom), { range: 5 });
+					cartographer.moveTo(creep, new RoomPosition(25, 25, task._targetRoom), { range: 5 });
 					continue;
 				}
 
@@ -704,7 +705,7 @@ module.exports = {
 									remoteMiningTarget.dangerPos[2].y,
 									remoteMiningTarget.dangerPos[2].roomName
 								);
-								creep.travelTo(dangerPos, {
+								cartographer.moveTo(creep, dangerPos, {
 									range: 3,
 									ensurePath: true,
 									avoidRooms: [task._targetRoom],
@@ -715,7 +716,7 @@ module.exports = {
 										util.findClosestOwnedRooms(creep.pos)[0]
 									).id;
 								}
-								creep.travelTo(Game.getObjectById(creep.memory.stagingObjectId), {
+								cartographer.moveTo(creep, Game.getObjectById(creep.memory.stagingObjectId), {
 									range: 3,
 									ensurePath: true,
 									avoidRooms: [task._targetRoom],
@@ -728,7 +729,7 @@ module.exports = {
 									? 2
 									: 1;
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								creep.travelTo(task.currentTarget, {
+								cartographer.moveTo(creep, task.currentTarget, {
 									ignoreCreeps: false,
 									range: minRange,
 									movingTarget: true,
@@ -758,7 +759,7 @@ module.exports = {
 
 						let minRange = 1;
 						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-							creep.travelTo(task.currentTarget, {
+							cartographer.moveTo(creep, task.currentTarget, {
 								ignoreCreeps: false,
 								range: minRange,
 								movingTarget: true,
@@ -767,7 +768,7 @@ module.exports = {
 					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							creep.travelTo(task.currentTarget, { range: 2 });
+							cartographer.moveTo(creep, task.currentTarget, { range: 2 });
 						}
 					} else if (
 						task.guardType === "invader-subcore" &&
@@ -778,7 +779,7 @@ module.exports = {
 								creep.attack(task.currentTarget);
 							}
 						} else {
-							creep.travelTo(task.currentTarget, { range: 1 });
+							cartographer.moveTo(creep, task.currentTarget, { range: 1 });
 						}
 					} else {
 						console.log("[guard] ERR: unknown current target");
