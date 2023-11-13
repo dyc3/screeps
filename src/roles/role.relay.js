@@ -148,9 +148,14 @@ const roleRelay = {
 			creep.memory.assignedPos.roomName
 		);
 		if (!creep.pos.isEqualTo(assignedPos)) {
-			let result = cartographer.moveTo(creep, assignedPos);
-			if (result != 0) {
-				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
+			if (creep.pos.isNearTo(assignedPos)) {
+				// HACK: cartographer.moveTo doesn't work when the target is a walkable position
+				creep.move(creep.pos.getDirectionTo(assignedPos));
+			} else {
+				let result = cartographer.moveTo(creep, assignedPos);
+				if (result != 0) {
+					console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
+				}
 			}
 			return;
 		}
