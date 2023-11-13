@@ -132,10 +132,9 @@ import roleTower from "roles/role.tower.js";
 // @ts-expect-error hasn't been converted yet
 import powercreepLigma from "./powercreep.ligma.js";
 
+import * as taskDepositMaterials from "./task.depositmaterials";
 // @ts-expect-error hasn't been converted yet
 import taskRenew from "./task.renew.js";
-// @ts-expect-error hasn't been converted yet
-import taskDepositMaterials from "./task.depositmaterials.js";
 
 import toolCreepUpgrader, { RoleMetadata } from "tool.creepupgrader";
 // @ts-expect-error hasn't been converted yet

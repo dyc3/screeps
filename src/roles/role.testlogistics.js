@@ -1,7 +1,7 @@
 import traveler from "../traveler.js";
 import util from "../util";
 import brainLogistics from "../brain.logistics.js";
-import taskDepositMaterials from "../task.depositmaterials.js";
+import * as taskDepositMaterials from "task.depositmaterials";
 
 export default {
 	run(creep) {
