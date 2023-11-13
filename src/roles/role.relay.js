@@ -150,9 +150,9 @@ const roleRelay = {
 		if (!creep.pos.isEqualTo(assignedPos)) {
 			if (creep.pos.isNearTo(assignedPos)) {
 				// HACK: cartographer.moveTo doesn't work when the target is a walkable position
-				creep.move(creep.pos.getDirectionTo(assignedPos));
+				cartographer.move(creep, [assignedPos], 100);
 			} else {
-				let result = cartographer.moveTo(creep, assignedPos, { priority: 100 });
+				let result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
 				if (result != 0) {
 					console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 				}
