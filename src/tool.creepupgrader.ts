@@ -114,6 +114,9 @@ export function getMinerQuota(): number {
 			for (const struct of extractors) {
 				const mineral = struct.pos.lookFor(LOOK_MINERALS)[0];
 				if (mineral) {
+					if (mineral.ticksToRegeneration > 200) {
+						continue;
+					}
 					mineable++;
 				}
 			}
