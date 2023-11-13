@@ -21,10 +21,6 @@ import profiler from "screeps-profiler";
 // Mega builder:
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "builder_1", {role:"builder", keepAlive:true, stage:5})
 // Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK, CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "upgrader_1", {role:"upgrader", keepAlive:true, stage:5, targetRoom:"W13N11"})
-// Scouts:
-// Game.spawns["Spawn1"].createCreep([MOVE], "scout_1", {role:"scout", keepAlive:false})
-// Game.spawns["Spawn1"].createCreep([WORK,WORK,WORK,MOVE,MOVE,MOVE], "scout_1", {role:"scout", keepAlive:false}) // use to dismantle with flag "scoutdismantle"
-// Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "relay_1", {role:"relay", keepAlive:false})
 
 // Game.spawns["Spawn1"].createCreep([CLAIM,MOVE], "claimer_1", {role:"claimer", keepAlive:false})
 // Game.spawns["Spawn5"].createCreep([CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,CLAIM,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,], "claimer_1", {role:"claimer", keepAlive:false, mode:"reserve", claimTarget:""})
@@ -115,8 +111,6 @@ import roleClaimer from "roles/role.claimer.js";
 import roleRemoteHarvester from "roles/role.remoteharvester.js";
 // @ts-expect-error hasn't been converted yet
 import roleCarrier from "roles/role.carrier.js";
-// @ts-expect-error hasn't been converted yet
-import roleScout from "roles/role.scout.js";
 // @ts-expect-error hasn't been converted yet
 import roleMiner from "roles/role.miner.js";
 // @ts-expect-error hasn't been converted yet
@@ -700,7 +694,7 @@ function doCreepSpawning() {
 		}
 		if (role.name === Role.Attacker) {
 			newCreepMemory.mode = "defend";
-		} else if (role.name === Role.Claimer || role.name === Role.Scout) {
+		} else if (role.name === Role.Claimer) {
 			newCreepMemory.keepAlive = false;
 		}
 
@@ -900,11 +894,7 @@ function doCreepSpawning() {
 			const targetRoom = rooms[Math.floor(Math.random() * rooms.length)];
 
 			if (creepsOfRole.length >= roleQuota) {
-				if (doMarkForDeath(roleMeta, creepsOfRole, roleQuota, targetRoom)) {
-					if (roleMeta.name !== "scout") {
-						return;
-					}
-				}
+				doMarkForDeath(roleMeta, creepsOfRole, roleQuota, targetRoom);
 				continue;
 			}
 
@@ -1844,9 +1834,6 @@ function main() {
 					break;
 				case "carrier":
 					roleCarrier.run(creep);
-					break;
-				case "scout":
-					roleScout.run(creep);
 					break;
 				case "miner":
 					roleMiner.run(creep);

@@ -1,23 +1,17 @@
-var taskRepairCreep = {
-	needsRepair: function(creep) {
-		if (creep.memory.role == "scout") {
-			return false;
-		}
-
+let taskRepairCreep = {
+	needsRepair(creep) {
 		switch (creep.memory.role) {
 			case "attacker":
 			case "healer":
 			case "builder":
 				break;
-			case "scout":
-				return false;
 			default:
 				if (creep.hits < hitsMax) {
 					return true;
 				}
 				return false;
 		}
-	}
-}
+	},
+};
 
 module.exports = taskRepairCreep;

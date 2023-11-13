@@ -7,7 +7,6 @@ export enum Role {
 	Claimer = "claimer",
 	RemoteHarvester = "remoteharvester",
 	Carrier = "carrier",
-	Scout = "scout",
 	Miner = "miner",
 	Scientist = "scientist",
 	Relay = "relay",

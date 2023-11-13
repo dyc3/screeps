@@ -152,7 +152,7 @@ const taskRenew = {
 			maxTicks = creep.memory.renew_force_amount;
 		} else if (creep.memory.role === "remoteharvester" || creep.memory.role === "carrier") {
 			maxTicks = 1000;
-		} else if (creep.memory.role === "scout" || creep.memory.role === "tmpdeliver") {
+		} else if (creep.memory.role === "tmpdeliver") {
 			if (renewTarget.room.energyAvailable >= 2000) {
 				maxTicks = 1200;
 			} else {

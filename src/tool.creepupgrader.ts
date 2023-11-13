@@ -416,15 +416,6 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 			],
 		],
 	},
-	// "scout":{
-	// 	name:"scout",
-	// 	// quota:((Game.spawns["Spawn1"].room.controller.level >= 5) ? 1 : 0),
-	// 	quota:function() { return 0; },
-	// 	quota_per_room:false,
-	// 	stages:[
-	// 		[MOVE],
-	// 	],
-	// },
 	[Role.Miner]: {
 		name: Role.Miner,
 		quota: getMinerQuota,
