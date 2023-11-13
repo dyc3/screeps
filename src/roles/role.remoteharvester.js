@@ -49,7 +49,7 @@ let roleRemoteHarvester = {
 			harvestTarget.roomName
 		);
 		if (!creep.pos.isEqualTo(harvestPos)) {
-			cartographer.moveTo(creep, harvestPos);
+			cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 			return;
 		}
 

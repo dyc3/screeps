@@ -496,7 +496,7 @@ const roleHarvester = {
 				if (creep.pos.isEqualTo(harvestPos)) {
 					creep.harvest(harvestTarget);
 				} else {
-					cartographer.moveTo(creep, harvestPos);
+					cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 				}
 			} else {
 				cartographer.moveTo(creep, new RoomPosition(25, 25, harvestTarget.room.name), {
@@ -516,14 +516,14 @@ const roleHarvester = {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							cartographer.moveTo(creep, harvestPos);
+							cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 						}
 						creep.memory.depositMode = this.getDepositMode(creep);
 					} else if (creep.memory.depositMode === "drop") {
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
 						} else {
-							cartographer.moveTo(creep, harvestPos);
+							cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 						}
 					} else {
 						creep.memory.depositMode = this.getDepositMode(creep);
