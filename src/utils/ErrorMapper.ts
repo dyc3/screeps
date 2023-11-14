@@ -45,7 +45,7 @@ export class ErrorMapper {
 					line: parseInt(match[3], 10),
 				});
 
-				if (pos.line != null) {
+				if (pos.line !== null) {
 					if (pos.name) {
 						outStack += `\n    at ${pos.name} (${pos.source}:${pos.line}:${pos.column})`;
 					} else {

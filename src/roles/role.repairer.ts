@@ -199,7 +199,7 @@ const roleRepairer = {
 				let sumWallHits = 0;
 				let countWalls = 0;
 				for (const target of targets) {
-					if (target.structureType != STRUCTURE_WALL && target.structureType != STRUCTURE_RAMPART) {
+					if (target.structureType !== STRUCTURE_WALL && target.structureType !== STRUCTURE_RAMPART) {
 						continue;
 					}
 					countWalls += 1;

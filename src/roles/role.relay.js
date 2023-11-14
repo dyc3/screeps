@@ -149,7 +149,7 @@ const roleRelay = {
 		);
 		if (!creep.pos.isEqualTo(assignedPos)) {
 			let result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
-			if (result != 0) {
+			if (result !== 0) {
 				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}
 			return;
@@ -207,12 +207,12 @@ const roleRelay = {
 					true
 				),
 				result =>
-					result.structure.structureType != STRUCTURE_CONTAINER &&
-					result.structure.structureType != STRUCTURE_STORAGE &&
-					result.structure.structureType != STRUCTURE_ROAD &&
-					result.structure.structureType != STRUCTURE_RAMPART &&
-					result.structure.structureType != STRUCTURE_WALL &&
-					result.structure.structureType != STRUCTURE_LINK
+					result.structure.structureType !== STRUCTURE_CONTAINER &&
+					result.structure.structureType !== STRUCTURE_STORAGE &&
+					result.structure.structureType !== STRUCTURE_ROAD &&
+					result.structure.structureType !== STRUCTURE_RAMPART &&
+					result.structure.structureType !== STRUCTURE_WALL &&
+					result.structure.structureType !== STRUCTURE_LINK
 			);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
 			let targets = [];

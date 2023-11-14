@@ -121,7 +121,7 @@ const roleHarvester = {
 				structPriority[STRUCTURE_STORAGE] = 6;
 			}
 			targets.sort(function (a, b) {
-				if (a.structureType != b.structureType) {
+				if (a.structureType !== b.structureType) {
 					return structPriority[a.structureType] - structPriority[b.structureType];
 				} else {
 					return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);

@@ -167,7 +167,7 @@ function printStatus() {
 	// print misc info
 	let infoText = "";
 	infoText += "tick: " + Game.time + "  |  ";
-	if (Game.cpu.tickLimit != Infinity) {
+	if (Game.cpu.tickLimit !== Infinity) {
 		infoText +=
 			"CPU: " +
 			Game.cpu.getUsed().toPrecision(3) +
@@ -322,7 +322,7 @@ function calculateDefcon(room: Room) {
  * @returns Number The highest defcon level in all of the rooms
  */
 function determineDefconLevels() {
-	if (Game.cpu.bucket < 50 && Game.time % 5 != 0) {
+	if (Game.cpu.bucket < 50 && Game.time % 5 !== 0) {
 		console.log("skipping defcon calculation to save cpu");
 		return 0;
 	}

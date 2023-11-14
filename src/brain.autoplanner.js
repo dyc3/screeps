@@ -151,10 +151,10 @@ let brainAutoPlanner = {
 		// extensions
 		for (let i = -2; i <= 2; i++) {
 			room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y - 4 });
-			if (i != 0) {
+			if (i !== 0) {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y });
 			}
-			if (Math.abs(i) != 1) {
+			if (Math.abs(i) !== 1) {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y - 1 });
 			}
 		}
@@ -202,7 +202,7 @@ let brainAutoPlanner = {
 					}
 
 					let structs = room.lookForAt(LOOK_STRUCTURES, x, y);
-					if (structs.length > 0 && structs[0].structureType != STRUCTURE_STORAGE) {
+					if (structs.length > 0 && structs[0].structureType !== STRUCTURE_STORAGE) {
 						continue;
 					}
 
@@ -583,7 +583,7 @@ let brainAutoPlanner = {
 
 		let wallPoints = [];
 		for (let numSide = 0; numSide < 4; numSide++) {
-			// if (numSide != 1) continue
+			// if (numSide !== 1) continue
 
 			let ySide = numSide % 2 === 0 ? 0 : 49;
 			let vertical = numSide >= 2;
@@ -713,7 +713,10 @@ let brainAutoPlanner = {
 
 						// fix diagonals
 						if (i > 0) {
-							if (result.path[i].x != result.path[i - 1].x && result.path[i].y != result.path[i - 1].y) {
+							if (
+								result.path[i].x !== result.path[i - 1].x &&
+								result.path[i].y !== result.path[i - 1].y
+							) {
 								var diag1 = new RoomPosition(result.path[i].x, result.path[i - 1].y, room.name);
 								var diag2 = new RoomPosition(result.path[i - 1].x, result.path[i].y, room.name);
 								// if (debug) {

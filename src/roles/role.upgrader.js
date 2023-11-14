@@ -48,7 +48,7 @@ const roleUpgrader = {
 			console.log(creep.name, "targetRoom:", creep.memory.targetRoom);
 		}
 
-		if (creep.room.name != creep.memory.targetRoom) {
+		if (creep.room.name !== creep.memory.targetRoom) {
 			if (Game.rooms[creep.memory.targetRoom]) {
 				cartographer.moveTo(creep, Game.rooms[creep.memory.targetRoom].controller, { range: 3 });
 			} else {

@@ -44,7 +44,7 @@ let roleClaimer = {
 
 		if (creep.memory.mode === "claim") {
 			if (creep.pos.isNearTo(claimTarget)) {
-				if (claimTarget.reservation && claimTarget.reservation.username != global.WHOAMI) {
+				if (claimTarget.reservation && claimTarget.reservation.username !== global.WHOAMI) {
 					console.log(creep.name, "WARN: controller is already reserved by somebody else");
 					creep.attackController(claimTarget);
 				} else if (!claimTarget.my && claimTarget.owner) {
@@ -83,7 +83,7 @@ let roleClaimer = {
 				cartographer.moveTo(creep, Game.flags.reserve);
 			}
 			if (creep.pos.isNearTo(claimTarget)) {
-				if (claimTarget.reservation && claimTarget.reservation.username != global.WHOAMI) {
+				if (claimTarget.reservation && claimTarget.reservation.username !== global.WHOAMI) {
 					console.log(creep.name, "WARN: controller is already reserved by somebody else");
 					creep.attackController(claimTarget);
 				} else {
