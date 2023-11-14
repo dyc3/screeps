@@ -1,14 +1,15 @@
-import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
-import util from "../util.js";
-import taskGather from "../task.gather.js";
+import * as cartographer from "screeps-cartographer";
+import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
+import taskGather from "../task.gather.js";
+import util, { isOwnedStructure } from "../util.js";
 
 /**
  * get number of repairers assigned to a room
  */
 function getRepairerCount(room: Room) {
-	return _.filter(Game.creeps, creep => creep.memory.role === "repairer" && creep.memory.targetRoom === room.name)
+	return _.filter(Game.creeps, creep => creep.memory.role === Role.Repairer && creep.memory.targetRoom === room.name)
 		.length;
 }
 
@@ -32,7 +33,7 @@ const roleRepairer = {
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: struct => {
-				if (struct.owner && struct.my) {
+				if (isOwnedStructure(struct) && struct.my) {
 					return false;
 				}
 				const flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -106,8 +107,8 @@ const roleRepairer = {
 	},
 
 	findRepairTarget(creep: Creep): void {
-		let room;
-		if (Game.rooms[creep.memory.targetRoom]) {
+		let room: Room;
+		if (creep.memory.targetRoom && Game.rooms[creep.memory.targetRoom]) {
 			room = Game.rooms[creep.memory.targetRoom];
 		} else {
 			room = creep.room;
@@ -124,7 +125,7 @@ const roleRepairer = {
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: struct => {
-				if (struct.owner && struct.my) {
+				if (isOwnedStructure(struct) && struct.my) {
 					return false;
 				}
 				const flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -213,7 +214,7 @@ const roleRepairer = {
 					);
 				});
 
-				const structPriority = {
+				const structPriority: { [s: string]: number } = {
 					[STRUCTURE_SPAWN]: 2,
 					[STRUCTURE_STORAGE]: 3,
 					[STRUCTURE_ROAD]: 4,
@@ -259,13 +260,18 @@ const roleRepairer = {
 			}
 
 			if (
+				creep.memory.targetRoom &&
 				(creep.room.name !== creep.memory.targetRoom || util.isOnEdge(creep.pos)) &&
 				!creep.memory.repairTarget
 			) {
-				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), {
-					visualizePathStyle: {},
-					range: 10,
-				});
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 15 },
+					{
+						visualizePathStyle: {},
+						keepTargetInRoom: true,
+					}
+				);
 				return;
 			}
 		}
@@ -332,13 +338,13 @@ const roleRepairer = {
 		}
 
 		if (creep.memory.repairing) {
-			const repairTarget = Game.getObjectById<Structure>(creep.memory.repairTarget);
+			const repairTarget = Game.getObjectById(creep.memory.repairTarget as Id<AnyStructure>);
 			// if (creep.memory.role === "repairer") {
 			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
 			// }
 			if (repairTarget) {
 				if (creep.repair(repairTarget) === ERR_NOT_IN_RANGE) {
-					cartographer.moveTo(creep, repairTarget, { visualizePathStyle: {}, range: 3 });
+					cartographer.moveTo(creep, { pos: repairTarget.pos, range: 3 }, { visualizePathStyle: {} });
 				}
 			} else {
 				if (taskDismantle.run(creep)) {
@@ -351,7 +357,7 @@ const roleRepairer = {
 					});
 					if (constructionSite) {
 						if (creep.build(constructionSite) === ERR_NOT_IN_RANGE) {
-							cartographer.moveTo(creep, constructionSite, { range: 3 });
+							cartographer.moveTo(creep, { pos: constructionSite.pos, range: 3 });
 						}
 					} else {
 						// move out of the way of other creeps

@@ -4,7 +4,18 @@ import _ from "lodash";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
+export function isOwnedStructure(struct: AnyStructure): struct is AnyOwnedStructure {
+	return struct instanceof Structure && "owner" in struct;
+}
+
+export function isStoreStructure(struct: AnyStructure): struct is AnyStoreStructure {
+	return struct instanceof Structure && "store" in struct;
+}
+
 export const util = {
+	isOwnedStructure,
+	isStoreStructure,
+
 	errorCodeToString(errorCode: ScreepsReturnCode): string {
 		const errors = {
 			OK: 0,

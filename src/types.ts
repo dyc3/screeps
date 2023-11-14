@@ -77,6 +77,8 @@ declare global {
 		assignedPos?: { x: number; y: number };
 		mode?: any;
 		taskId?: string;
+		repairTarget?: Id<AnyStructure>;
+		repairing?: boolean;
 	}
 
 	interface PowerCreepMemory {
