@@ -304,7 +304,7 @@ function doAquire(creep: Creep, passively = false) {
 					} else if (closest.structureType === STRUCTURE_FACTORY && closest.my) {
 						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
 					}
-					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
+					amount = Math.min(amount, creep.store.getCapacity()); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) === ERR_NOT_IN_RANGE) {
 						creep.memory.aquireTarget = closest.id;
