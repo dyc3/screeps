@@ -116,7 +116,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				// this condition is a little arbitrary, might not be sufficient.
 				if ((creep.ticksToLive ?? 1500) < 400) {
 					creep.memory.renewing = true;
-					creep.memory.renew_force_amount = 1400;
+					creep.memory.renewForceAmount = 1400;
 					olog("flee: ", creep.name, "renewing");
 				}
 			}

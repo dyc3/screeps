@@ -16,8 +16,8 @@ export default {
 			let row = 0;
 			for (const role of Object.values(toolCreepUpgrader.roles)) {
 				const count = util.getCreeps(role.name).length;
-				let quota = !role.quota_per_room ? role.quota() : 0;
-				if (role.quota_per_room) {
+				let quota = !role.quotaPerRoom ? role.quota() : 0;
+				if (role.quotaPerRoom) {
 					for (const room of rooms) {
 						quota += role.quota(room);
 					}

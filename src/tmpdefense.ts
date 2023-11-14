@@ -81,7 +81,7 @@ export function run() {
 
 		if (creep.memory.renewing) {
 			// creep.memory.renewTarget = Game.spawns["Spawn8"].id;
-			creep.memory.renew_force_amount = 1400;
+			creep.memory.renewForceAmount = 1400;
 			taskRenew.run(creep);
 			continue;
 		}

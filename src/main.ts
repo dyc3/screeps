@@ -13,7 +13,7 @@ import profiler from "screeps-profiler";
 // var sci = Game.creeps["scientist1"]; sci.withdraw(sci.room.storage, "U"); sci.transfer(sci.room.terminal, "U")
 
 // Prep attack group for a long journey
-// let creeps = ["", "", ""]; for (var i = 0; i < creeps.length; i++) { Game.creeps[creeps[i]].memory.renewing = true; Game.creeps[creeps[i]].memory.renew_force_amount = 1400; }
+// let creeps = ["", "", ""]; for (var i = 0; i < creeps.length; i++) { Game.creeps[creeps[i]].memory.renewing = true; Game.creeps[creeps[i]].memory.renewForceAmount = 1400; }
 
 // Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE], "scientist_1", {role:"scientist", keepAlive:true})
 // Game.spawns["Spawn1"].createCreep([CARRY,MOVE], "scientist_1", {role:"scientist", keepAlive:false})
@@ -688,7 +688,7 @@ function doCreepSpawning() {
 			targetRoom?: string;
 			mode?: string;
 		} = { role: role.name, keepAlive: true, stage: hiStage };
-		if (role.quota_per_room) {
+		if (role.quotaPerRoom) {
 			newCreepMemory.targetRoom = room?.name;
 		}
 		if (role.name === Role.Attacker) {
@@ -701,7 +701,7 @@ function doCreepSpawning() {
 			console.log("Spawn new creep", newCreepName);
 			Memory.creepSpawnLog.push(
 				`${Game.time} | spawning ${newCreepName} at ${targetSpawn.name} (stage ${hiStage}${
-					role.quota_per_room ? `, target room: ${room?.name}` : ""
+					role.quotaPerRoom ? `, target room: ${room?.name}` : ""
 				})`
 			);
 			const body = role.stages[hiStage];
@@ -789,7 +789,7 @@ function doCreepSpawning() {
 	for (const roleName in toolCreepUpgrader.roles) {
 		const roleMeta = toolCreepUpgrader.getRoleMetadata(roleName as Role);
 		const creepsOfRole = util.getCreeps(roleMeta.name);
-		if (roleMeta.quota_per_room) {
+		if (roleMeta.quotaPerRoom) {
 			for (const room of rooms) {
 				const creepsOfRoom = _.filter(creepsOfRole, creep => creep.memory.targetRoom === room.name);
 				const roleQuota = roleMeta.quota(room);

@@ -137,13 +137,13 @@ export function getRepairerQuota(room: Room): number {
 export type RoleMetadata =
 	| {
 			name: Role;
-			quota_per_room: true;
+			quotaPerRoom: true;
 			quota(room: Room): number;
 			stages: BodyPartConstant[][];
 	  }
 	| {
 			name: Role;
-			quota_per_room: false;
+			quotaPerRoom: false;
 			quota(): number;
 			stages: BodyPartConstant[][];
 	  };
@@ -152,7 +152,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Harvester]: {
 		name: Role.Harvester,
 		quota: toolEnergySource.getHarvesterQuota,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		stages: [
 			[WORK, CARRY, MOVE, MOVE],
 			[WORK, WORK, CARRY, MOVE, MOVE, MOVE],
@@ -165,7 +165,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Manager]: {
 		name: Role.Manager,
 		quota: getManagerQuota,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		stages: [
 			[CARRY, CARRY, MOVE, MOVE],
 			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
@@ -177,13 +177,13 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Relay]: {
 		name: Role.Relay,
 		quota: getRelayQuota,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		stages: [[CARRY, CARRY, CARRY, CARRY, MOVE]],
 	},
 	[Role.Upgrader]: {
 		name: Role.Upgrader,
 		quota: getUpgraderQuota,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		// HACK: there is a monkey patch in the creep spawning code to add a couple of additional move parts if the target room's RCL <= 5
 		stages: [
 			[WORK, CARRY, MOVE, MOVE],
@@ -221,7 +221,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Builder]: {
 		name: Role.Builder,
 		quota: getBuilderQuota,
-		quota_per_room: false,
+		quotaPerRoom: false,
 		stages: [
 			[WORK, CARRY, MOVE, MOVE],
 			[WORK, WORK, CARRY, MOVE, MOVE, MOVE],
@@ -262,7 +262,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Repairer]: {
 		name: Role.Repairer,
 		quota: getRepairerQuota,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		stages: [
 			[WORK, CARRY, MOVE],
 			[WORK, WORK, CARRY, MOVE, MOVE],
@@ -309,7 +309,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 		quota() {
 			return Memory.remoteMining.needHarvesterCount;
 		},
-		quota_per_room: false,
+		quotaPerRoom: false,
 		stages: [
 			[WORK, WORK, WORK, MOVE, MOVE, MOVE],
 			[WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE],
@@ -321,7 +321,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 		quota() {
 			return Memory.remoteMining.needCarrierCount;
 		},
-		quota_per_room: false,
+		quotaPerRoom: false,
 		stages: [
 			[CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE],
 			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
@@ -420,7 +420,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	[Role.Miner]: {
 		name: Role.Miner,
 		quota: getMinerQuota,
-		quota_per_room: false,
+		quotaPerRoom: false,
 		stages: [
 			[WORK, WORK, WORK, MOVE, CARRY, CARRY, MOVE, MOVE, MOVE],
 			[WORK, WORK, WORK, WORK, MOVE, CARRY, MOVE, CARRY, MOVE, MOVE],
@@ -481,7 +481,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 		name: Role.Scientist,
 		quota: getScientistQuota,
 		// quota:0,
-		quota_per_room: true,
+		quotaPerRoom: true,
 		stages: [[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]],
 	},
 };

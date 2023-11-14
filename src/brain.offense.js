@@ -60,7 +60,7 @@ global.Offense = {
 	renewAll(taskIdx) {
 		Memory.offense.tasks[taskIdx].creepNames.forEach(name => {
 			Game.creeps[name].memory.renewing = true;
-			Game.creeps[name].memory.renew_force_amount = 1400;
+			Game.creeps[name].memory.renewForceAmount = 1400;
 		});
 	},
 

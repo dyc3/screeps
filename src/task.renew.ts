@@ -125,8 +125,8 @@ const taskRenew = {
 	 * The target ticks to renew a creep to.
 	 */
 	getMaxTicks(creep: Creep, renewTarget: AnyStructure): number {
-		if (creep.memory.renew_force_amount) {
-			return creep.memory.renew_force_amount;
+		if (creep.memory.renewForceAmount) {
+			return creep.memory.renewForceAmount;
 		} else if (creep.memory.role === Role.RemoteHarvester || creep.memory.role === Role.Carrier) {
 			return 1000;
 		} else if (creep.memory.role === Role.TmpDeliver) {
@@ -292,7 +292,7 @@ const taskRenew = {
 		}
 		if ((creep.ticksToLive ?? 0) >= maxTicks) {
 			creep.memory.renewing = false;
-			delete creep.memory.renew_force_amount;
+			delete creep.memory.renewForceAmount;
 		}
 
 		if (!creep.memory.renewing) {

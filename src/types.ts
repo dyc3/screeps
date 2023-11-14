@@ -64,7 +64,7 @@ declare global {
 		keepAlive: boolean;
 		stage: number;
 		renewing: boolean;
-		renew_force_amount: number | undefined;
+		renewForceAmount: number | undefined;
 		renewTarget: Id<StructureSpawn>;
 		_renewTravelTime: number;
 		_lastCheckTravelTime: number;

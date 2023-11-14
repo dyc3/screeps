@@ -625,7 +625,7 @@ module.exports = {
 			for (const creep of creeps) {
 				creep.notifyWhenAttacked(false);
 				if (creep.spawning || creep.memory.renewing) {
-					creep.memory.renew_force_amount = 1400;
+					creep.memory.renewForceAmount = 1400;
 					continue;
 				}
 
