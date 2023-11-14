@@ -130,7 +130,7 @@ export const util = {
 	 *
 	 * @example require("util").calculateEta(Game.creeps["manager_20d3c95"], PathFinder.search(new RoomPosition(15, 40, "W13N11"), { pos: new RoomPosition(20, 40, "W13N11"), range: 0 }).path)
 	 */
-	calculateEta(creep: Creep, path: RoomPosition[], assumeCarryFull = false): number {
+	calculateEta(creep: Creep | PowerCreep, path: RoomPosition[], assumeCarryFull = false): number {
 		if (creep instanceof PowerCreep) {
 			return path.length;
 		}
@@ -258,8 +258,11 @@ export const util = {
 		}) as unknown as ConcreteStructure<S>[];
 	},
 
-	getSpawn(room: Room): StructureSpawn {
+	getSpawn(room: Room): StructureSpawn | undefined {
 		const spawns = this.getStructures(room, STRUCTURE_SPAWN);
+		if (spawns.length === 0) {
+			return undefined;
+		}
 		return spawns[Math.floor(Math.random() * spawns.length)];
 	},
 

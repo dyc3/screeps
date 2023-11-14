@@ -63,6 +63,8 @@ declare global {
 		renewing: boolean;
 		renew_force_amount: number | undefined;
 		renewTarget: Id<StructureSpawn>;
+		_renewTravelTime: number;
+		_lastCheckTravelTime: number;
 
 		// TODO: make role-specific memory types
 		depositMode?: any;
@@ -70,6 +72,13 @@ declare global {
 		targetRoom?: any;
 		assignedPos?: { x: number; y: number };
 		mode?: any;
+	}
+
+	interface PowerCreepMemory {
+		renewing: boolean;
+		renewTarget: Id<StructurePowerSpawn>;
+		_renewTravelTime: number;
+		_lastCheckTravelTime: number;
 	}
 
 	interface RoomMemory {

@@ -1,12 +1,13 @@
+/* eslint-disable no-underscore-dangle */
 import * as cartographer from "screeps-cartographer";
-import traveler from "./traveler.js";
-import util from "./util";
+import { Role } from "roles/meta";
 import taskGather from "./task.gather.js";
+import util from "./util.js";
 
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
 const taskRenew = {
-	findRenewTarget(creep) {
+	findRenewTarget(creep: Creep | PowerCreep): StructureSpawn | StructurePowerSpawn | undefined {
 		let spawn =
 			creep instanceof Creep
 				? util.getSpawn(creep.room)
@@ -21,62 +22,52 @@ const taskRenew = {
 			// };
 			return spawn;
 		}
-		if (!spawn) {
-			if (
-				!creep.memory.renewTarget ||
-				!creep.memory._lastCheckForCloseSpawn ||
-				Game.time - creep.memory._lastCheckForCloseSpawn > 200
-			) {
-				let approx_ticks = 600;
-				let countRenewsRequired = Math.ceil(
-					(approx_ticks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body)
-				);
-				let closestRooms = util.findClosestOwnedRooms(
-					creep.pos,
-					room => room.energyCapacityAvailable >= util.getRenewCost(creep.body) * countRenewsRequired
-				);
-				if (closestRooms.length > 0) {
-					try {
-						creep.memory.renewTarget = (
-							creep instanceof Creep
-								? util.getSpawn(closestRooms[0])
-								: _.first(util.getStructures(closestRooms[0], STRUCTURE_POWER_SPAWN))
-						).id;
-						// creep.memory._renewDebug = {
-						// 	startTime: Game.time,
-						// 	renewTargetSetBy: "checkRenew branch 0",
-						// 	targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
-						// 	targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
-						// 	closestRooms: closestRooms.map(r => r.name),
-						// };
-					} catch (e) {
-						let targetStruct =
-							creep instanceof Creep
-								? util.getSpawn(closestRooms[1])
-								: _.first(util.getStructures(closestRooms[1], STRUCTURE_POWER_SPAWN));
-						if (targetStruct) {
-							creep.memory.renewTarget = targetStruct.id;
-							// creep.memory._renewDebug = {
-							// 	startTime: Game.time,
-							// 	renewTargetSetBy: "checkRenew branch 1",
-							// 	targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
-							// 	targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
-							// 	closestRooms: closestRooms.map(r => r.name),
-							// };
-						} else {
-							creep.log("No spawn found to renew");
-						}
+
+		// fallback to closest spawn not in the same room
+		if (
+			!creep.memory.renewTarget ||
+			!creep.memory._lastCheckForCloseSpawn ||
+			Game.time - creep.memory._lastCheckForCloseSpawn > 200
+		) {
+			const approxTicks = 600;
+			const countRenewsRequired =
+				creep instanceof Creep
+					? Math.ceil((approxTicks - (creep.ticksToLive ?? 0)) / util.getRenewTickIncrease(creep.body))
+					: 1;
+			const closestRooms = util.findClosestOwnedRooms(
+				creep.pos,
+				creep instanceof Creep
+					? room => room.energyCapacityAvailable >= util.getRenewCost(creep.body) * countRenewsRequired
+					: undefined
+			);
+			if (closestRooms.length > 0) {
+				for (const room of closestRooms) {
+					spawn =
+						creep instanceof Creep
+							? util.getSpawn(room)
+							: _.first(util.getStructures(room, STRUCTURE_POWER_SPAWN));
+					if (!spawn) {
+						continue;
 					}
-					creep.memory._lastCheckForCloseSpawn = Game.time;
+					creep.memory.renewTarget = spawn.id;
+					// creep.memory._renewDebug = {
+					// 	startTime: Game.time,
+					// 	renewTargetSetBy: "checkRenew fallback 0",
+					// 	targetSpawn: Game.getObjectById(creep.memory.renewTarget).name,
+					// 	targetRoom: Game.getObjectById(creep.memory.renewTarget).room.name,
+					// 	closestRooms: closestRooms.map(r => r.name),
+					// };
+					break;
 				}
-			}
-			spawn = Game.getObjectById(creep.memory.renewTarget);
-			if (spawn) {
-				return spawn;
+				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
 		}
+		spawn = Game.getObjectById(creep.memory.renewTarget);
+		if (spawn) {
+			return spawn;
+		}
 		if (creep instanceof Creep && !spawn) {
-			spawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
+			spawn = Object.values(Game.spawns)[0]; // pick first spawn (if it exists)
 			creep.memory.renewTarget = spawn.id;
 			// creep.memory._renewDebug = {
 			// 	startTime: Game.time,
@@ -86,10 +77,10 @@ const taskRenew = {
 			// };
 			return spawn;
 		}
+		return undefined;
 	},
 
-	/** @param {Creep|PowerCreep} creep **/
-	checkRenew(creep) {
+	checkRenew(creep: Creep | PowerCreep): boolean {
 		if (creep.memory.renewing) {
 			return true;
 		}
@@ -100,20 +91,25 @@ const taskRenew = {
 			return false;
 		}
 
-		let spawn = this.findRenewTarget(creep);
+		const spawn = this.findRenewTarget(creep);
 		if (!spawn) {
 			// there are no spawns anyway, just keep doing your job.
 			return false;
 		}
 
-		let travelTime = creep.memory._renewTravelTime;
+		let travelTime: number = creep.memory._renewTravelTime;
 		if (
 			!creep.memory._renewTravelTime ||
 			!creep.memory._lastCheckTravelTime ||
 			Game.time - creep.memory._lastCheckTravelTime > 30
 		) {
 			// let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
-			let path = traveler.Traveler.findTravelPath(creep.pos, spawn.pos, { range: 1, ignoreCreeps: true }).path;
+			// const path = traveler.Traveler.findTravelPath(creep.pos, spawn.pos, { range: 1, ignoreCreeps: true }).path;
+			const path = cartographer.cachePath(`renew-${creep.name}`, creep.pos, spawn.pos, { avoidCreeps: false });
+			if (!path) {
+				creep.log("WARNING: no path found to renew target");
+				return false;
+			}
 			travelTime = util.calculateEta(creep, path);
 			creep.memory._renewTravelTime = travelTime;
 			creep.memory._lastCheckTravelTime = Game.time;
@@ -122,87 +118,101 @@ const taskRenew = {
 			travelTime += spawn.spawning.remainingTime;
 		}
 
-		return creep.ticksToLive < travelTime + (creep.room !== spawn.room ? 100 : 40);
+		return (creep.ticksToLive ?? 0) < travelTime + (creep.room !== spawn.room ? 100 : 40);
 	},
 
-	/** @param {Creep|PowerCreep} creep **/
-	run(creep) {
-		if (!creep.memory.renewTarget) {
-			if (creep instanceof Creep) {
-				let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-					filter: struct => struct.structureType === STRUCTURE_SPAWN && !struct.spawning && struct.isActive(),
-				});
-				if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
-					closestSpawn = Game.spawns[Object.keys(Game.spawns)[0]]; // pick first spawn (if it exists)
-				}
-				creep.memory.renewTarget = closestSpawn.id;
-				creep.log(`Found renew target: ${creep.memory.renewTarget}`);
-				// creep.memory._renewDebug = {
-				// 	startTime: Game.time,
-				// 	renewTargetSetBy: "run method",
-				// 	targetSpawn: closestSpawn.name,
-				// 	targetRoom: closestSpawn.room.name,
-				// };
-			}
-		}
-		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
-
-		let maxTicks = 600;
+	/**
+	 * The target ticks to renew a creep to.
+	 */
+	getMaxTicks(creep: Creep, renewTarget: AnyStructure): number {
 		if (creep.memory.renew_force_amount) {
-			maxTicks = creep.memory.renew_force_amount;
-		} else if (creep.memory.role === "remoteharvester" || creep.memory.role === "carrier") {
-			maxTicks = 1000;
-		} else if (creep.memory.role === "tmpdeliver") {
+			return creep.memory.renew_force_amount;
+		} else if (creep.memory.role === Role.RemoteHarvester || creep.memory.role === Role.Carrier) {
+			return 1000;
+		} else if (creep.memory.role === Role.TmpDeliver) {
 			if (renewTarget.room.energyAvailable >= 2000) {
-				maxTicks = 1200;
+				return 1200;
 			} else {
-				maxTicks = 700;
+				return 700;
 			}
-		} else if (creep.memory.role === "nextroomer") {
-			maxTicks = 1000;
-		} else if (creep.memory.role === "builder" || creep.memory.role === "scientist") {
+		} else if (creep.memory.role === Role.NextRoomer) {
+			return 1000;
+		} else if (creep.memory.role === Role.Builder || creep.memory.role === Role.Scientist) {
 			if (
-				creep.memory.role === "builder" &&
+				creep.memory.role === Role.Builder &&
 				creep.memory.stage === 5 &&
 				renewTarget.room.energyAvailable >= 8000
 			) {
-				maxTicks = 1200;
+				return 1200;
 			} else if (renewTarget.room.energyAvailable >= 3000) {
-				maxTicks = 900;
+				return 900;
 			} else {
-				maxTicks = 1000;
+				return 1000;
 			}
-		} else if (creep.memory.role === "harvester") {
+		} else if (creep.memory.role === Role.Harvester) {
 			if (creep.memory.dedicatedLinkId && renewTarget.room.energyAvailable >= 1600) {
-				maxTicks = 1400;
+				return 1400;
 			}
-		} else if (creep.memory.role === "relay") {
+		} else if (creep.memory.role === Role.Relay) {
 			if (renewTarget.room.energyAvailable >= 3000) {
-				maxTicks = 1400;
+				return 1400;
 			} else {
-				maxTicks = 1000;
+				return 1000;
 			}
 		}
+		return 600;
+	},
+
+	run(creep: Creep | PowerCreep): void {
+		if (!creep.memory.renewTarget) {
+			// if (creep instanceof Creep) {
+			// 	let closestSpawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+			// 		filter: struct => struct.structureType === STRUCTURE_SPAWN && !struct.spawning && struct.isActive(),
+			// 	});
+			// 	if (!closestSpawn || closestSpawn.room.energyAvailable < 100) {
+			// 		closestSpawn = Object.values(Game.spawns)[0]; // pick first spawn (if it exists)
+			// 	}
+			// 	creep.memory.renewTarget = closestSpawn.id;
+			// 	creep.log(`Found renew target: ${creep.memory.renewTarget}`);
+			// 	// creep.memory._renewDebug = {
+			// 	// 	startTime: Game.time,
+			// 	// 	renewTargetSetBy: "run method",
+			// 	// 	targetSpawn: closestSpawn.name,
+			// 	// 	targetRoom: closestSpawn.room.name,
+			// 	// };
+			// }
+			this.findRenewTarget(creep);
+		}
+		const renewTarget = Game.getObjectById(creep.memory.renewTarget);
+
+		if (!renewTarget) {
+			creep.log("ERROR: No renew target found");
+			return;
+		}
+
+		const maxTicks = creep instanceof Creep ? this.getMaxTicks(creep, renewTarget) : 1000;
 
 		let renewCost = 0;
 		if (creep instanceof Creep) {
-			let countRenewsRequired = Math.ceil((maxTicks - creep.ticksToLive) / util.getRenewTickIncrease(creep.body));
+			const countRenewsRequired = Math.ceil(
+				(maxTicks - (creep.ticksToLive ?? 0)) / util.getRenewTickIncrease(creep.body)
+			);
 			renewCost = util.getRenewCost(creep.body);
-			let totalRenewCost = renewCost * countRenewsRequired;
+			const totalRenewCost = renewCost * countRenewsRequired;
 			creep.log("[task.renew] renews required:", countRenewsRequired, "total cost:", totalRenewCost);
 
 			if (creep.getActiveBodyparts(CARRY) > 0) {
 				if (
 					!creep.memory._renewGather &&
-					creep.room.name == renewTarget.room.name &&
+					creep.room.name === renewTarget.room.name &&
 					creep.room.energyAvailable < renewCost * Math.min(countRenewsRequired, 2) &&
-					creep.ticksToLive > 60 &&
+					(creep.ticksToLive ?? 0) > 60 &&
 					creep.store.getUsedCapacity(RESOURCE_ENERGY) < renewCost
 				) {
 					creep.memory._renewGather = true;
 				} else if (
 					creep.memory._renewGather &&
-					(creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || creep.ticksToLive < 40)
+					(creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0 || (creep.ticksToLive ?? 0) < 40)
 				) {
 					creep.memory._renewGather = false;
 				}
@@ -226,9 +236,12 @@ const taskRenew = {
 						}
 						const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
 						const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
-						let storagePosRelayDirection = RIGHT;
+						let storagePosRelayDirection: DirectionConstant = RIGHT;
 						if (room.memory.storagePosDirection) {
 							storagePosRelayDirection = room.memory.storagePosDirection;
+						}
+						if (!rootLinkPos || !storagePos) {
+							return [];
 						}
 						const relayPositions = [
 							{ pos: util.getPositionInDirection(rootLinkPos, TOP_LEFT), range: 0 },
@@ -242,13 +255,13 @@ const taskRenew = {
 					return [];
 				},
 			});
-		} else if (creep.ticksToLive < maxTicks) {
+		} else if ((creep.ticksToLive ?? 0) < maxTicks) {
 			if (creep instanceof Creep) {
 				switch (renewTarget.renewCreep(creep)) {
 					case ERR_NOT_ENOUGH_ENERGY:
 						if (renewTarget.room.energyAvailable + creep.store[RESOURCE_ENERGY] >= renewCost) {
 							creep.transfer(renewTarget, RESOURCE_ENERGY);
-						} else if (creep.ticksToLive > 220) {
+						} else if ((creep.ticksToLive ?? 0) > 220) {
 							creep.memory.renewing = false;
 							return;
 						} else {
@@ -268,6 +281,7 @@ const taskRenew = {
 					case ERR_BUSY:
 						delete creep.memory.renewTarget;
 						delete creep.memory._renewDebug;
+						break;
 					default:
 						break;
 				}
@@ -276,7 +290,7 @@ const taskRenew = {
 				creep.memory.renewing = false;
 			}
 		}
-		if (creep.ticksToLive >= maxTicks) {
+		if ((creep.ticksToLive ?? 0) >= maxTicks) {
 			creep.memory.renewing = false;
 			delete creep.memory.renew_force_amount;
 		}
