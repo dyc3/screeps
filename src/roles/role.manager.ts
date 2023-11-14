@@ -1,12 +1,13 @@
 import "../traveler.js";
 import * as cartographer from "screeps-cartographer";
-import util from "../util";
-import brainLogistics from "../brain.logistics.js";
 import brainAutoPlanner from "../brain.autoplanner.js";
+import brainLogistics from "../brain.logistics.js";
+import util from "../util.js";
+import { Role } from "./meta.js";
 
-function doAquire(creep, passively = false) {
+function doAquire(creep: Creep, passively = false) {
 	if (creep.memory.aquireTarget && !passively) {
-		let aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
+		const aquireTarget: AnyStoreStructure | Resource = Game.getObjectById(creep.memory.aquireTarget);
 		creep.log("aquireTarget:", aquireTarget);
 		if (aquireTarget) {
 			creep.room.visual.circle(aquireTarget.pos, { stroke: "#ff0000", fill: "transparent", radius: 0.8 });
@@ -17,12 +18,11 @@ function doAquire(creep, passively = false) {
 
 					if (aquireTarget instanceof Tombstone || aquireTarget instanceof Ruin) {
 						// prioritize "exotic" resources
-						for (let r = 0; r < RESOURCES_ALL.length; r++) {
-							if (_.sum(creep.store) == creep.carryCapacity) {
+						for (const resource of RESOURCES_ALL) {
+							if (creep.store.getFreeCapacity() === 0) {
 								break;
 							}
-							let resource = RESOURCES_ALL[r];
-							if (resource == RESOURCE_ENERGY) {
+							if (resource === RESOURCE_ENERGY) {
 								continue;
 							}
 							if (aquireTarget.store[resource] > 0) {
@@ -31,14 +31,14 @@ function doAquire(creep, passively = false) {
 						}
 					}
 
-					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) == OK) {
+					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) === OK) {
 						creep.memory.lastWithdrawStructure = aquireTarget.id;
 						if (aquireTarget.structureType === STRUCTURE_STORAGE) {
 							delete creep.memory.aquireTarget;
 						}
 					}
 
-					if (aquireTarget.store[RESOURCE_ENERGY] == 0) {
+					if (aquireTarget.store[RESOURCE_ENERGY] === 0) {
 						delete creep.memory.aquireTarget;
 					}
 				} else if (aquireTarget instanceof Resource) {
@@ -49,7 +49,7 @@ function doAquire(creep, passively = false) {
 					creep.log("ERR: I don't know how to withdraw from", aquireTarget);
 				}
 			} else {
-				let travelResult = cartographer.moveTo(creep, aquireTarget, { visualizePathStyle: {} });
+				const travelResult = cartographer.moveTo(creep, aquireTarget, { visualizePathStyle: {} });
 				if (travelResult.incomplete) {
 					creep.log("Path to aquireTarget is incomplete, skipping...");
 					delete creep.memory.aquireTarget;
@@ -61,7 +61,7 @@ function doAquire(creep, passively = false) {
 		}
 	}
 
-	let droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, passively ? 1 : 20, {
+	const droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, passively ? 1 : 20, {
 		filter: drop => {
 			if (!creep.pos.isNearTo(drop) && drop.amount < global.DROPPED_ENERGY_GATHER_MINIMUM) {
 				return false;
@@ -87,10 +87,10 @@ function doAquire(creep, passively = false) {
 		},
 	});
 	if (droppedResources.length > 0) {
-		let closest = creep.pos.findClosestByPath(droppedResources);
+		const closest = creep.pos.findClosestByPath(droppedResources);
 		if (closest) {
 			creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
-			if (creep.pickup(closest) == ERR_NOT_IN_RANGE) {
+			if (creep.pickup(closest) === ERR_NOT_IN_RANGE) {
 				creep.memory.aquireTarget = closest.id;
 				cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 			}
@@ -117,17 +117,16 @@ function doAquire(creep, passively = false) {
 			tombstones = tombstones.sort((a, b) => {
 				return _.sum(b.store) - _.sum(a.store);
 			});
-			let target = tombstones[0];
+			const target = tombstones[0];
 			creep.room.visual.circle(target.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
 			creep.memory.aquireTarget = target.id;
 			if (creep.pos.isNearTo(target)) {
 				// prioritize "exotic" resources
-				for (let r = 0; r < RESOURCES_ALL.length; r++) {
-					if (_.sum(creep.carry) == creep.carryCapacity) {
+				for (const resource of RESOURCES_ALL) {
+					if (creep.store.getFreeCapacity() === 0) {
 						break;
 					}
-					let resource = RESOURCES_ALL[r];
-					if (resource == RESOURCE_ENERGY) {
+					if (resource === RESOURCE_ENERGY) {
 						continue;
 					}
 					if (target.store[resource] > 0) {
@@ -139,30 +138,30 @@ function doAquire(creep, passively = false) {
 				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
 			}
 		} else {
-			let filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
+			const filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
 				filter(c) {
 					// if (c.memory.role == "harvester") {
 					// if (c.pos.findInRange(FIND_STRUCTURES, 1, { function(s) { return s.structureType == STRUCTURE_LINK } })) {
 					// 	return false;
 					// }
 					// }
-					if (c.memory.role === "carrier") {
+					if (c.memory.role === Role.Carrier) {
 						return !c.spawning && c.store[RESOURCE_ENERGY] > 0;
 					}
 					return (
 						!c.spawning &&
-						c.memory.role == "harvester" &&
+						c.memory.role === Role.Harvester &&
 						(!c.memory.hasDedicatedLink || c.memory.stage < 5) &&
 						c.store[RESOURCE_ENERGY] >= c.carryCapacity * 0.85
 					);
 				},
 			});
 			if (filledHarvesters.length > 0) {
-				let closest = creep.pos.findClosestByPath(filledHarvesters);
+				const closest = creep.pos.findClosestByPath(filledHarvesters);
 				if (closest) {
 					creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
 					// console.log("NEARBY FILLED HARVESTER",closest.pos,"dist =",creep.pos.getRangeTo(closest))
-					if (closest.transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					if (closest.transfer(creep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
 						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 					}
 				} else {
@@ -171,26 +170,26 @@ function doAquire(creep, passively = false) {
 			} else {
 				// console.log("Can't withdraw from last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
 				// console.log("last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
-				let containers = creep.pos.findInRange(FIND_STRUCTURES, passively ? 1 : 50, {
+				const containers = creep.pos.findInRange(FIND_STRUCTURES, passively ? 1 : 50, {
 					filter(struct) {
-						let flags = struct.pos.lookFor(LOOK_FLAGS);
+						const flags = struct.pos.lookFor(LOOK_FLAGS);
 						if (flags.length > 0) {
 							if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
 								return false;
 							}
 						}
 						if (
-							struct.id == creep.memory.lastDepositStructure &&
+							struct.id === creep.memory.lastDepositStructure &&
 							creep.room.storage &&
 							creep.room.storage.store[RESOURCE_ENERGY] < 800000
 						) {
 							return false; // comment this line to increase controller upgrade speed
 						}
-						if (struct.structureType == STRUCTURE_CONTAINER) {
-							let rootPos = struct.room.memory.rootPos;
+						if (struct.structureType === STRUCTURE_CONTAINER) {
+							const rootPos = struct.room.memory.rootPos;
 							if (
-								(struct.pos.x == rootPos.x + 2 || struct.pos.x == rootPos.x - 2) &&
-								struct.pos.y == rootPos.y - 2
+								(struct.pos.x === rootPos.x + 2 || struct.pos.x === rootPos.x - 2) &&
+								struct.pos.y === rootPos.y - 2
 							) {
 								// these containers are in the main base module
 								return false;
@@ -198,14 +197,14 @@ function doAquire(creep, passively = false) {
 							if (
 								struct.pos.findInRange(FIND_STRUCTURES, 3, {
 									filter(struct) {
-										return struct.structureType == STRUCTURE_CONTROLLER;
+										return struct.structureType === STRUCTURE_CONTROLLER;
 									},
 								}).length > 0
 							) {
 								return false;
 							}
 
-							if (creep.room.storage && creep.room.controller.level > 4) {
+							if (creep.room.storage && (creep.room.controller?.level ?? 0) > 4) {
 								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0) {
 									if (struct.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
 										return false;
@@ -218,9 +217,9 @@ function doAquire(creep, passively = false) {
 									}
 								}
 							}
-						} else if (struct.structureType == STRUCTURE_LINK) {
-							let relayCreeps = _.filter(
-								util.getCreeps("relay"),
+						} else if (struct.structureType === STRUCTURE_LINK) {
+							const relayCreeps = _.filter(
+								util.getCreeps(Role.Relay),
 								c =>
 									!c.spawning &&
 									c.memory.assignedPos.roomName === creep.memory.targetRoom &&
@@ -233,7 +232,7 @@ function doAquire(creep, passively = false) {
 									)
 							);
 							let isNearRelay = false;
-							for (let relay of relayCreeps) {
+							for (const relay of relayCreeps) {
 								if (struct.pos.isNearTo(relay)) {
 									isNearRelay = true;
 									break;
@@ -245,13 +244,13 @@ function doAquire(creep, passively = false) {
 							if (struct.energy > 0 && struct.pos.inRangeTo(struct.room.storage, 2)) {
 								return true;
 							}
-						} else if (struct.structureType == STRUCTURE_TERMINAL) {
+						} else if (struct.structureType === STRUCTURE_TERMINAL) {
 							if (struct.my) {
 								return true;
 							} else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
 								return true;
 							}
-						} else if (struct.structureType == STRUCTURE_FACTORY) {
+						} else if (struct.structureType === STRUCTURE_FACTORY) {
 							if (struct.my) {
 								return true;
 							}
@@ -268,11 +267,11 @@ function doAquire(creep, passively = false) {
 				});
 				if (containers.length > 0) {
 					containers.sort(function (a, b) {
-						if (a.structureType != b.structureType) {
-							if (a.structureType == STRUCTURE_STORAGE) {
+						if (a.structureType !== b.structureType) {
+							if (a.structureType === STRUCTURE_STORAGE) {
 								return 1;
 							}
-							if (b.structureType == STRUCTURE_STORAGE) {
+							if (b.structureType === STRUCTURE_STORAGE) {
 								return -1;
 							}
 						}
@@ -293,7 +292,7 @@ function doAquire(creep, passively = false) {
 
 						return bEnergy - aEnergy; // sort descending, highest energy first
 					});
-					let closest = containers[0];
+					const closest = containers[0];
 					new RoomVisual(creep.room.name).circle(closest.pos, {
 						stroke: "#ff0000",
 						fill: "transparent",
@@ -307,7 +306,7 @@ function doAquire(creep, passively = false) {
 					}
 					amount = Math.min(amount, creep.carryCapacity); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
 					// console.log(creep.name, "withdrawing", amount, "from", closest);
-					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) == ERR_NOT_IN_RANGE) {
+					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) === ERR_NOT_IN_RANGE) {
 						creep.memory.aquireTarget = closest.id;
 						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 					} else {
@@ -319,27 +318,27 @@ function doAquire(creep, passively = false) {
 				} else if (!passively) {
 					// grab energy from other rooms
 					// TODO: can be made waaaay more effifient.
-					let storages = _.filter(Game.structures, function (struct) {
-						if (struct.structureType != STRUCTURE_STORAGE) {
+					const storages = _.filter(Game.structures, function (struct) {
+						if (struct.structureType !== STRUCTURE_STORAGE) {
 							return false;
 						}
-						if (struct.room.name == creep.memory.targetRoom) {
+						if (struct.room.name === creep.memory.targetRoom) {
 							return true;
 						}
-						let adjacentRooms = _.values(Game.map.describeExits(creep.memory.targetRoom));
-						if (adjacentRooms.indexOf(creep.memory.targetRoom) == -1) {
+						const adjacentRooms = _.values(Game.map.describeExits(creep.memory.targetRoom));
+						if (adjacentRooms.indexOf(creep.memory.targetRoom) === -1) {
 							return false;
 						}
-						return struct.structureType == STRUCTURE_STORAGE && struct.store[RESOURCE_ENERGY] > 500000;
+						return struct.structureType === STRUCTURE_STORAGE && struct.store[RESOURCE_ENERGY] > 500000;
 					});
 					if (storages.length > 0) {
-						let closest = storages[0];
+						const closest = storages[0];
 						new RoomVisual(creep.room.name).circle(closest.pos, {
 							stroke: "#ff0000",
 							fill: "transparent",
 							radius: 1,
 						});
-						if (creep.withdraw(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+						if (creep.withdraw(closest, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
 							creep.memory.aquireTarget = closest.id;
 							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
 						} else {
@@ -358,17 +357,16 @@ function passivelyWithdrawOtherResources(creep, structure) {
 	return;
 	// passively withdraw other resources from containers
 	if (
-		structure.structureType == STRUCTURE_CONTAINER &&
+		structure.structureType === STRUCTURE_CONTAINER &&
 		(structure.pos.isNearTo(structure.room.controller) || structure.pos.inRangeTo(FIND_SOURCES, 2).length > 0)
 	) {
 		console.log(creep.name, "passively withdrawing other resources from", structure);
 		if (_.sum(structure.store) - structure.store[RESOURCE_ENERGY] > 0) {
-			for (let r = 0; r < RESOURCES_ALL.length; r++) {
-				if (_.sum(creep.carry) == creep.carryCapacity) {
+			for (const resource of RESOURCES_ALL) {
+				if (creep.store.getFreeCapacity() === 0) {
 					break;
 				}
-				let resource = RESOURCES_ALL[r];
-				if (resource == RESOURCE_ENERGY) {
+				if (resource === RESOURCE_ENERGY) {
 					continue;
 				}
 				if (structure.store[resource] > 0) {
@@ -380,17 +378,17 @@ function passivelyWithdrawOtherResources(creep, structure) {
 }
 
 // get number of managers assigned to a room
-function getManagerCount(room) {
+function getManagerCount(room: Room): number {
 	return _.filter(Game.creeps, creep => creep.memory.role === "manager" && creep.memory.targetRoom === room.name)
 		.length;
 }
 
 // this role is for transporting energy short distances
-let roleManager = {
+const roleManager = {
 	findTargetRoom(creep) {
-		let rooms = util.getOwnedRooms();
+		const rooms = util.getOwnedRooms();
 		for (let i = 0; i < rooms.length; i++) {
-			let room = rooms[i];
+			const room = rooms[i];
 			if (room.controller.level < 4) {
 				continue;
 			}
@@ -398,298 +396,6 @@ let roleManager = {
 				creep.memory.targetRoom = room.name;
 				return;
 			}
-		}
-	},
-
-	run_old(creep) {
-		if (creep.fatigue > 0) {
-			return;
-		}
-
-		if (creep.memory.role == "manager") {
-			if (!creep.memory.targetRoom) {
-				this.findTargetRoom(creep);
-			}
-
-			if (creep.room.name != creep.memory.targetRoom) {
-				//  && creep.carry[RESOURCE_ENERGY] > 200
-				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), {
-					visualizePathStyle: {},
-				});
-				return;
-			}
-		}
-
-		if (creep.memory.transporting) {
-			delete creep.memory.aquireTarget;
-		} else {
-			delete creep.memory.transportTarget;
-		}
-
-		if (
-			!creep.memory.transporting &&
-			creep.store[RESOURCE_ENERGY] > creep.store.getCapacity(RESOURCE_ENERGY) * 0.75
-		) {
-			creep.memory.transporting = true;
-			creep.say("transport");
-		}
-		if (creep.memory.transporting && creep.store[RESOURCE_ENERGY] <= 0) {
-			creep.memory.transporting = false;
-			creep.say("aquiring");
-		}
-
-		if (creep.memory.transporting) {
-			if (creep.memory.transportTarget) {
-				let transportTarget = Game.getObjectById(creep.memory.transportTarget);
-				if (transportTarget) {
-					creep.room.visual.circle(transportTarget.pos, {
-						stroke: "#00ff00",
-						fill: "transparent",
-						radius: 0.8,
-					});
-					if (creep.pos.isNearTo(transportTarget)) {
-						// duck typing to figure out what method to use
-						if (transportTarget.store) {
-							// has a store
-							let transferResult = creep.transfer(transportTarget, RESOURCE_ENERGY);
-
-							if (transferResult == OK) {
-								creep.memory.lastDepositStructure = transportTarget.id;
-							}
-
-							if (
-								transferResult == ERR_FULL ||
-								_.sum(transportTarget.store) == transportTarget.store.getCapacity()
-							) {
-								delete creep.memory.transportTarget;
-							}
-							if (transferResult === OK && transportTarget.structureType === STRUCTURE_TOWER) {
-								delete creep.memory.transportTarget;
-							}
-						} else {
-							creep.say("help");
-							creep.log("ERR: I don't know how to transfer to", transportTarget);
-						}
-					} else {
-						let travelResult = cartographer.moveTo(creep, transportTarget, { visualizePathStyle: {} });
-						if (travelResult.incomplete) {
-							creep.log("Path to transportTarget is incomplete, skipping...");
-							delete creep.memory.transportTarget;
-						}
-					}
-
-					// if (_.sum(transportTarget.store) == transportTarget.store.getCapacity()) {
-					if (transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-						delete creep.memory.transportTarget;
-						return;
-					}
-
-					if (
-						transportTarget instanceof StructureTower &&
-						transportTarget.store.getFreeCapacity(RESOURCE_ENERGY) <= TOWER_ENERGY_COST * 2
-					) {
-						delete creep.memory.transportTarget;
-						return;
-					}
-					return;
-				} else {
-					delete creep.memory.transportTarget;
-				}
-			}
-
-			let structPriority = {};
-			structPriority[STRUCTURE_EXTENSION] = 1;
-			structPriority[STRUCTURE_SPAWN] = 1;
-			structPriority[STRUCTURE_TOWER] = 2;
-			structPriority[STRUCTURE_POWER_SPAWN] = 4;
-			structPriority[STRUCTURE_LAB] = 5;
-			structPriority[STRUCTURE_FACTORY] = 5;
-			structPriority[STRUCTURE_NUKER] = 6;
-			structPriority[STRUCTURE_CONTAINER] = 9;
-			structPriority[STRUCTURE_STORAGE] = 9;
-			structPriority[STRUCTURE_TERMINAL] = 9;
-
-			// console.log("Can't transfer to last withdraw:",Game.getObjectById(creep.memory.lastWithdrawStructure))
-			let hungryStructures = creep.room.find(FIND_STRUCTURES, {
-				filter(struct) {
-					let flags = struct.pos.lookFor(LOOK_FLAGS);
-					if (flags.length > 0) {
-						if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
-							return false;
-						}
-					}
-					if (struct.structureType == STRUCTURE_ROAD) {
-						return false;
-					}
-
-					if (struct.id == creep.memory.lastWithdrawStructure) {
-						return false;
-					}
-
-					if (struct.structureType == STRUCTURE_CONTAINER) {
-						return (
-							_.sum(struct.store) < struct.storeCapacity * 0.5 &&
-							struct.pos.findInRange(FIND_STRUCTURES, 3, {
-								filter: struct => struct.structureType == STRUCTURE_CONTROLLER,
-							}).length > 0
-						);
-					}
-
-					if (struct.structureType == STRUCTURE_TERMINAL) {
-						if (struct.my) {
-							return false;
-						}
-						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
-							if (struct.store[RESOURCE_ENERGY] < Memory.terminalEnergyTarget) {
-								return true;
-							}
-						}
-					}
-
-					if (struct.structureType == STRUCTURE_FACTORY) {
-						if (struct.room.storage && struct.room.storage.store[RESOURCE_ENERGY] > 150000) {
-							if (struct.store[RESOURCE_ENERGY] < Memory.factoryEnergyTarget) {
-								return true;
-							}
-						}
-					}
-
-					if (creep.room.controller.level >= 4) {
-						if (struct.structureType == STRUCTURE_EXTENSION && struct.energy < struct.energyCapacity) {
-							return true;
-						}
-					}
-
-					if (struct.structureType === STRUCTURE_EXTENSION || struct.structureType === STRUCTURE_SPAWN) {
-						let relayCreeps = _.filter(
-							util.getCreeps("relay"),
-							c =>
-								!c.spawning &&
-								c.memory.assignedPos.roomName === creep.memory.targetRoom &&
-								c.pos.isEqualTo(
-									new RoomPosition(
-										c.memory.assignedPos.x,
-										c.memory.assignedPos.y,
-										c.memory.assignedPos.roomName
-									)
-								)
-						);
-						let isNearRelay = false;
-						for (let relay of relayCreeps) {
-							if (struct.pos.isNearTo(relay)) {
-								isNearRelay = true;
-								break;
-							}
-						}
-						if (isNearRelay) {
-							return false;
-						}
-					}
-
-					if (struct.structureType == STRUCTURE_TOWER) {
-						if (struct.store.getFreeCapacity(RESOURCE_ENERGY) <= TOWER_ENERGY_COST * 2) {
-							return false;
-						}
-
-						if (struct.energy < struct.energyCapacity * (struct.room.memory.defcon > 0 ? 0.5 : 0.4)) {
-							structPriority[STRUCTURE_TOWER] = 1;
-							structPriority[STRUCTURE_SPAWN] = 2;
-							structPriority[STRUCTURE_EXTENSION] = 2;
-						}
-					}
-
-					return (
-						((struct.structureType == STRUCTURE_SPAWN ||
-							struct.structureType == STRUCTURE_EXTENSION ||
-							struct.structureType == STRUCTURE_LAB ||
-							struct.structureType == STRUCTURE_POWER_SPAWN ||
-							struct.structureType == STRUCTURE_TOWER ||
-							struct.structureType == STRUCTURE_NUKER) &&
-							struct.energy < struct.energyCapacity) ||
-						(struct.structureType == STRUCTURE_STORAGE && _.sum(struct.store) < struct.store.getCapacity())
-					);
-				},
-			});
-			// creep.say("structs="+hungryStructures.length);
-			if (hungryStructures.length > 0) {
-				hungryStructures.sort(function (a, b) {
-					if (
-						a.structureType != b.structureType &&
-						structPriority[a.structureType] - structPriority[b.structureType] != 0
-					) {
-						return structPriority[a.structureType] - structPriority[b.structureType];
-					} else {
-						return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);
-					}
-				});
-				let closest = hungryStructures[0];
-				creep.memory.transportTarget = closest.id;
-				if (closest) {
-					creep.room.visual.circle(closest.pos, { stroke: "#00ff00", fill: "transparent", radius: 1 });
-					if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-					} else {
-						creep.memory.lastDepositStructure = closest.id;
-						passivelyWithdrawOtherResources(creep, closest);
-					}
-				} else {
-					console.log("ERROR:", creep.name, "can't find closest hungryStructure");
-				}
-			} else {
-				let hungryCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 4, {
-					filter(c) {
-						if (
-							c.memory.role == "builder" ||
-							c.memory.role == "upgrader" ||
-							c.memory.role == "nextroomer"
-						) {
-							if (c.memory.role == "builder" && c.memory.mineralTarget) {
-								return false;
-							}
-							// console.log(c.carry[RESOURCE_ENERGY],c.carryCapacity);
-							return (
-								!c.spawning &&
-								c.store[RESOURCE_ENERGY] < c.store.getCapacity() * 0.5 &&
-								!c.memory.renewing &&
-								c.memory.keepAlive
-							);
-						}
-						return false;
-					},
-				});
-				// console.log(hungryCreeps.length);
-				if (hungryCreeps.length > 0) {
-					let closest = creep.pos.findClosestByPath(hungryCreeps);
-					if (closest) {
-						creep.memory.transportTarget = closest.id;
-						creep.room.visual.circle(closest.pos, { stroke: "#00ff00", fill: "transparent", radius: 1 });
-						if (creep.transfer(closest, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-						}
-					}
-				} else {
-					if (Game.time % 5 == 0) {
-						delete creep.memory.lastDepositStructure;
-						delete creep.memory.lastWithdrawStructure;
-					}
-					if (creep.memory.lastDepositStructure == creep.memory.lastWithdrawStructure) {
-						delete creep.memory.lastDepositStructure;
-					}
-					if (creep.room.energyAvailable < creep.room.energyCapacityAvailable * 0.1) {
-						delete creep.memory.lastWithdrawStructure;
-					}
-					cartographer.moveTo(creep, creep.room.storage, { visualizePathStyle: {} });
-				}
-			}
-
-			// passively aquire if not full
-			if (_.sum(creep.store) < creep.store.getCapacity()) {
-				// doAquire(creep, true);
-			}
-		}
-		// aquire resources
-		else {
-			doAquire(creep, false);
 		}
 	},
 
@@ -710,10 +416,6 @@ let roleManager = {
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
 			filter: s => {
-				if (s.objectId === "5f6fdb1cb5f7d2486aa88e21") {
-					return false; // HACK
-				}
-
 				if (s.objectId === creep.memory.lastWithdrawStructure) {
 					return false;
 				}
@@ -781,10 +483,10 @@ let roleManager = {
 		}
 	},
 
-	getAquireTarget(creep) {
+	getAquireTarget(creep: Creep): AnyStoreStructure | Resource | Tombstone | Ruin {
 		delete creep.memory.excludeTransport;
 
-		let aquireTarget;
+		let aquireTarget: AnyStoreStructure | Resource | Tombstone | Ruin;
 		if (creep.memory.aquireTarget) {
 			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
 			if (aquireTarget && aquireTarget instanceof Tombstone && aquireTarget.store.getUsedCapacity() > 0) {
@@ -849,7 +551,7 @@ let roleManager = {
 		}
 	},
 
-	run(creep) {
+	run(creep: Creep): void {
 		if (!creep.memory.excludeTransport) {
 			creep.memory.excludeTransport = [];
 		}
@@ -884,11 +586,11 @@ let roleManager = {
 			creep.say("aquiring");
 		}
 
-		if (creep.memory.lastDepositStructure == creep.memory.lastWithdrawStructure) {
+		if (creep.memory.lastDepositStructure === creep.memory.lastWithdrawStructure) {
 			delete creep.memory.lastDepositStructure;
 		}
 
-		let obstacles = util.getCreeps("harvester", "relay");
+		const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
 
 		if (creep.memory.transporting) {
 			delete creep.memory.aquireTarget;
@@ -901,7 +603,7 @@ let roleManager = {
 				return;
 			}
 
-			let transportTarget = this.getTransferTarget(creep);
+			const transportTarget = this.getTransferTarget(creep);
 			if (!transportTarget) {
 				if (Game.time % 5 === 0) {
 					delete creep.memory.lastWithdrawStructure;
@@ -916,7 +618,7 @@ let roleManager = {
 			if (creep.pos.isNearTo(transportTarget)) {
 				if (transportTarget.structureType === STRUCTURE_STORAGE) {
 					if (creep.store.getUsedCapacity() - creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-						for (let resource of RESOURCES_ALL) {
+						for (const resource of RESOURCES_ALL) {
 							if (resource == RESOURCE_ENERGY) {
 								continue;
 							}
@@ -949,11 +651,11 @@ let roleManager = {
 					}
 				}
 			} else {
-				let opts = { obstacles, ensurePath: true };
+				const opts = { obstacles, ensurePath: true };
 				if (creep.room.name === transportTarget.room.name) {
 					opts.maxRooms = 1;
 				}
-				let result = cartographer.moveTo(creep, transportTarget, opts);
+				const result = cartographer.moveTo(creep, transportTarget, opts);
 				if (result.incomplete) {
 					creep.log("Incomplete path to transport target, clearing");
 					creep.memory.excludeTransport.push(creep.memory.transportTarget);
@@ -963,7 +665,7 @@ let roleManager = {
 		} else {
 			delete creep.memory.transportTarget;
 
-			let aquireTarget = this.getAquireTarget(creep);
+			const aquireTarget = this.getAquireTarget(creep);
 			if (!aquireTarget) {
 				if (Game.time % 5 === 0) {
 					delete creep.memory.lastDepositStructure;
@@ -980,8 +682,8 @@ let roleManager = {
 					if (aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
 						creep.withdraw(aquireTarget, RESOURCE_ENERGY);
 					} else if (aquireTarget.store.getUsedCapacity() > 0) {
-						for (let resource of RESOURCES_ALL) {
-							if (resource == RESOURCE_ENERGY) {
+						for (const resource of RESOURCES_ALL) {
+							if (resource === RESOURCE_ENERGY) {
 								continue;
 							}
 							if (aquireTarget.store[resource] > 0) {
@@ -993,7 +695,7 @@ let roleManager = {
 					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
 				}
 			} else {
-				let opts = { obstacles, ensurePath: true };
+				const opts = { obstacles, ensurePath: true };
 				if (creep.room.name === aquireTarget.room.name) {
 					opts.maxRooms = 1;
 				}
