@@ -1,9 +1,9 @@
 import "../traveler.js";
 import * as cartographer from "screeps-cartographer";
+import util, { isOwnedStructure } from "../util.js";
 import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
 import taskGather from "../task.gather.js";
-import util, { isOwnedStructure } from "../util.js";
 
 /**
  * get number of repairers assigned to a room
@@ -26,7 +26,7 @@ const roleRepairer = {
 			if (flag.pos.roomName === room.name) {
 				const target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
 				if (target) {
-					creep.memory.repairTarget = target.id;
+					creep.memory.repairTarget = target.id as Id<AnyStructure>;
 					return;
 				}
 			}
@@ -49,6 +49,7 @@ const roleRepairer = {
 					return false;
 				}
 				if (
+					// @ts-expect-error this is perfectly valid, shut up typescript
 					[STRUCTURE_WALL, STRUCTURE_RAMPART].includes(struct.structureType) &&
 					(!creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] < 200000)
 				) {
@@ -118,7 +119,7 @@ const roleRepairer = {
 			if (flag.pos.roomName === room.name) {
 				const target = flag.pos.lookFor(LOOK_STRUCTURES)[0];
 				if (target) {
-					creep.memory.repairTarget = target.id;
+					creep.memory.repairTarget = target.id as Id<AnyStructure>;
 					return;
 				}
 			}
@@ -164,7 +165,7 @@ const roleRepairer = {
 		if (targets.length === 0) {
 			targets = creep.room.find(FIND_STRUCTURES, {
 				filter: struct => {
-					if (struct.owner && struct.my) {
+					if (isOwnedStructure(struct) && struct.my) {
 						return false;
 					}
 					const flags = struct.pos.lookFor(LOOK_FLAGS);
