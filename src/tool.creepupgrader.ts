@@ -42,6 +42,7 @@ export function getUpgraderQuota(room: Room): number {
 }
 
 export function getScientistQuota(room: Room): number {
+	return 0;
 	if (!room.controller) {
 		return 0;
 	}
