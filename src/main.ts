@@ -1916,6 +1916,15 @@ function main() {
 		}
 	}
 
+	try {
+		brainGuard.assignGuardTasks();
+		brainGuard.runTasks();
+	} catch (e) {
+		console.log("ERR: brain.guard tasks failed");
+		util.printException(e);
+	}
+	brainGuard.finalize();
+
 	cartographer.reconcileTraffic();
 
 	// process jobs
@@ -1968,15 +1977,6 @@ function main() {
 			Game.flags.showPlans.setColor(COLOR_GREY);
 		}
 	}
-
-	try {
-		brainGuard.assignGuardTasks();
-		brainGuard.runTasks();
-	} catch (e) {
-		console.log("ERR: brain.guard tasks failed");
-		util.printException(e);
-	}
-	brainGuard.finalize();
 
 	try {
 		// TODO: run creeps assigned to these tasks
