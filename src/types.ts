@@ -75,6 +75,7 @@ declare global {
 		targetRoom?: string;
 		assignedPos?: { x: number; y: number };
 		mode?: any;
+		taskId?: string;
 	}
 
 	interface PowerCreepMemory {

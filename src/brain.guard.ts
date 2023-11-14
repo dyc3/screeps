@@ -4,7 +4,7 @@ import { Role } from "roles/meta";
 import toolFriends from "./tool.friends.js";
 import util from "./util.js";
 
-const MASS_ATTACK_DISTANCE_MULTIPLIER = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
+const MASS_ATTACK_DISTANCE_MULTIPLIER: { [i: number]: number } = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
 
 export interface GuardTaskSerialized {
 	id: string;
@@ -60,11 +60,11 @@ class GuardTask implements GuardTaskSerialized {
 		}
 	}
 
-	public get currentTarget(): AnyCreep | null {
+	public get currentTarget(): AnyCreep | undefined {
 		if (!this._currentTarget) {
-			return null;
+			return undefined;
 		}
-		return Game.getObjectById<AnyCreep>(this._currentTarget);
+		return Game.getObjectById<AnyCreep>(this._currentTarget) ?? undefined;
 	}
 
 	private set currentTarget(value) {
@@ -103,8 +103,8 @@ class GuardTask implements GuardTaskSerialized {
 
 let tasks: GuardTask[] = [];
 
-module.exports = {
-	init() {
+export default {
+	init(): void {
 		if (!Memory.guard) {
 			Memory.guard = {
 				tasks: [],
@@ -124,11 +124,11 @@ module.exports = {
 		tasks = _.map(Memory.guard.tasks, task => new GuardTask().deserialize(task));
 	},
 
-	finalize() {
+	finalize(): void {
 		Memory.guard.tasks = _.map(tasks, task => task.serialize());
 	},
 
-	getTasks() {
+	getTasks(): GuardTask[] {
 		return tasks;
 	},
 
@@ -139,7 +139,7 @@ module.exports = {
 	/**
 	 * Search unguarded rooms and create new guard tasks, and remove completed guard tasks.
 	 */
-	updateGuardTasks() {
+	updateGuardTasks(): void {
 		// search unguarded rooms and create new guard tasks
 		const guardedRooms = _.map(tasks, task => task._targetRoom);
 		const roomsToSearch = _.map(
@@ -302,7 +302,7 @@ module.exports = {
 	/**
 	 * Assigns guard tasks to guardian creeps, or spawn new guardians if needed.
 	 */
-	assignGuardTasks() {
+	assignGuardTasks(): void {
 		const guardians = util.getCreeps(Role.Guardian);
 
 		// unassign creeps from completed or invalid tasks
@@ -416,7 +416,7 @@ module.exports = {
 		}
 	},
 
-	runTasks() {
+	runTasks(): void {
 		for (const task of tasks) {
 			if (task.complete) {
 				continue;
@@ -668,7 +668,7 @@ module.exports = {
 					);
 					const rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
 					const rangedMassAttackEffectiveness =
-						rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] || 0); // Estimation of how much damage we will do to the target with a mass attack.
+						rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] ?? 0); // Estimation of how much damage we will do to the target with a mass attack.
 					const targetHealEffectiveness =
 						task.currentTarget instanceof Creep
 							? task.currentTarget.getActiveBodyparts(HEAL) * HEAL_POWER
@@ -813,5 +813,3 @@ module.exports = {
 		}
 	},
 };
-
-export default module.exports;
