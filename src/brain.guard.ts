@@ -1,31 +1,50 @@
+/* eslint-disable no-underscore-dangle */
 import * as cartographer from "screeps-cartographer";
-import util from "./util";
+import { Role } from "roles/meta";
 import toolFriends from "./tool.friends.js";
+import util from "./util.js";
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
+
+export interface GuardTaskSerialized {
+	id: string;
+	_targetRoom: string | null;
+	guardType: string;
+	complete: boolean;
+	assignedCreeps: string[];
+	neededCreeps: number;
+	_currentTarget: string | null;
+	waiting: boolean;
+	disableUntil: number;
+}
 
 /*
  * This coordinates guardian creeps to protect key assets most effectively.
  */
 
-class GuardTask {
-	constructor() {
+class GuardTask implements GuardTaskSerialized {
+	public id: string;
+	public _targetRoom: string | null = null;
+	public guardType = "default";
+	public complete = false;
+	public assignedCreeps: string[] = [];
+	public neededCreeps = 1;
+	public _currentTarget: Id<AnyCreep> | null = null;
+	public waiting = true;
+	public disableUntil = 0;
+
+	public constructor() {
 		this.id = `${Game.shard.name}${Game.time.toString(24)}${Math.random()}`;
-		this._targetRoom = null;
-		this.guardType = "default";
-		this.complete = false;
-		this.assignedCreeps = [];
-		this.neededCreeps = 1;
-		this._currentTarget = null;
-		this.waiting = true;
-		this.disableUntil = 0;
 	}
 
-	get targetRoom() {
+	public get targetRoom(): Room | undefined {
+		if (!this._targetRoom) {
+			return undefined;
+		}
 		return Game.rooms[this._targetRoom];
 	}
 
-	set targetRoom(value) {
+	private set targetRoom(value) {
 		if (value instanceof Room) {
 			this._targetRoom = value.name;
 		} else if (typeof value === "string") {
@@ -35,11 +54,14 @@ class GuardTask {
 		}
 	}
 
-	get currentTarget() {
-		return Game.getObjectById(this._currentTarget);
+	public get currentTarget(): AnyCreep | null {
+		if (!this._currentTarget) {
+			return null;
+		}
+		return Game.getObjectById<AnyCreep>(this._currentTarget);
 	}
 
-	set currentTarget(value) {
+	private set currentTarget(value) {
 		if (typeof value === "string") {
 			this._currentTarget = value;
 		} else if (value !== undefined && value !== null) {
@@ -49,33 +71,33 @@ class GuardTask {
 		}
 	}
 
-	serialize() {
+	public serialize(): GuardTaskSerialized {
 		return {
 			id: this.id,
-			targetRoom: this._targetRoom,
+			_targetRoom: this._targetRoom,
 			guardType: this.guardType,
 			complete: this.complete,
 			assignedCreeps: this.assignedCreeps,
 			neededCreeps: this.neededCreeps,
-			currentTarget: this._currentTarget,
+			_currentTarget: this._currentTarget,
 			waiting: this.waiting,
 			disableUntil: this.disableUntil,
 		};
 	}
 
-	deserialize(mem) {
+	public deserialize(mem: GuardTaskSerialized) {
 		Object.assign(this, mem);
 		return this;
 	}
 
-	get isEnabled() {
+	public get isEnabled() {
 		return this.disableUntil !== undefined && this.disableUntil < Game.time;
 	}
 }
 
-module.exports = {
-	tasks: [],
+let tasks: GuardTask[] = [];
 
+module.exports = {
 	init() {
 		if (!Memory.guard) {
 			Memory.guard = {
@@ -93,19 +115,19 @@ module.exports = {
 		if (!Memory.guard.guardiansSpawned) {
 			Memory.guard.guardiansSpawned = 0;
 		}
-		this.tasks = _.map(Memory.guard.tasks, task => new GuardTask().deserialize(task));
+		tasks = _.map(Memory.guard.tasks, task => new GuardTask().deserialize(task));
 	},
 
 	finalize() {
-		Memory.guard.tasks = _.map(this.tasks, task => task.serialize());
+		Memory.guard.tasks = _.map(tasks, task => task.serialize());
 	},
 
 	getTasks() {
-		return this.tasks;
+		return tasks;
 	},
 
-	getTask(id) {
-		return _.find(this.tasks, task => task.id === id);
+	getTask(id: string): GuardTask | undefined {
+		return _.find(tasks, task => task.id === id);
 	},
 
 	/**
@@ -113,8 +135,8 @@ module.exports = {
 	 */
 	updateGuardTasks() {
 		// search unguarded rooms and create new guard tasks
-		let guardedRooms = _.map(this.tasks, task => task._targetRoom);
-		let roomsToSearch = _.map(
+		const guardedRooms = _.map(tasks, task => task._targetRoom);
+		const roomsToSearch = _.map(
 			_.filter(
 				Memory.remoteMining.targets,
 				miningTarget =>
@@ -123,11 +145,11 @@ module.exports = {
 			),
 			miningTarget => new Room(miningTarget.roomName)
 		);
-		for (let room of roomsToSearch) {
+		for (const room of roomsToSearch) {
 			if (guardedRooms.includes(room.name)) {
 				continue;
 			}
-			let newTask = new GuardTask();
+			const newTask = new GuardTask();
 			const isTreasureRoom = util.isTreasureRoom(room.name);
 			const foundInvaderCore = _.first(
 				room.find(FIND_HOSTILE_STRUCTURES, {
@@ -135,7 +157,7 @@ module.exports = {
 				})
 			);
 			const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
-			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isCreepFriendly(creep));
+			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isFriendly(creep));
 			const hostiles = allEnemyCreeps.filter(
 				creep =>
 					creep.getActiveBodyparts(ATTACK) +
@@ -164,7 +186,7 @@ module.exports = {
 					newTask.neededCreeps = 1;
 				} else {
 					// TODO: I really need to figure out a better way to build creeps that can counter an arbitrary amount of creeps
-					for (let creep of hostiles) {
+					for (const creep of hostiles) {
 						if (
 							creep.getActiveBodyparts(ATTACK) +
 								creep.getActiveBodyparts(RANGED_ATTACK) +
@@ -180,18 +202,18 @@ module.exports = {
 			} else {
 				newTask.guardType = "default";
 			}
-			this.tasks.push(newTask);
+			tasks.push(newTask);
 			guardedRooms.push(room.name);
 			Memory.guard.tasksMade++;
 		}
 
 		// TODO: benchmark this method, see if this is faster than doing it normally
-		let grouped = _.groupBy(this.tasks, "complete");
+		const grouped = _.groupBy(tasks, "complete");
 		if (grouped.true) {
 			// clean up completed tasks
-			for (let task of grouped.true) {
+			for (const task of grouped.true) {
 				if (task.guardType === "invader-subcore") {
-					for (let creepName of task.assignedCreeps) {
+					for (const creepName of task.assignedCreeps) {
 						Game.creeps[creepName].suicide();
 					}
 				}
@@ -199,14 +221,14 @@ module.exports = {
 		}
 		if (grouped.false) {
 			// remove completed guard tasks
-			this.tasks = grouped.false;
+			tasks = grouped.false;
 		} else {
-			this.tasks = [];
+			tasks = [];
 		}
 
 		// update neededCreeps for existing tasks
-		for (let task of this.tasks) {
-			if (!task.room) {
+		for (const task of tasks) {
+			if (!task.targetRoom) {
 				// can't access room, don't update
 				continue;
 			}
@@ -217,8 +239,8 @@ module.exports = {
 						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
 					})
 				);
-				let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
-				let invaders = _.filter(hostiles, c => c.owner.username === "Invader");
+				const hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+				const invaders = _.filter(hostiles, c => c.owner.username === "Invader");
 				if (invaders.length > 0 || foundInvaderCore) {
 					newTask.neededCreeps = 3;
 				} else {
@@ -232,7 +254,7 @@ module.exports = {
 				// hand the task over to the Offense manager if it gets a little too bloody.
 				const allEnemyCreeps = task.targetRoom
 					.find(FIND_HOSTILE_CREEPS)
-					.filter(creep => !toolFriends.isCreepFriendly(creep));
+					.filter(creep => !toolFriends.isFriendly(creep));
 				const hostiles = allEnemyCreeps.filter(
 					creep =>
 						creep.getActiveBodyparts(ATTACK) +
@@ -246,7 +268,7 @@ module.exports = {
 					task.neededCreeps = 1;
 				} else {
 					let bigBoys = 0;
-					for (let creep of hostiles) {
+					for (const creep of hostiles) {
 						if (
 							creep.getActiveBodyparts(ATTACK) +
 								creep.getActiveBodyparts(RANGED_ATTACK) +
@@ -275,37 +297,37 @@ module.exports = {
 	 * Assigns guard tasks to guardian creeps, or spawn new guardians if needed.
 	 */
 	assignGuardTasks() {
-		let guardians = util.getCreeps("guardian");
+		const guardians = util.getCreeps(Role.Guardian);
 
 		// unassign creeps from completed or invalid tasks
-		for (let guardian of guardians) {
+		for (const guardian of guardians) {
 			if (!guardian.memory.taskId) {
 				continue;
 			}
-			let task = this.getTask(guardian.memory.taskId);
+			const task = this.getTask(guardian.memory.taskId);
 			if (!task || task.complete) {
 				delete guardian.memory.taskId;
 			}
 		}
 
 		// remove dead creeps from guard tasks
-		for (let task of this.tasks) {
+		for (const task of tasks) {
 			task.assignedCreeps = _.filter(task.assignedCreeps, c => Game.creeps[c]);
 		}
 
 		// assign guardians to tasks
-		let unfulfilledTasks = _.filter(
-			this.tasks,
+		const unfulfilledTasks = _.filter(
+			tasks,
 			task => !task.complete && task.assignedCreeps.length < task.neededCreeps
 		);
-		for (let task of unfulfilledTasks) {
+		for (const task of unfulfilledTasks) {
 			if (!task.isEnabled) {
 				continue;
 			}
-			let idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId);
-			let idleGuardiansMatching = _.filter(
+			const idleGuardians = _.filter(guardians, guardian => !guardian.memory.taskId);
+			const idleGuardiansMatching = _.filter(
 				idleGuardians,
-				guardian => guardian.memory.guardType == task.guardType
+				guardian => guardian.memory.guardType === task.guardType
 			);
 
 			if (idleGuardiansMatching.length > 0) {
@@ -315,17 +337,17 @@ module.exports = {
 				idleGuardians[0].memory.taskId = task.id;
 				task.assignedCreeps.push(idleGuardians[0].name);
 			} else {
-				let creepBody = this.getGuardianBody(task.guardType);
-				let targetSpawnRooms = util.findClosestOwnedRooms(
+				const creepBody = this.getGuardianBody(task.guardType);
+				const targetSpawnRooms = util.findClosestOwnedRooms(
 					new RoomPosition(25, 25, task._targetRoom),
 					room =>
 						room.energyAvailable >= room.energyCapacityAvailable * 0.8 &&
 						room.energyAvailable >= util.getCreepSpawnCost(creepBody)
 				);
 				let targetSpawn = null;
-				for (let room of targetSpawnRooms) {
-					let spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
-					if (spawns.length == 0) {
+				for (const room of targetSpawnRooms) {
+					const spawns = util.getStructures(room, STRUCTURE_SPAWN).filter(s => !s.spawning);
+					if (spawns.length === 0) {
 						continue;
 					}
 					targetSpawn = spawns[0];
@@ -336,8 +358,8 @@ module.exports = {
 					console.log("[guardians] Unable to spawn new guardians");
 					break;
 				}
-				let creepName = `guardian_${Game.time.toString(32)}`;
-				let newCreepMem = {
+				const creepName = `guardian_${Game.time.toString(32)}`;
+				const newCreepMem = {
 					role: "guardian",
 					stage: 0,
 					keepAlive: false,
@@ -359,12 +381,12 @@ module.exports = {
 		}
 	},
 
-	getGuardianBody(guardType) {
-		if (guardType == "max") {
+	getGuardianBody(guardType: string) {
+		if (guardType === "max") {
 			// TODO: build the biggest creep possible
 			// eslint-disable-next-line prettier/prettier
 			return [TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
-		} else if (guardType == "treasure") {
+		} else if (guardType === "treasure") {
 			// eslint-disable-next-line prettier/prettier
 			return [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,HEAL,MOVE];
 		} else if (guardType === "invader-subcore") {
@@ -389,7 +411,7 @@ module.exports = {
 	},
 
 	runTasks() {
-		for (let task of this.tasks) {
+		for (const task of tasks) {
 			if (task.complete) {
 				continue;
 			}
@@ -424,8 +446,8 @@ module.exports = {
 				);
 			}
 
-			let creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
-			let guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
+			const creeps = _.map(task.assignedCreeps, name => Game.creeps[name]);
+			const guardsUnavailable = creeps.filter(c => c.spawning || c.memory.renewing).length;
 
 			if (task.waiting) {
 				if (
@@ -447,7 +469,7 @@ module.exports = {
 					})
 				);
 				if (foundInvaderCore && foundInvaderCore.level > 0 && foundInvaderCore.effects.length > 0) {
-					let collapseEffect = _.find(
+					const collapseEffect = _.find(
 						foundInvaderCore.effects,
 						effect => effect.effect === EFFECT_COLLAPSE_TIMER
 					);
@@ -471,8 +493,8 @@ module.exports = {
 
 			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
 				if (task.guardType == "treasure") {
-					let hostileStructures = task.targetRoom.find(FIND_HOSTILE_STRUCTURES);
-					let towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
+					const hostileStructures = task.targetRoom.find(FIND_HOSTILE_STRUCTURES);
+					const towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
 					if (towers.length > 0) {
 						task._currentTarget = towers[0].id;
 					} else {
@@ -481,7 +503,7 @@ module.exports = {
 								if (hostile.owner.username !== "Source Keeper") {
 									return true;
 								}
-								let struct = _.first(
+								const struct = _.first(
 									hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {
 										filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
 									})
@@ -517,7 +539,7 @@ module.exports = {
 
 							task._currentTarget = hostiles[0].id;
 						} else {
-							let keeperLairs = hostileStructures.filter(
+							const keeperLairs = hostileStructures.filter(
 								struct =>
 									struct.structureType === STRUCTURE_KEEPER_LAIR &&
 									_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
@@ -529,7 +551,7 @@ module.exports = {
 						}
 					}
 				} else if (task.guardType === "invader-subcore") {
-					let invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
+					const invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
 						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
 					});
 					if (invaderCores.length > 0) {
@@ -572,14 +594,14 @@ module.exports = {
 				task.currentTarget instanceof StructureKeeperLair &&
 				!task.currentTarget.ticksToSpawn
 			) {
-				let hostiles = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
+				const hostiles = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
 				if (hostiles.length > 0) {
 					task._currentTarget = hostiles[0].id;
 				}
 			}
 
 			// let creepsInRange = _.filter(creeps, creep => creep.pos.inRangeTo(task.currentTarget, 3)); // guards that are in range of the current target
-			for (let creep of creeps) {
+			for (const creep of creeps) {
 				creep.notifyWhenAttacked(false);
 				if (creep.spawning || creep.memory.renewing) {
 					creep.memory.renew_force_amount = 1400;
@@ -596,7 +618,7 @@ module.exports = {
 						creep.log("[guard] healing self");
 						creep.heal(creep);
 					} else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
-						let creepsNeedHeal = _.filter(creeps, c => {
+						const creepsNeedHeal = _.filter(creeps, c => {
 							if (c.name === creep.name) {
 								return false;
 							}
@@ -612,7 +634,7 @@ module.exports = {
 							}
 						} else {
 							// passively heal other friendly creeps in range.
-							let otherCreepsNeedHeal = creep.pos.findInRange(FIND_CREEPS, 3).filter(c => {
+							const otherCreepsNeedHeal = creep.pos.findInRange(FIND_CREEPS, 3).filter(c => {
 								return toolFriends.isCreepFriendly(c) && c.hits < c.hitsMax;
 							});
 							if (otherCreepsNeedHeal.length > 0) {
@@ -629,18 +651,18 @@ module.exports = {
 				}
 
 				if (task.currentTarget) {
-					let rangeToTarget = creep.pos.getRangeTo(task.currentTarget);
-					let isTargetInRange = rangeToTarget <= 3;
-					let hostilesAdjacent = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 1));
-					let hostilesInRange = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3));
-					let hostileHealdersInRange = _.filter(
+					const rangeToTarget = creep.pos.getRangeTo(task.currentTarget);
+					const isTargetInRange = rangeToTarget <= 3;
+					const hostilesAdjacent = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 1));
+					const hostilesInRange = _.filter(hostiles, hostile => creep.pos.inRangeTo(hostile, 3));
+					const hostileHealdersInRange = _.filter(
 						hostilesInRange,
 						hostile => hostile.getActiveBodyparts(HEAL) > 0
 					);
-					let rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
-					let rangedMassAttackEffectiveness =
+					const rangedAttackEffectiveness = creep.getActiveBodyparts(RANGED_ATTACK) * RANGED_ATTACK_POWER; // Estimation of how much damage we will do to the target with a ranged attack.
+					const rangedMassAttackEffectiveness =
 						rangedAttackEffectiveness * (MASS_ATTACK_DISTANCE_MULTIPLIER[rangeToTarget] || 0); // Estimation of how much damage we will do to the target with a mass attack.
-					let targetHealEffectiveness =
+					const targetHealEffectiveness =
 						task.currentTarget instanceof Creep
 							? task.currentTarget.getActiveBodyparts(HEAL) * HEAL_POWER
 							: 0;
@@ -696,11 +718,11 @@ module.exports = {
 						if (task.waiting) {
 							creep.say("waiting");
 							creep.log("waiting for other guards to finish spawning");
-							let remoteMiningTarget = _.find(Memory.remoteMining.targets, {
+							const remoteMiningTarget = _.find(Memory.remoteMining.targets, {
 								roomName: task._targetRoom,
 							});
 							if (remoteMiningTarget) {
-								let dangerPos = new RoomPosition(
+								const dangerPos = new RoomPosition(
 									remoteMiningTarget.dangerPos[2].x,
 									remoteMiningTarget.dangerPos[2].y,
 									remoteMiningTarget.dangerPos[2].roomName
@@ -723,7 +745,7 @@ module.exports = {
 								});
 							}
 						} else {
-							let minRange =
+							const minRange =
 								task.currentTarget.getActiveBodyparts(ATTACK) > 0 &&
 								creep.getActiveBodyparts(RANGED_ATTACK) > 0
 									? 2
@@ -757,7 +779,7 @@ module.exports = {
 							creep.move(creep.pos.getDirectionTo(task.currentTarget));
 						}
 
-						let minRange = 1;
+						const minRange = 1;
 						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
 							cartographer.moveTo(creep, task.currentTarget, {
 								ignoreCreeps: false,

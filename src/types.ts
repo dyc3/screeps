@@ -1,5 +1,6 @@
-import type { RemoteMiningTarget } from "./remotemining";
+import type { GuardTaskSerialized } from "./brain.guard";
 import type { ObserveQueue } from "./observequeue";
+import type { RemoteMiningTarget } from "./remotemining";
 import type { Role } from "./roles/meta";
 
 declare global {
@@ -32,7 +33,9 @@ declare global {
 		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 		creepSpawnLog: string[];
 		guard: {
-			tasks: any[]; // TODO: define this
+			tasks: GuardTaskSerialized[];
+			tasksMade: number;
+			guardiansSpawned: number;
 		};
 		USE_ADV_LOGISTICS: boolean;
 		/** @deprecated */
