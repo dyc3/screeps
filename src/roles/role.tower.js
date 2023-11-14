@@ -6,46 +6,43 @@ const NAIVE_BAIT_FILTER = false;
 const SWARM_DEFENSE = false;
 
 let roleTower = {
-	run: function(room) {
+	run(room) {
 		let towers = util.getStructures(room, STRUCTURE_TOWER);
 
 		let hostiles = room.find(FIND_HOSTILE_CREEPS, {
-			filter: function(c) {
+			filter(c) {
 				if (NAIVE_BAIT_FILTER) {
 					if (c.getActiveBodyparts(RANGED_ATTACK) > 0) {
 						if (util.isDistFromEdge(c.pos, 0)) {
 							return false;
 						}
-					}
-					else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
+					} else if (c.getActiveBodyparts(WORK) + c.getActiveBodyparts(ATTACK) > 0) {
 						if (util.isDistFromEdge(c.pos, 0)) {
 							return false;
 						}
-					}
-					else if (c.getActiveBodyparts(HEAL) > 0) {
+					} else if (c.getActiveBodyparts(HEAL) > 0) {
 						if (util.isDistFromEdge(c.pos, 0)) {
 							return false;
 						}
-					}
-					else {
+					} else {
 						if (util.isDistFromEdge(c.pos, 7)) {
 							return false;
 						}
 					}
 				}
 				return !toolFriends.isCreepFriendly(c);
-			}
+			},
 		});
 		if (hostiles.length > 0) {
 			if (SWARM_DEFENSE) {
-				hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse()
+				hostiles = _.sortBy(hostiles, c => c.pos.getRangeTo(towers[0])).reverse();
 				for (let i = 0; i < towers.length; i++) {
 					let tower = towers[i];
 					let target = hostiles[0];
 					let dist = tower.pos.getRangeTo(target);
 					let damage = TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(dist);
 					if (target.hits <= damage) {
-						hostiles.pop(0)
+						hostiles.pop(0);
 					}
 					tower.attack(target);
 
@@ -64,7 +61,9 @@ let roleTower = {
 				let target = hostiles[0];
 				while (hostiles.length > 0) {
 					// predict damage to target
-					let totalDamage = towers.map(t => TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(t.pos.getRangeTo(target)));
+					let totalDamage = towers.map(
+						t => TOWER_POWER_ATTACK * combatCalc.towerImpactFactor(t.pos.getRangeTo(target))
+					);
 					if (maxHealPower >= totalDamage) {
 						hostiles.pop(0);
 						target = hostiles[0];
@@ -78,7 +77,6 @@ let roleTower = {
 					return;
 				}
 
-
 				let damageDealt = 0; // damage dealt to the current target
 				for (let tower of towers) {
 					let dist = tower.pos.getRangeTo(target);
@@ -91,13 +89,12 @@ let roleTower = {
 					}
 				}
 			}
-
 		}
 
 		let damagedCreeps = room.find(FIND_MY_CREEPS, {
-			filter: (creep) => {
+			filter: creep => {
 				return creep.hits < creep.hitsMax && creep.getActiveBodyparts(HEAL) === 0;
-			}
+			},
 		});
 		if (damagedCreeps.length > 0) {
 			for (let i = 0; i < towers.length; i++) {
@@ -111,7 +108,7 @@ let roleTower = {
 		return;
 
 		let damagedStructures = room.find(FIND_STRUCTURES, {
-			filter: (struct) => {
+			filter: struct => {
 				let flags = struct.pos.lookFor(LOOK_FLAGS);
 				if (flags.length > 0) {
 					if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
@@ -133,10 +130,10 @@ let roleTower = {
 				// 	return false;
 				// }
 				return struct.hits < struct.hitsMax * 0.45;
-			}
+			},
 		});
 		if (damagedStructures.length > 0) {
-			damagedStructures.sort(function(a, b) {
+			damagedStructures.sort(function (a, b) {
 				let aScore = a.hits / a.hitsMax;
 				let bScore = b.hits / b.hitsMax;
 				if (aScore < bScore) {
@@ -156,8 +153,8 @@ let roleTower = {
 				tower.repair(target);
 			}
 		}
-	}
-}
+	},
+};
 
 module.exports = roleTower;
 export default roleTower;
