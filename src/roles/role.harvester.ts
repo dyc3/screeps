@@ -19,7 +19,7 @@ const roleHarvester = {
 				) {
 					dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 						filter: struct => {
-							return struct.structureType == STRUCTURE_LINK;
+							return struct.structureType === STRUCTURE_LINK;
 						},
 					})[0];
 					if (dedicatedLink) {
@@ -72,7 +72,7 @@ const roleHarvester = {
 					struct.energy < struct.energyCapacity;
 				const b =
 					(struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE) &&
-					// _.sum(struct.store) == struct.store[RESOURCE_ENERGY] &&
+					// _.sum(struct.store) === struct.store[RESOURCE_ENERGY] &&
 					_.sum(struct.store) < struct.storeCapacity;
 				return a || b;
 			},

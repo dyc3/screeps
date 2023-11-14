@@ -111,9 +111,9 @@ let roleCarrier = {
 				}
 			}
 
-			if (creep.memory.delivering && _.sum(creep.store) == 0) {
+			if (creep.memory.delivering && _.sum(creep.store) === 0) {
 				creep.memory.delivering = false;
-			} else if (!creep.memory.delivering && _.sum(creep.store) == creep.store.getCapacity()) {
+			} else if (!creep.memory.delivering && _.sum(creep.store) === creep.store.getCapacity()) {
 				creep.memory.delivering = true;
 			}
 
@@ -218,7 +218,7 @@ let roleCarrier = {
 					creep.log("target: ", target);
 					if (creep.pos.isNearTo(target)) {
 						for (const resource of RESOURCES_ALL) {
-							if (target.store[resource] == 0) {
+							if (target.store[resource] === 0) {
 								continue;
 							}
 							let withdrawResult = creep.withdraw(target, resource);

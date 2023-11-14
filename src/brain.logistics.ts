@@ -71,10 +71,10 @@ class DeliveryTask {
 			throw new Error(`Source object can't be the same as sink object ${source.object}`);
 		}
 		// if (source.amount === 0) {
-		// 	throw new Error(`Source ${source.object} has ${source.resource} amount == 0`);
+		// 	throw new Error(`Source ${source.object} has ${source.resource} amount === 0`);
 		// }
 		// if (sink.amount === 0) {
-		// 	throw new Error(`Sink ${sink.object} has ${sink.resource} amount == 0`);
+		// 	throw new Error(`Sink ${sink.object} has ${sink.resource} amount === 0`);
 		// }
 
 		this.id = `${Game.shard.name}_${source.resource}_${source.objectId}${sink.objectId}`;

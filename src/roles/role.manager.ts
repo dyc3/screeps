@@ -140,8 +140,8 @@ function doAquire(creep: Creep, passively = false) {
 		} else {
 			const filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
 				filter(c) {
-					// if (c.memory.role == "harvester") {
-					// if (c.pos.findInRange(FIND_STRUCTURES, 1, { function(s) { return s.structureType == STRUCTURE_LINK } })) {
+					// if (c.memory.role === "harvester") {
+					// if (c.pos.findInRange(FIND_STRUCTURES, 1, { function(s) { return s.structureType === STRUCTURE_LINK } })) {
 					// 	return false;
 					// }
 					// }
@@ -259,9 +259,9 @@ function doAquire(creep: Creep, passively = false) {
 							}
 						}
 						return (
-							(struct.structureType == STRUCTURE_STORAGE &&
+							(struct.structureType === STRUCTURE_STORAGE &&
 								struct.store[RESOURCE_ENERGY] > creep.carryCapacity) ||
-							(struct.structureType == STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0)
+							(struct.structureType === STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0)
 						);
 					},
 				});
@@ -619,7 +619,7 @@ const roleManager = {
 				if (transportTarget.structureType === STRUCTURE_STORAGE) {
 					if (creep.store.getUsedCapacity() - creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
 						for (const resource of RESOURCES_ALL) {
-							if (resource == RESOURCE_ENERGY) {
+							if (resource === RESOURCE_ENERGY) {
 								continue;
 							}
 							if (creep.store[resource] > 0) {

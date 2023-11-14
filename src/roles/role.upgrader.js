@@ -7,7 +7,7 @@ import toolCreepUpgrader from "../tool.creepupgrader.js";
 
 // get number of upgraders assigned to a room
 function getUpgraderCount(room) {
-	return _.filter(Game.creeps, creep => creep.memory.role == "upgrader" && creep.memory.targetRoom == room.name)
+	return _.filter(Game.creeps, creep => creep.memory.role === "upgrader" && creep.memory.targetRoom === room.name)
 		.length;
 }
 
@@ -57,10 +57,10 @@ const roleUpgrader = {
 			return;
 		}
 
-		if (creep.memory.upgrading && creep.carry.energy == 0) {
+		if (creep.memory.upgrading && creep.carry.energy === 0) {
 			creep.memory.upgrading = false;
 			creep.say("gathering");
-		} else if (!creep.memory.upgrading && creep.carry.energy == creep.carryCapacity) {
+		} else if (!creep.memory.upgrading && creep.carry.energy === creep.carryCapacity) {
 			creep.memory.upgrading = true;
 			creep.say("upgrading");
 		}
@@ -73,7 +73,7 @@ const roleUpgrader = {
 					cartographer.moveTo(creep, creep.room.controller);
 				} else {
 					if (creep.room.controller.level < 8) {
-						if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+						if (creep.upgradeController(creep.room.controller) === ERR_NOT_IN_RANGE) {
 							cartographer.moveTo(creep, creep.room.controller, { range: 3, maxRooms: 1 });
 						}
 					} else {

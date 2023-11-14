@@ -162,10 +162,10 @@ const roleRelay = {
 		if (!creep.memory.linkId || !creep.memory.storageId) {
 			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
-					return s.structureType == STRUCTURE_LINK;
+					return s.structureType === STRUCTURE_LINK;
 				},
 			});
-			if (foundLinks.length == 0) {
+			if (foundLinks.length === 0) {
 				console.log(creep.name, "ERR: no link structures found");
 				return;
 			}
@@ -173,7 +173,7 @@ const roleRelay = {
 
 			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
-					return s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE;
+					return s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE;
 				},
 			});
 			if (foundStorage.length > 0) {
@@ -194,7 +194,7 @@ const roleRelay = {
 
 		if (
 			!creep.memory.fillTargetIds ||
-			creep.memory.fillTargetIds.length == 0 ||
+			creep.memory.fillTargetIds.length === 0 ||
 			creep.memory._needFillTargetRefresh
 		) {
 			let adjacentStructs = _.filter(
@@ -224,7 +224,7 @@ const roleRelay = {
 			delete creep.memory._needFillTargetRefresh;
 		}
 
-		if (creep.memory.fillTargetIds.length == 0) {
+		if (creep.memory.fillTargetIds.length === 0) {
 			creep.log("can't find adjacent targets.");
 			return;
 		}
@@ -313,7 +313,7 @@ const roleRelay = {
 			for (let i = 0; i < targetIdsNotFull.length; i++) {
 				const target = Game.getObjectById(targetIdsNotFull[i]);
 				if (
-					target.structureType == STRUCTURE_TERMINAL &&
+					target.structureType === STRUCTURE_TERMINAL &&
 					Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()
 				) {
 					creep.transfer(

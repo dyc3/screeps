@@ -136,13 +136,13 @@ const roleRepairer = {
 				if (struct.hits > struct.hitsMax * 0.75) {
 					return false;
 				}
-				if (struct.structureType == STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
+				if (struct.structureType === STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
 					return false;
 				}
-				if (struct.structureType == STRUCTURE_WALL && struct.hits >= 70000) {
+				if (struct.structureType === STRUCTURE_WALL && struct.hits >= 70000) {
 					return false;
 				}
-				if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= 60000) {
+				if (struct.structureType === STRUCTURE_RAMPART && struct.hits >= 60000) {
 					return false;
 				}
 				return struct.hits < struct.hitsMax;
@@ -160,7 +160,7 @@ const roleRepairer = {
 			}
 			return 0;
 		});
-		if (targets.length == 0) {
+		if (targets.length === 0) {
 			targets = creep.room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					if (struct.owner && struct.my) {
@@ -175,20 +175,20 @@ const roleRepairer = {
 					if (struct.hits > struct.hitsMax * 0.75) {
 						return false;
 					}
-					if (struct.structureType == STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
+					if (struct.structureType === STRUCTURE_ROAD && struct.hits >= struct.hitsMax * 0.5) {
 						return false;
 					}
 					if (
 						creep.room.storage &&
 						creep.room.storage.store[RESOURCE_ENERGY] > 700000 &&
-						(struct.structureType == STRUCTURE_WALL || struct.structureType == STRUCTURE_RAMPART)
+						(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART)
 					) {
 						return true;
 					}
-					if (struct.structureType == STRUCTURE_WALL && struct.hits >= 100000) {
+					if (struct.structureType === STRUCTURE_WALL && struct.hits >= 100000) {
 						return false;
 					}
-					if (struct.structureType == STRUCTURE_RAMPART && struct.hits >= 110000) {
+					if (struct.structureType === STRUCTURE_RAMPART && struct.hits >= 110000) {
 						return false;
 					}
 					return struct.hits < struct.hitsMax;
@@ -232,7 +232,7 @@ const roleRepairer = {
 						return a.hits - b.hits;
 					}
 				});
-				// if (creep.memory.role == "repairer") {
+				// if (creep.memory.role === "repairer") {
 				// 	console.log("structures need repair:",targets.length);
 				// }
 			}
@@ -333,7 +333,7 @@ const roleRepairer = {
 
 		if (creep.memory.repairing) {
 			const repairTarget = Game.getObjectById<Structure>(creep.memory.repairTarget);
-			// if (creep.memory.role == "repairer") {
+			// if (creep.memory.role === "repairer") {
 			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
 			// }
 			if (repairTarget) {

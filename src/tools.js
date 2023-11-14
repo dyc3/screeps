@@ -39,7 +39,7 @@ global.Market = {
 			return order.type === ORDER_BUY && order.resourceType === RESOURCE_ENERGY && order.remainingAmount > 0;
 		});
 
-		if (buyOrders.length == 0) {
+		if (buyOrders.length === 0) {
 			return "No energy buy orders.";
 		}
 
@@ -67,7 +67,6 @@ global.Market = {
 				continue;
 			}
 
-
 			let result = null;
 			let attempts = 0;
 			do {
@@ -90,15 +89,16 @@ global.Market = {
 						// Don't try to make this deal again
 						buyOrders.splice(0, 1);
 					}
-				}
-				else {
+				} else {
 					buyOrders.splice(0, 1);
 					attempts++;
 				}
 			} while (result !== OK && attempts < 5 && buyOrders.length === 0);
 		}
 
-		return `Made ${totalDeals} deals (attempted ${totalDealsAttempted}). Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${totalEnergySold + totalEnergyCost} spent. From rooms: ${JSON.stringify(fromRooms)}`;
+		return `Made ${totalDeals} deals (attempted ${totalDealsAttempted}). Sold ${totalEnergySold} energy, transactions costed ${totalEnergyCost} energy, for a total of ${
+			totalEnergySold + totalEnergyCost
+		} spent. From rooms: ${JSON.stringify(fromRooms)}`;
 	},
 };
 
@@ -110,16 +110,19 @@ global.Logistics = {
 	 * @param {String} resource the name of the resource
 	 * @param {Number} [amount=undefined] number of the resource to send, default sends all possible of the resource
 	 */
-	send(from, to, resource, amount=undefined) {
+	send(from, to, resource, amount = undefined) {
 		if (amount === undefined) {
-			amount = Math.min(Game.rooms[from].terminal.store.getCapacity(resource), Game.rooms[to].terminal.store.getFreeCapacity(resource));
+			amount = Math.min(
+				Game.rooms[from].terminal.store.getCapacity(resource),
+				Game.rooms[to].terminal.store.getFreeCapacity(resource)
+			);
 		}
 		console.log(`Transfering ${amount} ${resource} from ${from} to ${to}`);
-		let result = Game.rooms[from].terminal.send(resource, amount, to)
+		let result = Game.rooms[from].terminal.send(resource, amount, to);
 		return util.errorCodeToString(result);
 	},
 
-	sendEnergy(from, to, amount=75000) {
+	sendEnergy(from, to, amount = 75000) {
 		console.log(`Transfering ${amount} energy from ${from} to ${to}`);
 		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
 	},
@@ -131,7 +134,7 @@ global.Logistics = {
 	 * `recycleAfterDeposit`: bool, default false - if true, the creep will recycle immediately after the first deposit
 	 * `renewAtWithdraw`: bool, default true - Prefer to renew the creep before it withdraws energy.
 	 */
-	spawnTmpDelivery(fromId, toId, options={}) {
+	spawnTmpDelivery(fromId, toId, options = {}) {
 		let opts = _.defaults(options, {
 			size: 20,
 			recycleAfterDelivery: false,
@@ -144,30 +147,35 @@ global.Logistics = {
 		if (!opts.spawnName) {
 			rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		}
-		else {
+		} else {
 			spawn = Game.spawns[opts.spawnName];
 		}
 		opts.size = opts.size.clamp(1, 25);
 		let result = spawn.createCreep(
-			Array.apply(null, Array(opts.size)).map(_ => CARRY).concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
-			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`, Object.assign({
-				role:"tmpdeliver",
-				keepAlive:true,
-				stage: 0,
-				withdrawTargetId: fromId,
-				depositTargetId: toId,
-				recycleAfterDelivery: opts.recycleAfterDelivery,
-				recycleAfterDeposit: opts.recycleAfterDeposit,
-				renewAtWithdraw: opts.renewAtWithdraw,
-				dropAfterDeposit: opts.dropAfterDeposit,
-			}, opts.memory));
+			Array.apply(null, Array(opts.size))
+				.map(_ => CARRY)
+				.concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
+			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`,
+			Object.assign(
+				{
+					role: "tmpdeliver",
+					keepAlive: true,
+					stage: 0,
+					withdrawTargetId: fromId,
+					depositTargetId: toId,
+					recycleAfterDelivery: opts.recycleAfterDelivery,
+					recycleAfterDeposit: opts.recycleAfterDeposit,
+					renewAtWithdraw: opts.renewAtWithdraw,
+					dropAfterDeposit: opts.dropAfterDeposit,
+				},
+				opts.memory
+			)
+		);
 
 		if (typeof result === "string") {
-			return result
-		}
-		else {
-			return util.errorCodeToString(result)
+			return result;
+		} else {
+			return util.errorCodeToString(result);
 		}
 	},
 
@@ -177,19 +185,26 @@ global.Logistics = {
 			if (!room.storage || !room.terminal) {
 				return false;
 			}
-			return room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 200000 &&
+			return (
+				room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 200000 &&
 				room.storage.store.getUsedCapacity(RESOURCE_ENERGY) < 400000 &&
-				room.terminal.store.getFreeCapacity(RESOURCE_ENERGY) > 100000;
+				room.terminal.store.getFreeCapacity(RESOURCE_ENERGY) > 100000
+			);
 		});
 		if (hungryRooms.length === 0) {
-			return "No hungry rooms"
+			return "No hungry rooms";
 		}
-		let overflowingRooms = rooms.filter(room => !hungryRooms.map(r => r.name).includes(room.name)).filter(room => {
-			if (!room.storage || !room.terminal || room.terminal.cooldown > 0) {
-				return false;
-			}
-			return room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 700000 && room.terminal.store.getUsedCapacity(RESOURCE_ENERGY) >= Memory.terminalEnergyTarget
-		});
+		let overflowingRooms = rooms
+			.filter(room => !hungryRooms.map(r => r.name).includes(room.name))
+			.filter(room => {
+				if (!room.storage || !room.terminal || room.terminal.cooldown > 0) {
+					return false;
+				}
+				return (
+					room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 700000 &&
+					room.terminal.store.getUsedCapacity(RESOURCE_ENERGY) >= Memory.terminalEnergyTarget
+				);
+			});
 
 		console.log(`hungryRooms: ${hungryRooms}`);
 		console.log(`overflowingRooms: ${overflowingRooms}`);
@@ -206,7 +221,7 @@ global.Logistics = {
 			// TODO: find actual maximum we can send instead of this approximation
 			let needAmount = receiver.terminal.store.getFreeCapacity(RESOURCE_ENERGY);
 			// Game.market.calcTransactionCost
-			let cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name)
+			let cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name);
 			let totalNeeded = needAmount + cost;
 			let toSend = needAmount;
 			if (totalNeeded > sender.terminal.store.getUsedCapacity(RESOURCE_ENERGY)) {
@@ -219,7 +234,9 @@ global.Logistics = {
 			}
 		}
 
-		return `Fed ${roomsFed}/${hungryRooms.length} hungry rooms. (hungry: ${hungryRooms.length}, overflow: ${overflowingRooms.length}) ${feedLog.join(" ")}`
+		return `Fed ${roomsFed}/${hungryRooms.length} hungry rooms. (hungry: ${hungryRooms.length}, overflow: ${
+			overflowingRooms.length
+		}) ${feedLog.join(" ")}`;
 	},
 };
 
@@ -228,46 +245,90 @@ global.Util = {
 
 	getCreeps: util.getCreeps,
 
-	spawnMegaBuilder(spawnName=null) {
+	spawnMegaBuilder(spawnName = null) {
 		let spawn = null;
 		if (!spawnName) {
 			rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		}
-		else {
+		} else {
 			spawn = Game.spawns[spawnName];
 		}
-		let result = spawn.spawnCreep([
-			WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,
-			CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,
-			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
-			MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,
-			MOVE,MOVE,MOVE,MOVE,MOVE,
-		],
-		`builder_${Game.time.toString(16)}`,
-		{
-			memory: {
-				role: "builder",
-				keepAlive: false,
-				stage: 5
+		let result = spawn.spawnCreep(
+			[
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				WORK,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				CARRY,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+				MOVE,
+			],
+			`builder_${Game.time.toString(16)}`,
+			{
+				memory: {
+					role: "builder",
+					keepAlive: false,
+					stage: 5,
+				},
 			}
-		})
+		);
 
 		if (typeof result === "string") {
-			return result
-		}
-		else {
-			return util.errorCodeToString(result)
+			return result;
+		} else {
+			return util.errorCodeToString(result);
 		}
 	},
 
-	spawnTestLogisticsCreep(spawnName=null, size=2) {
+	spawnTestLogisticsCreep(spawnName = null, size = 2) {
 		let spawn = null;
 		if (!spawnName) {
 			rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		}
-		else {
+		} else {
 			spawn = Game.spawns[spawnName];
 		}
 		let body = [];
@@ -275,15 +336,13 @@ global.Util = {
 			body.unshift(CARRY);
 			body.push(MOVE);
 		}
-		return spawn.spawnCreep(body,
-			`testlogistics_${Game.time.toString(16)}`,
-			{
-				memory: {
-					role: "testlogistics",
-					keepAlive: true,
-					stage: size
-				}
-			});
+		return spawn.spawnCreep(body, `testlogistics_${Game.time.toString(16)}`, {
+			memory: {
+				role: "testlogistics",
+				keepAlive: true,
+				stage: size,
+			},
+		});
 	},
 
 	destroyAllTestLogisticsCreeps() {
@@ -303,7 +362,7 @@ global.Util = {
 		delete creep.memory._trav;
 	},
 
-	forceReplan(roomName, full=false) {
+	forceReplan(roomName, full = false) {
 		delete Memory.rooms[roomName].structures;
 		if (full) {
 			delete Memory.rooms[roomName].rootPos;
@@ -320,49 +379,44 @@ global.Debug = {
 	 * @param {String|Creep} creep Creep name, object id, or creep object.
 	 */
 	harvester(creep) {
-		if (typeof(creep) === "string") {
+		if (typeof creep === "string") {
 			if (creep in Game.creeps) {
-				creep = Game.creeps[creep]
-			}
-			else {
-				creep = Game.getObjectById(creep)
+				creep = Game.creeps[creep];
+			} else {
+				creep = Game.getObjectById(creep);
 			}
 		}
 
 		if (!(creep instanceof Creep)) {
-			return "Invalid input to debug function"
+			return "Invalid input to debug function";
 		}
 		if (creep.memory.role !== "harvester") {
-			return "Creep is not a harvester"
+			return "Creep is not a harvester";
 		}
 
 		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
-		let out = [
-			`pos=${creep.pos}`,
-			`targetRoom=${creep.memory.targetRoom}`,
-		];
+		let out = [`pos=${creep.pos}`, `targetRoom=${creep.memory.targetRoom}`];
 		if (creep.memory.harvestTarget) {
-			out.push(`harvestTarget=${harvestTarget}${harvestTarget.pos}`)
+			out.push(`harvestTarget=${harvestTarget}${harvestTarget.pos}`);
 		}
 		out.push(`harvesting=${creep.memory.harvesting}`, `renewing=${creep.memory.renewing}`);
 		if (creep.memory.renewTarget) {
 			out.push(`renewTarget=${renewTarget}${renewTarget.pos}`);
 		}
 		return `Harvester ${creep.name}: ${out.join(", ")}`;
-	}
+	},
 };
 
-global.id = Game.getObjectById
-global.creep = creepName => Game.creeps[creepName]
+global.id = Game.getObjectById;
+global.creep = creepName => Game.creeps[creepName];
 global.obj = identifier => {
 	if (identifier in Game.creeps) {
-		return Game.creeps[identifier]
+		return Game.creeps[identifier];
+	} else {
+		return Game.getObjectById(identifier);
 	}
-	else {
-		return Game.getObjectById(identifier)
-	}
-}
+};
 
 Creep.prototype.log = function (...args) {
 	if (_.any(Memory.highlightCreepLog, value => value === this.name || value === this.memory.role)) {

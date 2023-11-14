@@ -54,7 +54,7 @@ let roleClaimer = {
 					switch (creep.claimController(claimTarget)) {
 						case ERR_GCL_NOT_ENOUGH:
 							let reserveResult = creep.reserveController(claimTarget);
-							if (reserveResult == ERR_NOT_IN_RANGE) {
+							if (reserveResult === ERR_NOT_IN_RANGE) {
 								console.log("reserveController: NOT IN RANGE");
 								cartographer.moveTo(creep, claimTarget);
 							} else {

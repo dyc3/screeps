@@ -190,7 +190,7 @@ const roleTmpDelivery = {
 						if (creep.store.getFreeCapacity() === 0) {
 							break;
 						}
-						if (resource == RESOURCE_ENERGY) {
+						if (resource === RESOURCE_ENERGY) {
 							continue;
 						}
 						creep.withdraw(withdrawTarget, resource);

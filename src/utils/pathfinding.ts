@@ -16,7 +16,7 @@ export default {
 	roomNameToXY(roomName: string): [number, number] | undefined {
 		const match = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
 		if (match) {
-			return [parseInt(match[1]), parseInt(match[2])];
+			return [parseInt(match[1], 10), parseInt(match[2], 10)];
 		}
 		return undefined;
 	},
@@ -28,7 +28,7 @@ export default {
 	// 	if(toRoom instanceof Room) {
 	// 		toRoom = toRoom.name;
 	// 	}
-	// 	if(fromRoom == toRoom) {
+	// 	if(fromRoom === toRoom) {
 	// 		return [];
 	// 	}
 
@@ -39,7 +39,7 @@ export default {
 	// 	let [fromX, fromY] = this.roomNameToXY(fromRoom);
 	// 	let [toX, toY] = this.roomNameToXY(toRoom);
 
-	// 	if (fromX == toX && fromY == toY) {
+	// 	if (fromX === toX && fromY === toY) {
 	// 		return [];
 	// 	}
 

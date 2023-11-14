@@ -95,7 +95,7 @@ let brainAutoPlanner = {
 					for (let cY = y - 5; cY <= y + 1; cY++) {
 						for (let cX = x - 4; cX <= x + 4; cX++) {
 							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
-							if (terrain == "wall") {
+							if (terrain === "wall") {
 								valid = false;
 								break;
 							}
@@ -210,7 +210,7 @@ let brainAutoPlanner = {
 					for (let cY = y - 2; cY <= y + 2; cY++) {
 						for (let cX = x; cX <= x + 3; cX++) {
 							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
-							if (terrain == "wall") {
+							if (terrain === "wall") {
 								valid = false;
 								break;
 							}
@@ -331,7 +331,7 @@ let brainAutoPlanner = {
 		for (let source of sources) {
 			let terrain = Game.map.getRoomTerrain(room.name);
 			let adjacent = util.getAdjacent(source.pos).filter(pos => {
-				if (terrain.get(pos.x, pos.y) == TERRAIN_MASK_WALL) {
+				if (terrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
 					return false;
 				}
 
@@ -411,7 +411,7 @@ let brainAutoPlanner = {
 								// console.log("DEBUG: ", pos);
 								let isPlanned = _tmpIsPlanned(pos);
 								if (isPlanned) {
-									if (isPlanned == STRUCTURE_ROAD) {
+									if (isPlanned === STRUCTURE_ROAD) {
 										costMatrix.set(x, y, 0.5);
 									} else {
 										costMatrix.set(x, y, Infinity);
@@ -448,11 +448,11 @@ let brainAutoPlanner = {
 			// plan extentions in remaining spots
 			// since the road from the path is
 			// for (let pos of harvestAdj) {
-			// 	if (terrain.get(pos.x, pos.y) == "wall") {
+			// 	if (terrain.get(pos.x, pos.y) === "wall") {
 			// 		continue;
 			// 	}
 
-			// 	if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length == 0) {
+			// 	if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length === 0) {
 			// 		room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
 			// 	}
 			// }
@@ -585,7 +585,7 @@ let brainAutoPlanner = {
 		for (let numSide = 0; numSide < 4; numSide++) {
 			// if (numSide != 1) continue
 
-			let ySide = numSide % 2 == 0 ? 0 : 49;
+			let ySide = numSide % 2 === 0 ? 0 : 49;
 			let vertical = numSide >= 2;
 			// output should be:
 			// numSide: 0 - ySide = 0  vertical = false
@@ -598,10 +598,10 @@ let brainAutoPlanner = {
 			for (let x = 0; x < 50; x++) {
 				let testpos = !vertical ? new RoomPosition(x, ySide, room.name) : new RoomPosition(ySide, x, room.name);
 				// console.log(testpos);
-				if (_startExit_x < 0 && util.getTerrainAt(testpos) == "plain") {
+				if (_startExit_x < 0 && util.getTerrainAt(testpos) === "plain") {
 					_startExit_x = x - 2;
 				}
-				if (_startExit_x >= 0 && _endExit_x < _startExit_x && util.getTerrainAt(testpos) == "wall") {
+				if (_startExit_x >= 0 && _endExit_x < _startExit_x && util.getTerrainAt(testpos) === "wall") {
 					_endExit_x = x + 1;
 				}
 
@@ -615,7 +615,7 @@ let brainAutoPlanner = {
 							if (
 								_startExit_x < rX &&
 								rX < _endExit_x &&
-								(ySide == 0 ? 0 <= rY && rY <= 1 : 48 <= rY && rY <= 49)
+								(ySide === 0 ? 0 <= rY && rY <= 1 : 48 <= rY && rY <= 49)
 							) {
 								!vertical ? costs.set(rX, rY, Infinity) : costs.set(rY, rX, Infinity);
 								!vertical ? forbiddenPos.push([rX, rY]) : forbiddenPos.push([rY, rX]);
@@ -632,13 +632,13 @@ let brainAutoPlanner = {
 												stroke: "#ff0000",
 										  });
 								continue;
-							} else if ((rX == _startExit_x || rX == _endExit_x) && rY == ySide) {
+							} else if ((rX === _startExit_x || rX === _endExit_x) && rY === ySide) {
 								!vertical ? costs.set(rX, rY, 1) : costs.set(rY, rX, 1);
-								// if (numSide == 1) room.visual.circle(rX, rY, {fill: '#88cc44', radius: 0.4, stroke: '#8844cc'})
+								// if (numSide === 1) room.visual.circle(rX, rY, {fill: '#88cc44', radius: 0.4, stroke: '#8844cc'})
 								continue;
 							} else {
 								let costMultiplier = Math.abs(ySide - rY);
-								if (costMultiplier == 0) {
+								if (costMultiplier === 0) {
 									costMultiplier = 1;
 								}
 								// var costMultiplier = Math.abs(ySide - (rY/2))
@@ -657,8 +657,8 @@ let brainAutoPlanner = {
 										if (
 											util.getStructuresAt(rPos).some(function (struct) {
 												return (
-													struct.structureType == STRUCTURE_WALL ||
-													struct.structureType == STRUCTURE_RAMPART
+													struct.structureType === STRUCTURE_WALL ||
+													struct.structureType === STRUCTURE_RAMPART
 												);
 											})
 										) {
@@ -666,9 +666,9 @@ let brainAutoPlanner = {
 											!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
 											if ((!vertical ? rX : rY) < 9) {
 												let structAtPos = util.getStructuresAt(rPos);
-												if (structAtPos[0].structureType == STRUCTURE_WALL) {
+												if (structAtPos[0].structureType === STRUCTURE_WALL) {
 													walls.push(!vertical ? [rX, rY] : [rY, rX]);
-												} else if (structAtPos[0].structureType == STRUCTURE_RAMPART) {
+												} else if (structAtPos[0].structureType === STRUCTURE_RAMPART) {
 													ramparts.push(!vertical ? [rX, rY] : [rY, rX]);
 												}
 											}
@@ -677,7 +677,7 @@ let brainAutoPlanner = {
 											!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
 										}
 								}
-								// if (numSide == 1 && cost < 20) room.visual.circle(rX, rY, {fill: '#8844cc', radius: (cost/30), stroke: '#8844cc'})
+								// if (numSide === 1 && cost < 20) room.visual.circle(rX, rY, {fill: '#8844cc', radius: (cost/30), stroke: '#8844cc'})
 							}
 						}
 					}
@@ -685,7 +685,7 @@ let brainAutoPlanner = {
 
 					// figure out where the wall SHOULD go
 					let wallStartPos = !vertical
-						? new RoomPosition(_startExit_x, Math.abs(ySide - (_startExit_x == 0 ? 1 : 0)), room.name)
+						? new RoomPosition(_startExit_x, Math.abs(ySide - (_startExit_x === 0 ? 1 : 0)), room.name)
 						: new RoomPosition(ySide, _startExit_x, room.name);
 					let wallEndPos = !vertical
 						? new RoomPosition(_endExit_x, Math.abs(ySide), room.name)
@@ -722,20 +722,20 @@ let brainAutoPlanner = {
 								// }
 								if (
 									_.some(forbiddenPos, p => {
-										return p[0] == diag1.x && p[1] == diag1.y;
+										return p[0] === diag1.x && p[1] === diag1.y;
 									})
 								) {
 									wallPoints.push(diag2);
 								} else if (
 									_.some(forbiddenPos, p => {
-										return p[0] == diag2.x && p[1] == diag2.y;
+										return p[0] === diag2.x && p[1] === diag2.y;
 									})
 								) {
 									wallPoints.push(diag1);
 								} else {
 									let dist1 = Math.abs(ySide - (!vertical ? diag1.y : diag1.x));
 									let dist2 = Math.abs(ySide - (!vertical ? diag2.y : diag2.x));
-									// wallPoints.push(ySide == 0 ? diag1 : diag2)
+									// wallPoints.push(ySide === 0 ? diag1 : diag2)
 									wallPoints.push(dist1 < dist2 ? diag1 : diag2);
 								}
 							}
@@ -757,7 +757,7 @@ let brainAutoPlanner = {
 			costs_mod.set(wallPoints[w].x, wallPoints[w].y, Infinity);
 		}
 		wallPoints = _.reject(wallPoints, function (pos) {
-			if (util.getTerrainAt(pos) == "wall") {
+			if (util.getTerrainAt(pos) === "wall") {
 				return true;
 			}
 			if (
@@ -799,7 +799,7 @@ let brainAutoPlanner = {
 		// 		var path = pathsToExits[p]
 		// 		for (var i = 0; i < path.length; i++) {
 		// 			var pathpos = path[i]
-		// 			if (pathpos.x == wallPoint.x && pathpos.y == wallPoint.y) {
+		// 			if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
 		// 				// take the wallPoint out of wallPoints and put it in rampartPoints
 		// 				// .splice() removes and returns an array of values from the original array
 		// 				rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 2))
@@ -815,7 +815,7 @@ let brainAutoPlanner = {
 				var pathpos = path[i];
 				for (var w = 0; w < wallPoints.length; w++) {
 					var wallPoint = wallPoints[w];
-					if (pathpos.x == wallPoint.x && pathpos.y == wallPoint.y) {
+					if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
 						offsets[exits[p]] = w % rampartsEvery;
 						break;
 					}
@@ -826,7 +826,7 @@ let brainAutoPlanner = {
 		console.log("bestOffset: ", bestOffset);
 		for (var w = 0; w < wallPoints.length; w++) {
 			var wallPoint = wallPoints[w];
-			if (w % rampartsEvery == bestOffset) {
+			if (w % rampartsEvery === bestOffset) {
 				// take the wallPoint out of wallPoints and put it in rampartPoints
 				// .splice() removes and returns an array of values from the original array
 				rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 1));
@@ -861,7 +861,7 @@ let brainAutoPlanner = {
 			for (let w in Memory.rooms[room.name].walls) {
 				let wall = Memory.rooms[room.name].walls[w];
 				var pos = new RoomPosition(wall[0], wall[1], room.name);
-				if (pos.createConstructionSite(STRUCTURE_WALL) == OK) {
+				if (pos.createConstructionSite(STRUCTURE_WALL) === OK) {
 					hasPlacedSite = true;
 					break;
 				}
@@ -875,7 +875,7 @@ let brainAutoPlanner = {
 			for (let r in Memory.rooms[room.name].ramparts) {
 				let rampart = Memory.rooms[room.name].ramparts[r];
 				var pos = new RoomPosition(rampart[0], rampart[1], room.name);
-				if (pos.createConstructionSite(STRUCTURE_RAMPART) == OK) {
+				if (pos.createConstructionSite(STRUCTURE_RAMPART) === OK) {
 					hasPlacedSite = true;
 					break;
 				}

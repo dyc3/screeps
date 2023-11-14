@@ -741,7 +741,7 @@ function doCreepSpawning() {
 		// mark 1 creep for death
 		// console.log(role.name, creeps.length, "/" , quota, room);
 
-		// Returns true if a creep has keepAlive == false
+		// Returns true if a creep has keepAlive === false
 
 		if (creeps.length === 0) {
 			return false;

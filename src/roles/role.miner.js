@@ -139,7 +139,7 @@ const roleMiner = {
 		}
 		if (
 			creep.memory.mining &&
-			(totalCarry == creep.carryCapacity ||
+			(totalCarry === creep.carryCapacity ||
 				((creep.memory.useSecondaryRoute
 					? mineralTargetSecondary.ticksToRegeneration
 					: mineralTarget.ticksToRegeneration) > 0 &&
