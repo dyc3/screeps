@@ -1,6 +1,6 @@
-import _ from "lodash";
 import { ErrorMapper } from "utils/ErrorMapper";
 import type { Role } from "./roles/meta";
+import _ from "lodash";
 
 const errorMild = '<audio src="http://trekcore.com/audio/computer/alarm01.mp3" autoplay />';
 
@@ -25,7 +25,7 @@ export const util = {
 		};
 		try {
 			// @ts-expect-error FIXME: needs better typing
-			return _.invert(errors)[errorCode];
+			return _.invert(errors)[errorCode] as string;
 		} catch (e) {
 			return "<INVALID ERROR CODE>";
 		}
@@ -46,16 +46,7 @@ export const util = {
 	 */
 	findClosestOwnedRooms(targetPos: RoomPosition, filterCallback = (room: Room) => true): Room[] {
 		let rooms = this.getOwnedRooms();
-		rooms = _.filter(rooms, filterCallback)
-			// HACK: exclude certain room combos because they suck so much
-			.filter(room => {
-				if (targetPos.roomName === "W15N13") {
-					return room.name !== "W13N11";
-				} else if (targetPos.roomName === "W13N11") {
-					return room.name !== "W15N13";
-				}
-				return true;
-			});
+		rooms = _.filter(rooms, filterCallback);
 		// Old sort, just in case i need it
 		// rooms.sort((a, b) => {
 		// 	let roomDistance = Game.map.getRoomLinearDistance(targetPos.roomName, a.name) - Game.map.getRoomLinearDistance(targetPos.roomName, b.name);
@@ -172,8 +163,8 @@ export const util = {
 	 * Gets the cost to spawn a creep with the given body.
 	 */
 	getCreepSpawnCost(body: BodyPartDefinition[] | BodyPartConstant[]): number {
-		function isFullBody(body: BodyPartDefinition[] | BodyPartConstant[]): body is BodyPartDefinition[] {
-			return body.length > 0 && typeof body[0] !== "string" && "type" in body[0];
+		function isFullBody(b: BodyPartDefinition[] | BodyPartConstant[]): b is BodyPartDefinition[] {
+			return b.length > 0 && typeof b[0] !== "string" && "type" in b[0];
 		}
 		let parts: BodyPartConstant[];
 		if (isFullBody(body)) {
@@ -413,6 +404,7 @@ declare global {
 		log(...args: any[]): void;
 	}
 
+	// eslint-disable-next-line id-blacklist
 	interface Number {
 		clamp(min: number, max: number): number;
 	}

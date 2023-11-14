@@ -12,6 +12,7 @@ const toolEnergySource = {
 		for (let y = energySource.pos.y - 1; y <= energySource.pos.y + 1; y++) {
 			for (let x = energySource.pos.x - 1; x <= energySource.pos.x + 1; x++) {
 				const thisterrain = terrain.get(x, y);
+				// eslint-disable-next-line no-bitwise
 				if ((thisterrain & (TERRAIN_MASK_WALL | TERRAIN_MASK_LAVA)) > 0) {
 					continue;
 				}

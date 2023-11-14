@@ -489,13 +489,13 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 const creepUpgrader = {
 	roles,
 
-	getRoleMetadata(role: Role): RoleMetadata {
+	getRoleMetadata(role: Role): RoleMetadata | undefined {
 		return roles[role];
 	},
 
 	// returns -1 if stage not found
-	getCreepStage(creep: Creep) {
-		if (creep.memory.role == "guardian") {
+	getCreepStage(creep: Creep): number {
+		if (creep.memory.role === Role.Guardian) {
 			return 0;
 		}
 		const roleMeta = this.roles[creep.memory.role];
@@ -505,7 +505,7 @@ const creepUpgrader = {
 		for (let s = 0; s < roleMeta.stages.length; s++) {
 			let isMatch = true;
 			for (let b = 0; b < creep.body.length; b++) {
-				if (creep.body[b].type != roleMeta.stages[s][b]) {
+				if (creep.body[b].type !== roleMeta.stages[s][b]) {
 					isMatch = false;
 					break;
 				}
@@ -523,7 +523,7 @@ const creepUpgrader = {
 	 * @param room
 	 * @returns The stage number, or -1 if the specified spawn can't spawn any stage
 	 */
-	getHighestStage(role: Role, room: Room) {
+	getHighestStage(role: Role, room: Room): number {
 		const roleMeta = this.roles[role];
 		if (!roleMeta) {
 			return -1;
@@ -537,16 +537,14 @@ const creepUpgrader = {
 		return roleMeta.stages.length - 1;
 	},
 
-	/** @param {string} role **/
-	/** @param {int} stage **/
-	getCreepCost(role: Role, stage: number) {
+	getCreepCost(role: Role, stage: number): number {
 		const roleMeta = this.roles[role];
 		if (!roleMeta) {
 			return -1;
 		}
 		let cost = 0;
-		for (let i = 0; i < roleMeta.stages[stage].length; i++) {
-			cost += BODYPART_COST[roleMeta.stages[stage][i]];
+		for (const part of roleMeta.stages[stage]) {
+			cost += BODYPART_COST[part];
 		}
 		return cost;
 	},
