@@ -1,9 +1,13 @@
-import util from "./util";
 import "./traveler.js";
 import brainAutoPlanner from "./brain.autoplanner.js";
+import util from "./util";
 
-class ResourceSink {
-	constructor(args = null) {
+export class ResourceSink {
+	public resource: ResourceConstant;
+	public objectId: Id<AnyStoreStructure>;
+	public roomName = "";
+
+	public constructor(args = null) {
 		this.resource = "";
 		this.objectId = "";
 		this.roomName = "";
@@ -13,13 +17,17 @@ class ResourceSink {
 		}
 	}
 
-	get object() {
+	public get object(): AnyStoreStructure | null {
 		return Game.getObjectById(this.objectId);
 	}
 }
 
-class ResourceSource {
-	constructor(args = null) {
+export class ResourceSource {
+	public resource: ResourceConstant;
+	public objectId: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
+	public roomName = "";
+
+	public constructor(args = null) {
 		this.resource = "";
 		this.objectId = "";
 		this.roomName = "";
@@ -28,11 +36,11 @@ class ResourceSource {
 		}
 	}
 
-	get object() {
+	public get object(): AnyStoreStructure | Tombstone | Ruin | Resource | null {
 		return Game.getObjectById(this.objectId);
 	}
 
-	get amount() {
+	public get amount(): number {
 		if (!this.object) {
 			return 0;
 		}
@@ -52,7 +60,7 @@ class ResourceSource {
 	}
 }
 
-/** @deprecated */
+/** @deprecated: dead code? */
 class DeliveryTask {
 	constructor(source, sink) {
 		// validate
@@ -125,7 +133,7 @@ class DeliveryTask {
 			return;
 		}
 
-		let lineStyle = {
+		const lineStyle = {
 			color: "#ff0",
 			opacity: 0.7,
 			lineStyle: "dotted",
@@ -152,7 +160,7 @@ class DeliveryTask {
 				opacity: 0.7,
 				lineStyle: "dotted",
 			});
-			let mapLineStyle = lineStyle;
+			const mapLineStyle = lineStyle;
 			mapLineStyle.width *= 100;
 			Game.map.visual.line(this.source.object.pos, this.sink.object.pos, mapLineStyle);
 		}
@@ -160,20 +168,20 @@ class DeliveryTask {
 }
 
 // cache of all sources and sinks found so far, invalidated at the end of the tick
-let sourcesCache = [];
-let sinksCache = [];
+let sourcesCache: ResourceSource[] = [];
+let sinksCache: ResourceSink[] = [];
 
 function collectAllResourceSources() {
 	if (sourcesCache.length > 0) {
 		return sourcesCache;
 	}
 
-	let sources = [];
+	const sources = [];
 
-	let rooms = util.getOwnedRooms();
-	for (let room of rooms) {
+	const rooms = util.getOwnedRooms();
+	for (const room of rooms) {
 		if (room.memory.defcon === 0) {
-			let dropped = room.find(FIND_DROPPED_RESOURCES, {
+			const dropped = room.find(FIND_DROPPED_RESOURCES, {
 				filter: d => {
 					if (util.isDistFromEdge(d.pos, 4)) {
 						return d.pos.findInRange(FIND_SOURCES, 1).length > 0 && d.amount > 0;
@@ -182,8 +190,8 @@ function collectAllResourceSources() {
 					return d.amount > 0;
 				},
 			});
-			for (let drop of dropped) {
-				let source = new ResourceSource({
+			for (const drop of dropped) {
+				const source = new ResourceSource({
 					resource: drop.resourceType,
 					objectId: drop.id,
 					roomName: drop.pos.roomName,
@@ -194,7 +202,7 @@ function collectAllResourceSources() {
 				sources.push(source);
 			}
 
-			let tombstones = room.find(FIND_TOMBSTONES, {
+			const tombstones = room.find(FIND_TOMBSTONES, {
 				filter: tomb => {
 					if (util.isDistFromEdge(tomb.pos, 4)) {
 						return false;
@@ -203,9 +211,9 @@ function collectAllResourceSources() {
 					return tomb.store.getUsedCapacity() > 0;
 				},
 			});
-			for (let tombstone of tombstones) {
-				for (let resource in tombstone.store) {
-					let source = new ResourceSource({
+			for (const tombstone of tombstones) {
+				for (const resource in tombstone.store) {
+					const source = new ResourceSource({
 						resource,
 						objectId: tombstone.id,
 						roomName: tombstone.pos.roomName,
@@ -218,7 +226,7 @@ function collectAllResourceSources() {
 			}
 		}
 
-		let sourceStructures = room.find(FIND_STRUCTURES, {
+		const sourceStructures = room.find(FIND_STRUCTURES, {
 			filter: struct => {
 				if (struct.structureType === STRUCTURE_CONTAINER) {
 					return struct.pos.getRangeTo(struct.room.controller) > CONTROLLER_UPGRADE_RANGE;
@@ -231,12 +239,12 @@ function collectAllResourceSources() {
 			},
 		});
 
-		for (let struct of sourceStructures) {
-			for (let resource in struct.store) {
+		for (const struct of sourceStructures) {
+			for (const resource in struct.store) {
 				if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
 					continue;
 				}
-				let source = new ResourceSource({
+				const source = new ResourceSource({
 					resource,
 					objectId: struct.id,
 					roomName: struct.pos.roomName,
@@ -282,25 +290,25 @@ function collectAllResourceSinks() {
 		return sinksCache;
 	}
 
-	let sinks = [];
+	const sinks = [];
 
 	// read fill flags
-	for (let flagName in Game.flags) {
+	for (const flagName in Game.flags) {
 		if (!flagName.startsWith("fill") && !flagName.startsWith("unmake")) {
 			continue;
 		}
 
-		let flag = Game.flags[flagName];
+		const flag = Game.flags[flagName];
 
-		let struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType !== STRUCTURE_ROAD)[0];
+		const struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType !== STRUCTURE_ROAD)[0];
 		if (!struct) {
 			console.log("WARN: fill flag does not have structure");
 			continue;
 		}
 
-		let flagNameSplit = flag.name.split(":");
-		let resource = flagNameSplit[1];
-		let amount =
+		const flagNameSplit = flag.name.split(":");
+		const resource = flagNameSplit[1];
+		const amount =
 			flagNameSplit.length > 2
 				? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource))
 				: struct.store.getFreeCapacity(resource);
@@ -309,7 +317,7 @@ function collectAllResourceSinks() {
 			continue;
 		}
 
-		let sink = new ResourceSink({
+		const sink = new ResourceSink({
 			resource,
 			objectId: struct.id,
 			amount,
@@ -319,11 +327,11 @@ function collectAllResourceSinks() {
 	}
 
 	// find energy sinks
-	let rooms = util.getOwnedRooms();
+	const rooms = util.getOwnedRooms();
 	const resources = [RESOURCE_ENERGY, RESOURCE_POWER, RESOURCE_GHODIUM];
-	for (let resource of resources) {
-		for (let room of rooms) {
-			let sinkStructures = room.find(FIND_STRUCTURES, {
+	for (const resource of resources) {
+		for (const room of rooms) {
+			const sinkStructures = room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
 						return (
@@ -339,7 +347,7 @@ function collectAllResourceSinks() {
 				},
 			});
 
-			for (let struct of sinkStructures) {
+			for (const struct of sinkStructures) {
 				if (resource === RESOURCE_GHODIUM && struct.structureType !== STRUCTURE_NUKER) {
 					continue;
 				}
@@ -364,7 +372,7 @@ function collectAllResourceSinks() {
 					continue;
 				}
 
-				let sink = new ResourceSink({
+				const sink = new ResourceSink({
 					resource,
 					objectId: struct.id,
 					amount,
@@ -390,10 +398,10 @@ const brainLogistics = {
 	},
 
 	old_buildDeliveryTasks(sinks, sources) {
-		let tasks = [];
+		const tasks = [];
 
-		for (let sink of sinks) {
-			let sinkStruct = Game.getObjectById(sink.objectId);
+		for (const sink of sinks) {
+			const sinkStruct = Game.getObjectById(sink.objectId);
 
 			// Try to source from the closest target, ideally in the same room
 			let possibleSources = _.filter(sources, source => {
@@ -403,7 +411,7 @@ const brainLogistics = {
 				continue;
 			}
 			possibleSources = _.sortBy(possibleSources, source => {
-				let sourceStruct = Game.getObjectById(source.objectId);
+				const sourceStruct = Game.getObjectById(source.objectId);
 				if (sinkStruct.pos.roomName === sourceStruct.pos.roomName) {
 					return sinkStruct.pos.getRangeTo(sourceStruct.pos);
 				} else {
@@ -414,9 +422,9 @@ const brainLogistics = {
 			// TODO: use links to improve efficiency
 
 			// Split delivery tasks where the source and sink are in different rooms and there are available terminals.
-			let source = possibleSources[0];
+			const source = possibleSources[0];
 			if (source.roomName !== sink.roomName && source.object.room.terminal && sink.object.room.terminal) {
-				let resource = sink.resource;
+				const resource = sink.resource;
 
 				if (source.object.structureType !== STRUCTURE_TERMINAL) {
 					tasks.push(
@@ -461,7 +469,7 @@ const brainLogistics = {
 					);
 				}
 			} else {
-				let task = new DeliveryTask(source, sink);
+				const task = new DeliveryTask(source, sink);
 				tasks.push(task);
 			}
 		}
@@ -470,7 +478,7 @@ const brainLogistics = {
 	},
 
 	visualizeTasks(tasks) {
-		for (let task of tasks) {
+		for (const task of tasks) {
 			task.visualize();
 		}
 	},
@@ -479,7 +487,7 @@ const brainLogistics = {
 	 * Tell the specified creep what delivery task to fulfil.
 	 * @param {Creep} creep The creep to give a task to.
 	 */
-	allocateCreep(creep) {
+	allocateCreep(creep: Creep) {
 		let availableTasks = _.filter(this.tasks, task => {
 			if (task.isComplete) {
 				return false;
@@ -489,7 +497,7 @@ const brainLogistics = {
 				return false;
 			}
 
-			let alreadyAssignedCreeps = _.filter(
+			const alreadyAssignedCreeps = _.filter(
 				[].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")),
 				creep => creep.memory.deliveryTaskId === task.id
 			);
@@ -564,15 +572,15 @@ const brainLogistics = {
 	},
 
 	old_fulfillTerminalTransfers() {
-		let terminalTransferTasks = _.filter(
+		const terminalTransferTasks = _.filter(
 			this.tasks,
 			task => (task.source.object.structureType === task.sink.object.structureType) === STRUCTURE_TERMINAL
 		);
-		for (let task of terminalTransferTasks) {
+		for (const task of terminalTransferTasks) {
 			if (task.source.object.cooldown > 0) {
 				continue;
 			}
-			let result = task.source.object.send(task.resource, task.amount, task.sink.roomName);
+			const result = task.source.object.send(task.resource, task.amount, task.sink.roomName);
 			if (result !== OK) {
 				console.log(`Failed to fulfil ${task.id} with terminals: ${result}`);
 			}
@@ -586,7 +594,7 @@ const brainLogistics = {
 	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSources(options = {}) {
+	findSources(options: Partial<ResourceSource> & { filter: (s: ResourceSource) => boolean }): ResourceSource[] {
 		let sources = collectAllResourceSources();
 		if (options.resource) {
 			sources = sources.filter(s => s.resource === options.resource);
@@ -607,7 +615,7 @@ const brainLogistics = {
 	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSinks(options = {}) {
+	findSinks(options: Partial<ResourceSink> & { filter: (s: ResourceSink) => boolean }): ResourceSink[] {
 		let sinks = collectAllResourceSinks();
 		if (options.resource) {
 			sinks = sinks.filter(s => s.resource === options.resource);
