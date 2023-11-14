@@ -13,7 +13,7 @@ export interface GuardTaskSerialized {
 	complete: boolean;
 	assignedCreeps: string[];
 	neededCreeps: number;
-	_currentTarget: string | null;
+	_currentTarget?: string;
 	waiting: boolean;
 	disableUntil: number;
 }
@@ -24,12 +24,12 @@ export interface GuardTaskSerialized {
 
 class GuardTask implements GuardTaskSerialized {
 	public id: string;
-	public _targetRoom: string | null = null;
+	public _targetRoom = "";
 	public guardType = "default";
 	public complete = false;
 	public assignedCreeps: string[] = [];
 	public neededCreeps = 1;
-	public _currentTarget: Id<AnyCreep> | null = null;
+	public _currentTarget: Id<AnyCreep> | undefined = undefined;
 	/**
 	 * Whether or not the task is waiting for all creeps to be spawned.
 	 */
@@ -345,7 +345,7 @@ module.exports = {
 			} else {
 				const creepBody = this.getGuardianBody(task.guardType);
 				const targetSpawnRooms = util.findClosestOwnedRooms(
-					new RoomPosition(25, 25, task._targetRoom!),
+					new RoomPosition(25, 25, task._targetRoom),
 					room =>
 						room.energyAvailable >= room.energyCapacityAvailable * 0.8 &&
 						room.energyAvailable >= util.getCreepSpawnCost(creepBody)
@@ -615,9 +615,9 @@ module.exports = {
 				task.currentTarget instanceof StructureKeeperLair &&
 				!task.currentTarget.ticksToSpawn
 			) {
-				const hostiles = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
-				if (hostiles.length > 0) {
-					task._currentTarget = hostiles[0].id;
+				const hostilesAroundLair = task.currentTarget.pos.findInRange(FIND_HOSTILE_CREEPS, 7);
+				if (hostilesAroundLair.length > 0) {
+					task._currentTarget = hostilesAroundLair[0].id;
 				}
 			}
 
@@ -639,7 +639,7 @@ module.exports = {
 					if (creep.hits < creep.hitsMax) {
 						creep.log("[guard] healing self");
 						creep.heal(creep);
-					} else if (!creep.pos.inRangeTo(task.currentTarget, 3)) {
+					} else if (task.currentTarget && !creep.pos.inRangeTo(task.currentTarget, 3)) {
 						const creepsNeedHeal = _.filter(creeps, c => {
 							if (c.name === creep.name) {
 								return false;
@@ -657,7 +657,7 @@ module.exports = {
 						} else {
 							// passively heal other friendly creeps in range.
 							const otherCreepsNeedHeal = creep.pos.findInRange(FIND_CREEPS, 3).filter(c => {
-								return toolFriends.isCreepFriendly(c) && c.hits < c.hitsMax;
+								return toolFriends.isFriendly(c) && c.hits < c.hitsMax;
 							});
 							if (otherCreepsNeedHeal.length > 0) {
 								if (creep.pos.isNearTo(otherCreepsNeedHeal[0])) {
