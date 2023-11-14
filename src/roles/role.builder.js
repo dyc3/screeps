@@ -21,34 +21,35 @@ let roleBuilder = {
 	run(creep) {
 		if (creep.memory.building && creep.store[RESOURCE_ENERGY] === 0) {
 			creep.memory.building = false;
-			creep.say('gathering');
-		}
-		else if (!creep.memory.building && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+			creep.say("gathering");
+		} else if (!creep.memory.building && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
 			creep.memory.building = true;
-			creep.say('building');
+			creep.say("building");
 		}
 
-		if(creep.memory.building) {
+		if (creep.memory.building) {
 			if (!creep.memory.buildTargetId) {
 				let targets = this.findTargets();
-				if(targets.length) {
-					targets = _.sortByOrder(targets, [
-						s => s.structureType === STRUCTURE_SPAWN,
-						s => s.structureType === STRUCTURE_TOWER,
-						s => s.structureType === STRUCTURE_EXTENSION,
-						s => s.structureType !== STRUCTURE_ROAD,
-						s => s.progress / s.progressTotal,
-					], ["desc", "desc", "desc", "desc", "desc"]);
+				if (targets.length) {
+					targets = _.sortByOrder(
+						targets,
+						[
+							s => s.structureType === STRUCTURE_SPAWN,
+							s => s.structureType === STRUCTURE_TOWER,
+							s => s.structureType === STRUCTURE_EXTENSION,
+							s => s.structureType !== STRUCTURE_ROAD,
+							s => s.progress / s.progressTotal,
+						],
+						["desc", "desc", "desc", "desc", "desc"]
+					);
 					let target = _.first(targets);
 					if (target) {
 						creep.memory.buildTargetId = target.id;
-					}
-					else {
+					} else {
 						creep.log("ERR: Unable to find a build target");
 					}
-				}
-				else{
-					creep.say('ERR: No construction sites');
+				} else {
+					creep.say("ERR: No construction sites");
 				}
 			}
 
@@ -56,24 +57,20 @@ let roleBuilder = {
 				let target = Game.getObjectById(creep.memory.buildTargetId);
 				if (target) {
 					if (creep.pos.inRangeTo(target, 3)) {
-						creep.build(target)
-					}
-					else {
+						creep.build(target);
+					} else {
 						cartographer.moveTo(creep, target);
 					}
-				}
-				else {
+				} else {
 					delete creep.memory.buildTargetId;
 				}
+			} else {
+				creep.say("ERR: No build target");
 			}
-			else{
-				creep.say('ERR: No build target');
-			}
-		}
-		else {
+		} else {
 			taskGather.run(creep);
 		}
-	}
+	},
 };
 
 module.exports = roleBuilder;
