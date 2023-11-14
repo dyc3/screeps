@@ -468,21 +468,6 @@ module.exports = {
 				}
 			}
 
-			// if (!task.targetRoom) {
-			// 	// we don't have vision of the room.
-			// 	console.log(`[guard] no vision of ${task._targetRoom}, moving to center`);
-			// 	for (const creep of creeps) {
-			// 		const result = cartographer.moveTo(creep, {
-			// 			pos: new RoomPosition(25, 25, task._targetRoom),
-			// 			range: 20,
-			// 		});
-			// 		if (result !== OK) {
-			// 			console.log("[guard] unable to move", result);
-			// 		}
-			// 	}
-			// 	continue;
-			// }
-
 			if (task.targetRoom) {
 				const foundInvaderCore: StructureInvaderCore = _.first(
 					task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
