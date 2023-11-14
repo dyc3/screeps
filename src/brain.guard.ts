@@ -743,15 +743,10 @@ module.exports = {
 							const remoteMiningTarget = _.find(Memory.remoteMining.targets, {
 								roomName: task._targetRoom,
 							});
-							if (remoteMiningTarget) {
-								const dangerPos = new RoomPosition(
-									remoteMiningTarget.dangerPos[2].x,
-									remoteMiningTarget.dangerPos[2].y,
-									remoteMiningTarget.dangerPos[2].roomName
-								);
-								cartographer.moveTo(creep, dangerPos, {
-									avoidRooms: [task._targetRoom],
-								});
+							if (remoteMiningTarget && remoteMiningTarget.dangerPos) {
+								const danger = remoteMiningTarget.dangerPos[2];
+								const dangerPos = new RoomPosition(danger.x, danger.y, danger.roomName);
+								cartographer.moveTo(creep, dangerPos);
 							} else {
 								if (!creep.memory.stagingObjectId) {
 									creep.memory.stagingObjectId = util.getSpawn(
