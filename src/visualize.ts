@@ -1,10 +1,10 @@
-import util from "./util";
+import toolCreepUpgrader, { getUpgraderQuota } from "./tool.creepupgrader";
 import { Role } from "./roles/meta";
 import toolEnergySource from "./tool.energysource";
-import toolCreepUpgrader from "./tool.creepupgrader";
+import util from "./util";
 
 export default {
-	doVisualize() {
+	doVisualize(): void {
 		const rooms = util.getOwnedRooms();
 		const vis = new RoomVisual();
 
@@ -213,9 +213,15 @@ export default {
 					continue;
 				}
 				Object.keys(room.memory.harvestPositions).forEach(id => {
-					const source = Game.getObjectById(id as Id<_HasId>) as Source;
-					const { x, y } = room.memory.harvestPositions[id];
+					const source = Game.getObjectById(id as Id<Source>);
+					if (!source) {
+						return;
+					}
+					const { x, y } = room.memory.harvestPositions[id as Id<Source>];
 					const pos = room.getPositionAt(x, y);
+					if (!pos) {
+						return;
+					}
 					room.visual.circle(pos, {
 						stroke: "#ffff00",
 						fill: "transparent",
@@ -243,11 +249,13 @@ export default {
 		for (const room of rooms) {
 			// draw upgrader quotas on controllers
 			const count = util.getCreeps(Role.Upgrader).filter(creep => creep.memory.targetRoom === room.name).length;
-			const max = toolCreepUpgrader.getUpgraderQuota(room);
+			const max = getUpgraderQuota(room);
 			const text = `${count}/${max}`;
 			const color = count <= max ? "#11dd11" : "#dd1111";
 			const controllerPos = room.controller?.pos;
-			room.visual.text(text, controllerPos, { color, font: 0.4, stroke: "#000" });
+			if (controllerPos) {
+				room.visual.text(text, controllerPos, { color, font: 0.4, stroke: "#000" });
+			}
 
 			// mark the room's rootPos, assists autoplanner debugging
 			const root = room.memory.rootPos as { x: number; y: number } | undefined;
@@ -295,6 +303,9 @@ export default {
 		const rooms = Object.values(Game.rooms);
 		for (const room of rooms) {
 			const pos = room.getPositionAt(2, 2);
+			if (!pos) {
+				continue;
+			}
 			Game.map.visual.rect(pos, 46, 46, {
 				fill: "transparent",
 				stroke: "#0047AB",
@@ -306,9 +317,7 @@ export default {
 	drawNukeRange(): void {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
-			const nukers = room.find(FIND_MY_STRUCTURES, {
-				filter: s => s.structureType === STRUCTURE_NUKER,
-			});
+			const nukers = util.getStructures(room, STRUCTURE_NUKER);
 			for (const nuker of nukers) {
 				Game.map.visual.circle(nuker.pos, {
 					fill: "transparent",

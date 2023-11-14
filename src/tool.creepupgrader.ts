@@ -2,13 +2,12 @@ import toolEnergySource from "./tool.energysource";
 import util from "./util";
 import { Role } from "./roles/meta";
 
-/** @param {Room} room **/
-export function getUpgraderQuota(room: Room) {
+export function getUpgraderQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
 	// TODO: clean this up a little
-	function _getQuota(rcl: number | undefined) {
+	function getQuota(rcl: number | undefined): number {
 		let value = 2;
 		switch (rcl) {
 			case 1:
@@ -39,25 +38,23 @@ export function getUpgraderQuota(room: Room) {
 	if (room.storage && room.controller.pos.getRangeTo(room.storage) <= 5) {
 		return 1;
 	}
-	return _getQuota(room.controller?.level);
+	return getQuota(room.controller?.level);
 }
 
-/** @param {Room} room **/
-export function getScientistQuota(room: Room) {
+export function getScientistQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
 	if (
 		room.controller.level >= 6 &&
-		(util.getStructuresOld(room, STRUCTURE_LAB).length > 0 ||
-			util.getStructuresOld(room, STRUCTURE_FACTORY).length > 0)
+		(util.getStructures(room, STRUCTURE_LAB).length > 0 || util.getStructures(room, STRUCTURE_FACTORY).length > 0)
 	) {
 		return 1;
 	}
 	return 0;
 }
 
-export function getBuilderQuota() {
+export function getBuilderQuota(): number {
 	// 	var rooms = util.getOwnedRooms();
 	// 	var room = rooms[0];
 	// 	for (var r = 0; r < rooms.length; r++) {
@@ -78,7 +75,7 @@ export function getBuilderQuota() {
 	return 3;
 }
 
-export function getManagerQuota(room: Room) {
+export function getManagerQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
