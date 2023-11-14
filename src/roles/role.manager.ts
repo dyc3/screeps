@@ -385,11 +385,10 @@ function getManagerCount(room: Room): number {
 
 // this role is for transporting energy short distances
 const roleManager = {
-	findTargetRoom(creep) {
+	findTargetRoom(creep: Creep): void {
 		const rooms = util.getOwnedRooms();
-		for (let i = 0; i < rooms.length; i++) {
-			const room = rooms[i];
-			if (room.controller.level < 4) {
+		for (const room of rooms) {
+			if ((room.controller?.level ?? 0) < 4) {
 				continue;
 			}
 			if (getManagerCount(room) < 1) {
@@ -399,7 +398,7 @@ const roleManager = {
 		}
 	},
 
-	getTransferTarget(creep) {
+	getTransferTarget(creep: Creep): AnyStoreStructure | null {
 		let transportTarget;
 		if (creep.memory.transportTarget) {
 			transportTarget = Game.getObjectById(creep.memory.transportTarget);

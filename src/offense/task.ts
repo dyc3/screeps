@@ -15,13 +15,13 @@ const TASK_RUN = 1;
 const STAGING_POSITION = new RoomPosition(6, 42, "W16N9");
 
 export class OffenseTask {
-	creepNames: string[];
-	state: typeof TASK_PREPARE | typeof TASK_RUN;
-	manualStart = false;
-	autoSpawn = true;
-	autoStart = false;
-	strategyName: string;
-	strategy: unknown;
+	public creepNames: string[];
+	public state: typeof TASK_PREPARE | typeof TASK_RUN;
+	public manualStart = false;
+	public autoSpawn = true;
+	public autoStart = false;
+	public strategyName: string;
+	public strategy: unknown;
 
 	public constructor(mem: { strategyName: string }) {
 		this.creepNames = [];
@@ -46,14 +46,14 @@ export class OffenseTask {
 		return strat;
 	}
 
-	public run(task_idx: number): void {
+	public run(taskIdx: number): void {
 		// HACK: force creep role
 		this.creeps.forEach(creep => (creep.memory.role = Role.Offense));
 
 		const strat = this.getStrategy();
 		if (this.state === TASK_PREPARE) {
 			if (this.autoSpawn) {
-				autoSpawn(task_idx);
+				autoSpawn(taskIdx);
 			}
 
 			// HACK: hardcoded position
@@ -62,7 +62,7 @@ export class OffenseTask {
 				.forEach((creep, idx) => {
 					const stagingPos = new RoomPosition(
 						(STAGING_POSITION.x - Math.floor(this.creeps.length / 2)).clamp(1, 48) + idx,
-						STAGING_POSITION.y + task_idx,
+						STAGING_POSITION.y + taskIdx,
 						STAGING_POSITION.roomName
 					);
 					cartographer.moveTo(creep, stagingPos);
@@ -119,8 +119,8 @@ export class OffenseTask {
 }
 
 /** Quick and dirty automated spawner for Offense tasks. Should be good enough for now. */
-export function autoSpawn(task_idx: number) {
-	const task = new OffenseTask(Memory.offense.tasks[task_idx]);
+export function autoSpawn(taskIdx: number) {
+	const task = new OffenseTask(Memory.offense.tasks[taskIdx]);
 	const strat = task.getStrategy();
 	// @ts-expect-error FIXME: need to add `c.memory.type` to creep memory to CreepMemory
 	const grouped = _.groupBy(task.creeps, c => c.memory.type);
@@ -132,7 +132,7 @@ export function autoSpawn(task_idx: number) {
 			const closestRooms = util.findClosestOwnedRooms(STAGING_POSITION).map(r => r.name);
 			let spawns = Object.values(Game.spawns).filter(s => !s.spawning);
 			if (spawns.length === 0) {
-				olog(`Failed to auto spawn for task ${task_idx} ${task.strategyName}`);
+				olog(`Failed to auto spawn for task ${taskIdx} ${task.strategyName}`);
 				return;
 			}
 			spawns = _.sortBy(spawns, s => closestRooms.indexOf(s.room.name));
