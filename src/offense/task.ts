@@ -1,12 +1,12 @@
 import * as cartographer from "screeps-cartographer";
-import util from "../util";
-import { Role } from "../roles/meta";
-import { OffenseStrategy } from "../strategies/BaseStrategy";
-import { Strategies } from "../strategies/all";
 import { CREEP_BODIES, olog } from "./util";
 import { NotImplementedException } from "utils/exceptions";
-import { areAllCreepsInRange } from "combat/movement";
 import { ObserveQueue } from "../observequeue";
+import { OffenseStrategy } from "../strategies/BaseStrategy";
+import { Role } from "../roles/meta";
+import { Strategies } from "../strategies/all";
+import { areAllCreepsInRange } from "combat/movement";
+import util from "../util";
 
 const TASK_PREPARE = 0;
 const TASK_RUN = 1;

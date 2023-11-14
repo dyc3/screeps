@@ -1,6 +1,6 @@
-import util from "./util";
 import { OffenseTask, hackAutoControllerAttack } from "./offense/task";
 import { CREEP_BODIES } from "./offense/util";
+import util from "./util";
 
 const TASK_PREPARE = 0;
 const TASK_RUN = 1;

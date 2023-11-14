@@ -256,7 +256,7 @@ const taskRenew = {
 				},
 			});
 		} else if ((creep.ticksToLive ?? 0) < maxTicks) {
-			if (creep instanceof Creep) {
+			if (creep instanceof Creep && renewTarget instanceof StructureSpawn) {
 				switch (renewTarget.renewCreep(creep)) {
 					case ERR_NOT_ENOUGH_ENERGY:
 						if (renewTarget.room.energyAvailable + creep.store[RESOURCE_ENERGY] >= renewCost) {
@@ -285,9 +285,11 @@ const taskRenew = {
 					default:
 						break;
 				}
-			} else if (creep instanceof PowerCreep) {
+			} else if (creep instanceof PowerCreep && renewTarget instanceof StructurePowerSpawn) {
 				creep.renew(renewTarget);
 				creep.memory.renewing = false;
+			} else {
+				creep.log("ERROR: renew target is the wrong type of spawn: ", renewTarget);
 			}
 		}
 		if ((creep.ticksToLive ?? 0) >= maxTicks) {

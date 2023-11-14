@@ -1,5 +1,6 @@
 import type { GuardTaskSerialized } from "./brain.guard";
 import type { ObserveQueue } from "./observequeue";
+import type { OffenseTask } from "offense/task";
 import type { RemoteMiningTarget } from "./remotemining";
 import type { Role } from "./roles/meta";
 
@@ -41,7 +42,7 @@ declare global {
 		/** @deprecated */
 		attackTarget: string;
 		offense: {
-			tasks: any[]; // TODO: convert to typescript
+			tasks: OffenseTask[]; // TODO: convert to typescript
 		};
 		observe: {
 			observers: Id<StructureObserver>[];

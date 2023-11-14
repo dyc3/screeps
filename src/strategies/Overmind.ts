@@ -1,9 +1,9 @@
 import * as cartographer from "screeps-cartographer";
-import { OffenseStrategy } from "./BaseStrategy";
-import util from "../util";
-import taskRenew from "../task.renew";
-import { olog } from "../offense/util";
 import { ObserveQueue } from "../observequeue";
+import { OffenseStrategy } from "./BaseStrategy";
+import { olog } from "../offense/util";
+import taskRenew from "../task.renew";
+import util from "../util";
 
 /**
  * Bait hives into spawning very large and expensive creeps.
@@ -25,22 +25,22 @@ import { ObserveQueue } from "../observequeue";
  * Memory.offense.tasks.map(t => t.autoSpawn = true)
  */
 export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
-	static get strategyName() {
+	public static get strategyName() {
 		return "OvermindRemoteMinerBait";
 	}
 
 	/** The room to wait in while fleeing. */
-	waitingRoom: string;
+	public waitingRoom: string;
 	/** The room the enemy is mining in. */
-	miningRoom: string;
+	public miningRoom: string;
 	/** The room the enemy is probably spawning the guard creeps from. */
-	spawningRoom: string;
-	objective: "travel" | "bait" | "flee";
-	lastObservationTime = 0;
-	outsideOfObservationRange = false;
-	baitPosition: RoomPosition | undefined;
+	public spawningRoom: string;
+	public objective: "travel" | "bait" | "flee";
+	public lastObservationTime = 0;
+	public outsideOfObservationRange = false;
+	public baitPosition: RoomPosition | undefined;
 
-	constructor(mem: any) {
+	public constructor(mem: any) {
 		super(mem);
 		this.waitingRoom = "";
 		this.miningRoom = "";
@@ -52,13 +52,13 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		}
 	}
 
-	get neededCreeps() {
+	public get neededCreeps(): Record<string, number> {
 		return {
 			"naive-bait": 1,
 		};
 	}
 
-	getKnownBadRooms(): string[] {
+	public getKnownBadRooms(): string[] {
 		const badRooms: string[] = [
 			this.spawningRoom,
 			...Memory.remoteMining.targets.filter(t => t.danger > 0).map(t => t.roomName),
@@ -67,7 +67,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		return badRooms;
 	}
 
-	act(creeps: Creep[]): void {
+	public act(creeps: Creep[]): void {
 		// act on creeps based on objective
 		const creep = creeps[0];
 		creep.say(this.objective);
@@ -78,11 +78,19 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				// move to the waiting room
 				olog(`travel: moving to ${this.waitingRoom}`);
 
-				cartographer.moveTo(creep, new RoomPosition(25, 25, this.waitingRoom), {
-					range: 20,
-					avoidRooms: this.getKnownBadRooms(),
-					preferHighway: true,
-				});
+				const badRooms = this.getKnownBadRooms();
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, this.waitingRoom), range: 20 },
+					{
+						routeCallback(roomName) {
+							if (badRooms.includes(roomName)) {
+								return Infinity;
+							}
+							return undefined;
+						},
+					}
+				);
 			} else if (this.objective === "bait") {
 				olog("bait: ", creep.name, creep.pos, "moving to ", this.miningRoom);
 				if (creep.room.name !== this.miningRoom && !this.waitingRoom) {
@@ -97,21 +105,37 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 						}
 					}
 				}
-				cartographer.moveTo(creep, new RoomPosition(25, 25, this.miningRoom), {
-					range: 20,
-					avoidRooms: this.getKnownBadRooms(),
-					preferHighway: true,
-				});
+				const badRooms = this.getKnownBadRooms();
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, this.miningRoom), range: 20 },
+					{
+						routeCallback(roomName) {
+							if (badRooms.includes(roomName)) {
+								return Infinity;
+							}
+							return undefined;
+						},
+					}
+				);
 
 				// TODO: calculate baitPosition and waitPosition ahead of time and cache them
 				this.baitPosition = creep.pos; // HACK: save the position of the bait
 			} else if (this.objective === "flee") {
 				olog("flee: ", creep.name, creep.pos, "moving to ", this.waitingRoom);
-				cartographer.moveTo(creep, new RoomPosition(25, 25, this.waitingRoom), {
-					range: 20,
-					avoidRooms: this.getKnownBadRooms(),
-					preferHighway: true,
-				});
+				const badRooms = this.getKnownBadRooms();
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, this.waitingRoom), range: 20 },
+					{
+						routeCallback(roomName) {
+							if (badRooms.includes(roomName)) {
+								return Infinity;
+							}
+							return undefined;
+						},
+					}
+				);
 
 				// this condition is a little arbitrary, might not be sufficient.
 				if ((creep.ticksToLive ?? 1500) < 400) {
@@ -182,7 +206,7 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		this.visualize(creep);
 	}
 
-	visualize(creep: Creep | undefined): void {
+	public visualize(creep: Creep | undefined): void {
 		Game.map.visual.line(new RoomPosition(25, 25, this.miningRoom), new RoomPosition(25, 25, this.waitingRoom), {
 			color: "#ff0000",
 		});
@@ -224,9 +248,9 @@ export class OffenseStrategyHiveBuster extends OffenseStrategy {
 	/**
 	 * The room name that the target hive is in.
 	 */
-	hive: string;
+	public hive: string;
 
-	constructor(mem: any) {
+	public constructor(mem: any) {
 		super(mem);
 		this.hive = mem.hive;
 		Object.assign(this, mem);
@@ -235,9 +259,9 @@ export class OffenseStrategyHiveBuster extends OffenseStrategy {
 	/**
 	 * Indicates if the hive can activate a safe mode
 	 */
-	canSafeModeBeTriggered(controller: StructureController): boolean {
+	public canSafeModeBeTriggered(controller: StructureController): boolean {
 		return controller.safeModeAvailable > 0 && !controller.safeMode && !controller.safeModeCooldown;
 	}
 
-	act(creeps: Creep[]) {}
+	public act(creeps: Creep[]) {}
 }
