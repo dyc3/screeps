@@ -6,7 +6,7 @@ const toolFriends = {
 	 * @returns
 	 */
 	isCreepFriendly(creep: AnyCreep): boolean {
-		return this.isFriendly(struct);
+		return this.isFriendly(creep);
 	},
 
 	/**
