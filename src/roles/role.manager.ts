@@ -483,7 +483,7 @@ const roleManager = {
 		}
 	},
 
-	getAquireTarget(creep: Creep): AnyStoreStructure | Resource | Tombstone | Ruin {
+	getAquireTarget(creep: Creep): AnyStoreStructure | Resource | Tombstone | Ruin | null {
 		delete creep.memory.excludeTransport;
 
 		let aquireTarget: AnyStoreStructure | Resource | Tombstone | Ruin;
