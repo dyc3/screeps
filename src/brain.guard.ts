@@ -30,7 +30,13 @@ class GuardTask implements GuardTaskSerialized {
 	public assignedCreeps: string[] = [];
 	public neededCreeps = 1;
 	public _currentTarget: Id<AnyCreep> | null = null;
+	/**
+	 * Whether or not the task is waiting for all creeps to be spawned.
+	 */
 	public waiting = true;
+	/**
+	 * If set, the task will be disabled until this tick.
+	 */
 	public disableUntil = 0;
 
 	public constructor() {
@@ -462,8 +468,8 @@ module.exports = {
 				}
 			}
 
-			if (Game.rooms[task._targetRoom]) {
-				const foundInvaderCore = _.first(
+			if (task.targetRoom) {
+				const foundInvaderCore: StructureInvaderCore = _.first(
 					task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
 						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
 					})
@@ -479,20 +485,20 @@ module.exports = {
 					}
 					task.disableUntil = Game.time + collapseEffect.ticksRemaining;
 					console.log(
-						"[guard] Found main invader core, disabling task " + task.id + " until " + task.disableUntil
+						`[guard] Found main invader core, disabling task ${task.id} until ${task.disableUntil}`
 					);
 					continue;
 				}
 			}
 
 			// FIXME: store all hostile ids in memory as `allTargets`
-			let hostiles = [];
+			let hostiles: Creep[] = [];
 			if (task.targetRoom) {
 				hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 			}
 
-			if (!task._currentTarget && Game.rooms[task._targetRoom]) {
-				if (task.guardType == "treasure") {
+			if (!task._currentTarget && task.targetRoom) {
+				if (task.guardType === "treasure") {
 					const hostileStructures = task.targetRoom.find(FIND_HOSTILE_STRUCTURES);
 					const towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
 					if (towers.length > 0) {
@@ -564,7 +570,7 @@ module.exports = {
 				} else {
 					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
-					if (hostiles.length == 0) {
+					if (hostiles.length === 0) {
 						task.complete = true;
 						console.log("[guard] task", task.id, "completed");
 						continue;
@@ -590,7 +596,7 @@ module.exports = {
 			}
 
 			if (
-				task.guardType == "treasure" &&
+				task.guardType === "treasure" &&
 				task.currentTarget instanceof StructureKeeperLair &&
 				!task.currentTarget.ticksToSpawn
 			) {
@@ -608,8 +614,8 @@ module.exports = {
 					continue;
 				}
 
-				if (!task.currentTarget && creep.room.name !== task._targetRoom && !Game.rooms[task._targetRoom]) {
-					cartographer.moveTo(creep, new RoomPosition(25, 25, task._targetRoom), { range: 5 });
+				if (!task.currentTarget && creep.room.name !== task._targetRoom && !task.targetRoom) {
+					cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, task._targetRoom), range: 10 });
 					continue;
 				}
 
@@ -675,7 +681,7 @@ module.exports = {
 								shouldMassAttack = true;
 							} else if (rangedMassAttackEffectiveness <= targetHealEffectiveness) {
 								shouldMassAttack = false;
-							} else if (hostileHealdersInRange.length == 0 && hostilesInRange.length >= 3) {
+							} else if (hostileHealdersInRange.length === 0 && hostilesInRange.length >= 3) {
 								shouldMassAttack = true;
 							} else if (rangeToTarget === 1) {
 								shouldMassAttack = true;
@@ -702,7 +708,7 @@ module.exports = {
 								}
 							} else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
-							} else if (hostilesInRange.length == 1) {
+							} else if (hostilesInRange.length === 1) {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
@@ -728,8 +734,6 @@ module.exports = {
 									remoteMiningTarget.dangerPos[2].roomName
 								);
 								cartographer.moveTo(creep, dangerPos, {
-									range: 3,
-									ensurePath: true,
 									avoidRooms: [task._targetRoom],
 								});
 							} else {
@@ -739,7 +743,6 @@ module.exports = {
 									).id;
 								}
 								cartographer.moveTo(creep, Game.getObjectById(creep.memory.stagingObjectId), {
-									range: 3,
 									ensurePath: true,
 									avoidRooms: [task._targetRoom],
 								});
@@ -751,12 +754,13 @@ module.exports = {
 									? 2
 									: 1;
 							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-								cartographer.moveTo(creep, task.currentTarget, {
-									ignoreCreeps: false,
-									range: minRange,
-									movingTarget: true,
-									stuckValue: 1,
-								});
+								cartographer.moveTo(
+									creep,
+									{ pos: task.currentTarget.pos, range: minRange },
+									{
+										avoidCreeps: true,
+									}
+								);
 							}
 						}
 					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureTower) {
@@ -770,7 +774,7 @@ module.exports = {
 								}
 							} else if (isTargetInRange) {
 								creep.rangedAttack(task.currentTarget);
-							} else if (hostilesInRange.length == 1) {
+							} else if (hostilesInRange.length === 1) {
 								creep.rangedAttack(hostilesInRange[0]);
 							}
 						}
@@ -781,16 +785,18 @@ module.exports = {
 
 						const minRange = 1;
 						if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
-							cartographer.moveTo(creep, task.currentTarget, {
-								ignoreCreeps: false,
-								range: minRange,
-								movingTarget: true,
-							});
+							cartographer.moveTo(
+								creep,
+								{ pos: task.currentTarget.pos, range: minRange },
+								{
+									avoidCreeps: true,
+								}
+							);
 						}
 					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							cartographer.moveTo(creep, task.currentTarget, { range: 2 });
+							cartographer.moveTo(creep, { pos: task.currentTarget.pos, range: 2 });
 						}
 					} else if (
 						task.guardType === "invader-subcore" &&
@@ -801,7 +807,7 @@ module.exports = {
 								creep.attack(task.currentTarget);
 							}
 						} else {
-							cartographer.moveTo(creep, task.currentTarget, { range: 1 });
+							cartographer.moveTo(creep, task.currentTarget);
 						}
 					} else {
 						console.log("[guard] ERR: unknown current target");
