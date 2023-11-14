@@ -1,5 +1,5 @@
 import { calcEffectiveness, towerImpactFactor } from "../combat/calc";
-import toolFriends from "../tool.friends.js";
+import toolFriends from "../tool.friends";
 import util from "../util";
 
 const NAIVE_BAIT_FILTER = false;

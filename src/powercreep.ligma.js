@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 import "./traveler.js";
 import util from "./util";
-import taskRenew from "./task.renew.js";
+import taskRenew from "./task.renew";
 
 /*
 Ligma can reduce spawn times.

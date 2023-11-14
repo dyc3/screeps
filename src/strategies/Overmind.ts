@@ -1,8 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 import { OffenseStrategy } from "./BaseStrategy";
 import util from "../util";
-// @ts-expect-error not converted yet
-import taskRenew from "../task.renew.js";
+import taskRenew from "../task.renew";
 import { olog } from "../offense/util";
 import { ObserveQueue } from "../observequeue";
 
