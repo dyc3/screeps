@@ -345,7 +345,7 @@ module.exports = {
 			} else {
 				const creepBody = this.getGuardianBody(task.guardType);
 				const targetSpawnRooms = util.findClosestOwnedRooms(
-					new RoomPosition(25, 25, task._targetRoom),
+					new RoomPosition(25, 25, task._targetRoom!),
 					room =>
 						room.energyAvailable >= room.energyCapacityAvailable * 0.8 &&
 						room.energyAvailable >= util.getCreepSpawnCost(creepBody)
@@ -387,7 +387,7 @@ module.exports = {
 		}
 	},
 
-	getGuardianBody(guardType: string) {
+	getGuardianBody(guardType: string): BodyPartConstant[] {
 		if (guardType === "max") {
 			// TODO: build the biggest creep possible
 			// eslint-disable-next-line prettier/prettier
