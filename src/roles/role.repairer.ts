@@ -5,6 +5,8 @@ import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
 import taskGather from "../task.gather.js";
 
+const ENABLE_WALL_REPAIR = false;
+
 /**
  * get number of repairers assigned to a room
  */
@@ -59,7 +61,7 @@ const roleRepairer = {
 			},
 		});
 
-		if (room.storage && room.storage.store[RESOURCE_ENERGY] < 700000) {
+		if (room.storage && room.storage.store[RESOURCE_ENERGY] < 700000 && ENABLE_WALL_REPAIR) {
 			let avgWallHits = 0;
 			let sumWallHits = 0;
 			let countWalls = 0;
@@ -76,6 +78,10 @@ const roleRepairer = {
 					(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
 					struct.hits > avgWallHits * 1.1
 				);
+			});
+		} else {
+			targets = _.reject(targets, struct => {
+				return struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART;
 			});
 		}
 
