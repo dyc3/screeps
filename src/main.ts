@@ -371,7 +371,7 @@ function doLinkTransfers() {
 					continue;
 				}
 			}
-			const rootLink = Game.getObjectById<StructureLink>(room.memory.rootLink) as StructureLink | null;
+			const rootLink = Game.getObjectById(room.memory.rootLink as Id<StructureLink>);
 			if (!rootLink) {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
