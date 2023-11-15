@@ -103,6 +103,14 @@ class GuardTask implements GuardTaskSerialized {
 
 let tasks: GuardTask[] = [];
 
+function remoteMiningsInDanger(): string[] {
+	const remoteMinings = _.filter(Memory.remoteMining.targets, target => target.danger > 0).map(
+		target => target.roomName
+	);
+	const guardedRooms = _.map(tasks, task => task._targetRoom);
+	return _.difference(remoteMinings, guardedRooms);
+}
+
 export default {
 	init(): void {
 		if (!Memory.guard) {
@@ -151,8 +159,16 @@ export default {
 			),
 			miningTarget => new Room(miningTarget.roomName)
 		);
+		console.log(`[guard] searching ${roomsToSearch.length} rooms`);
+		// purely for debugging, we need vision to create a task
+		const inDanger = remoteMiningsInDanger();
+		if (inDanger.length) {
+			console.log(`[guard] remote minings in danger: ${inDanger.join(",")}`);
+		}
+
 		for (const room of roomsToSearch) {
 			if (guardedRooms.includes(room.name)) {
+				console.log(`[guard] room ${room.name} is already guarded`);
 				continue;
 			}
 			const newTask = new GuardTask();
@@ -171,6 +187,11 @@ export default {
 						creep.getActiveBodyparts(HEAL) >
 					0
 			);
+
+			console.log(
+				`[guard] creating new task for room ${room.name} (${newTask.id}) enemies: ${allEnemyCreeps.length} hostiles: ${hostiles.length}`
+			);
+
 			if (!isTreasureRoom) {
 				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
 					continue;
