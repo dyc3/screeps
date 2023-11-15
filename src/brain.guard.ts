@@ -111,6 +111,77 @@ function remoteMiningsInDanger(): string[] {
 	return _.difference(remoteMinings, guardedRooms);
 }
 
+/**
+ * Creates a new guard task for the given room.
+ *
+ * Automatically determines the type of guard needed. Requires vision of the room.
+ */
+export function autoCreateGuardTask(room: Room): void {
+	const newTask = new GuardTask();
+	const isTreasureRoom = util.isTreasureRoom(room.name);
+	const foundInvaderCore: StructureInvaderCore = _.first(
+		room.find(FIND_HOSTILE_STRUCTURES, {
+			filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
+		})
+	);
+	const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
+	const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isFriendly(creep));
+	const hostiles = allEnemyCreeps.filter(
+		creep =>
+			creep.getActiveBodyparts(ATTACK) +
+				creep.getActiveBodyparts(RANGED_ATTACK) +
+				creep.getActiveBodyparts(HEAL) >
+			0
+	);
+
+	console.log(
+		`[guard] creating new task for room ${room.name} (${newTask.id}) enemies: ${allEnemyCreeps.length} hostiles: ${hostiles.length}`
+	);
+
+	if (!isTreasureRoom) {
+		if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
+			console.log(`[guard] room ${room.name} is not in danger`);
+			return;
+		}
+
+		newTask.neededCreeps = Math.max(hostiles.length, 1);
+	}
+
+	newTask._targetRoom = room.name;
+	if (isTreasureRoom) {
+		newTask.guardType = "treasure";
+		newTask.neededCreeps = 2;
+	} else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
+		newTask.guardType = "invader-subcore";
+		newTask.neededCreeps = 1;
+	} else if (isRemoteMiningRoom) {
+		if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
+			newTask.guardType = "remote-miner-cheap";
+			newTask.neededCreeps = 1;
+		} else {
+			// TODO: I really need to figure out a better way to build creeps that can counter an arbitrary amount of creeps
+			for (const creep of hostiles) {
+				if (
+					creep.getActiveBodyparts(ATTACK) +
+						creep.getActiveBodyparts(RANGED_ATTACK) +
+						creep.getActiveBodyparts(HEAL) >
+					12
+				) {
+					newTask.guardType = "remote-miner-huge";
+					newTask.neededCreeps = 2;
+					break;
+				}
+			}
+		}
+	} else {
+		newTask.guardType = "default";
+	}
+	tasks.push(newTask);
+	Memory.guard.tasksMade++;
+}
+
+global.quickGuard = autoCreateGuardTask;
+
 export default {
 	init(): void {
 		if (!Memory.guard) {
@@ -171,72 +242,14 @@ export default {
 				console.log(`[guard] room ${room.name} is already guarded`);
 				continue;
 			}
-			const newTask = new GuardTask();
-			const isTreasureRoom = util.isTreasureRoom(room.name);
-			const foundInvaderCore = _.first(
-				room.find(FIND_HOSTILE_STRUCTURES, {
-					filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
-				})
-			);
-			const isRemoteMiningRoom = !!_.find(Memory.remoteMining.targets, target => target.roomName === room.name);
-			const allEnemyCreeps = room.find(FIND_HOSTILE_CREEPS).filter(creep => !toolFriends.isFriendly(creep));
-			const hostiles = allEnemyCreeps.filter(
-				creep =>
-					creep.getActiveBodyparts(ATTACK) +
-						creep.getActiveBodyparts(RANGED_ATTACK) +
-						creep.getActiveBodyparts(HEAL) >
-					0
-			);
-
-			console.log(
-				`[guard] creating new task for room ${room.name} (${newTask.id}) enemies: ${allEnemyCreeps.length} hostiles: ${hostiles.length}`
-			);
-
-			if (!isTreasureRoom) {
-				if (allEnemyCreeps.length === 0 && !foundInvaderCore) {
-					continue;
-				}
-
-				newTask.neededCreeps = Math.max(hostiles.length, 1);
-			}
-
-			newTask._targetRoom = room.name;
-			if (isTreasureRoom) {
-				newTask.guardType = "treasure";
-				newTask.neededCreeps = 2;
-			} else if (foundInvaderCore && !foundInvaderCore.ticksToDeploy) {
-				newTask.guardType = "invader-subcore";
-				newTask.neededCreeps = 1;
-			} else if (isRemoteMiningRoom) {
-				if (allEnemyCreeps.length > 0 && hostiles.length === 0) {
-					newTask.guardType = "remote-miner-cheap";
-					newTask.neededCreeps = 1;
-				} else {
-					// TODO: I really need to figure out a better way to build creeps that can counter an arbitrary amount of creeps
-					for (const creep of hostiles) {
-						if (
-							creep.getActiveBodyparts(ATTACK) +
-								creep.getActiveBodyparts(RANGED_ATTACK) +
-								creep.getActiveBodyparts(HEAL) >
-							12
-						) {
-							newTask.guardType = "remote-miner-huge";
-							newTask.neededCreeps = 2;
-							break;
-						}
-					}
-				}
-			} else {
-				newTask.guardType = "default";
-			}
-			tasks.push(newTask);
+			autoCreateGuardTask(room);
 			guardedRooms.push(room.name);
-			Memory.guard.tasksMade++;
 		}
 
 		// TODO: benchmark this method, see if this is faster than doing it normally
 		const grouped = _.groupBy(tasks, "complete");
 		if (grouped.true) {
+			console.log(`[guard] found ${grouped.true.length} completed tasks`);
 			// clean up completed tasks
 			for (const task of grouped.true) {
 				if (task.guardType === "invader-subcore") {

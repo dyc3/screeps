@@ -137,7 +137,7 @@ import toolRoadPlanner from "tool.roadplanner.js";
 // @ts-expect-error hasn't been converted yet
 import brainAutoPlanner from "./brain.autoplanner.js";
 // @ts-expect-error hasn't been converted yet
-import brainGuard from "./brain.guard.js";
+import brainGuard, { autoCreateGuardTask } from "./brain.guard.js";
 // @ts-expect-error hasn't been converted yet
 import brainLogistics from "./brain.logistics.js";
 // @ts-expect-error hasn't been converted yet
@@ -1256,6 +1256,9 @@ function commandRemoteMining() {
 				)
 				.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0
 		) {
+			if (target.danger === 0) {
+				autoCreateGuardTask(new Room(target.roomName));
+			}
 			target.danger = 2;
 		} else if (util.isTreasureRoom(target.roomName)) {
 			// at this point, all hostiles must be source keepers
@@ -1276,6 +1279,9 @@ function commandRemoteMining() {
 				foundInvaderCore &&
 				hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0
 			) {
+				if (target.danger === 0) {
+					autoCreateGuardTask(new Room(target.roomName));
+				}
 				target.danger = 2;
 			} else if (
 				hostiles
