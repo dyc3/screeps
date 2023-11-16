@@ -133,8 +133,7 @@ import toolRoadPlanner from "tool.roadplanner.js";
 
 // @ts-expect-error hasn't been converted yet
 import brainAutoPlanner from "./brain.autoplanner.js";
-// @ts-expect-error hasn't been converted yet
-import brainGuard, { autoCreateGuardTask } from "./brain.guard.js";
+import brainGuard from "./brain.guard";
 import brainLogistics from "./brain.logistics";
 // @ts-expect-error hasn't been converted yet
 import brainHighwayHarvesting from "./brain.highwayharvesting.js";
