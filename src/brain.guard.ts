@@ -3,7 +3,6 @@ import * as cartographer from "screeps-cartographer";
 import { Role } from "roles/meta";
 import toolFriends from "./tool.friends.js";
 import util from "./util.js";
-import { ObserveQueue } from "observequeue.js";
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER: { [i: number]: number } = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
 
