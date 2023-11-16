@@ -106,7 +106,7 @@ export class JobRunner {
 	public forceRunNextTick(jobName: string, ...args: unknown[]): void {
 		for (const [j, job] of this.jobs.entries()) {
 			if (job.name === jobName) {
-				this.queued.push([j, args]);
+				this.deferedJobs.push([j, args]);
 				console.log("JobRunner: forced job next tick", job.name);
 				return;
 			}
