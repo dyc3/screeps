@@ -6,7 +6,7 @@ import taskGather from "../task.gather.js";
 import util from "../util";
 
 // get number of upgraders assigned to a room
-function getUpgraderCount(room) {
+function getUpgraderCount(room: Room) {
 	return _.filter(Game.creeps, creep => creep.memory.role === "upgrader" && creep.memory.targetRoom === room.name)
 		.length;
 }
@@ -73,7 +73,7 @@ const roleUpgrader = {
 					creep.upgradeController(creep.room.controller);
 				}
 			} else {
-				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), { range: 20 });
+				cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 20 });
 			}
 		} else {
 			taskGather.run(creep);

@@ -88,6 +88,7 @@ declare global {
 		dropAfterDeposit?: boolean;
 		renewAtWithdraw?: boolean;
 		transportOther?: boolean;
+		upgrading?: boolean;
 	}
 
 	interface PowerCreepMemory {
