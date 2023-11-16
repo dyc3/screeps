@@ -277,8 +277,10 @@ const taskRenew = {
 						creep.memory.renewing = false;
 						break;
 					case ERR_BUSY:
-						delete creep.memory.renewTarget;
-						delete creep.memory._renewDebug;
+						if ((renewTarget.spawning?.remainingTime ?? 0) > (creep.ticksToLive ?? 0) + 10) {
+							delete creep.memory.renewTarget;
+							delete creep.memory._renewDebug;
+						}
 						break;
 					default:
 						break;
