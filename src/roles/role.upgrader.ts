@@ -1,9 +1,9 @@
 import * as cartographer from "screeps-cartographer";
 
-import util from "../util";
+import { getUpgraderQuota } from "../tool.creepupgrader";
 // @ts-expect-error hasn't been converted yet
 import taskGather from "../task.gather.js";
-import { getUpgraderQuota } from "../tool.creepupgrader";
+import util from "../util";
 
 // get number of upgraders assigned to a room
 function getUpgraderCount(room) {
@@ -12,8 +12,7 @@ function getUpgraderCount(room) {
 }
 
 const roleUpgrader = {
-	/** @param {Creep} creep **/
-	findTargetRoom(creep) {
+	findTargetRoom(): string {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
 			if (!room.controller || !room.controller.my) {
@@ -39,8 +38,7 @@ const roleUpgrader = {
 		return rooms[0].name;
 	},
 
-	/** @param {Creep} creep **/
-	run(creep) {
+	run(creep: Creep): void {
 		if (!creep.memory.targetRoom) {
 			creep.memory.targetRoom = this.findTargetRoom(creep);
 			console.log(creep.name, "targetRoom:", creep.memory.targetRoom);
@@ -48,7 +46,8 @@ const roleUpgrader = {
 
 		if (creep.room.name !== creep.memory.targetRoom) {
 			if (Game.rooms[creep.memory.targetRoom]) {
-				cartographer.moveTo(creep, { pos: Game.rooms[creep.memory.targetRoom].controller.pos, range: 3 });
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				cartographer.moveTo(creep, { pos: Game.rooms[creep.memory.targetRoom].controller!.pos, range: 3 });
 			} else {
 				cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 20 });
 			}
@@ -64,7 +63,7 @@ const roleUpgrader = {
 		}
 
 		if (creep.memory.upgrading) {
-			if (creep.room.controller.my) {
+			if (creep.room.controller?.my) {
 				const shouldUpgrade =
 					creep.room.controller.level < 8 ||
 					creep.room.controller.ticksToDowngrade < 50000 ||
