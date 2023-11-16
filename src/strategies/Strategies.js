@@ -93,9 +93,7 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 			olog(`Regrouping`);
 			let regroupPos = new RoomPosition(this.regroupPos.x, this.regroupPos.y, this.regroupPos.roomName);
 			creeps.forEach(creep => {
-				cartographer.moveTo(creep, regroupPos, {
-					ensurePath: true,
-				});
+				cartographer.moveTo(creep, regroupPos, {});
 			});
 			return;
 		}
@@ -156,12 +154,11 @@ export class OffenseStrategySimpleManual extends OffenseStrategy {
 				}
 			} else {
 				olog(`traveling: ${creep.name} to ${this.targetRoom}, current pos: ${creep.pos}`);
-				cartographer.moveTo(creep, new RoomPosition(25, 25, this.targetRoom), {
-					range: 20,
-					useFindRoute: true,
-					stuckValue: 4,
-					ensurePath: true,
-				});
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, this.targetRoom), range: 20 },
+					{ priority: 2 }
+				);
 			}
 		});
 	}
