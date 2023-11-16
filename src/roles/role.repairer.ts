@@ -349,9 +349,8 @@ const roleRepairer = {
 			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
 			// }
 			if (repairTarget) {
-				if (creep.repair(repairTarget) === ERR_NOT_IN_RANGE) {
-					cartographer.moveTo(creep, { pos: repairTarget.pos, range: 3 }, { visualizePathStyle: {} });
-				}
+				cartographer.moveTo(creep, { pos: repairTarget.pos, range: 3 }, { visualizePathStyle: {} });
+				creep.repair(repairTarget);
 			} else {
 				if (taskDismantle.run(creep)) {
 					creep.say("dismantle");
@@ -362,17 +361,8 @@ const roleRepairer = {
 						},
 					});
 					if (constructionSite) {
-						if (creep.build(constructionSite) === ERR_NOT_IN_RANGE) {
-							cartographer.moveTo(creep, { pos: constructionSite.pos, range: 3 });
-						}
-					} else {
-						// move out of the way of other creeps
-						const nearbyCreeps = creep.pos.findInRange(FIND_CREEPS, 1).filter(c => c.id !== creep.id);
-						if (nearbyCreeps.length > 0) {
-							const direction = creep.pos.getDirectionTo(nearbyCreeps[0]);
-							// console.log(creep.name, "found creep in direction:", direction);
-							creep.move(util.getOppositeDirection(direction));
-						}
+						cartographer.moveTo(creep, { pos: constructionSite.pos, range: 3 });
+						creep.build(constructionSite);
 					}
 				}
 			}
