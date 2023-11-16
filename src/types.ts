@@ -89,6 +89,7 @@ declare global {
 		renewAtWithdraw?: boolean;
 		transportOther?: boolean;
 		upgrading?: boolean;
+		guardType?: string;
 	}
 
 	interface PowerCreepMemory {

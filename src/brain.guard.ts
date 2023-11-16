@@ -30,7 +30,7 @@ class GuardTask implements GuardTaskSerialized {
 	public complete = false;
 	public assignedCreeps: string[] = [];
 	public neededCreeps = 1;
-	public _currentTarget: Id<AnyCreep> | undefined = undefined;
+	public _currentTarget: Id<AnyCreep> | Id<StructureKeeperLair> | undefined = undefined;
 	/**
 	 * Whether or not the task is waiting for all creeps to be spawned.
 	 */
@@ -577,9 +577,9 @@ export default {
 								struct =>
 									struct.structureType === STRUCTURE_KEEPER_LAIR &&
 									_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
-							);
+							) as StructureKeeperLair[];
 							if (keeperLairs) {
-								keeperLairs.sort((a, b) => a.ticksToSpawn - b.ticksToSpawn);
+								keeperLairs.sort((a, b) => (a.ticksToSpawn ?? 0) - (b.ticksToSpawn ?? 0));
 								task._currentTarget = keeperLairs[0].id;
 							}
 						}
