@@ -510,14 +510,14 @@ function doFlagCommandsAndStuff() {
 				Game.flags.harvestme.remove();
 				return;
 			}
+			console.log("adding new target to remote mining:", newTarget.id);
+			Memory.remoteMining.targets.push(newTarget);
+			Game.flags.harvestme.remove();
 		} catch (e) {
 			// need vision
 			ObserveQueue.queue(pos.roomName);
-			throw new Error("need vision of room to complete job");
+			runner.forceRunNextTick("flag-commands");
 		}
-		console.log("adding new target to remote mining:", newTarget.id);
-		Memory.remoteMining.targets.push(newTarget);
-		Game.flags.harvestme.remove();
 	}
 
 	if (Game.flags.setPublic) {
