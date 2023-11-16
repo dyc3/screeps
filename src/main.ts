@@ -678,7 +678,7 @@ function doCreepSpawning() {
 		}
 		const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
 
-		const newCreepName = role.name + "_" + Game.time.toString(16);
+		const newCreepName = `${role.name}_${Game.time.toString(16)}`;
 		const hiStage = toolCreepUpgrader.getHighestStage(role.name, targetSpawn.room);
 		const newCreepMemory: {
 			role: Role;
