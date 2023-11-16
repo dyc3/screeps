@@ -87,7 +87,6 @@ export const util = {
 					}
 					return route.length;
 				},
-				// TODO: use traveler.Traveler.findTravelPath instead
 				(r: Room) =>
 					PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
 			]

@@ -1,7 +1,6 @@
 // This is a tool creep used to set up delivery routes for energy
 
 import * as cartographer from "screeps-cartographer";
-import traveler from "../traveler.js";
 import util, { isStoreStructure } from "../util.js";
 import { Role } from "./meta.js";
 
@@ -46,14 +45,22 @@ const roleTmpDelivery = {
 			return false;
 		}
 
-		if (!creep.memory._routeDistance) {
+		if (!creep.memory._routeDistance && creep.memory.withdrawTargetId && creep.memory.depositTargetId) {
 			const withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
 			const depositTarget = Game.getObjectById(creep.memory.depositTargetId);
-			creep.memory._routeDistance = util.calculateEta(
-				creep,
-				traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path,
-				true
-			);
+			if (withdrawTarget && depositTarget) {
+				const pathToDeposit = cartographer.cachePath(
+					`tmpdeliver-deposit-${creep.memory._settingsHash}`,
+					withdrawTarget.pos,
+					depositTarget,
+					{
+						avoidCreeps: false,
+					}
+				);
+				if (pathToDeposit) {
+					creep.memory._routeDistance = util.calculateEta(creep, pathToDeposit, true);
+				}
+			}
 		}
 
 		if (creep.memory.renewAtWithdraw) {
@@ -114,9 +121,7 @@ const roleTmpDelivery = {
 		const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
 
 		function avoidTargets(roomName: string): cartographer.MoveTarget[] {
-			return obstacles
-				.filter(creep => creep.pos.roomName === roomName)
-				.map(creep => ({ pos: creep.pos, range: 0 }));
+			return obstacles.filter(c => c.pos.roomName === roomName).map(c => ({ pos: c.pos, range: 0 }));
 		}
 
 		if (creep.memory.recycle) {
