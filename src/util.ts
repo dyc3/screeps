@@ -80,8 +80,13 @@ export const util = {
 			rooms,
 			...[
 				(r: Room) => Game.map.getRoomLinearDistance(targetPos.roomName, r.name),
-				// @ts-expect-error FIXME: needs better typing
-				(r: Room) => Game.map.findRoute(targetPos.roomName, r.name).length,
+				(r: Room) => {
+					const route = Game.map.findRoute(targetPos.roomName, r.name);
+					if (route === ERR_NO_PATH) {
+						return Infinity;
+					}
+					return route.length;
+				},
 				// TODO: use traveler.Traveler.findTravelPath instead
 				(r: Room) =>
 					PathFinder.search(targetPos, { pos: new RoomPosition(25, 25, r.name), range: 20 }).path.length,
@@ -374,11 +379,13 @@ export const util = {
 		return 1 - (distance - TOWER_OPTIMAL_RANGE) * towerFalloffPerTile;
 	},
 
-	printException(e: any, creep: Creep | undefined = undefined): void {
+	printException(e: unknown, creep: Creep | undefined = undefined): void {
 		let msg = errorMild;
 		if (e instanceof Error) {
 			msg += ErrorMapper.renderError(e);
 		} else {
+			// @ts-expect-error this is fine for now
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			msg += e.toString();
 		}
 		if (creep) {
