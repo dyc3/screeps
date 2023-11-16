@@ -351,17 +351,6 @@ global.Util = {
 		}
 	},
 
-	/**
-	 * Trashes the creep's movement cache, forcing it to calculate a new path.
-	 * @param {Creep|String} creep
-	 */
-	forceRepath(creep) {
-		if (typeof creep === "string") {
-			creep = Game.creeps[creep];
-		}
-		delete creep.memory._trav;
-	},
-
 	forceReplan(roomName, full = false) {
 		delete Memory.rooms[roomName].structures;
 		if (full) {

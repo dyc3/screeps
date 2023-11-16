@@ -54,11 +54,6 @@ declare global {
 		};
 	}
 
-	interface Creep {
-		travelTo(pos: RoomPosition): ScreepsReturnCode;
-		travelTo(pos: RoomPosition, opts: any): ScreepsReturnCode;
-	}
-
 	interface CreepMemory {
 		role: Role;
 		room: string;
