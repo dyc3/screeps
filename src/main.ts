@@ -155,9 +155,6 @@ global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
-/** @deprecated: use `util.printException()` instead */
-const printException = util.printException;
-
 const runner = JobRunner.getInstance();
 
 function printStatus() {
@@ -165,41 +162,20 @@ function printStatus() {
 
 	// print misc info
 	let infoText = "";
-	infoText += "tick: " + Game.time + "  |  ";
+	infoText += `tick: ${Game.time}  |  `;
 	if (Game.cpu.tickLimit !== Infinity) {
-		infoText +=
-			"CPU: " +
-			Game.cpu.getUsed().toPrecision(3) +
-			"/" +
-			Game.cpu.tickLimit +
-			" - " +
-			Game.cpu.bucket.toPrecision(5) +
-			"  |  ";
+		infoText += `CPU: ${Game.cpu.getUsed().toPrecision(3)}/${Game.cpu.tickLimit} - ${Game.cpu.bucket.toPrecision(
+			3
+		)}  |  `;
 	}
-	infoText +=
-		"GCL " +
-		Game.gcl.level +
-		", " +
-		((Game.gcl.progress / Game.gcl.progressTotal) * 100).toPrecision(4) +
-		"% " +
-		Math.round(Game.gcl.progress) +
-		"/" +
-		Math.round(Game.gcl.progressTotal) +
-		"  |  ";
+	infoText += `GCL ${Game.gcl.level}, ${((Game.gcl.progress / Game.gcl.progressTotal) * 100).toPrecision(
+		4
+	)}% ${Math.round(Game.gcl.progress)}/${Math.round(Game.gcl.progressTotal)}  |  `;
 	if (rooms.length > 1) {
-		infoText += "rooms: " + rooms.length + "  |  ";
+		infoText += `rooms: ${rooms.length}`;
 	}
-	for (let i = 0; i < rooms.length; i++) {
-		const room = rooms[i];
-		infoText +=
-			room.name +
-			" (defcon " +
-			room.memory.defcon +
-			") energy: " +
-			room.energyAvailable +
-			"/" +
-			room.energyCapacityAvailable +
-			"  ";
+	for (const room of rooms) {
+		infoText += `${room.name} (defcon ${room.memory.defcon}) energy: ${room.energyAvailable}/${room.energyCapacityAvailable}  `;
 	}
 	infoText += "  |  ";
 	if (Memory.expansionTarget) {
