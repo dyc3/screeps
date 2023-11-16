@@ -1,9 +1,9 @@
 import { Role } from "roles/meta";
-import util from "./util";
 import { Scout } from "roles/role.scout";
+import util from "./util";
 
 export class ObserveQueue {
-	static initialize(): void {
+	public static initialize(): void {
 		if (!Memory.observe) {
 			Memory.observe = {
 				observers: [],
@@ -13,7 +13,7 @@ export class ObserveQueue {
 	}
 
 	private static getObservers(): StructureObserver[] {
-		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o);
+		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o) as StructureObserver[];
 	}
 
 	public static updateCachedObserverIds(): void {
