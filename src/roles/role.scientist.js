@@ -2,7 +2,7 @@ import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import * as taskDepositMaterials from "task.depositmaterials";
 import util from "../util";
-import brainLogistics from "../brain.logistics.js";
+import brainLogistics from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
 
 const roleScientist = {
