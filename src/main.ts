@@ -792,7 +792,7 @@ function doCreepSpawning() {
 			for (const room of rooms) {
 				const creepsOfRoom = _.filter(creepsOfRole, creep => creep.memory.targetRoom === room.name);
 				const roleQuota = roleMeta.quota(room);
-				console.log(room.name, roleMeta.name, creepsOfRoom.length + "/" + roleQuota);
+				console.log(room.name, roleMeta.name, `${creepsOfRoom.length}/${roleQuota}`);
 
 				if (creepsOfRoom.length >= roleQuota) {
 					if (doMarkForDeath(roleMeta, creepsOfRoom, roleQuota, room)) {
@@ -1040,7 +1040,7 @@ function doAutoPlanning() {
 		console.log("Planning rooms...");
 		brainAutoPlanner.run();
 	} catch (e) {
-		printException(e);
+		util.printException(e);
 	}
 
 	// place extractors when able
@@ -1953,7 +1953,7 @@ function main() {
 			try {
 				brainAutoPlanner.planWalls(Game.flags.planWalls.room);
 			} catch (e) {
-				printException(e);
+				util.printException(e);
 			}
 		} else {
 			console.log("Not enough CPU bucket to manually plan walls, waiting until at least 9000");
@@ -1965,7 +1965,7 @@ function main() {
 			brainAutoPlanner.planRoom(Game.flags.forcePlan.room, true);
 			brainAutoPlanner.drawRoomPlans(Game.flags.forcePlan.room);
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 		if (Game.cpu.bucket < 9700) {
 			Game.flags.forcePlan.setColor(COLOR_GREY);
@@ -1976,7 +1976,7 @@ function main() {
 		try {
 			brainAutoPlanner.drawRoomPlans(Game.flags.showPlans.room);
 		} catch (e) {
-			printException(e);
+			util.printException(e);
 		}
 		if (Game.cpu.bucket < 9700) {
 			Game.flags.forcePlan.setColor(COLOR_GREY);
