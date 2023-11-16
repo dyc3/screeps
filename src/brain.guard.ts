@@ -289,9 +289,9 @@ export default {
 				const hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 				const invaders = _.filter(hostiles, c => c.owner.username === "Invader");
 				if (invaders.length > 0 || foundInvaderCore) {
-					newTask.neededCreeps = 3;
+					task.neededCreeps = 3;
 				} else {
-					newTask.neededCreeps = 2;
+					task.neededCreeps = 2;
 				}
 			} else if (task.guardType === "remote-miner-cheap" || task.guardType === "remote-miner-huge") {
 				// HACK: determine if we should upgrade to the huge ones
