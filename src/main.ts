@@ -1903,12 +1903,13 @@ function main() {
 		console.log("ERR: brain.guard tasks failed");
 		util.printException(e);
 	}
-	brainGuard.finalize();
 
 	cartographer.reconcileTraffic();
 
 	// process jobs
 	runner.runJobs();
+
+	brainGuard.finalize();
 
 	// force spawning
 	if (Object.keys(Game.creeps).length === 0 || Memory.forceCreepSpawn || Game.flags.forceSpawn) {

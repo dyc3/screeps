@@ -126,6 +126,7 @@ export default {
 	},
 
 	finalize(): void {
+		console.log(`[guard] Finalizing ${this.tasks.length} tasks`);
 		Memory.guard.tasks = _.map(this.tasks, task => task.serialize());
 	},
 
