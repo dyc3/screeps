@@ -2,7 +2,8 @@
 
 import * as cartographer from "screeps-cartographer";
 import traveler from "../traveler.js";
-import util from "../util";
+import util, { isStoreStructure } from "../util.js";
+import { Role } from "./meta.js";
 
 String.prototype.hashCode = function () {
 	let hash = 0;
@@ -26,8 +27,8 @@ const roleTmpDelivery = {
 	 * @params {Creep} The creep to check.
 	 * @returns {boolean} True if cached values need to be recalculated, false if otherwise.
 	 */
-	haveSettingsChanged(creep) {
-		let settings = creep.memory.withdrawTargetId + creep.memory.depositTargetId;
+	haveSettingsChanged(creep: Creep): boolean {
+		const settings = creep.memory.withdrawTargetId + creep.memory.depositTargetId;
 		if (!creep.memory._settingsHash) {
 			creep.memory._settingsHash = settings.hashCode();
 		}
@@ -40,14 +41,14 @@ const roleTmpDelivery = {
 	 * @params {Creep} The creep to check.
 	 * @returns {boolean} True if the creep should renew, false if otherwise.
 	 */
-	shouldRenew(creep) {
+	shouldRenew(creep: Creep): boolean {
 		if (creep.memory.recycle) {
 			return false;
 		}
 
 		if (!creep.memory._routeDistance) {
-			let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
-			let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
+			const withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
+			const depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 			creep.memory._routeDistance = util.calculateEta(
 				creep,
 				traveler.Traveler.findTravelPath(withdrawTarget, depositTarget, { range: 1, ignoreCreeps: true }).path,
@@ -62,7 +63,7 @@ const roleTmpDelivery = {
 		}
 	},
 
-	run(creep) {
+	run(creep: Creep): void {
 		if (!creep.memory.withdrawTargetId) {
 			creep.say("need info");
 			creep.log("needs withdrawTargetId");
@@ -82,8 +83,8 @@ const roleTmpDelivery = {
 			delete creep.memory.depositCachePos;
 		}
 
-		let withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
-		let depositTarget = Game.getObjectById(creep.memory.depositTargetId);
+		const withdrawTarget = Game.getObjectById(creep.memory.withdrawTargetId);
+		const depositTarget = Game.getObjectById(creep.memory.depositTargetId);
 
 		if (withdrawTarget) {
 			creep.memory.withdrawCachePos = withdrawTarget.pos;
@@ -110,20 +111,37 @@ const roleTmpDelivery = {
 			}
 		}
 
-		let obstacles = util.getCreeps("harvester", "relay");
+		const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
+
+		function avoidTargets(roomName: string): cartographer.MoveTarget[] {
+			return obstacles
+				.filter(creep => creep.pos.roomName === roomName)
+				.map(creep => ({ pos: creep.pos, range: 0 }));
+		}
 
 		if (creep.memory.recycle) {
 			// recycle this creep at the nearest spawn
 			// only occurs if recycleAfterDelivery === true
 			if (!creep.memory.recycleAtId) {
-				creep.memory.recycleAtId = creep.pos.findClosestByRange(FIND_MY_SPAWNS).id;
+				creep.memory.recycleAtId = creep.pos.findClosestByRange(FIND_MY_SPAWNS)?.id;
 			}
-			let spawn = Game.getObjectById(creep.memory.recycleAtId);
+			if (!creep.memory.recycleAtId) {
+				creep.log("Can't find spawn to recycle at");
+				creep.say("help");
+				return;
+			}
+			const spawn = Game.getObjectById(creep.memory.recycleAtId);
+			if (!spawn) {
+				creep.log("Can't find spawn to recycle at");
+				creep.say("help");
+				return;
+			}
 			let dontRecycleJustYet = false;
 			// if we have extra energy, put it somewhere so we can avoid wasting it
 			if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-				let adjacent = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, {
-					filter: struct => struct.store && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
+				const adjacent = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, {
+					filter: struct =>
+						isStoreStructure(struct) && struct.store && struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
 				});
 				if (adjacent) {
 					creep.transfer(adjacent[0], RESOURCE_ENERGY);
@@ -137,16 +155,17 @@ const roleTmpDelivery = {
 					spawn.recycleCreep(creep);
 				}
 			} else {
-				cartographer.moveTo(creep, spawn, { obstacles });
+				cartographer.moveTo(creep, spawn, { avoidTargets });
 			}
 		} else if (creep.memory.delivering) {
-			let _cache = creep.memory.depositCachePos;
-			let targetPos = depositTarget ? depositTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
+			// eslint-disable-next-line no-underscore-dangle
+			const _cache = creep.memory.depositCachePos;
+			const targetPos = depositTarget ? depositTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
 			if (creep.pos.isNearTo(targetPos)) {
 				let transferResult;
 				if (creep.memory.transportOther) {
-					for (let resource of RESOURCES_ALL) {
-						if (creep.store[resource] > 0) {
+					for (const resource of RESOURCES_ALL) {
+						if (creep.store[resource] > 0 && depositTarget) {
 							transferResult = creep.transfer(depositTarget, resource);
 							break;
 						}
@@ -178,15 +197,21 @@ const roleTmpDelivery = {
 						creep.memory.renewing = true;
 					}
 				} else {
-					cartographer.moveTo(creep, targetPos, { obstacles, visualizePathStyle: {}, ensurePath: true });
+					cartographer.moveTo(creep, targetPos, {
+						visualizePathStyle: {},
+						avoidTargets,
+					});
 				}
 			}
 		} else {
-			let _cache = creep.memory.withdrawCachePos;
-			let targetPos = withdrawTarget ? withdrawTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
-			if (creep.pos.isNearTo(targetPos)) {
+			// eslint-disable-next-line no-underscore-dangle
+			const _cache = creep.memory.withdrawCachePos;
+			const targetPos = withdrawTarget
+				? withdrawTarget.pos
+				: new RoomPosition(_cache.x, _cache.y, _cache.roomName);
+			if (creep.pos.isNearTo(targetPos) && withdrawTarget) {
 				if (creep.memory.transportOther) {
-					for (let resource of RESOURCES_ALL) {
+					for (const resource of RESOURCES_ALL) {
 						if (creep.store.getFreeCapacity() === 0) {
 							break;
 						}
@@ -210,7 +235,7 @@ const roleTmpDelivery = {
 					}
 				}
 			} else {
-				cartographer.moveTo(creep, targetPos, { obstacles, visualizePathStyle: {}, ensurePath: true });
+				cartographer.moveTo(creep, targetPos, { avoidTargets, visualizePathStyle: {} });
 			}
 		}
 	},

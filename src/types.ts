@@ -79,6 +79,12 @@ declare global {
 		taskId?: string;
 		repairTarget?: Id<AnyStructure>;
 		repairing?: boolean;
+		withdrawTargetId?: Id<AnyStoreStructure>;
+		depositTargetId?: Id<AnyStoreStructure>;
+		recycleAtId?: Id<StructureSpawn>;
+		recycle?: boolean;
+		withdrawCachePos?: RoomPosition;
+		depositCachePos?: RoomPosition;
 	}
 
 	interface PowerCreepMemory {
