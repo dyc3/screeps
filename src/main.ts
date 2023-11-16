@@ -116,8 +116,7 @@ import roleMiner from "roles/role.miner.js";
 import roleScientist from "roles/role.scientist";
 // @ts-expect-error hasn't been converted yet
 import roleRelay from "roles/role.relay.js";
-// @ts-expect-error hasn't been converted yet
-import roleTmpDeliver from "roles/role.tmpdeliver.js";
+import roleTmpDeliver from "roles/role.tmpdeliver";
 // @ts-expect-error hasn't been converted yet
 import roleTestLogistics from "roles/role.testlogistics";
 
