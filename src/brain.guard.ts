@@ -134,6 +134,11 @@ export function autoCreateGuardTask(room: Room): void {
 			0
 	);
 
+	if (hostiles.length === 0) {
+		console.log(`[guard] room ${room.name} is not in danger`);
+		return;
+	}
+
 	console.log(
 		`[guard] creating new task for room ${room.name} (${newTask.id}) enemies: ${allEnemyCreeps.length} hostiles: ${hostiles.length}`
 	);
