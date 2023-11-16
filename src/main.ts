@@ -93,6 +93,7 @@ global.move = (creep: string, direction: DirectionConstant) => {
 import "./types";
 import _ from "lodash";
 import "./tools.js";
+import { Scout } from "roles/role.scout";
 import util from "./util";
 import visualize from "./visualize";
 import { Role } from "./roles/meta";
@@ -1859,6 +1860,9 @@ function main() {
 					break;
 				case "testlogistics":
 					roleTestLogistics.run(creep);
+					break;
+				case Role.Scout:
+					new Scout(creep).run();
 					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");

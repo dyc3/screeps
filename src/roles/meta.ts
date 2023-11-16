@@ -23,4 +23,5 @@ export enum Role {
 	/** @deprecated */
 	Healer = "healer",
 	TmpDefense = "tmpdefense",
+	Scout = "scout",
 }
