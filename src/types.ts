@@ -80,6 +80,14 @@ declare global {
 		recycle?: boolean;
 		withdrawCachePos?: RoomPosition;
 		depositCachePos?: RoomPosition;
+		_settingsHash?: string;
+		_routeDistance?: number;
+		delivering?: boolean;
+		recycleAfterDelivery?: boolean;
+		recycleAfterDeposit?: boolean;
+		dropAfterDeposit?: boolean;
+		renewAtWithdraw?: boolean;
+		transportOther?: boolean;
 	}
 
 	interface PowerCreepMemory {

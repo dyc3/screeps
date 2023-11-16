@@ -1,4 +1,3 @@
-
 import * as cartographer from "screeps-cartographer";
 import util, { isOwnedStructure } from "../util.js";
 import { Role } from "./meta";

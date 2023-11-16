@@ -1,9 +1,11 @@
+/* eslint-disable no-underscore-dangle */
 // This is a tool creep used to set up delivery routes for energy
 
 import * as cartographer from "screeps-cartographer";
 import util, { isStoreStructure } from "../util.js";
 import { Role } from "./meta.js";
 
+// @ts-expect-error: TODO: just have this be a regular function and not a prototype func
 String.prototype.hashCode = function () {
 	let hash = 0;
 	let i;
@@ -13,7 +15,9 @@ String.prototype.hashCode = function () {
 	}
 	for (i = 0; i < this.length; i++) {
 		chr = this.charCodeAt(i);
+		// eslint-disable-next-line no-bitwise
 		hash = (hash << 5) - hash + chr;
+		// eslint-disable-next-line no-bitwise
 		hash |= 0; // Convert to 32bit integer
 	}
 	return hash;
@@ -27,11 +31,15 @@ const roleTmpDelivery = {
 	 * @returns {boolean} True if cached values need to be recalculated, false if otherwise.
 	 */
 	haveSettingsChanged(creep: Creep): boolean {
-		const settings = creep.memory.withdrawTargetId + creep.memory.depositTargetId;
+		const settings = `${creep.memory.withdrawTargetId}${creep.memory.depositTargetId}`;
 		if (!creep.memory._settingsHash) {
+			// @ts-expect-error this is valid
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 			creep.memory._settingsHash = settings.hashCode();
 		}
 
+		// @ts-expect-error this is valid
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		return settings.hashCode() !== creep.memory._settingsHash;
 	},
 	/**
@@ -64,9 +72,9 @@ const roleTmpDelivery = {
 		}
 
 		if (creep.memory.renewAtWithdraw) {
-			return creep.ticksToLive <= creep._routeDistance * 2;
+			return (creep.ticksToLive ?? 0) <= (creep.memory._routeDistance ?? 0) * 2;
 		} else {
-			return creep.ticksToLive <= creep._routeDistance;
+			return (creep.ticksToLive ?? 0) <= (creep.memory._routeDistance ?? 0);
 		}
 	},
 
@@ -166,7 +174,7 @@ const roleTmpDelivery = {
 			// eslint-disable-next-line no-underscore-dangle
 			const _cache = creep.memory.depositCachePos;
 			const targetPos = depositTarget ? depositTarget.pos : new RoomPosition(_cache.x, _cache.y, _cache.roomName);
-			if (creep.pos.isNearTo(targetPos)) {
+			if (creep.pos.isNearTo(targetPos) && depositTarget) {
 				let transferResult;
 				if (creep.memory.transportOther) {
 					for (const resource of RESOURCES_ALL) {
