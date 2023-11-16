@@ -40,6 +40,10 @@ export class ErrorMapper {
 
 		while ((match = re.exec(stack))) {
 			if (match[2] === "main") {
+				if (!this.consumer) {
+					console.log("!!! SourceMapConsumer not initialized !!!");
+					break;
+				}
 				const pos = this.consumer.originalPositionFor({
 					column: parseInt(match[4], 10),
 					line: parseInt(match[3], 10),

@@ -375,7 +375,12 @@ export const util = {
 	},
 
 	printException(e: any, creep: Creep | undefined = undefined): void {
-		const msg = errorMild + ErrorMapper.renderError(e);
+		let msg = errorMild;
+		if (e instanceof Error) {
+			msg += ErrorMapper.renderError(e);
+		} else {
+			msg += e.toString();
+		}
 		if (creep) {
 			console.log(creep.name, msg);
 		} else {
