@@ -5,12 +5,18 @@ import util from "../util.js";
 import brainLogistics from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
 
+export interface Route {
+	resource: ResourceConstant;
+	depositTargetId: Id<AnyStoreStructure>;
+	withdrawTargetId?: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
+}
+
 const roleScientist = {
 	/**
 	 * Gets a new delivery route for the scientist creep
 	 * @param {Creep} creep
 	 */
-	getDeliveryRoute(creep: Creep) {
+	getDeliveryRoute(creep: Creep): Route | undefined {
 		if (creep.store.getUsedCapacity() > 0) {
 			creep.log("Carrying resource, finding a sink");
 
@@ -49,10 +55,16 @@ const roleScientist = {
 
 			for (const depositSink of sinks) {
 				const depositTarget = depositSink.object;
+				if (!depositTarget) {
+					continue;
+				}
 				const targetResource = depositSink.resource;
 				let sources = brainLogistics.findSources({
 					resource: targetResource,
 					filter: s => {
+						if (!s.object) {
+							return false;
+						}
 						if (targetResource === RESOURCE_ENERGY) {
 							if (
 								(brainAutoPlanner.isInRootModule(s.object) ||
@@ -86,13 +98,14 @@ const roleScientist = {
 				return {
 					resource: targetResource,
 					depositTargetId: depositTarget.id,
-					withdrawTargetId: _.first(sources).object.id,
+					withdrawTargetId: _.first(sources).object?.id,
 				};
 			}
 		}
+		return undefined;
 	},
 
-	run(creep) {
+	run(creep: Creep): void {
 		if (creep.memory.route) {
 			if (creep.memory.route.depositTargetId === creep.memory.route.withdrawTargetId) {
 				creep.log("withdraw and deposit targets are the same, removing route");
