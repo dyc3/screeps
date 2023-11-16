@@ -1,5 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-import "../traveler.js";
+
 import util from "../util";
 
 /*

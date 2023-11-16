@@ -1,5 +1,4 @@
 import * as cartographer from "screeps-cartographer";
-import "../traveler.js";
 
 // TODO: clean up all this extra junk that's not used anymore
 let roleClaimer = {

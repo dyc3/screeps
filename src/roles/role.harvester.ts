@@ -1,5 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-import "../traveler.js";
+
 import util from "../util.js";
 import toolEnergySource from "../tool.energysource.js";
 import { Role } from "./meta";

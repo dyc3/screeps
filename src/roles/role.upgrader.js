@@ -1,5 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-import "../traveler.js";
+
 import util from "../util";
 // @ts-expect-error hasn't been converted yet
 import taskGather from "../task.gather.js";

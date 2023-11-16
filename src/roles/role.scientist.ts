@@ -1,5 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-import "../traveler.js";
+
 import * as taskDepositMaterials from "task.depositmaterials";
 import util from "../util.js";
 import brainLogistics from "../brain.logistics";

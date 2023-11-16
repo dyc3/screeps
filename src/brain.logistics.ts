@@ -1,4 +1,3 @@
-import "./traveler.js";
 import brainAutoPlanner from "./brain.autoplanner.js";
 import util from "./util";
 

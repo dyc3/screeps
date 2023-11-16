@@ -1,4 +1,4 @@
-import "../traveler.js";
+
 import * as cartographer from "screeps-cartographer";
 import brainAutoPlanner from "../brain.autoplanner.js";
 import brainLogistics from "../brain.logistics";
