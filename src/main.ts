@@ -113,8 +113,7 @@ import roleRemoteHarvester from "roles/role.remoteharvester.js";
 import roleCarrier from "roles/role.carrier.js";
 // @ts-expect-error hasn't been converted yet
 import roleMiner from "roles/role.miner.js";
-// @ts-expect-error hasn't been converted yet
-import roleScientist from "roles/role.scientist.js";
+import roleScientist from "roles/role.scientist";
 // @ts-expect-error hasn't been converted yet
 import roleRelay from "roles/role.relay.js";
 // @ts-expect-error hasn't been converted yet
