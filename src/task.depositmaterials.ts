@@ -1,3 +1,5 @@
+import * as cartographer from "screeps-cartographer";
+
 /**
  * Excludes energy by default
  */
@@ -40,7 +42,7 @@ export function run(creep: Creep, excludeEnergy = true): void {
 				}
 			}
 		} else {
-			creep.travelTo(storage.pos);
+			cartographer.moveTo(creep, storage);
 		}
 	} else {
 		creep.log("Err: no storage to deposit materials");
