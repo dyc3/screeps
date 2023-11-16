@@ -15,6 +15,13 @@ export class Scout {
 		this.creep.memory.targetRoom = roomName;
 	}
 
+	/**
+	 * Whether the scout has reached its target room.
+	 */
+	public get isComplete(): boolean {
+		return this.creep.room.name === this.targetRoom;
+	}
+
 	public run(): void {
 		if (this.targetRoom) {
 			cartographer.moveTo(this.creep, { pos: new RoomPosition(25, 25, this.targetRoom), range: 15 });
