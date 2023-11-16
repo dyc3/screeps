@@ -42,7 +42,6 @@ export function getUpgraderQuota(room: Room): number {
 }
 
 export function getScientistQuota(room: Room): number {
-	return 0;
 	if (!room.controller) {
 		return 0;
 	}
@@ -482,7 +481,8 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 		quota: getScientistQuota,
 		// quota:0,
 		quotaPerRoom: true,
-		stages: [[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]],
+		stages: [[CARRY, CARRY, MOVE, MOVE]],
+		// stages: [[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]],
 	},
 };
 
