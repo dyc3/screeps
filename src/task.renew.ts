@@ -103,8 +103,6 @@ const taskRenew = {
 			!creep.memory._lastCheckTravelTime ||
 			Game.time - creep.memory._lastCheckTravelTime > 30
 		) {
-			// let path = PathFinder.search(creep.pos, { pos: spawn.pos, range: 1 }).path;
-			// const path = traveler.Traveler.findTravelPath(creep.pos, spawn.pos, { range: 1, ignoreCreeps: true }).path;
 			const path = cartographer.cachePath(`renew-${creep.name}`, creep.pos, spawn.pos, { avoidCreeps: false });
 			if (!path) {
 				creep.log("WARNING: no path found to renew target");

@@ -1,6 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-let traveler = require("traveler");
-let util = require("../util");
+import util from "../util";
 
 /*
 command to spawn invader destroyers:
