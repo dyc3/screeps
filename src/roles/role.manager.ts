@@ -503,7 +503,12 @@ const roleManager = {
 		let sources = brainLogistics.findSources({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
-			filter: s => s.objectId !== creep.memory.lastDepositStructure,
+			filter: s => {
+				return (
+					s.objectId !== creep.memory.lastDepositStructure &&
+					!(s.object instanceof Resource && s.amount < 100)
+				);
+			},
 		});
 		creep.log(`Found ${sources.length} sources`);
 
