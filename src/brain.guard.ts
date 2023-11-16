@@ -261,9 +261,11 @@ export default {
 		}
 		if (grouped.false) {
 			// remove completed guard tasks
+			// FIXME: assigning tasks = [] does not work when `tasks` is not in `this`
 			tasks = grouped.false;
 		} else {
-			tasks = [];
+			// HACK: assigning tasks = [] does not work when `tasks` is not in `this`
+			tasks.splice(0, tasks.length);
 		}
 
 		// update neededCreeps for existing tasks
