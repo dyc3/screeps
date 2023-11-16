@@ -100,8 +100,7 @@ import { Role } from "./roles/meta";
 import roleHarvester from "roles/role.harvester";
 // @ts-expect-error hasn't been converted yet
 import roleUpgrader from "roles/role.upgrader.js";
-// @ts-expect-error hasn't been converted yet
-import roleManager from "roles/role.manager.js";
+import roleManager from "roles/role.manager";
 // @ts-expect-error hasn't been converted yet
 import roleBuilder from "roles/role.builder.js";
 import roleRepairer from "roles/role.repairer";
