@@ -121,8 +121,7 @@ import roleTmpDeliver from "roles/role.tmpdeliver.js";
 // @ts-expect-error hasn't been converted yet
 import roleTestLogistics from "roles/role.testlogistics";
 
-// @ts-expect-error hasn't been converted yet
-import roleTower from "roles/role.tower.js";
+import roleTower from "roles/role.tower";
 // @ts-expect-error hasn't been converted yet
 import powercreepLigma from "./powercreep.ligma.js";
 
