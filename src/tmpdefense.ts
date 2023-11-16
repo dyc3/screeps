@@ -58,11 +58,11 @@ const rangedBody = [
 
 const defendRoom = "W16N7";
 
-export function dlog(...args: any[]) {
+export function dlog(...args: any[]): void {
 	console.log('<span style="color: orange">tmp defense: ', ...args, "</span>");
 }
 
-export function run() {
+export function run(): void {
 	return;
 	const creeps = util.getCreeps(Role.TmpDefense);
 	const room = Game.rooms[defendRoom];
@@ -75,7 +75,7 @@ export function run() {
 			continue;
 		}
 
-		if (creep.ticksToLive < 200) {
+		if ((creep.ticksToLive ?? Infinity) < 200) {
 			creep.memory.renewing = true;
 		}
 
@@ -136,7 +136,7 @@ function spawnTmpDefense(spawnName: string) {
 	const spawn = Game.spawns[spawnName];
 
 	const result = spawn.spawnCreep(rangedBody, `tmpdefense_${Game.time.toString(16)}`, {
-		// @ts-ignore
+		// @ts-expect-error this is fine
 		memory: {
 			role: Role.TmpDefense,
 			keepAlive: true,
