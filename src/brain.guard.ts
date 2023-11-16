@@ -106,22 +106,11 @@ export default {
 	tasks: [] as GuardTask[],
 
 	init(): void {
-		if (!Memory.guard) {
-			Memory.guard = {
-				tasks: [],
-				tasksMade: 0,
-				guardiansSpawned: 0,
-			};
-		}
-		if (!Memory.guard.tasks) {
-			Memory.guard.tasks = [];
-		}
-		if (!Memory.guard.tasksMade) {
-			Memory.guard.tasksMade = 0;
-		}
-		if (!Memory.guard.guardiansSpawned) {
-			Memory.guard.guardiansSpawned = 0;
-		}
+		Memory.guard = _.defaults(Memory.guard, {
+			tasks: [],
+			tasksMade: 0,
+			guardiansSpawned: 0,
+		});
 		this.tasks = _.map(Memory.guard.tasks, task => new GuardTask().deserialize(task));
 	},
 
