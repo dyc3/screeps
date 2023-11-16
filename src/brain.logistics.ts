@@ -594,7 +594,7 @@ const brainLogistics = {
 	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSources(options: Partial<ResourceSource> & { filter: (s: ResourceSource) => boolean }): ResourceSource[] {
+	findSources(options: Partial<ResourceSource & { filter: (s: ResourceSource) => boolean }> = {}): ResourceSource[] {
 		options = _.defaults(options, {});
 		let sources = collectAllResourceSources();
 		if (options.resource) {
@@ -616,7 +616,7 @@ const brainLogistics = {
 	 * @param {string} options.roomName
 	 * @param {Function} options.filter
 	 */
-	findSinks(options: Partial<ResourceSink> & { filter: (s: ResourceSink) => boolean }): ResourceSink[] {
+	findSinks(options: Partial<ResourceSink & { filter: (s: ResourceSink) => boolean }> = {}): ResourceSink[] {
 		options = _.defaults(options, {});
 		let sinks = collectAllResourceSinks();
 		if (options.resource) {

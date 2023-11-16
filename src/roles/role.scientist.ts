@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 import "../traveler.js";
 import * as taskDepositMaterials from "task.depositmaterials";
-import util from "../util";
+import util from "../util.js";
 import brainLogistics from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
 
@@ -10,7 +10,7 @@ const roleScientist = {
 	 * Gets a new delivery route for the scientist creep
 	 * @param {Creep} creep
 	 */
-	getDeliveryRoute(creep) {
+	getDeliveryRoute(creep: Creep) {
 		if (creep.store.getUsedCapacity() > 0) {
 			creep.log("Carrying resource, finding a sink");
 
@@ -28,7 +28,7 @@ const roleScientist = {
 				}
 
 				const depositSink = _.first(sinks);
-				let depositTarget = depositSink.object;
+				const depositTarget = depositSink.object;
 				return {
 					resource,
 					depositTargetId: depositTarget.id,
@@ -48,8 +48,8 @@ const roleScientist = {
 			);
 
 			for (const depositSink of sinks) {
-				let depositTarget = depositSink.object;
-				let targetResource = depositSink.resource;
+				const depositTarget = depositSink.object;
+				const targetResource = depositSink.resource;
 				let sources = brainLogistics.findSources({
 					resource: targetResource,
 					filter: s => {
@@ -132,7 +132,7 @@ const roleScientist = {
 			// visualize route
 			const depositColor = "#00ff00";
 			const withdrawColor = "#ff0000";
-			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
+			const depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
 			if (depositTarget) {
 				if (creep.room.name === depositTarget.room.name) {
 					creep.room.visual.line(creep.pos, depositTarget.pos, {
@@ -150,7 +150,7 @@ const roleScientist = {
 			}
 
 			if (creep.memory.route.withdrawTargetId) {
-				let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
+				const withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 				if (withdrawTarget) {
 					if (creep.room.name === withdrawTarget.room.name) {
 						creep.room.visual.line(creep.pos, withdrawTarget.pos, {
@@ -200,10 +200,10 @@ const roleScientist = {
 			);
 		}
 
-		let obstacles = util.getCreeps("harvester", "relay");
+		const obstacles = util.getCreeps("harvester", "relay");
 
 		if (creep.memory.transporting) {
-			let depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
+			const depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
 			if (!depositTarget) {
 				creep.log("deposit target does not exist, removing route");
 				delete creep.memory.route;
@@ -220,7 +220,7 @@ const roleScientist = {
 				delete creep.memory.route;
 			}
 		} else {
-			let withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
+			const withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 			if (!withdrawTarget) {
 				creep.log("withdraw target does not exist, removing route");
 				delete creep.memory.route;
