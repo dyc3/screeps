@@ -136,8 +136,7 @@ import toolRoadPlanner from "tool.roadplanner.js";
 import brainAutoPlanner from "./brain.autoplanner.js";
 // @ts-expect-error hasn't been converted yet
 import brainGuard, { autoCreateGuardTask } from "./brain.guard.js";
-// @ts-expect-error hasn't been converted yet
-import brainLogistics from "./brain.logistics.js";
+import brainLogistics from "./brain.logistics";
 // @ts-expect-error hasn't been converted yet
 import brainHighwayHarvesting from "./brain.highwayharvesting.js";
 // @ts-expect-error hasn't been converted yet
@@ -332,7 +331,7 @@ function doLinkTransfers() {
 	for (const room of rooms) {
 		const links = shuffle(util.getStructures(room, STRUCTURE_LINK));
 		if (links.length > 0) {
-			if (!room.memory.rootLink) {
+			if (room.memory.rootPos && !room.memory.rootLink) {
 				try {
 					const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
 					if (!rootLinkPos) {
