@@ -3,15 +3,14 @@ import * as cartographer from "screeps-cartographer";
 const roleRemoteHarvester = {
 	run(creep: Creep): void {
 		if (!creep.memory.harvestTarget) {
-			console.log(
-				creep.name,
+			creep.log(
 				"ERR: no harvest target, this needs to be assigned by a job (similar to how relays are assigned)"
 			);
 			return;
 		}
 		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
 		if (!harvestTarget) {
-			console.log(creep.name, "ERR: harvest target not found in memory");
+			creep.log("ERR: harvest target not found in memory");
 			return;
 		}
 
@@ -55,7 +54,7 @@ const roleRemoteHarvester = {
 
 		const source = Game.getObjectById(harvestTarget.id);
 		if (!source) {
-			console.log(creep.name, "CRITICAL: Unable to access harvest target");
+			creep.log("CRITICAL: Unable to access harvest target");
 			return;
 		}
 
