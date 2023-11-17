@@ -63,7 +63,6 @@ const roleCarrier = {
 	modes: {
 		// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 		"remote-mining"(creep: Creep) {
-			console.log("ASFASDFSADFASDFASDF", creep, creep.memory.depositTarget);
 			if (!creep.memory.depositTarget) {
 				creep.memory.depositTarget = findDespositTarget(creep);
 			}
@@ -269,7 +268,7 @@ const roleCarrier = {
 		}
 
 		// run different code for different modes
-		this.modes[creep.memory.mode](this, creep);
+		this.modes[creep.memory.mode](creep);
 	},
 };
 
