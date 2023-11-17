@@ -1953,24 +1953,10 @@ function main() {
 		}
 	}
 
-	try {
-		// TODO: run creeps assigned to these tasks
-	} catch (e) {
-		console.log("ERR: brain.highwayHarvesting tasks failed");
-		util.printException(e);
-	}
-	brainHighwayHarvesting.finalize();
-
 	brainLogistics.finalize();
 
 	ObserveQueue.consumeObservations();
 	PortalScanner.finalize();
-
-	try {
-		TmpDefense.run();
-	} catch (e) {
-		util.printException(e);
-	}
 
 	printStatus();
 
