@@ -15,7 +15,7 @@ const roleRemoteHarvester = {
 			return;
 		}
 
-		if (harvestTarget.danger > 0) {
+		if (harvestTarget.danger > 0 && harvestTarget.dangerPos) {
 			creep.say("flee");
 			const dangerPos = new RoomPosition(
 				harvestTarget.dangerPos[harvestTarget.danger].x,

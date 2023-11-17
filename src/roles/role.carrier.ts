@@ -92,7 +92,7 @@ const roleCarrier = {
 			if (!creep.memory.delivering && creep.room.name !== harvestTarget.roomName && harvestTarget.danger === 0) {
 				cartographer.moveTo(creep, new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
 				return;
-			} else if (!creep.memory.delivering && harvestTarget.danger > 0) {
+			} else if (!creep.memory.delivering && harvestTarget.danger > 0 && harvestTarget.dangerPos) {
 				const dangerPos = new RoomPosition(
 					harvestTarget.dangerPos[harvestTarget.danger].x,
 					harvestTarget.dangerPos[harvestTarget.danger].y,
