@@ -1858,13 +1858,14 @@ function main() {
 	const renewingCreeps: Creep[] = _.filter(_.values(Game.creeps), (c: Creep) => c.memory.renewing);
 	const CREEP_RENEW_PRIORITY: Record<any, number> = {
 		_default: 5,
-		harvester: 1,
-		manager: 1,
-		remoteharvester: 8,
-		carrier: 8,
-		scientist: 9,
-		guardian: 9,
-		offense: 9,
+		[Role.Harvester]: 1,
+		[Role.Manager]: 1,
+		[Role.Relay]: 4,
+		[Role.RemoteHarvester]: 8,
+		[Role.Carrier]: 8,
+		[Role.Scientist]: 9,
+		[Role.Guardian]: 9,
+		[Role.Offense]: 9,
 	};
 	renewingCreeps.sort((a: Creep, b: Creep) => {
 		// sort in descending order, so that the creeps with the least time to live get renewed first, but only if they are about to die
