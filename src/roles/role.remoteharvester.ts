@@ -39,10 +39,14 @@ const roleRemoteHarvester = {
 
 		// console.log(creep.name, "observe result:", observer.observeRoom(creep.memory.harvestTarget.roomName));
 		if (creep.room.name !== harvestTarget.roomName) {
-			cartographer.moveTo(creep, {
-				pos: new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName),
-				range: 0,
-			});
+			cartographer.moveTo(
+				creep,
+				{
+					pos: new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName),
+					range: 1,
+				},
+				{ avoidCreeps: false, priority: 10 }
+			);
 			return;
 		}
 
@@ -65,7 +69,7 @@ const roleRemoteHarvester = {
 			harvestTarget.roomName
 		);
 		if (!creep.pos.isEqualTo(harvestPos)) {
-			cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
+			cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 10 });
 			return;
 		}
 
