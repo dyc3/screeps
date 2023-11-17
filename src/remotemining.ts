@@ -1,6 +1,7 @@
+import { JobRunner } from "jobs";
+import { ObserveQueue } from "observequeue";
 import { Role } from "roles/meta";
 import util from "./util";
-import { JobRunner } from "jobs";
 
 /** Represents a single source that is being mined remotely. */
 export interface RemoteMiningTarget {
@@ -134,10 +135,10 @@ export function commandRemoteMining(): void {
 		} else if (util.isTreasureRoom(target.roomName)) {
 			// at this point, all hostiles must be source keepers
 			if (!target.keeperLairId) {
-				keeperLair = source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
+				keeperLair = (source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
 					filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
-				});
-				target.keeperLairId = keeperLair.id;
+				}) ?? undefined) as StructureKeeperLair | undefined;
+				target.keeperLairId = keeperLair?.id;
 			} else {
 				keeperLair = Game.getObjectById(target.keeperLairId) ?? undefined;
 			}
@@ -224,12 +225,14 @@ export function commandRemoteMining(): void {
 	// handle spawning claimers
 	let targetRooms = _.uniq(
 		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
-			target => Game.getObjectById(target.id)?.room.name
+			// this is safe because we filter out targets with no source
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			target => Game.getObjectById(target.id)!.room.name
 		)
 	);
 	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
 	for (const room of targetRooms) {
-		const controller = util.getStructuresOld(new Room(room), STRUCTURE_CONTROLLER)[0] as StructureController;
+		const controller = new Room(room).controller;
 		if (!controller) {
 			console.log("[remote mining] ERR: can't find controller");
 		}
