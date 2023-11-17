@@ -5,6 +5,20 @@ import util from "../util";
 
 // Game.spawns["Spawn5"].createCreep([WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE], "remoteharvester_1", {role:"remoteharvester", keepAlive:true, stage: 0 }); Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], "carrier_1", {role:"carrier", keepAlive:true, stage: 0 })
 
+const DANGER_MOVE_OPTS = {
+	avoidTargets(roomName: string) {
+		const room = Game.rooms[roomName];
+		if (!room) return [];
+		return room.find(FIND_HOSTILE_CREEPS).map(c => {
+			return {
+				pos: c.pos,
+				range: 5,
+			};
+		});
+	},
+	avoidTargetGradient: 0.9,
+};
+
 function findDespositTarget(creep: Creep) {
 	if (creep.memory.mode === "remote-mining" && !creep.memory.harvestTarget) {
 		creep.log("Can't find despositTarget without harvestTarget");
@@ -98,19 +112,7 @@ const roleCarrier = {
 					harvestTarget.dangerPos[harvestTarget.danger].y,
 					harvestTarget.dangerPos[harvestTarget.danger].roomName
 				);
-				cartographer.moveTo(creep, dangerPos, {
-					avoidTargets(roomName: string) {
-						const room = Game.rooms[roomName];
-						if (!room) return [];
-						return room.find(FIND_HOSTILE_CREEPS).map(c => {
-							return {
-								pos: c.pos,
-								range: 5,
-							};
-						});
-					},
-					avoidTargetGradient: 0.9,
-				});
+				cartographer.moveTo(creep, dangerPos, DANGER_MOVE_OPTS);
 				return;
 			}
 			const harvestPos = new RoomPosition(
@@ -145,11 +147,7 @@ const roleCarrier = {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, RESOURCE_ENERGY);
 				} else {
-					const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
-					cartographer.moveTo(creep, depositTarget, {
-						obstacles,
-						ensurePath: true,
-					});
+					cartographer.moveTo(creep, depositTarget);
 				}
 			} else {
 				if (creep.pos.isEqualTo(harvestPos)) {
@@ -157,7 +155,7 @@ const roleCarrier = {
 					return;
 				}
 
-				if (harvestTarget.danger > 0) {
+				if (harvestTarget.danger > 0 && harvestTarget.dangerPos) {
 					creep.say("flee");
 					if (creep.store[RESOURCE_ENERGY] > 0) {
 						creep.memory.delivering = true;
@@ -167,7 +165,7 @@ const roleCarrier = {
 							harvestTarget.dangerPos[harvestTarget.danger].y,
 							harvestTarget.dangerPos[harvestTarget.danger].roomName
 						);
-						cartographer.moveTo(creep, dangerPos, { range: 1 });
+						cartographer.moveTo(creep, dangerPos, DANGER_MOVE_OPTS);
 					}
 					return;
 				}
@@ -186,9 +184,7 @@ const roleCarrier = {
 					delete creep.memory.droppedEnergyId;
 				}
 				if (!creep.pos.isNearTo(harvestPos)) {
-					const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
-					cartographer.moveTo(creep, harvestPos, { obstacles });
-					// cartographer.moveTo(creep, harvestPos);
+					cartographer.moveTo(creep, harvestPos);
 				} else if (dropped) {
 					creep.pickup(dropped);
 				}
