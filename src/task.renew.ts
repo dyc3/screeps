@@ -222,38 +222,38 @@ const taskRenew = {
 			}
 		}
 
-		if (!creep.pos.isNearTo(renewTarget)) {
-			cartographer.moveTo(creep, renewTarget, {
-				visualizePathStyle: {},
-				avoidTargets: roomName => {
-					// FIXME: this code is duplicated in commandEnergyRelays job, and should be moved to a common place
-					const room = Game.rooms[roomName];
-					if (room) {
-						if (!room.memory.rootPos || !room.memory.storagePos) {
-							return [];
-						}
-						const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
-						const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
-						let storagePosRelayDirection: DirectionConstant = RIGHT;
-						if (room.memory.storagePosDirection) {
-							storagePosRelayDirection = room.memory.storagePosDirection;
-						}
-						if (!rootLinkPos || !storagePos) {
-							return [];
-						}
-						const relayPositions = [
-							{ pos: util.getPositionInDirection(rootLinkPos, TOP_LEFT), range: 0 },
-							{ pos: util.getPositionInDirection(storagePos, storagePosRelayDirection), range: 0 },
-							{ pos: util.getPositionInDirection(rootLinkPos, TOP_RIGHT), range: 0 },
-							{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT), range: 0 },
-							{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT), range: 0 },
-						];
-						return relayPositions;
+		cartographer.moveTo(creep, renewTarget, {
+			visualizePathStyle: {},
+			avoidTargets: roomName => {
+				// FIXME: this code is duplicated in commandEnergyRelays job, and should be moved to a common place
+				const room = Game.rooms[roomName];
+				if (room) {
+					if (!room.memory.rootPos || !room.memory.storagePos) {
+						return [];
 					}
-					return [];
-				},
-			});
-		} else if ((creep.ticksToLive ?? 0) < maxTicks) {
+					const rootLinkPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y - 2);
+					const storagePos = room.getPositionAt(room.memory.storagePos.x, room.memory.storagePos.y);
+					let storagePosRelayDirection: DirectionConstant = RIGHT;
+					if (room.memory.storagePosDirection) {
+						storagePosRelayDirection = room.memory.storagePosDirection;
+					}
+					if (!rootLinkPos || !storagePos) {
+						return [];
+					}
+					const relayPositions = [
+						{ pos: util.getPositionInDirection(rootLinkPos, TOP_LEFT), range: 0 },
+						{ pos: util.getPositionInDirection(storagePos, storagePosRelayDirection), range: 0 },
+						{ pos: util.getPositionInDirection(rootLinkPos, TOP_RIGHT), range: 0 },
+						{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT), range: 0 },
+						{ pos: util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT), range: 0 },
+					];
+					return relayPositions;
+				}
+				return [];
+			},
+		});
+
+		if ((creep.ticksToLive ?? 0) < maxTicks) {
 			if (creep instanceof Creep && renewTarget instanceof StructureSpawn) {
 				switch (renewTarget.renewCreep(creep)) {
 					case ERR_NOT_ENOUGH_ENERGY:
