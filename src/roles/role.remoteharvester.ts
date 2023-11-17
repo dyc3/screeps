@@ -1,9 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
-
-let roleRemoteHarvester = {
-	/** @param {Creep} creep **/
-	run(creep) {
+const roleRemoteHarvester = {
+	run(creep: Creep): void {
 		if (!creep.memory.harvestTarget) {
 			console.log(
 				creep.name,
@@ -11,22 +9,41 @@ let roleRemoteHarvester = {
 			);
 			return;
 		}
-		let harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget.id);
+		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
+		if (!harvestTarget) {
+			console.log(creep.name, "ERR: harvest target not found in memory");
+			return;
+		}
 
 		if (harvestTarget.danger > 0) {
 			creep.say("flee");
-			let dangerPos = new RoomPosition(
+			const dangerPos = new RoomPosition(
 				harvestTarget.dangerPos[harvestTarget.danger].x,
 				harvestTarget.dangerPos[harvestTarget.danger].y,
 				harvestTarget.dangerPos[harvestTarget.danger].roomName
 			);
-			cartographer.moveTo(creep, dangerPos);
+			cartographer.moveTo(creep, dangerPos, {
+				avoidTargets(roomName: string) {
+					const room = Game.rooms[roomName];
+					if (!room) return [];
+					return room.find(FIND_HOSTILE_CREEPS).map(c => {
+						return {
+							pos: c.pos,
+							range: 5,
+						};
+					});
+				},
+				avoidTargetGradient: 0.9,
+			});
 			return;
 		}
 
 		// console.log(creep.name, "observe result:", observer.observeRoom(creep.memory.harvestTarget.roomName));
 		if (creep.room.name !== harvestTarget.roomName) {
-			cartographer.moveTo(creep, new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
+			cartographer.moveTo(creep, {
+				pos: new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName),
+				range: 0,
+			});
 			return;
 		}
 
@@ -36,14 +53,14 @@ let roleRemoteHarvester = {
 			return;
 		}
 
-		let source = Game.getObjectById(harvestTarget.id);
+		const source = Game.getObjectById(harvestTarget.id);
 		if (!source) {
 			console.log(creep.name, "CRITICAL: Unable to access harvest target");
 			return;
 		}
 
 		// TODO: cache path to harvest target
-		let harvestPos = new RoomPosition(
+		const harvestPos = new RoomPosition(
 			harvestTarget.harvestPos.x,
 			harvestTarget.harvestPos.y,
 			harvestTarget.roomName
@@ -56,7 +73,7 @@ let roleRemoteHarvester = {
 		if (source.energy > 0) {
 			creep.harvest(source);
 		} else {
-			if (source.ticksToRegenerate > 30 && creep.ticksToLive < 300) {
+			if (source.ticksToRegeneration > 30 && (creep.ticksToLive ?? 0) < 300) {
 				creep.memory.renewing = true;
 			}
 		}
