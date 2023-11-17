@@ -28,7 +28,7 @@ function findDespositTarget(creep: Creep) {
 		return;
 	}
 
-	return rooms[0].storage.id;
+	return rooms[0]?.storage?.id;
 }
 
 function passiveMaintainRoads(creep: Creep) {
@@ -62,7 +62,8 @@ function passiveMaintainRoads(creep: Creep) {
 const roleCarrier = {
 	modes: {
 		// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-		"remote-mining": (creep: Creep) => {
+		"remote-mining"(creep: Creep) {
+			console.log("ASFASDFSADFASDFASDF", creep, creep.memory.depositTarget);
 			if (!creep.memory.depositTarget) {
 				creep.memory.depositTarget = findDespositTarget(creep);
 			}
@@ -81,8 +82,13 @@ const roleCarrier = {
 
 			const harvestTarget = _.find(
 				Memory.remoteMining.targets,
-				target => target.id === creep.memory.harvestTarget
+				target => target.id === creep.memory.harvestTarget.id
 			);
+
+			if (!harvestTarget) {
+				creep.log(creep.name, "ERR: can't find harvest target");
+				return;
+			}
 
 			if (!creep.memory.delivering && creep.room.name !== harvestTarget.roomName && harvestTarget.danger === 0) {
 				cartographer.moveTo(creep, new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName));
@@ -181,7 +187,7 @@ const roleCarrier = {
 					delete creep.memory.droppedEnergyId;
 				}
 				if (!creep.pos.isNearTo(harvestPos)) {
-					const obstacles = util.getCreeps("harvester", "relay");
+					const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
 					cartographer.moveTo(creep, harvestPos, { obstacles });
 					// cartographer.moveTo(creep, harvestPos);
 				} else if (dropped) {

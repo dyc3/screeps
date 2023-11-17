@@ -9,7 +9,10 @@ const roleRemoteHarvester = {
 			);
 			return;
 		}
-		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
+		const harvestTarget = _.find(
+			Memory.remoteMining.targets,
+			target => target.id === creep.memory.harvestTarget.id
+		);
 		if (!harvestTarget) {
 			console.log(creep.name, "ERR: harvest target not found in memory");
 			return;
