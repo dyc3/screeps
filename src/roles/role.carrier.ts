@@ -81,7 +81,7 @@ const roleCarrier = {
 
 			const harvestTarget = _.find(
 				Memory.remoteMining.targets,
-				target => target.id === creep.memory.harvestTarget.id
+				target => target.id === creep.memory.harvestTarget
 			);
 
 			if (!harvestTarget) {

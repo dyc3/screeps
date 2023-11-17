@@ -1,3 +1,7 @@
+import { Role } from "roles/meta";
+import util from "./util";
+import { JobRunner } from "jobs";
+
 /** Represents a single source that is being mined remotely. */
 export interface RemoteMiningTarget {
 	id: Id<Source>;
@@ -18,7 +22,7 @@ export interface RemoteMiningTarget {
 	paused: boolean;
 }
 
-export function commandRemoteMining() {
+export function commandRemoteMining(): void {
 	// Force job to run: Memory.jobLastRun["command-remote-mining"] = 0
 	let neededHarvesters = 0;
 	let neededCarriers = 0;
@@ -32,7 +36,7 @@ export function commandRemoteMining() {
 			target.creepHarvester &&
 			(!Game.creeps[target.creepHarvester] ||
 				!Game.creeps[target.creepHarvester].memory.harvestTarget ||
-				Game.creeps[target.creepHarvester].memory.harvestTarget.id !== target.id)
+				Game.creeps[target.creepHarvester].memory.harvestTarget !== target.id)
 		) {
 			delete target.creepHarvester;
 		}
@@ -42,7 +46,7 @@ export function commandRemoteMining() {
 				if (
 					!Game.creeps[carrierName] ||
 					!Game.creeps[carrierName].memory.harvestTarget ||
-					Game.creeps[carrierName].memory.harvestTarget.id !== target.id
+					Game.creeps[carrierName].memory.harvestTarget !== target.id
 				) {
 					target.creepCarriers.splice(i, 1);
 					i--;
@@ -64,12 +68,12 @@ export function commandRemoteMining() {
 		if (!target.creepHarvester) {
 			const remoteHarvesters = util
 				.getCreeps(Role.RemoteHarvester)
-				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
 			let didAssign = false;
 			for (const creep of remoteHarvesters) {
-				if (!creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id) {
+				if (!creep.memory.harvestTarget || creep.memory.harvestTarget === target.id) {
 					target.creepHarvester = creep.name;
-					creep.memory.harvestTarget = target;
+					creep.memory.harvestTarget = target.id;
 					didAssign = true;
 					break;
 				}
@@ -83,15 +87,15 @@ export function commandRemoteMining() {
 		if (target.creepCarriers.length < target.neededCarriers) {
 			const carriers = util
 				.getCreeps(Role.Carrier)
-				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget.id === target.id);
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
 			let countAssigned = 0;
 			for (const creep of carriers) {
-				if (creep.memory.harvestTarget && creep.memory.harvestTarget.id === target.id) {
-					creep.memory.harvestTarget = target;
+				if (creep.memory.harvestTarget && creep.memory.harvestTarget === target.id) {
+					creep.memory.harvestTarget = target.id;
 					countAssigned++;
 				} else if (!creep.memory.harvestTarget && !target.creepCarriers.includes(creep.name)) {
 					target.creepCarriers.push(creep.name);
-					creep.memory.harvestTarget = target;
+					creep.memory.harvestTarget = target.id;
 					countAssigned++;
 				}
 				if (countAssigned >= target.neededCarriers) {
@@ -109,6 +113,10 @@ export function commandRemoteMining() {
 			continue;
 		}
 		const source = Game.getObjectById(target.id);
+		if (!source) {
+			console.log("[remote mining]", target.id, "ERR: can't find source");
+			continue;
+		}
 		const hostiles = room.find(FIND_HOSTILE_CREEPS);
 		let keeperLair: StructureKeeperLair | undefined;
 		if (
@@ -131,7 +139,7 @@ export function commandRemoteMining() {
 				});
 				target.keeperLairId = keeperLair.id;
 			} else {
-				keeperLair = Game.getObjectById(target.keeperLairId);
+				keeperLair = Game.getObjectById(target.keeperLairId) ?? undefined;
 			}
 
 			const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
@@ -158,7 +166,7 @@ export function commandRemoteMining() {
 			} else if (
 				keeperLair &&
 				keeperLair.ticksToSpawn &&
-				keeperLair.ticksToSpawn <= (runner.getInterval("command-remote-mining") ?? 0) + 5
+				keeperLair.ticksToSpawn <= (JobRunner.getInstance().getInterval("command-remote-mining") ?? 0) + 5
 			) {
 				target.danger = 1;
 			} else {
