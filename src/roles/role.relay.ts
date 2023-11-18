@@ -312,8 +312,12 @@ const roleRelay = {
 				}
 			}
 
-			for (let i = 0; i < targetIdsNotFull.length; i++) {
-				const target = Game.getObjectById(targetIdsNotFull[i]);
+			for (const id of targetIdsNotFull) {
+				const target = Game.getObjectById(id);
+				if (!target) {
+					creep.log("WARN: target", id, "does not exist");
+					continue;
+				}
 				if (
 					target.structureType === STRUCTURE_TERMINAL &&
 					Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()
