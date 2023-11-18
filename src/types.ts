@@ -106,6 +106,14 @@ declare global {
 		transportTarget?: Id<AnyStoreStructure>;
 		_lastTransferTargetFail?: number;
 		hasDedicatedLink?: boolean;
+		harvesting?: boolean;
+		dedicatedLinkId?: Id<StructureLink>;
+		haveManagerForRoom?: boolean;
+		last_check_for_dedicated_link?: number;
+		force_mode?: string;
+		fillTargetIds?: Id<AnyStoreStructure>[];
+		refresh_fill_targets?: number;
+		harvestPos?: RoomPosition;
 	}
 
 	interface PowerCreepMemory {

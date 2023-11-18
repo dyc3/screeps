@@ -1,13 +1,17 @@
 import * as cartographer from "screeps-cartographer";
 
-import util from "../util.js";
-import toolEnergySource from "../tool.energysource.js";
 import { Role } from "./meta";
+import toolEnergySource from "../tool.energysource.js";
+import util from "../util.js";
 
 type HarvesterDepositMode = "wait" | "link" | "drop" | "recovery" | "direct";
 
 const roleHarvester = {
 	findTransferTargets(creep: Creep): Structure[] {
+		if (!creep.memory.harvestTarget) {
+			creep.log("ERROR: Can't find transfer targets without harvestTarget");
+			return [];
+		}
 		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		if (harvestTarget) {
 			let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
@@ -67,13 +71,12 @@ const roleHarvester = {
 				const a =
 					(struct.structureType === STRUCTURE_EXTENSION ||
 						(struct.structureType === STRUCTURE_SPAWN &&
-							(creep.room.controller.level === 1 || creep.room.energyAvailable > 295)) ||
+							(creep.room.controller?.level === 1 || creep.room.energyAvailable > 295)) ||
 						struct.structureType === STRUCTURE_TOWER) &&
 					struct.energy < struct.energyCapacity;
 				const b =
 					(struct.structureType === STRUCTURE_CONTAINER || struct.structureType === STRUCTURE_STORAGE) &&
-					// _.sum(struct.store) === struct.store[RESOURCE_ENERGY] &&
-					_.sum(struct.store) < struct.storeCapacity;
+					struct.store.getFreeCapacity() > 0;
 				return a || b;
 			},
 		});
@@ -172,7 +175,7 @@ const roleHarvester = {
 		 */
 
 		if (creep.memory.force_mode) {
-			return creep.memory.force_mode;
+			return creep.memory.force_mode as HarvesterDepositMode;
 		}
 
 		if (!creep.memory.harvestTarget) {
@@ -181,6 +184,10 @@ const roleHarvester = {
 		}
 
 		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		if (!harvestTarget) {
+			creep.log("Can't determine harvest mode without harvestTarget");
+			return "wait";
+		}
 		if (harvestTarget.pos.getRangeTo(harvestTarget.room.storage) <= 2) {
 			return "direct";
 		}
@@ -194,14 +201,14 @@ const roleHarvester = {
 			.getOwnedRooms()
 			.filter(
 				room =>
-					room.controller.level > 4 &&
+					(room.controller?.level ?? 0) > 4 &&
 					room.storage &&
 					room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 300000
 			);
 		if (highLevelRooms.length === 0) {
 			if (
 				Object.keys(Game.creeps).length <= 3 ||
-				harvestTarget.room.controller.level < 4 ||
+				(harvestTarget.room.controller?.level ?? 0) < 4 ||
 				util.getCreeps(Role.Manager).length === 0
 			) {
 				return "recovery";
@@ -224,7 +231,7 @@ const roleHarvester = {
 	},
 
 	/** Meant to replace findTransferTargets **/
-	getTransferTarget(creep: Creep): (AnyStructure & { store: Store<RESOURCE_ENERGY, false> }) | undefined {
+	getTransferTarget(creep: Creep): AnyStoreStructure | undefined {
 		// check adjacent positions for empty extensions
 		if (!creep.memory.refresh_fill_targets) {
 			creep.memory.refresh_fill_targets = Game.time - 50;
@@ -244,10 +251,9 @@ const roleHarvester = {
 				),
 				result => result.structure.structureType === STRUCTURE_EXTENSION
 			);
-			const targets = [];
-			for (let i = 0; i < adjacentStructs.length; i++) {
-				const struct = adjacentStructs[i].structure;
-				targets.push(struct.id);
+			const targets: Id<AnyStoreStructure>[] = [];
+			for (const struct of adjacentStructs) {
+				targets.push(struct.structure.id as Id<AnyStoreStructure>);
 			}
 			creep.memory.fillTargetIds = targets;
 			creep.memory.refresh_fill_targets = Game.time;
@@ -267,7 +273,7 @@ const roleHarvester = {
 			return creep.room.storage;
 		}
 
-		if (creep.memory.depositMode === "link") {
+		if (creep.memory.depositMode === "link" && creep.memory.dedicatedLinkId) {
 			return Game.getObjectById(creep.memory.dedicatedLinkId);
 		}
 
@@ -365,10 +371,10 @@ const roleHarvester = {
 
 		const lookResult = creep.pos.look();
 		for (const result of lookResult) {
-			if (result.type === LOOK_CONSTRUCTION_SITES) {
+			if (result.type === LOOK_CONSTRUCTION_SITES && result.constructionSite) {
 				creep.build(result.constructionSite);
 				return;
-			} else if (result.type === LOOK_STRUCTURES) {
+			} else if (result.type === LOOK_STRUCTURES && result.structure) {
 				if (result.structure.hits < result.structure.hitsMax) {
 					creep.repair(result.structure);
 				}
