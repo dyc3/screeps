@@ -1760,6 +1760,7 @@ profiler.registerObject(roleManager, "role.manager");
 profiler.registerObject(roleBuilder, "role.builder");
 profiler.registerObject(roleRemoteHarvester, "role.remoteharvester");
 profiler.registerObject(roleCarrier, "role.carrier");
+profiler.registerObject(roleClaimer, "role.claimer");
 profiler.registerObject(visualize, "visualize");
 profiler.registerObject(util, "util");
 profiler.registerObject(brainGuard, "brain.guard");
