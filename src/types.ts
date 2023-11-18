@@ -99,6 +99,12 @@ declare global {
 		transporting?: boolean;
 		route?: Route;
 		type?: string;
+		lastDepositStructure?: Id<AnyStoreStructure>;
+		lastWithdrawStructure?: Id<AnyStoreStructure> | Id<Resource>;
+		excludeTransport?: Id<AnyStoreStructure>[];
+		aquireTarget?: Id<AnyStoreStructure> | Id<Resource>;
+		transportTarget?: Id<AnyStoreStructure>;
+		_lastTransferTargetFail?: number;
 	}
 
 	interface PowerCreepMemory {
@@ -117,7 +123,7 @@ declare global {
 		storagePos?: { x: number; y: number };
 		/** @deprecated not sure if this is actually being used */
 		storagePosDirection?: DirectionConstant;
-		structures: Record<BuildableStructureConstant, { x: number; y: number }[]> };
+		structures: Record<BuildableStructureConstant, { x: number; y: number }[]>;
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")

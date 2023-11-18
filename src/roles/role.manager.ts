@@ -1,6 +1,6 @@
 import * as cartographer from "screeps-cartographer";
 import brainAutoPlanner from "../brain.autoplanner.js";
-import brainLogistics from "../brain.logistics";
+import brainLogistics, { ResourceSource } from "../brain.logistics";
 import util from "../util.js";
 import { Role } from "./meta.js";
 
@@ -483,6 +483,10 @@ const roleManager = {
 
 	getAquireTarget(creep: Creep): AnyStoreStructure | Resource | Tombstone | Ruin | null {
 		delete creep.memory.excludeTransport;
+		if (!creep.memory.targetRoom) {
+			creep.log("No target room, aborting");
+			return null;
+		}
 
 		let aquireTarget: AnyStoreStructure | Resource | Tombstone | Ruin;
 		if (creep.memory.aquireTarget) {
@@ -531,15 +535,19 @@ const roleManager = {
 		}
 
 		if (creep.room.energyAvailable <= creep.room.energyCapacityAvailable * 0.5) {
-			sources = _.sortByOrder(sources, [s => creep.pos.getRangeTo(s.object)], ["asc"]);
+			sources = _.sortByOrder(
+				sources,
+				[(s: ResourceSource) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity)],
+				["asc"]
+			);
 		} else {
 			sources = _.sortByOrder(
 				sources,
 				[
-					s => s.object instanceof Resource,
-					s => s.object instanceof Tombstone || s.object instanceof Ruin,
-					s => s.object instanceof Resource && s.amount > 600,
-					s => creep.pos.getRangeTo(s.object),
+					(s: ResourceSource) => s.object instanceof Resource,
+					(s: ResourceSource) => s.object instanceof Tombstone || s.object instanceof Ruin,
+					(s: ResourceSource) => s.object instanceof Resource && s.amount > 600,
+					(s: ResourceSource) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
 				],
 				["desc", "desc", "desc", "asc"]
 			);
@@ -599,7 +607,9 @@ const roleManager = {
 			delete creep.memory.aquireTarget;
 
 			if (
+				// eslint-disable-next-line no-underscore-dangle
 				creep.memory._lastTransferTargetFail !== undefined &&
+				// eslint-disable-next-line no-underscore-dangle
 				Game.time - creep.memory._lastTransferTargetFail < 10
 			) {
 				creep.log("Waiting before trying to find a new target to save CPU, because we failed last time.");
@@ -612,9 +622,11 @@ const roleManager = {
 					delete creep.memory.lastWithdrawStructure;
 				}
 				creep.log("can't get a transport target");
+				// eslint-disable-next-line no-underscore-dangle
 				creep.memory._lastTransferTargetFail = Game.time;
 				return;
 			}
+			// eslint-disable-next-line no-underscore-dangle
 			delete creep.memory._lastTransferTargetFail;
 			creep.room.visual.circle(transportTarget.pos, { stroke: "#00ff00", fill: "transparent", radius: 0.8 });
 			creep.log(`Transporting to ${transportTarget}`);
