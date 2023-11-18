@@ -259,7 +259,7 @@ function doAquire(creep: Creep, passively = false) {
 						}
 						return (
 							(struct.structureType === STRUCTURE_STORAGE &&
-								struct.store[RESOURCE_ENERGY] > creep.carryCapacity) ||
+								struct.store[RESOURCE_ENERGY] > creep.store.getCapacity()) ||
 							(struct.structureType === STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0)
 						);
 					},
@@ -352,7 +352,7 @@ function doAquire(creep: Creep, passively = false) {
 	}
 }
 
-function passivelyWithdrawOtherResources(creep, structure) {
+function passivelyWithdrawOtherResources(creep: Creep, structure: AnyStoreStructure) {
 	return;
 	// passively withdraw other resources from containers
 	if (
@@ -417,17 +417,21 @@ const roleManager = {
 				if (s.objectId === creep.memory.lastWithdrawStructure) {
 					return false;
 				}
-				if (creep.memory.excludeTransport.includes(s.objectId)) {
-					return false;
-				}
-				if (
-					brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) &&
-					s.object.structureType === STRUCTURE_STORAGE
-				) {
-					return false;
+				if (creep.memory.excludeTransport) {
+					if (creep.memory.excludeTransport.includes(s.objectId)) {
+						return false;
+					}
+					if (
+						creep.memory.lastWithdrawStructure &&
+						brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) &&
+						s.object instanceof Structure &&
+						s.object.structureType === STRUCTURE_STORAGE
+					) {
+						return false;
+					}
 				}
 
-				if (s.object.structureType === STRUCTURE_TOWER) {
+				if (s.object instanceof Structure && s.object.structureType === STRUCTURE_TOWER) {
 					if (s.object.store.getFreeCapacity(RESOURCE_ENERGY) < 100) {
 						return false;
 					}
@@ -488,14 +492,14 @@ const roleManager = {
 			return null;
 		}
 
-		let aquireTarget: AnyStoreStructure | Resource | Tombstone | Ruin;
+		let aquireTarget: AnyStoreStructure | Resource | Tombstone | Ruin | null;
 		if (creep.memory.aquireTarget) {
 			aquireTarget = Game.getObjectById(creep.memory.aquireTarget);
 			if (aquireTarget && aquireTarget instanceof Tombstone && aquireTarget.store.getUsedCapacity() > 0) {
 				return aquireTarget;
 			} else if (
 				aquireTarget &&
-				(!aquireTarget.store || aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
+				(aquireTarget instanceof Resource || aquireTarget.store.getUsedCapacity(RESOURCE_ENERGY) > 0)
 			) {
 				return aquireTarget;
 			} else {
@@ -601,8 +605,6 @@ const roleManager = {
 			delete creep.memory.lastDepositStructure;
 		}
 
-		const obstacles = util.getCreeps(Role.Harvester, Role.Relay);
-
 		if (creep.memory.transporting) {
 			delete creep.memory.aquireTarget;
 
@@ -617,7 +619,7 @@ const roleManager = {
 			}
 
 			const transportTarget = this.getTransferTarget(creep);
-			if (!transportTarget) {
+			if (!transportTarget || !creep.memory.transportTarget) {
 				if (Game.time % 5 === 0) {
 					delete creep.memory.lastWithdrawStructure;
 				}
@@ -666,12 +668,10 @@ const roleManager = {
 					}
 				}
 			} else {
-				const opts = { obstacles, ensurePath: true };
-				if (creep.room.name === transportTarget.room.name) {
-					opts.maxRooms = 1;
-				}
-				const result = cartographer.moveTo(creep, transportTarget, opts);
-				if (result.incomplete) {
+				const result = cartographer.moveTo(creep, transportTarget, {
+					keepTargetInRoom: true,
+				});
+				if (result === ERR_NO_PATH) {
 					creep.log("Incomplete path to transport target, clearing");
 					creep.memory.excludeTransport.push(creep.memory.transportTarget);
 					delete creep.memory.transportTarget;
@@ -710,11 +710,9 @@ const roleManager = {
 					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
 				}
 			} else {
-				const opts = { obstacles, ensurePath: true };
-				if (creep.room.name === aquireTarget.room.name) {
-					opts.maxRooms = 1;
-				}
-				cartographer.moveTo(creep, aquireTarget, opts);
+				cartographer.moveTo(creep, aquireTarget, {
+					keepTargetInRoom: true,
+				});
 			}
 		}
 	},

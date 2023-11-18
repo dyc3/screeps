@@ -100,9 +100,9 @@ declare global {
 		route?: Route;
 		type?: string;
 		lastDepositStructure?: Id<AnyStoreStructure>;
-		lastWithdrawStructure?: Id<AnyStoreStructure> | Id<Resource>;
+		lastWithdrawStructure?: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
 		excludeTransport?: Id<AnyStoreStructure>[];
-		aquireTarget?: Id<AnyStoreStructure> | Id<Resource>;
+		aquireTarget?: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
 		transportTarget?: Id<AnyStoreStructure>;
 		_lastTransferTargetFail?: number;
 	}
