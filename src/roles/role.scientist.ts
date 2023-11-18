@@ -1,9 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
-import * as taskDepositMaterials from "task.depositmaterials";
-import util from "../util.js";
-import brainLogistics from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
+import brainLogistics from "../brain.logistics";
 
 export interface Route {
 	resource: ResourceConstant;
