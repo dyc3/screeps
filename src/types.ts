@@ -105,6 +105,7 @@ declare global {
 		aquireTarget?: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
 		transportTarget?: Id<AnyStoreStructure>;
 		_lastTransferTargetFail?: number;
+		hasDedicatedLink?: boolean;
 	}
 
 	interface PowerCreepMemory {

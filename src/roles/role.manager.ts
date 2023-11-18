@@ -151,7 +151,7 @@ function doAquire(creep: Creep, passively = false) {
 						!c.spawning &&
 						c.memory.role === Role.Harvester &&
 						(!c.memory.hasDedicatedLink || c.memory.stage < 5) &&
-						c.store[RESOURCE_ENERGY] >= c.carryCapacity * 0.85
+						c.store[RESOURCE_ENERGY] >= c.store.getCapacity() * 0.85
 					);
 				},
 			});
@@ -187,6 +187,7 @@ function doAquire(creep: Creep, passively = false) {
 						if (struct.structureType === STRUCTURE_CONTAINER) {
 							const rootPos = struct.room.memory.rootPos;
 							if (
+								rootPos &&
 								(struct.pos.x === rootPos.x + 2 || struct.pos.x === rootPos.x - 2) &&
 								struct.pos.y === rootPos.y - 2
 							) {
@@ -195,8 +196,8 @@ function doAquire(creep: Creep, passively = false) {
 							}
 							if (
 								struct.pos.findInRange(FIND_STRUCTURES, 3, {
-									filter(struct) {
-										return struct.structureType === STRUCTURE_CONTROLLER;
+									filter(s) {
+										return s.structureType === STRUCTURE_CONTROLLER;
 									},
 								}).length > 0
 							) {
@@ -221,12 +222,14 @@ function doAquire(creep: Creep, passively = false) {
 								util.getCreeps(Role.Relay),
 								c =>
 									!c.spawning &&
+									c.memory.assignedPos &&
+									creep.memory.targetRoom &&
 									c.memory.assignedPos.roomName === creep.memory.targetRoom &&
 									c.pos.isEqualTo(
 										new RoomPosition(
 											c.memory.assignedPos.x,
 											c.memory.assignedPos.y,
-											c.memory.assignedPos.roomName
+											creep.memory.targetRoom
 										)
 									)
 							);
@@ -240,7 +243,11 @@ function doAquire(creep: Creep, passively = false) {
 							if (isNearRelay) {
 								return false;
 							}
-							if (struct.energy > 0 && struct.pos.inRangeTo(struct.room.storage, 2)) {
+							if (
+								struct.store.getUsedCapacity(RESOURCE_ENERGY) > 0 &&
+								struct.room.storage &&
+								struct.pos.inRangeTo(struct.room.storage, 2)
+							) {
 								return true;
 							}
 						} else if (struct.structureType === STRUCTURE_TERMINAL) {
