@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
+import brainLogistics, { ResourceSink, ResourceSource } from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
-import brainLogistics, { ResourceSink } from "../brain.logistics";
 
 export interface Route {
 	resource: ResourceConstant;
@@ -90,9 +90,9 @@ const roleScientist = {
 				sources = _.sortByOrder(
 					sources,
 					[
-						s => s.roomName === depositSink.roomName,
-						s => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
-						s => (s.object ? depositTarget.pos.getRangeTo(s.object) : Infinity),
+						(s: ResourceSource) => s.roomName === depositSink.roomName,
+						(s: ResourceSource) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
+						(s: ResourceSource) => (s.object ? depositTarget.pos.getRangeTo(s.object) : Infinity),
 					],
 					["desc", "asc", "asc"]
 				);
