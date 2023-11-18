@@ -1,387 +1,384 @@
 import * as cartographer from "screeps-cartographer";
-import brainAutoPlanner from "../brain.autoplanner.js";
 import brainLogistics, { ResourceSource } from "../brain.logistics";
+import brainAutoPlanner from "../brain.autoplanner.js";
 import util from "../util.js";
-import { Role } from "./meta.js";
 
-function doAquire(creep: Creep, passively = false) {
-	if (creep.memory.aquireTarget && !passively) {
-		const aquireTarget: AnyStoreStructure | Resource = Game.getObjectById(creep.memory.aquireTarget);
-		creep.log("aquireTarget:", aquireTarget);
-		if (aquireTarget) {
-			creep.room.visual.circle(aquireTarget.pos, { stroke: "#ff0000", fill: "transparent", radius: 0.8 });
-			if (creep.pos.isNearTo(aquireTarget)) {
-				// duck typing to figure out what method to use
-				if (aquireTarget.store) {
-					// has a store
+// 	if (creep.memory.aquireTarget && !passively) {
+// 		const aquireTarget: AnyStoreStructure | Resource = Game.getObjectById(creep.memory.aquireTarget);
+// 		creep.log("aquireTarget:", aquireTarget);
+// 		if (aquireTarget) {
+// 			creep.room.visual.circle(aquireTarget.pos, { stroke: "#ff0000", fill: "transparent", radius: 0.8 });
+// 			if (creep.pos.isNearTo(aquireTarget)) {
+// 				// duck typing to figure out what method to use
+// 				if (aquireTarget.store) {
+// 					// has a store
 
-					if (aquireTarget instanceof Tombstone || aquireTarget instanceof Ruin) {
-						// prioritize "exotic" resources
-						for (const resource of RESOURCES_ALL) {
-							if (creep.store.getFreeCapacity() === 0) {
-								break;
-							}
-							if (resource === RESOURCE_ENERGY) {
-								continue;
-							}
-							if (aquireTarget.store[resource] > 0) {
-								creep.withdraw(aquireTarget, resource);
-							}
-						}
-					}
+// 					if (aquireTarget instanceof Tombstone || aquireTarget instanceof Ruin) {
+// 						// prioritize "exotic" resources
+// 						for (const resource of RESOURCES_ALL) {
+// 							if (creep.store.getFreeCapacity() === 0) {
+// 								break;
+// 							}
+// 							if (resource === RESOURCE_ENERGY) {
+// 								continue;
+// 							}
+// 							if (aquireTarget.store[resource] > 0) {
+// 								creep.withdraw(aquireTarget, resource);
+// 							}
+// 						}
+// 					}
 
-					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) === OK) {
-						creep.memory.lastWithdrawStructure = aquireTarget.id;
-						if (aquireTarget.structureType === STRUCTURE_STORAGE) {
-							delete creep.memory.aquireTarget;
-						}
-					}
+// 					if (creep.withdraw(aquireTarget, RESOURCE_ENERGY) === OK) {
+// 						creep.memory.lastWithdrawStructure = aquireTarget.id;
+// 						if (aquireTarget.structureType === STRUCTURE_STORAGE) {
+// 							delete creep.memory.aquireTarget;
+// 						}
+// 					}
 
-					if (aquireTarget.store[RESOURCE_ENERGY] === 0) {
-						delete creep.memory.aquireTarget;
-					}
-				} else if (aquireTarget instanceof Resource) {
-					// dropped resource
-					creep.pickup(aquireTarget);
-				} else {
-					creep.say("help");
-					creep.log("ERR: I don't know how to withdraw from", aquireTarget);
-				}
-			} else {
-				const travelResult = cartographer.moveTo(creep, aquireTarget, { visualizePathStyle: {} });
-				if (travelResult.incomplete) {
-					creep.log("Path to aquireTarget is incomplete, skipping...");
-					delete creep.memory.aquireTarget;
-				}
-			}
-			return;
-		} else {
-			delete creep.memory.aquireTarget;
-		}
-	}
+// 					if (aquireTarget.store[RESOURCE_ENERGY] === 0) {
+// 						delete creep.memory.aquireTarget;
+// 					}
+// 				} else if (aquireTarget instanceof Resource) {
+// 					// dropped resource
+// 					creep.pickup(aquireTarget);
+// 				} else {
+// 					creep.say("help");
+// 					creep.log("ERR: I don't know how to withdraw from", aquireTarget);
+// 				}
+// 			} else {
+// 				const travelResult = cartographer.moveTo(creep, aquireTarget, { visualizePathStyle: {} });
+// 				if (travelResult.incomplete) {
+// 					creep.log("Path to aquireTarget is incomplete, skipping...");
+// 					delete creep.memory.aquireTarget;
+// 				}
+// 			}
+// 			return;
+// 		} else {
+// 			delete creep.memory.aquireTarget;
+// 		}
+// 	}
 
-	const droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, passively ? 1 : 20, {
-		filter: drop => {
-			if (!creep.pos.isNearTo(drop) && drop.amount < global.DROPPED_ENERGY_GATHER_MINIMUM) {
-				return false;
-			}
-			if (util.isDistFromEdge(drop.pos, 2)) {
-				return false;
-			}
-			if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
-				return false;
-			}
-			if (!passively) {
-				if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0) {
-					if (
-						drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK)
-							.length > 0
-					) {
-						return false;
-					}
-				}
-			}
-			// console.log("ENERGY DROP",drop.id,drop.amount);
-			return creep.pos.findPathTo(drop).length < drop.amount - global.DROPPED_ENERGY_GATHER_MINIMUM;
-		},
-	});
-	if (droppedResources.length > 0) {
-		const closest = creep.pos.findClosestByPath(droppedResources);
-		if (closest) {
-			creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
-			if (creep.pickup(closest) === ERR_NOT_IN_RANGE) {
-				creep.memory.aquireTarget = closest.id;
-				cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-			}
-		}
-	} else {
-		let tombstones = creep.room.find(FIND_TOMBSTONES, {
-			filter: tomb => {
-				if (util.isDistFromEdge(tomb.pos, 4)) {
-					return false;
-				}
-				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
-					return false;
-				}
-				if (tomb.store[RESOURCE_ENERGY] < global.DROPPED_ENERGY_GATHER_MINIMUM) {
-					return false;
-				}
+// 	const droppedResources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, passively ? 1 : 20, {
+// 		filter: drop => {
+// 			if (!creep.pos.isNearTo(drop) && drop.amount < global.DROPPED_ENERGY_GATHER_MINIMUM) {
+// 				return false;
+// 			}
+// 			if (util.isDistFromEdge(drop.pos, 2)) {
+// 				return false;
+// 			}
+// 			if (drop.pos.findInRange(FIND_HOSTILE_CREEPS, 6).length > 0) {
+// 				return false;
+// 			}
+// 			if (!passively) {
+// 				if (drop.pos.findInRange(FIND_SOURCES, 1).length > 0) {
+// 					if (
+// 						drop.pos.findInRange(FIND_STRUCTURES, 1).filter(s => s.structureType === STRUCTURE_LINK)
+// 							.length > 0
+// 					) {
+// 						return false;
+// 					}
+// 				}
+// 			}
+// 			// console.log("ENERGY DROP",drop.id,drop.amount);
+// 			return creep.pos.findPathTo(drop).length < drop.amount - global.DROPPED_ENERGY_GATHER_MINIMUM;
+// 		},
+// 	});
+// 	if (droppedResources.length > 0) {
+// 		const closest = creep.pos.findClosestByPath(droppedResources);
+// 		if (closest) {
+// 			creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
+// 			if (creep.pickup(closest) === ERR_NOT_IN_RANGE) {
+// 				creep.memory.aquireTarget = closest.id;
+// 				cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
+// 			}
+// 		}
+// 	} else {
+// 		let tombstones = creep.room.find(FIND_TOMBSTONES, {
+// 			filter: tomb => {
+// 				if (util.isDistFromEdge(tomb.pos, 4)) {
+// 					return false;
+// 				}
+// 				if (tomb.pos.findInRange(FIND_HOSTILE_CREEPS, 10).length > 0) {
+// 					return false;
+// 				}
+// 				if (tomb.store[RESOURCE_ENERGY] < global.DROPPED_ENERGY_GATHER_MINIMUM) {
+// 					return false;
+// 				}
 
-				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
-			},
-		});
-		if (tombstones.length > 0) {
-			// NOTE: it might be better to prioritize tombs that will decay sooner (TOMBSTONE_DECAY_PER_PART * [# of creep parts])
-			// prioritize tombs with more resources
-			tombstones = tombstones.sort((a, b) => {
-				return _.sum(b.store) - _.sum(a.store);
-			});
-			const target = tombstones[0];
-			creep.room.visual.circle(target.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
-			creep.memory.aquireTarget = target.id;
-			if (creep.pos.isNearTo(target)) {
-				// prioritize "exotic" resources
-				for (const resource of RESOURCES_ALL) {
-					if (creep.store.getFreeCapacity() === 0) {
-						break;
-					}
-					if (resource === RESOURCE_ENERGY) {
-						continue;
-					}
-					if (target.store[resource] > 0) {
-						creep.withdraw(target, resource);
-					}
-				}
-				creep.withdraw(target, RESOURCE_ENERGY);
-			} else {
-				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
-			}
-		} else {
-			const filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
-				filter(c) {
-					// if (c.memory.role === "harvester") {
-					// if (c.pos.findInRange(FIND_STRUCTURES, 1, { function(s) { return s.structureType === STRUCTURE_LINK } })) {
-					// 	return false;
-					// }
-					// }
-					if (c.memory.role === Role.Carrier) {
-						return !c.spawning && c.store[RESOURCE_ENERGY] > 0;
-					}
-					return (
-						!c.spawning &&
-						c.memory.role === Role.Harvester &&
-						(!c.memory.hasDedicatedLink || c.memory.stage < 5) &&
-						c.store[RESOURCE_ENERGY] >= c.store.getCapacity() * 0.85
-					);
-				},
-			});
-			if (filledHarvesters.length > 0) {
-				const closest = creep.pos.findClosestByPath(filledHarvesters);
-				if (closest) {
-					creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
-					// console.log("NEARBY FILLED HARVESTER",closest.pos,"dist =",creep.pos.getRangeTo(closest))
-					if (closest.transfer(creep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-					}
-				} else {
-					console.log(creep.name, "no path to target harvester");
-				}
-			} else {
-				// console.log("Can't withdraw from last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
-				// console.log("last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
-				const containers = creep.pos.findInRange(FIND_STRUCTURES, passively ? 1 : 50, {
-					filter(struct) {
-						const flags = struct.pos.lookFor(LOOK_FLAGS);
-						if (flags.length > 0) {
-							if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
-								return false;
-							}
-						}
-						if (
-							struct.id === creep.memory.lastDepositStructure &&
-							creep.room.storage &&
-							creep.room.storage.store[RESOURCE_ENERGY] < 800000
-						) {
-							return false; // comment this line to increase controller upgrade speed
-						}
-						if (struct.structureType === STRUCTURE_CONTAINER) {
-							const rootPos = struct.room.memory.rootPos;
-							if (
-								rootPos &&
-								(struct.pos.x === rootPos.x + 2 || struct.pos.x === rootPos.x - 2) &&
-								struct.pos.y === rootPos.y - 2
-							) {
-								// these containers are in the main base module
-								return false;
-							}
-							if (
-								struct.pos.findInRange(FIND_STRUCTURES, 3, {
-									filter(s) {
-										return s.structureType === STRUCTURE_CONTROLLER;
-									},
-								}).length > 0
-							) {
-								return false;
-							}
+// 				return _.sum(tomb.store) > 0 && creep.pos.findPathTo(tomb).length < tomb.ticksToDecay;
+// 			},
+// 		});
+// 		if (tombstones.length > 0) {
+// 			// NOTE: it might be better to prioritize tombs that will decay sooner (TOMBSTONE_DECAY_PER_PART * [# of creep parts])
+// 			// prioritize tombs with more resources
+// 			tombstones = tombstones.sort((a, b) => {
+// 				return _.sum(b.store) - _.sum(a.store);
+// 			});
+// 			const target = tombstones[0];
+// 			creep.room.visual.circle(target.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
+// 			creep.memory.aquireTarget = target.id;
+// 			if (creep.pos.isNearTo(target)) {
+// 				// prioritize "exotic" resources
+// 				for (const resource of RESOURCES_ALL) {
+// 					if (creep.store.getFreeCapacity() === 0) {
+// 						break;
+// 					}
+// 					if (resource === RESOURCE_ENERGY) {
+// 						continue;
+// 					}
+// 					if (target.store[resource] > 0) {
+// 						creep.withdraw(target, resource);
+// 					}
+// 				}
+// 				creep.withdraw(target, RESOURCE_ENERGY);
+// 			} else {
+// 				cartographer.moveTo(creep, target, { visualizePathStyle: {} });
+// 			}
+// 		} else {
+// 			const filledHarvesters = creep.pos.findInRange(FIND_MY_CREEPS, passively ? 1 : 4, {
+// 				filter(c) {
+// 					// if (c.memory.role === "harvester") {
+// 					// if (c.pos.findInRange(FIND_STRUCTURES, 1, { function(s) { return s.structureType === STRUCTURE_LINK } })) {
+// 					// 	return false;
+// 					// }
+// 					// }
+// 					if (c.memory.role === Role.Carrier) {
+// 						return !c.spawning && c.store[RESOURCE_ENERGY] > 0;
+// 					}
+// 					return (
+// 						!c.spawning &&
+// 						c.memory.role === Role.Harvester &&
+// 						(!c.memory.hasDedicatedLink || c.memory.stage < 5) &&
+// 						c.store[RESOURCE_ENERGY] >= c.store.getCapacity() * 0.85
+// 					);
+// 				},
+// 			});
+// 			if (filledHarvesters.length > 0) {
+// 				const closest = creep.pos.findClosestByPath(filledHarvesters);
+// 				if (closest) {
+// 					creep.room.visual.circle(closest.pos, { stroke: "#ff0000", fill: "transparent", radius: 1 });
+// 					// console.log("NEARBY FILLED HARVESTER",closest.pos,"dist =",creep.pos.getRangeTo(closest))
+// 					if (closest.transfer(creep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+// 						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
+// 					}
+// 				} else {
+// 					console.log(creep.name, "no path to target harvester");
+// 				}
+// 			} else {
+// 				// console.log("Can't withdraw from last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
+// 				// console.log("last deposit:",Game.getObjectById(creep.memory.lastDepositStructure))
+// 				const containers = creep.pos.findInRange(FIND_STRUCTURES, passively ? 1 : 50, {
+// 					filter(struct) {
+// 						const flags = struct.pos.lookFor(LOOK_FLAGS);
+// 						if (flags.length > 0) {
+// 							if (flags[0].name.includes("dismantle") || flags[0].name.includes("norepair")) {
+// 								return false;
+// 							}
+// 						}
+// 						if (
+// 							struct.id === creep.memory.lastDepositStructure &&
+// 							creep.room.storage &&
+// 							creep.room.storage.store[RESOURCE_ENERGY] < 800000
+// 						) {
+// 							return false; // comment this line to increase controller upgrade speed
+// 						}
+// 						if (struct.structureType === STRUCTURE_CONTAINER) {
+// 							const rootPos = struct.room.memory.rootPos;
+// 							if (
+// 								rootPos &&
+// 								(struct.pos.x === rootPos.x + 2 || struct.pos.x === rootPos.x - 2) &&
+// 								struct.pos.y === rootPos.y - 2
+// 							) {
+// 								// these containers are in the main base module
+// 								return false;
+// 							}
+// 							if (
+// 								struct.pos.findInRange(FIND_STRUCTURES, 3, {
+// 									filter(s) {
+// 										return s.structureType === STRUCTURE_CONTROLLER;
+// 									},
+// 								}).length > 0
+// 							) {
+// 								return false;
+// 							}
 
-							if (creep.room.storage && (creep.room.controller?.level ?? 0) > 4) {
-								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0) {
-									if (struct.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
-										return false;
-									} else if (
-										struct.pos
-											.findInRange(FIND_STRUCTURES, 1)
-											.filter(s => s.structureType === STRUCTURE_LINK).length > 0
-									) {
-										return false;
-									}
-								}
-							}
-						} else if (struct.structureType === STRUCTURE_LINK) {
-							const relayCreeps = _.filter(
-								util.getCreeps(Role.Relay),
-								c =>
-									!c.spawning &&
-									c.memory.assignedPos &&
-									creep.memory.targetRoom &&
-									c.memory.assignedPos.roomName === creep.memory.targetRoom &&
-									c.pos.isEqualTo(
-										new RoomPosition(
-											c.memory.assignedPos.x,
-											c.memory.assignedPos.y,
-											creep.memory.targetRoom
-										)
-									)
-							);
-							let isNearRelay = false;
-							for (const relay of relayCreeps) {
-								if (struct.pos.isNearTo(relay)) {
-									isNearRelay = true;
-									break;
-								}
-							}
-							if (isNearRelay) {
-								return false;
-							}
-							if (
-								struct.store.getUsedCapacity(RESOURCE_ENERGY) > 0 &&
-								struct.room.storage &&
-								struct.pos.inRangeTo(struct.room.storage, 2)
-							) {
-								return true;
-							}
-						} else if (struct.structureType === STRUCTURE_TERMINAL) {
-							if (struct.my) {
-								return true;
-							} else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
-								return true;
-							}
-						} else if (struct.structureType === STRUCTURE_FACTORY) {
-							if (struct.my) {
-								return true;
-							}
-							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
-								return true;
-							}
-						}
-						return (
-							(struct.structureType === STRUCTURE_STORAGE &&
-								struct.store[RESOURCE_ENERGY] > creep.store.getCapacity()) ||
-							(struct.structureType === STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0)
-						);
-					},
-				});
-				if (containers.length > 0) {
-					containers.sort(function (a, b) {
-						if (a.structureType !== b.structureType) {
-							if (a.structureType === STRUCTURE_STORAGE) {
-								return 1;
-							}
-							if (b.structureType === STRUCTURE_STORAGE) {
-								return -1;
-							}
-						}
+// 							if (creep.room.storage && (creep.room.controller?.level ?? 0) > 4) {
+// 								if (struct.pos.findInRange(FIND_SOURCES, 2).length > 0) {
+// 									if (struct.store[RESOURCE_ENERGY] < CONTAINER_CAPACITY * 0.25) {
+// 										return false;
+// 									} else if (
+// 										struct.pos
+// 											.findInRange(FIND_STRUCTURES, 1)
+// 											.filter(s => s.structureType === STRUCTURE_LINK).length > 0
+// 									) {
+// 										return false;
+// 									}
+// 								}
+// 							}
+// 						} else if (struct.structureType === STRUCTURE_LINK) {
+// 							const relayCreeps = _.filter(
+// 								util.getCreeps(Role.Relay),
+// 								c =>
+// 									!c.spawning &&
+// 									c.memory.assignedPos &&
+// 									creep.memory.targetRoom &&
+// 									c.memory.assignedPos.roomName === creep.memory.targetRoom &&
+// 									c.pos.isEqualTo(
+// 										new RoomPosition(
+// 											c.memory.assignedPos.x,
+// 											c.memory.assignedPos.y,
+// 											creep.memory.targetRoom
+// 										)
+// 									)
+// 							);
+// 							let isNearRelay = false;
+// 							for (const relay of relayCreeps) {
+// 								if (struct.pos.isNearTo(relay)) {
+// 									isNearRelay = true;
+// 									break;
+// 								}
+// 							}
+// 							if (isNearRelay) {
+// 								return false;
+// 							}
+// 							if (
+// 								struct.store.getUsedCapacity(RESOURCE_ENERGY) > 0 &&
+// 								struct.room.storage &&
+// 								struct.pos.inRangeTo(struct.room.storage, 2)
+// 							) {
+// 								return true;
+// 							}
+// 						} else if (struct.structureType === STRUCTURE_TERMINAL) {
+// 							if (struct.my) {
+// 								return true;
+// 							} else if (struct.store[RESOURCE_ENERGY] > Memory.terminalEnergyTarget) {
+// 								return true;
+// 							}
+// 						} else if (struct.structureType === STRUCTURE_FACTORY) {
+// 							if (struct.my) {
+// 								return true;
+// 							}
+// 							if (struct.store[RESOURCE_ENERGY] > Memory.factoryEnergyTarget) {
+// 								return true;
+// 							}
+// 						}
+// 						return (
+// 							(struct.structureType === STRUCTURE_STORAGE &&
+// 								struct.store[RESOURCE_ENERGY] > creep.store.getCapacity()) ||
+// 							(struct.structureType === STRUCTURE_CONTAINER && struct.store[RESOURCE_ENERGY] > 0)
+// 						);
+// 					},
+// 				});
+// 				if (containers.length > 0) {
+// 					containers.sort(function (a: AnyStoreStructure, b: AnyStoreStructure) {
+// 						if (a.structureType !== b.structureType) {
+// 							if (a.structureType === STRUCTURE_STORAGE) {
+// 								return 1;
+// 							}
+// 							if (b.structureType === STRUCTURE_STORAGE) {
+// 								return -1;
+// 							}
+// 						}
 
-						let aEnergy = 0;
-						if (a.store) {
-							aEnergy = a.store[RESOURCE_ENERGY];
-						} else if (a.energy) {
-							aEnergy = a.energy;
-						}
+// 						let aEnergy = 0;
+// 						if (a.store) {
+// 							aEnergy = a.store[RESOURCE_ENERGY];
+// 						}
 
-						let bEnergy = 0;
-						if (b.store) {
-							bEnergy = b.store[RESOURCE_ENERGY];
-						} else if (b.energy) {
-							bEnergy = b.energy;
-						}
+// 						let bEnergy = 0;
+// 						if (b.store) {
+// 							bEnergy = b.store[RESOURCE_ENERGY];
+// 						}
 
-						return bEnergy - aEnergy; // sort descending, highest energy first
-					});
-					const closest = containers[0];
-					new RoomVisual(creep.room.name).circle(closest.pos, {
-						stroke: "#ff0000",
-						fill: "transparent",
-						radius: 1,
-					});
-					let amount;
-					if (closest.structureType === STRUCTURE_TERMINAL && closest.my) {
-						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
-					} else if (closest.structureType === STRUCTURE_FACTORY && closest.my) {
-						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
-					}
-					amount = Math.min(amount, creep.store.getCapacity()); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
-					// console.log(creep.name, "withdrawing", amount, "from", closest);
-					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) === ERR_NOT_IN_RANGE) {
-						creep.memory.aquireTarget = closest.id;
-						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-					} else {
-						if (closest) {
-							creep.memory.lastWithdrawStructure = closest.id;
-							passivelyWithdrawOtherResources(creep, closest);
-						}
-					}
-				} else if (!passively) {
-					// grab energy from other rooms
-					// TODO: can be made waaaay more effifient.
-					const storages = _.filter(Game.structures, function (struct) {
-						if (struct.structureType !== STRUCTURE_STORAGE) {
-							return false;
-						}
-						if (struct.room.name === creep.memory.targetRoom) {
-							return true;
-						}
-						const adjacentRooms = _.values(Game.map.describeExits(creep.memory.targetRoom));
-						if (adjacentRooms.indexOf(creep.memory.targetRoom) === -1) {
-							return false;
-						}
-						return struct.structureType === STRUCTURE_STORAGE && struct.store[RESOURCE_ENERGY] > 500000;
-					});
-					if (storages.length > 0) {
-						const closest = storages[0];
-						new RoomVisual(creep.room.name).circle(closest.pos, {
-							stroke: "#ff0000",
-							fill: "transparent",
-							radius: 1,
-						});
-						if (creep.withdraw(closest, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-							creep.memory.aquireTarget = closest.id;
-							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
-						} else {
-							creep.memory.lastWithdrawStructure = closest.id;
-						}
-					} else {
-						creep.say("help me out");
-					}
-				}
-			}
-		}
-	}
-}
+// 						return bEnergy - aEnergy; // sort descending, highest energy first
+// 					});
+// 					const closest = containers[0];
+// 					new RoomVisual(creep.room.name).circle(closest.pos, {
+// 						stroke: "#ff0000",
+// 						fill: "transparent",
+// 						radius: 1,
+// 					});
+// 					let amount;
+// 					if (closest.structureType === STRUCTURE_TERMINAL && closest.my) {
+// 						amount = closest.store[RESOURCE_ENERGY] - Memory.terminalEnergyTarget;
+// 					} else if (closest.structureType === STRUCTURE_FACTORY && closest.my) {
+// 						amount = closest.store[RESOURCE_ENERGY] - Memory.factoryEnergyTarget;
+// 					}
+// 					amount = Math.min(amount, creep.store.getCapacity()); // if amount is larger than carry capacity, then it won't withdraw and it'll get stuck
+// 					// console.log(creep.name, "withdrawing", amount, "from", closest);
+// 					if (creep.withdraw(closest, RESOURCE_ENERGY, amount) === ERR_NOT_IN_RANGE) {
+// 						creep.memory.aquireTarget = closest.id;
+// 						cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
+// 					} else {
+// 						if (closest) {
+// 							creep.memory.lastWithdrawStructure = closest.id;
+// 							passivelyWithdrawOtherResources(creep, closest);
+// 						}
+// 					}
+// 				} else if (!passively) {
+// 					// grab energy from other rooms
+// 					// TODO: can be made waaaay more effifient.
+// 					const storages = _.filter(Game.structures, function (struct: AnyStoreStructure) {
+// 						if (struct.structureType !== STRUCTURE_STORAGE) {
+// 							return false;
+// 						}
+// 						if (struct.room.name === creep.memory.targetRoom) {
+// 							return true;
+// 						}
+// 						const adjacentRooms = _.values(Game.map.describeExits(creep.memory.targetRoom));
+// 						if (adjacentRooms.indexOf(creep.memory.targetRoom) === -1) {
+// 							return false;
+// 						}
+// 						return (
+// 							struct.structureType === STRUCTURE_STORAGE &&
+// 							struct.store.getUsedCapacity(RESOURCE_ENERGY) > 500000
+// 						);
+// 					}) as AnyStoreStructure[];
+// 					if (storages.length > 0) {
+// 						const closest = storages[0];
+// 						new RoomVisual(creep.room.name).circle(closest.pos, {
+// 							stroke: "#ff0000",
+// 							fill: "transparent",
+// 							radius: 1,
+// 						});
+// 						if (creep.withdraw(closest, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+// 							creep.memory.aquireTarget = closest.id;
+// 							cartographer.moveTo(creep, closest, { visualizePathStyle: {} });
+// 						} else {
+// 							creep.memory.lastWithdrawStructure = closest.id;
+// 						}
+// 					} else {
+// 						creep.say("help me out");
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
-function passivelyWithdrawOtherResources(creep: Creep, structure: AnyStoreStructure) {
-	return;
-	// passively withdraw other resources from containers
-	if (
-		structure.structureType === STRUCTURE_CONTAINER &&
-		(structure.pos.isNearTo(structure.room.controller) || structure.pos.inRangeTo(FIND_SOURCES, 2).length > 0)
-	) {
-		console.log(creep.name, "passively withdrawing other resources from", structure);
-		if (_.sum(structure.store) - structure.store[RESOURCE_ENERGY] > 0) {
-			for (const resource of RESOURCES_ALL) {
-				if (creep.store.getFreeCapacity() === 0) {
-					break;
-				}
-				if (resource === RESOURCE_ENERGY) {
-					continue;
-				}
-				if (structure.store[resource] > 0) {
-					creep.withdraw(structure, resource);
-				}
-			}
-		}
-	}
-}
+// function passivelyWithdrawOtherResources(creep: Creep, structure: AnyStoreStructure) {
+// 	return;
+// 	// passively withdraw other resources from containers
+// 	if (
+// 		structure.structureType === STRUCTURE_CONTAINER &&
+// 		(structure.pos.isNearTo(structure.room.controller) || structure.pos.inRangeTo(FIND_SOURCES, 2).length > 0)
+// 	) {
+// 		console.log(creep.name, "passively withdrawing other resources from", structure);
+// 		if (_.sum(structure.store) - structure.store[RESOURCE_ENERGY] > 0) {
+// 			for (const resource of RESOURCES_ALL) {
+// 				if (creep.store.getFreeCapacity() === 0) {
+// 					break;
+// 				}
+// 				if (resource === RESOURCE_ENERGY) {
+// 					continue;
+// 				}
+// 				if (structure.store[resource] > 0) {
+// 					creep.withdraw(structure, resource);
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 // get number of managers assigned to a room
 function getManagerCount(room: Room): number {
