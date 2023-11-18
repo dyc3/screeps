@@ -4,31 +4,9 @@ import * as cartographer from "screeps-cartographer";
 let roleClaimer = {
 	/** @param {Creep} creep **/
 	run(creep) {
-		if (!creep.memory.claimTarget && Game.flags.claim) {
-			creep.memory.targetFlag = "claim";
-			try {
-				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
-			} catch (e) {}
-			cartographer.moveTo(creep, Game.flags[creep.memory.targetFlag], { ensurePath: true });
-			creep.memory.mode = "claim";
-			return;
-		}
-		if (!creep.memory.claimTarget && Game.flags.reserve) {
-			creep.memory.targetFlag = "reserve";
-			try {
-				creep.memory.claimTarget = Game.flags[creep.memory.targetFlag].pos.lookFor(LOOK_STRUCTURES)[0].id;
-			} catch (e) {}
-			cartographer.moveTo(creep, Game.flags[creep.memory.targetFlag], { ensurePath: true });
-			creep.memory.mode = "reserve";
-			return;
-		}
 		if (!creep.memory.claimTarget && creep.memory.targetRoom) {
 			if (creep.room.name !== creep.memory.targetRoom) {
-				cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), {
-					ensurePath: true,
-					range: 23,
-					useFindRoute: true,
-				});
+				cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 23 });
 				return;
 			}
 			creep.memory.claimTarget = creep.room.controller.id;
@@ -37,7 +15,6 @@ let roleClaimer = {
 		let claimTarget = Game.getObjectById(creep.memory.claimTarget);
 
 		if (!claimTarget) {
-			cartographer.moveTo(creep, Game.flags[creep.memory.targetFlag], { ensurePath: true });
 			return;
 		}
 
