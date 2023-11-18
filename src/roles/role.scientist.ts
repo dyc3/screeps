@@ -48,7 +48,7 @@ const roleScientist = {
 				[
 					s => s.roomName === creep.memory.targetRoom,
 					s => s.resource !== RESOURCE_ENERGY,
-					s => creep.pos.getRangeTo(s.object),
+					s => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
 				],
 				["desc", "desc", "asc"]
 			);
@@ -68,9 +68,10 @@ const roleScientist = {
 						if (targetResource === RESOURCE_ENERGY) {
 							if (
 								(brainAutoPlanner.isInRootModule(s.object) ||
-									s.object.structureType === STRUCTURE_STORAGE) &&
+									(s.object instanceof Structure && s.object.structureType === STRUCTURE_STORAGE)) &&
 								(brainAutoPlanner.isInRootModule(depositSink.object) ||
-									depositSink.object.structureType === STRUCTURE_STORAGE)
+									(depositSink.object instanceof Structure &&
+										depositSink.object.structureType === STRUCTURE_STORAGE))
 							) {
 								return false;
 							}
@@ -85,8 +86,8 @@ const roleScientist = {
 					sources,
 					[
 						s => s.roomName === depositSink.roomName,
-						s => creep.pos.getRangeTo(s.object),
-						s => depositTarget.pos.getRangeTo(s.object),
+						s => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
+						s => (s.object ? depositTarget.pos.getRangeTo(s.object) : Infinity),
 					],
 					["desc", "asc", "asc"]
 				);
@@ -162,7 +163,7 @@ const roleScientist = {
 				}
 			}
 
-			if (creep.memory.route.withdrawTargetId) {
+			if (creep.memory.route && creep.memory.route.withdrawTargetId) {
 				const withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 				if (withdrawTarget) {
 					if (creep.room.name === withdrawTarget.room.name) {
@@ -213,8 +214,6 @@ const roleScientist = {
 			);
 		}
 
-		const obstacles = util.getCreeps("harvester", "relay");
-
 		if (creep.memory.transporting) {
 			const depositTarget = Game.getObjectById(creep.memory.route.depositTargetId);
 			if (!depositTarget) {
@@ -222,29 +221,33 @@ const roleScientist = {
 				delete creep.memory.route;
 				return;
 			}
-			if (depositTarget.store.getFreeCapacity(creep.memory.route.resource) > 0) {
+			if ((depositTarget.store.getFreeCapacity(creep.memory.route.resource) ?? 0) > 0) {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, creep.memory.route.resource);
 				} else {
-					cartographer.moveTo(creep, depositTarget, { obstacles, ensurePath: true });
+					cartographer.moveTo(creep, depositTarget);
 				}
 			} else {
 				creep.log("deposit target is full, deleting route");
 				delete creep.memory.route;
 			}
 		} else {
+			if (!creep.memory.route.withdrawTargetId) {
+				creep.log("no withdraw target, deleting route");
+				delete creep.memory.route;
+				return;
+			}
 			const withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 			if (!withdrawTarget) {
 				creep.log("withdraw target does not exist, removing route");
 				delete creep.memory.route;
 				return;
 			}
-			if (
-				withdrawTarget &&
-				(withdrawTarget instanceof Resource
+			const resourceAmount =
+				withdrawTarget instanceof Resource
 					? withdrawTarget.amount
-					: withdrawTarget.store.getUsedCapacity(creep.memory.route.resource)) > 0
-			) {
+					: withdrawTarget.store.getUsedCapacity(creep.memory.route.resource) ?? 0;
+			if (withdrawTarget && resourceAmount > 0) {
 				if (creep.pos.isNearTo(withdrawTarget)) {
 					if (withdrawTarget instanceof Resource) {
 						creep.pickup(withdrawTarget);
@@ -252,7 +255,7 @@ const roleScientist = {
 						creep.withdraw(withdrawTarget, creep.memory.route.resource);
 					}
 				} else {
-					cartographer.moveTo(creep, withdrawTarget, { obstacles, ensurePath: true });
+					cartographer.moveTo(creep, withdrawTarget);
 				}
 			} else {
 				creep.log("withdraw target is empty, deleting route");

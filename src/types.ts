@@ -3,6 +3,7 @@ import type { ObserveQueue } from "./observequeue";
 import type { OffenseTask } from "offense/task";
 import type { RemoteMiningTarget } from "./remotemining";
 import type { Role } from "./roles/meta";
+import { Route } from "roles/role.scientist";
 
 declare global {
 	/*
@@ -95,6 +96,8 @@ declare global {
 		claimTarget?: Id<StructureController>;
 		building?: boolean;
 		buildTargetId?: Id<ConstructionSite>;
+		transporting?: boolean;
+		route?: Route;
 	}
 
 	interface PowerCreepMemory {
