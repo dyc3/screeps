@@ -90,27 +90,22 @@ global.move = (creep: string, direction: DirectionConstant) => {
 	c.move(direction);
 };
 
+import "./tools.js";
 import "./types";
 import _ from "lodash";
-import "./tools.js";
 import { Scout } from "roles/role.scout";
 import util from "./util";
 import visualize from "./visualize";
 import { Role } from "./roles/meta";
 
 import roleHarvester from "roles/role.harvester";
-// @ts-expect-error hasn't been converted yet
-import roleUpgrader from "roles/role.upgrader.js";
+import roleUpgrader from "roles/role.upgrader";
 import roleManager from "roles/role.manager";
-// @ts-expect-error hasn't been converted yet
-import roleBuilder from "roles/role.builder.js";
+import roleBuilder from "roles/role.builder";
 import roleRepairer from "roles/role.repairer";
-// @ts-expect-error hasn't been converted yet
-import roleClaimer from "roles/role.claimer.js";
-// @ts-expect-error hasn't been converted yet
-import roleRemoteHarvester from "roles/role.remoteharvester.js";
-// @ts-expect-error hasn't been converted yet
-import roleCarrier from "roles/role.carrier.js";
+import roleClaimer from "roles/role.claimer";
+import roleRemoteHarvester from "roles/role.remoteharvester";
+import roleCarrier from "roles/role.carrier";
 // @ts-expect-error hasn't been converted yet
 import roleMiner from "roles/role.miner.js";
 import roleScientist from "roles/role.scientist";
@@ -131,8 +126,7 @@ import toolCreepUpgrader, { RoleMetadata } from "tool.creepupgrader";
 // @ts-expect-error hasn't been converted yet
 import toolRoadPlanner from "tool.roadplanner.js";
 
-// @ts-expect-error hasn't been converted yet
-import brainAutoPlanner from "./brain.autoplanner.js";
+import brainAutoPlanner from "./brain.autoplanner";
 import brainGuard from "./brain.guard";
 import brainLogistics from "./brain.logistics";
 // @ts-expect-error hasn't been converted yet
@@ -140,7 +134,7 @@ import brainHighwayHarvesting from "./brain.highwayharvesting.js";
 // @ts-expect-error hasn't been converted yet
 import brainOffense from "./brain.offense.js";
 
-import { RemoteMiningTarget } from "./remotemining";
+import { RemoteMiningTarget, commandRemoteMining } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
