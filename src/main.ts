@@ -1181,7 +1181,8 @@ function satisfyClaimTargets() {
 	}
 
 	// remove satisfied targets
-	for (const idx of satisfiedIdxs) {
+	// HACK: sort in descending order first to avoid index shifting
+	for (const idx of satisfiedIdxs.sort((a, b) => b - a)) {
 		Memory.claimTargets.splice(idx, 1);
 	}
 
