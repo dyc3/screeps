@@ -17,9 +17,8 @@ const roleRelay = {
 	 * - Green: deposit
 	 * - Red: bad transfer, withdraw is the same as deposit
 	 *
-	 * @param {Creep} creep Relay creep
 	 */
-	visualizeState(creep) {
+	visualizeState(creep: Creep): void {
 		if (!creep.memory.assignedPos) {
 			creep.log("ERROR: Can't visualize state because this creep does not have an assigned position");
 			return;
@@ -27,16 +26,16 @@ const roleRelay = {
 		const colorWithdraw = "#0ff";
 		const colorDeposit = "#0f0";
 		const colorBadTransfer = "#f00"; // used when last withdraw id is the same as last deposit id
-		let vis = creep.room.visual;
-		let assignedPos = new RoomPosition(
+		const vis = creep.room.visual;
+		const assignedPos = new RoomPosition(
 			creep.memory.assignedPos.x,
 			creep.memory.assignedPos.y,
 			creep.memory.assignedPos.roomName
 		);
 
 		// draw lines to storage and link
-		let storage = Game.getObjectById(creep.memory.storageId);
-		let link = Game.getObjectById(creep.memory.linkId);
+		const storage = Game.getObjectById(creep.memory.storageId);
+		const link = Game.getObjectById(creep.memory.linkId);
 
 		// FIXME: lots of repeated code here to find the correct colors
 		let storageColor = "#fa0";
@@ -69,8 +68,8 @@ const roleRelay = {
 		});
 
 		// draw lines to fill targets
-		for (let targetId of creep.memory.fillTargetIds) {
-			let target = Game.getObjectById(targetId);
+		for (const targetId of creep.memory.fillTargetIds) {
+			const target = Game.getObjectById(targetId);
 			if (!target) {
 				creep.log("WARN: target", targetId, "does not exist");
 				continue;
@@ -115,7 +114,11 @@ const roleRelay = {
 	 * @param {Creep} creep Relay creep
 	 * @param {Structure} overfilledStruct Structure to withdraw resource from
 	 */
-	withdrawOverfillTarget(creep, overfilledStruct, resource = RESOURCE_ENERGY) {
+	withdrawOverfillTarget(
+		creep: Creep,
+		overfilledStruct: AnyStoreStructure,
+		resource: ResourceConstant = RESOURCE_ENERGY
+	) {
 		let fillTargetAmount = 0;
 		switch (overfilledStruct.structureType) {
 			case STRUCTURE_TERMINAL:
@@ -125,7 +128,7 @@ const roleRelay = {
 				fillTargetAmount = Memory.factoryEnergyTarget;
 				break;
 		}
-		let r = creep.withdraw(
+		const r = creep.withdraw(
 			overfilledStruct,
 			resource,
 			Math.min(
@@ -136,19 +139,19 @@ const roleRelay = {
 		creep.memory._lastWithdrawId = overfilledStruct.id; // used for visualizeState
 	},
 
-	run(creep) {
-		if (!creep.memory.assignedPos) {
+	run(creep: Creep): void {
+		if (!creep.memory.assignedPos || !creep.memory.targetRoom) {
 			creep.say("needs pos");
 			return;
 		}
 
-		let assignedPos = new RoomPosition(
+		const assignedPos = new RoomPosition(
 			creep.memory.assignedPos.x,
 			creep.memory.assignedPos.y,
-			creep.memory.assignedPos.roomName
+			creep.memory.targetRoom
 		);
 		if (!creep.pos.isEqualTo(assignedPos)) {
-			let result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
+			const result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
 			if (result !== 0) {
 				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}
@@ -160,7 +163,7 @@ const roleRelay = {
 		}
 
 		if (!creep.memory.linkId || !creep.memory.storageId) {
-			let foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+			const foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
 					return s.structureType === STRUCTURE_LINK;
 				},
@@ -171,7 +174,7 @@ const roleRelay = {
 			}
 			creep.memory.linkId = foundLinks[0].id;
 
-			let foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+			const foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
 					return s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE;
 				},
@@ -182,8 +185,8 @@ const roleRelay = {
 				console.log(creep.name, "WARN: no found storage");
 			}
 		}
-		let link = Game.getObjectById(creep.memory.linkId);
-		let storage = Game.getObjectById(creep.memory.storageId);
+		const link = Game.getObjectById(creep.memory.linkId);
+		const storage = Game.getObjectById(creep.memory.storageId);
 		if (!storage) {
 			creep.log("Storage no longer exists");
 			delete creep.memory.storageId;
@@ -197,7 +200,7 @@ const roleRelay = {
 			creep.memory.fillTargetIds.length === 0 ||
 			creep.memory._needFillTargetRefresh
 		) {
-			let adjacentStructs = _.filter(
+			const adjacentStructs = _.filter(
 				creep.room.lookForAtArea(
 					LOOK_STRUCTURES,
 					creep.pos.y - 1,
@@ -215,7 +218,7 @@ const roleRelay = {
 					result.structure.structureType !== STRUCTURE_LINK
 			);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
-			let targets = [];
+			const targets = [];
 			for (let i = 0; i < adjacentStructs.length; i++) {
 				const struct = adjacentStructs[i].structure;
 				targets.push(struct.id);
@@ -232,7 +235,7 @@ const roleRelay = {
 		let rootNeedsEnergy = false;
 		if (creep.memory.isStorageModule && creep.room.memory.rootLink) {
 			// if the root module needs energy
-			let rootLink = Game.getObjectById(creep.room.memory.rootLink);
+			const rootLink = Game.getObjectById(creep.room.memory.rootLink);
 			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
 				rootNeedsEnergy = true;
 			}
@@ -240,8 +243,8 @@ const roleRelay = {
 		}
 
 		// check if all the fill targets are full.
-		let targetIdsNotFull = _.filter(creep.memory.fillTargetIds, id => {
-			let struct = Game.getObjectById(id);
+		const targetIdsNotFull = _.filter(creep.memory.fillTargetIds, id => {
+			const struct = Game.getObjectById(id);
 			if (!struct) {
 				creep.log("WARN: structure with id", id, "no longer exists!");
 				creep.memory._needFillTargetRefresh = true;
@@ -261,8 +264,8 @@ const roleRelay = {
 			}
 		});
 
-		let targetIdsOverFilled = _.filter(creep.memory.fillTargetIds, id => {
-			let struct = Game.getObjectById(id);
+		const targetIdsOverFilled = _.filter(creep.memory.fillTargetIds, id => {
+			const struct = Game.getObjectById(id);
 			if (!struct) {
 				creep.log("WARN: structure with id", id, "no longer exists!");
 				creep.memory._needFillTargetRefresh = true;
@@ -356,8 +359,8 @@ const roleRelay = {
 			return;
 		}
 
-		for (let id of creep.memory.fillTargetIds) {
-			let struct = Game.getObjectById(id);
+		for (const id of creep.memory.fillTargetIds) {
+			const struct = Game.getObjectById(id);
 			if (!struct) {
 				continue;
 			}
