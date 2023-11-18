@@ -1,17 +1,16 @@
 import * as cartographer from "screeps-cartographer";
 
-let roleClaimer = {
-	/** @param {Creep} creep **/
-	run(creep) {
+const roleClaimer = {
+	run(creep: Creep): void {
 		if (!creep.memory.claimTarget && creep.memory.targetRoom) {
 			if (creep.room.name !== creep.memory.targetRoom) {
 				cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 23 });
 				return;
 			}
-			creep.memory.claimTarget = creep.room.controller.id;
+			creep.memory.claimTarget = creep.room.controller?.id;
 		}
 
-		let claimTarget = Game.getObjectById(creep.memory.claimTarget);
+		const claimTarget = Game.getObjectById(creep.memory.claimTarget as Id<StructureController>);
 
 		if (!claimTarget) {
 			return;

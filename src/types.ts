@@ -92,6 +92,7 @@ declare global {
 		guardType?: string;
 		depositTarget: Id<StructureStorage | StructureContainer> | undefined;
 		droppedEnergyId?: Id<Resource<ResourceConstant>>;
+		claimTarget?: Id<StructureController>;
 	}
 
 	interface PowerCreepMemory {
