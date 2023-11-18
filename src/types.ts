@@ -98,6 +98,7 @@ declare global {
 		buildTargetId?: Id<ConstructionSite>;
 		transporting?: boolean;
 		route?: Route;
+		type?: string;
 	}
 
 	interface PowerCreepMemory {

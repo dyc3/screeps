@@ -1,6 +1,6 @@
+import { Role } from "./roles/meta";
 import toolEnergySource from "./tool.energysource";
 import util from "./util";
-import { Role } from "./roles/meta";
 
 export function getUpgraderQuota(room: Room): number {
 	if (!room.controller) {

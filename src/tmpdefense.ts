@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
-import util from "./util";
 import { Role } from "roles/meta";
 import taskRenew from "./task.renew";
+import util from "./util";
 
 const rangedBody = [
 	MOVE,

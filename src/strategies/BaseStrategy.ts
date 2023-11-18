@@ -1,25 +1,22 @@
-import { type } from "os";
-
 export class OffenseStrategy {
-	static get strategyName(): string {
+	public static get strategyName(): string {
 		throw new Error("Not implemented");
 	}
 
-	get strategyName(): string {
-		// @ts-ignore
-		return this.constructor.strategyName;
+	public get strategyName(): string {
+		// @ts-expect-error this gets the static property
+		return this.constructor.strategyName as string;
 	}
 
-	get neededCreeps(): { [creepType: string]: number } {
+	public get neededCreeps(): { [creepType: string]: number } {
 		throw new Error("Not implemented");
 	}
 
-	constructor(mem: any) {
+	public constructor(mem: any) {
 		Object.assign(this, mem);
 	}
 
-	areCreepRequirementsMet(creeps: Creep[]) {
-		// @ts-expect-error FIXME: need to add `c.memory.type` to creep memory to CreepMemory
+	public areCreepRequirementsMet(creeps: Creep[]): boolean {
 		const grouped = _.groupBy(creeps, c => c.memory.type);
 		for (const type of _.keys(this.neededCreeps)) {
 			const haveCount = grouped[type] ? grouped[type].length : 0;
@@ -30,7 +27,7 @@ export class OffenseStrategy {
 		return true;
 	}
 
-	act(creeps: Creep[]): void {
+	public act(creeps: Creep[]): void {
 		throw new Error("Not implemented");
 	}
 }
