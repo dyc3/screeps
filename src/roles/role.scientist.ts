@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
 import brainAutoPlanner from "../brain.autoplanner.js";
-import brainLogistics from "../brain.logistics";
+import brainLogistics, { ResourceSink } from "../brain.logistics";
 
 export interface Route {
 	resource: ResourceConstant;
@@ -12,17 +12,20 @@ export interface Route {
 const roleScientist = {
 	/**
 	 * Gets a new delivery route for the scientist creep
-	 * @param {Creep} creep
 	 */
 	getDeliveryRoute(creep: Creep): Route | undefined {
 		if (creep.store.getUsedCapacity() > 0) {
 			creep.log("Carrying resource, finding a sink");
 
-			for (const resource in creep.store) {
+			for (const r in creep.store) {
+				const resource = r as ResourceConstant;
 				let sinks = brainLogistics.findSinks({ resource });
 				sinks = _.sortByOrder(
 					sinks,
-					[s => s.roomName === creep.memory.targetRoom, s => creep.pos.getRangeTo(s.object)],
+					[
+						(s: ResourceSink) => s.roomName === creep.memory.targetRoom,
+						(s: ResourceSink) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
+					],
 					["desc", "asc"]
 				);
 
@@ -33,6 +36,10 @@ const roleScientist = {
 
 				const depositSink = _.first(sinks);
 				const depositTarget = depositSink.object;
+				if (!depositTarget) {
+					creep.log(`WARN: Can't find any sinks for ${resource}`);
+					continue;
+				}
 				return {
 					resource,
 					depositTargetId: depositTarget.id,
@@ -44,9 +51,9 @@ const roleScientist = {
 			sinks = _.sortByOrder(
 				sinks,
 				[
-					s => s.roomName === creep.memory.targetRoom,
-					s => s.resource !== RESOURCE_ENERGY,
-					s => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
+					(s: ResourceSink) => s.roomName === creep.memory.targetRoom,
+					(s: ResourceSink) => s.resource !== RESOURCE_ENERGY,
+					(s: ResourceSink) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
 				],
 				["desc", "desc", "asc"]
 			);
@@ -164,7 +171,7 @@ const roleScientist = {
 			if (creep.memory.route && creep.memory.route.withdrawTargetId) {
 				const withdrawTarget = Game.getObjectById(creep.memory.route.withdrawTargetId);
 				if (withdrawTarget) {
-					if (creep.room.name === withdrawTarget.room.name) {
+					if (creep.room.name === withdrawTarget.pos.roomName) {
 						creep.room.visual.line(creep.pos, withdrawTarget.pos, {
 							color: withdrawColor,
 							lineStyle: "dotted",
@@ -178,7 +185,7 @@ const roleScientist = {
 						});
 					}
 
-					if (depositTarget && depositTarget.room.name === withdrawTarget.room.name) {
+					if (depositTarget && depositTarget.room.name === withdrawTarget.pos.roomName) {
 						creep.room.visual.line(withdrawTarget.pos, depositTarget.pos, {
 							color: "#ffff00",
 							lineStyle: "dotted",
