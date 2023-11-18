@@ -27,11 +27,13 @@ function findDespositTarget(creep: Creep) {
 
 	let pos = creep.pos;
 	if (creep.memory.mode === "remote-mining") {
-		pos = new RoomPosition(
-			creep.memory.harvestTarget.x,
-			creep.memory.harvestTarget.y,
-			creep.memory.harvestTarget.roomName
-		);
+		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
+		if (!harvestTarget) {
+			creep.log("ERR: depositTarget: can't find harvest target");
+			return;
+		}
+
+		pos = new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName);
 	} else if (creep.memory.mode === "invader-core-harvesting") {
 		pos = new RoomPosition(25, 25, creep.memory.targetRoom);
 	}
