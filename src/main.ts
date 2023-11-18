@@ -363,7 +363,7 @@ function doLinkTransfers() {
 			}
 
 			if (!room.memory.storageLink) {
-				const found = links.filter(link => link.pos.inRangeTo(link.room.storage, 2));
+				const found = links.filter(link => link.room.storage && link.pos.inRangeTo(link.room.storage, 2));
 				if (found.length > 0) {
 					room.memory.storageLink = found[0].id;
 				}
@@ -387,7 +387,7 @@ function doLinkTransfers() {
 					if (link.id === storageLink.id || link.id === rootLink.id) {
 						continue;
 					}
-					if (link.cooldown > 0 || link.energy === 0) {
+					if (link.cooldown > 0 || link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 						continue;
 					}
 					link.transferEnergy(storageLink);
