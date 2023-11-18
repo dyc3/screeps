@@ -114,6 +114,8 @@ declare global {
 		fillTargetIds?: Id<AnyStoreStructure>[];
 		refreshFillTargets?: number;
 		harvestPos?: RoomPosition;
+		_needFillTargetRefresh?: boolean;
+		isStorageModule?: boolean;
 	}
 
 	interface PowerCreepMemory {

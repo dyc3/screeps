@@ -219,15 +219,14 @@ const roleRelay = {
 			);
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
 			const targets = [];
-			for (let i = 0; i < adjacentStructs.length; i++) {
-				const struct = adjacentStructs[i].structure;
-				targets.push(struct.id);
+			for (const look of adjacentStructs) {
+				targets.push(look.structure.id);
 			}
 			creep.memory.fillTargetIds = targets;
 			delete creep.memory._needFillTargetRefresh;
 		}
 
-		if (creep.memory.fillTargetIds.length === 0) {
+		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length === 0) {
 			creep.log("can't find adjacent targets.");
 			return;
 		}
