@@ -93,6 +93,8 @@ declare global {
 		depositTarget: Id<StructureStorage | StructureContainer> | undefined;
 		droppedEnergyId?: Id<Resource<ResourceConstant>>;
 		claimTarget?: Id<StructureController>;
+		building?: boolean;
+		buildTargetId?: Id<ConstructionSite>;
 	}
 
 	interface PowerCreepMemory {

@@ -1,14 +1,14 @@
 import * as cartographer from "screeps-cartographer";
 
-import util from "../util";
 import taskGather from "../task.gather.js";
+import util from "../util";
 
-let roleBuilder = {
-	findTargets() {
-		let targets = [];
-		let rooms = util.getOwnedRooms();
-		for (let room of rooms) {
-			let sites = room.find(FIND_CONSTRUCTION_SITES);
+const roleBuilder = {
+	findTargets(): ConstructionSite[] {
+		let targets: ConstructionSite[] = [];
+		const rooms = util.getOwnedRooms();
+		for (const room of rooms) {
+			const sites = room.find(FIND_CONSTRUCTION_SITES);
 			if (sites.length === 0) {
 				continue;
 			}
@@ -17,8 +17,7 @@ let roleBuilder = {
 		return targets.filter(site => !!site);
 	},
 
-	/** @param {Creep} creep **/
-	run(creep) {
+	run(creep: Creep): void {
 		if (creep.memory.building && creep.store[RESOURCE_ENERGY] === 0) {
 			creep.memory.building = false;
 			creep.say("gathering");
@@ -34,15 +33,15 @@ let roleBuilder = {
 					targets = _.sortByOrder(
 						targets,
 						[
-							s => s.structureType === STRUCTURE_SPAWN,
-							s => s.structureType === STRUCTURE_TOWER,
-							s => s.structureType === STRUCTURE_EXTENSION,
-							s => s.structureType !== STRUCTURE_ROAD,
-							s => s.progress / s.progressTotal,
+							(s: ConstructionSite) => s.structureType === STRUCTURE_SPAWN,
+							(s: ConstructionSite) => s.structureType === STRUCTURE_TOWER,
+							(s: ConstructionSite) => s.structureType === STRUCTURE_EXTENSION,
+							(s: ConstructionSite) => s.structureType !== STRUCTURE_ROAD,
+							(s: ConstructionSite) => s.progress / s.progressTotal,
 						],
 						["desc", "desc", "desc", "desc", "desc"]
 					);
-					let target = _.first(targets);
+					const target = _.first(targets);
 					if (target) {
 						creep.memory.buildTargetId = target.id;
 					} else {
@@ -54,12 +53,11 @@ let roleBuilder = {
 			}
 
 			if (creep.memory.buildTargetId) {
-				let target = Game.getObjectById(creep.memory.buildTargetId);
+				const target = Game.getObjectById(creep.memory.buildTargetId);
 				if (target) {
+					cartographer.moveTo(creep, { pos: target.pos, range: 3 });
 					if (creep.pos.inRangeTo(target, 3)) {
 						creep.build(target);
-					} else {
-						cartographer.moveTo(creep, target);
 					}
 				} else {
 					delete creep.memory.buildTargetId;
