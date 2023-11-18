@@ -1186,6 +1186,13 @@ function satisfyClaimTargets() {
 		Memory.claimTargets.splice(idx, 1);
 	}
 
+	if (util.getCreeps(Role.Claimer).length > Memory.claimTargets.length) {
+		console.log(
+			"[satisfy-claim-targets] WARN: There are more claimers than targets. There's something wrong here. Aborting so we don't spawn more claimers."
+		);
+		return;
+	}
+
 	// spawn new claimers for the remaining targets
 	for (const target of Memory.claimTargets) {
 		// spawn new claimer
