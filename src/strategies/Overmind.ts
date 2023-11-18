@@ -47,7 +47,9 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		this.spawningRoom = "";
 		this.objective = "travel";
 		Object.assign(this, mem);
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		if (mem.baitPosition) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			this.baitPosition = new RoomPosition(mem.baitPosition.x, mem.baitPosition.y, mem.baitPosition.roomName);
 		}
 	}
@@ -62,7 +64,9 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 		const badRooms: string[] = [
 			this.spawningRoom,
 			...Memory.remoteMining.targets.filter(t => t.danger > 0).map(t => t.roomName),
-			...Memory.offense.tasks.filter(t => t.strategyName === this.strategyName).map(t => t.spawningRoom),
+			...Memory.offense.tasks
+				.filter(t => t.strategyName === this.strategyName)
+				.map(t => (t.strategy as OffenseStrategyOvermindRemoteMinerBait).spawningRoom),
 		];
 		return badRooms;
 	}
@@ -183,7 +187,8 @@ export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
 				if (this.baitPosition) {
 					if (hostiles.length > 0) {
 						const closestDist = hostiles
-							.map(c => c.pos.getRangeTo(this.baitPosition))
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							.map(c => c.pos.getRangeTo(this.baitPosition!))
 							.reduce((a, b) => Math.min(a, b));
 						olog(`flee: enemy is ${closestDist} away from the bait position.`);
 						if (closestDist > 30) {
