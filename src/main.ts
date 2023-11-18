@@ -411,32 +411,6 @@ function doFlagCommandsAndStuff() {
 		toolRoadPlanner.clearAllPlanFlags();
 	}
 
-	if (Game.flags.attack && !Memory.attackTarget) {
-		try {
-			const lookStruct = Game.flags.attack.pos.lookFor(LOOK_STRUCTURES);
-			if (lookStruct.length > 0) {
-				Memory.attackTarget = lookStruct[0].id;
-			} else {
-				const closestCreep = Game.flags.attack.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-				if (closestCreep) {
-					Memory.attackTarget = closestCreep.id;
-				} else {
-					// @ts-expect-error
-					delete Memory.attackTarget;
-				}
-			}
-		} catch (e) {
-			// 			printException(e);
-		} finally {
-		}
-	}
-
-	if (Game.flags.nextroom) {
-		Memory.expansionTarget = Game.flags.nextroom.pos.roomName;
-		Game.flags.nextroom.remove();
-		console.log("expansionTarget set:", Memory.expansionTarget);
-	}
-
 	if (Game.flags.setRootPos) {
 		const pos = Game.flags.setRootPos.pos;
 		console.log("force set root pos in", pos.roomName, ":", pos.x, ",", pos.y);
