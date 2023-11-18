@@ -1,10 +1,14 @@
 import util from "./util";
 
-let brainAutoPlanner = {
-	run() {
-		let rooms = util.getOwnedRooms();
-		for (let r = 0; r < rooms.length; r++) {
-			let room = rooms[r];
+interface Pos {
+	x: number;
+	y: number;
+}
+
+const brainAutoPlanner = {
+	run(): void {
+		const rooms = util.getOwnedRooms();
+		for (const room of rooms) {
 			if (!Memory.rooms[room.name]) {
 				Memory.rooms[room.name] = {};
 			}
@@ -22,21 +26,20 @@ let brainAutoPlanner = {
 		}
 	},
 
-	/**
-	 *
-	 * @param {Room} room
-	 * @param {boolean} debug
-	 * @returns
-	 */
-	planRoom(room, debug = false) {
+	planRoom(room: Room, debug = false): void {
 		// fix room memory, if needed
 		if (!Memory.rooms[room.name]) {
 			Memory.rooms[room.name] = {};
 		}
 		room.memory.structures = {};
-		for (let s in CONSTRUCTION_COST) {
+		for (const s in CONSTRUCTION_COST) {
 			// HACK: using CONSTRUCTION_COST to get all the structure names because there is to STRUCTURES_ALL
 			room.memory.structures[s] = [];
+		}
+
+		if (!room.controller) {
+			console.log("WARN: room", room.name, "has no controller");
+			return;
 		}
 
 		// build main base unit
@@ -47,14 +50,14 @@ let brainAutoPlanner = {
 		// r O . O . O r
 		// r O O S O O r  <= the spawn here is the "root" of the base
 		// . r r r r r .
-		let rootPos = room.memory.rootPos;
+		let rootPos: Pos | undefined = room.memory.rootPos;
 
 		// the best root position is one that is equidistant to the sources and the controller
 		// (this function is also used for finding the best storage module position)
-		function _getTotalDistances(point, includeMineral = false, excludeSources = false, usePaths = false) {
-			let opts = {
+		function getTotalDistances(point: Pos, includeMineral = false, excludeSources = false, usePaths = false) {
+			const opts = {
 				maxRooms: 1,
-				costCallback: (roomName, costMatrix) => {
+				costCallback: (roomName: string, costMatrix: CostMatrix) => {
 					for (let y = 0; y <= 3; y++) {
 						for (let x = 0; x <= 3; x++) {
 							costMatrix.set(x, y, 0xff);
@@ -68,17 +71,17 @@ let brainAutoPlanner = {
 				},
 			};
 			// NOTE: maybe this should the length of paths to the objects instead of ranges?
-			let pos = new RoomPosition(point.x, point.y, room.name);
+			const pos = new RoomPosition(point.x, point.y, room.name);
 			let total = usePaths ? pos.findPathTo(room.controller, opts).length : pos.getRangeTo(room.controller);
 			if (!excludeSources) {
-				let sources = room.find(FIND_SOURCES);
-				for (let source of sources) {
+				const sources = room.find(FIND_SOURCES);
+				for (const source of sources) {
 					total += usePaths ? pos.findPathTo(source, opts).length : pos.getRangeTo(source);
 				}
 			}
 			if (includeMineral) {
-				let minerals = room.find(FIND_MINERALS);
-				for (let mineral of minerals) {
+				const minerals = room.find(FIND_MINERALS);
+				for (const mineral of minerals) {
 					total += usePaths ? pos.findPathTo(mineral, opts).length : pos.getRangeTo(mineral);
 				}
 			}
@@ -94,7 +97,7 @@ let brainAutoPlanner = {
 					let valid = true;
 					for (let cY = y - 5; cY <= y + 1; cY++) {
 						for (let cX = x - 4; cX <= x + 4; cX++) {
-							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
+							const terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
 							if (terrain === "wall") {
 								valid = false;
 								break;
@@ -113,15 +116,15 @@ let brainAutoPlanner = {
 				}
 			}
 			console.log("Found", goodRootPositions.length, "good root positions");
-			const _center = new RoomPosition(25, 25, room.name);
+			const center = new RoomPosition(25, 25, room.name);
 			goodRootPositions = _.sortByOrder(
 				goodRootPositions,
 				[
-					pos => {
-						return new RoomPosition(pos.x, pos.y, room.name).getRangeTo(_center);
+					(pos: Pos) => {
+						return new RoomPosition(pos.x, pos.y, room.name).getRangeTo(center);
 					},
-					pos => {
-						return _getTotalDistances(pos);
+					(pos: Pos) => {
+						return getTotalDistances(pos);
 					},
 				],
 				["asc", "asc"]
@@ -131,6 +134,11 @@ let brainAutoPlanner = {
 			room.memory.rootPos = rootPos;
 		} else {
 			console.log("Best root (cached):", rootPos.x, ",", rootPos.y);
+		}
+
+		if (!rootPos) {
+			console.log("WARN: no root position found");
+			return;
 		}
 
 		if (debug) {
@@ -181,9 +189,9 @@ let brainAutoPlanner = {
 		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y - 5 });
 
 		// build storage/trade unit
-		let validStoragePos = [];
-		let storageMaxRangeFromRoot = 8;
-		let sources = room.find(FIND_SOURCES);
+		const validStoragePos = [];
+		const storageMaxRangeFromRoot = 8;
+		const sources = room.find(FIND_SOURCES);
 		let storagePos = room.memory.storagePos;
 		if (!storagePos && !room.storage) {
 			for (
@@ -201,7 +209,7 @@ let brainAutoPlanner = {
 						continue;
 					}
 
-					let structs = room.lookForAt(LOOK_STRUCTURES, x, y);
+					const structs = room.lookForAt(LOOK_STRUCTURES, x, y);
 					if (structs.length > 0 && structs[0].structureType !== STRUCTURE_STORAGE) {
 						continue;
 					}
@@ -209,7 +217,7 @@ let brainAutoPlanner = {
 					let valid = true;
 					for (let cY = y - 2; cY <= y + 2; cY++) {
 						for (let cX = x; cX <= x + 3; cX++) {
-							let terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
+							const terrain = room.lookForAt(LOOK_TERRAIN, cX, cY)[0];
 							if (terrain === "wall") {
 								valid = false;
 								break;
@@ -219,8 +227,8 @@ let brainAutoPlanner = {
 							break;
 						}
 					}
-					for (let source of sources) {
-						let pos = room.getPositionAt(x, y);
+					for (const source of sources) {
+						const pos = room.getPositionAt(x, y);
 						if (pos.getRangeTo(source) <= 2) {
 							valid = false;
 							break;
@@ -235,21 +243,21 @@ let brainAutoPlanner = {
 				}
 			}
 			validStoragePos.sort(function (a, b) {
-				return _getTotalDistances(a, true, true, true) - _getTotalDistances(b, true, true, true);
+				return getTotalDistances(a, true, true, true) - getTotalDistances(b, true, true, true);
 			});
 			storagePos = validStoragePos[0];
 			room.memory.storagePos = storagePos;
 
 			// TODO: plan path from root to controller
-			let _tmpIsPlanned = this.getPlansAtPosition;
-			let pathToControllerResult = PathFinder.search(
+			const tmpIsPlanned = this.getPlansAtPosition;
+			const pathToControllerResult = PathFinder.search(
 				room.controller.pos,
 				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: global.CONTROLLER_UPGRADE_RANGE },
 				{
 					maxRooms: 1,
 					roomCallback(roomName) {
-						let costMatrix = new PathFinder.CostMatrix();
-						let room = new Room(roomName);
+						const costMatrix = new PathFinder.CostMatrix();
+						const room = new Room(roomName);
 
 						for (let y = 0; y < 50; y++) {
 							for (let x = 0; x < 50; x++) {
@@ -261,9 +269,9 @@ let brainAutoPlanner = {
 									}
 								}
 
-								let pos = room.getPositionAt(x, y);
+								const pos = room.getPositionAt(x, y);
 								// console.log("DEBUG: ", pos);
-								let isPlanned = _tmpIsPlanned(pos);
+								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
 									if (isPlanned === STRUCTURE_ROAD) {
 										costMatrix.set(x, y, 0.5);
@@ -283,7 +291,7 @@ let brainAutoPlanner = {
 				return;
 			}
 
-			let targetPathIdx = Math.round(pathToControllerResult.path.length * 0.65);
+			const targetPathIdx = Math.round(pathToControllerResult.path.length * 0.65);
 			room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: 0.4, fill: "#cccc00" });
 		} else {
 			if (room.storage && room.storage.owner.username === global.WHOAMI) {
@@ -297,7 +305,7 @@ let brainAutoPlanner = {
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
 		// FIXME: this is was just done really quickly, it needs to be more robust.
-		let rootStoragePos = { x: storagePos.x + 1, y: storagePos.y };
+		const rootStoragePos = { x: storagePos.x + 1, y: storagePos.y };
 		if (debug) {
 			room.visual.circle(rootStoragePos.x, rootStoragePos.y, { radius: 0.25, fill: "#00cccc" });
 		}
@@ -307,8 +315,8 @@ let brainAutoPlanner = {
 		room.memory.structures[STRUCTURE_NUKER].push({ x: rootStoragePos.x + 1, y: rootStoragePos.y - 1 });
 
 		// NOTE: this part, placing the extensions, should be robust enough though
-		let storeAdj = util.getAdjacent(room.getPositionAt(rootStoragePos.x, rootStoragePos.y));
-		for (let pos of storeAdj) {
+		const storeAdj = util.getAdjacent(room.getPositionAt(rootStoragePos.x, rootStoragePos.y));
+		for (const pos of storeAdj) {
 			if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length === 0) {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
 			}
@@ -323,21 +331,20 @@ let brainAutoPlanner = {
 	 * @param {Room} room
 	 * @example require("brain.autoplanner").planHarvestPositions(Game.rooms["W17N11"]);
 	 */
-	planHarvestPositions(room) {
+	planHarvestPositions(room: Room): boolean {
 		room.memory.harvestPositions = {};
 		const sources = room.find(FIND_SOURCES);
 
 		// plan structures around sources
-		for (let source of sources) {
-			let terrain = Game.map.getRoomTerrain(room.name);
+		for (const source of sources) {
+			const terrain = Game.map.getRoomTerrain(room.name);
 			let adjacent = util.getAdjacent(source.pos).filter(pos => {
 				if (terrain.get(pos.x, pos.y) === TERRAIN_MASK_WALL) {
 					return false;
 				}
 
-				let lookResult = pos.look();
-				for (let l = 0; l < lookResult.length; l++) {
-					let look = lookResult[l];
+				const lookResult = pos.look();
+				for (const look of lookResult) {
 					if (look.type !== LOOK_STRUCTURES && look.type !== LOOK_TERRAIN) {
 						continue;
 					}
@@ -361,9 +368,9 @@ let brainAutoPlanner = {
 					pos => !util.isDistFromEdge(pos, 4),
 					pos => {
 						// count the number of non-wall tiles adjacent to the position
-						let adj = util.getAdjacent(pos);
+						const adj = util.getAdjacent(pos);
 						let count = 0;
-						for (let a of adj) {
+						for (const a of adj) {
 							if (terrain.get(a.x, a.y) !== TERRAIN_MASK_WALL) {
 								count++;
 							}
@@ -374,25 +381,29 @@ let brainAutoPlanner = {
 				["desc", "desc"]
 			);
 
-			let harvestPos = adjacent[0];
+			const harvestPos = adjacent[0];
 			console.log("Harvest position:", harvestPos);
 			room.memory.harvestPositions[source.id] = { x: harvestPos.x, y: harvestPos.y };
-			let harvestAdj = util.getAdjacent(harvestPos);
-			let sourceLinkPos = harvestAdj.splice(0, 1)[0];
+			const harvestAdj = util.getAdjacent(harvestPos);
+			const sourceLinkPos = harvestAdj.splice(0, 1)[0];
 			console.log("sourceLinkPos:", sourceLinkPos);
 			room.memory.structures[STRUCTURE_LINK].push({ x: sourceLinkPos.x, y: sourceLinkPos.y });
 
 			// plan roads
-			let rootPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y);
-			let _tmpIsPlanned = this.getPlansAtPosition;
-			let pathingResult = PathFinder.search(
+			const rootPos = room.getPositionAt(room.memory.rootPos.x, room.memory.rootPos.y);
+			if (!rootPos) {
+				console.log("WARN: no root position found");
+				return false;
+			}
+			const tmpIsPlanned = this.getPlansAtPosition;
+			const pathingResult = PathFinder.search(
 				room.getPositionAt(rootPos.x, rootPos.y),
 				{ pos: harvestPos, range: 1 },
 				{
 					maxRooms: 1,
 					roomCallback(roomName) {
-						let costMatrix = new PathFinder.CostMatrix();
-						let room = new Room(roomName);
+						const costMatrix = new PathFinder.CostMatrix();
+						const room = new Room(roomName);
 						for (let y = 0; y < 50; y++) {
 							for (let x = 0; x < 50; x++) {
 								if (x > rootPos.x - 2 && x < rootPos.x + 2) {
@@ -407,9 +418,9 @@ let brainAutoPlanner = {
 									continue;
 								}
 
-								let pos = room.getPositionAt(x, y);
+								const pos = room.getPositionAt(x, y);
 								// console.log("DEBUG: ", pos);
-								let isPlanned = _tmpIsPlanned(pos);
+								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
 									if (isPlanned === STRUCTURE_ROAD) {
 										costMatrix.set(x, y, 0.5);
@@ -437,8 +448,8 @@ let brainAutoPlanner = {
 				);
 				continue;
 			}
-			let pathToSource = pathingResult.path;
-			for (let pos of pathToSource) {
+			const pathToSource = pathingResult.path;
+			for (const pos of pathToSource) {
 				if (this.getPlansAtPosition(pos)) {
 					continue;
 				}
@@ -464,17 +475,17 @@ let brainAutoPlanner = {
 	 * @param {RoomPosition} pos
 	 * @returns {String}
 	 */
-	getPlansAtPosition(pos) {
-		let memory = Memory.rooms[pos.roomName];
+	getPlansAtPosition(pos: RoomPosition): string | false {
+		const memory = Memory.rooms[pos.roomName];
 		if (!memory.structures) {
 			return false;
 		}
 		// iterate through all structure names
-		for (let struct in CONSTRUCTION_COST) {
+		for (const struct in CONSTRUCTION_COST) {
 			if (!(struct in memory.structures)) {
 				continue;
 			}
-			for (let p of memory.structures[struct]) {
+			for (const p of memory.structures[struct]) {
 				if (pos.x === p.x && pos.y === p.y) {
 					return struct;
 				}
@@ -483,13 +494,13 @@ let brainAutoPlanner = {
 		return false;
 	},
 
-	drawRoomPlans(room) {
-		for (let struct in CONSTRUCTION_COST) {
+	drawRoomPlans(room: Room): void {
+		for (const struct in CONSTRUCTION_COST) {
 			// iterate through all structure names
 			if (!(struct in room.memory.structures)) {
 				continue;
 			}
-			for (let pos of room.memory.structures[struct]) {
+			for (const pos of room.memory.structures[struct]) {
 				if (struct === STRUCTURE_ROAD) {
 					room.visual.circle(pos.x, pos.y, { fill: "#999999" });
 				} else if (struct === STRUCTURE_SPAWN) {
@@ -504,16 +515,16 @@ let brainAutoPlanner = {
 		}
 	},
 
-	applyRoomPlans(room) {
-		for (let struct in CONSTRUCTION_COST) {
+	applyRoomPlans(room: Room): void {
+		for (const struct in CONSTRUCTION_COST) {
 			// iterate through all structure names
-			let maxStructs = CONTROLLER_STRUCTURES[struct];
+			const maxStructs = CONTROLLER_STRUCTURES[struct];
 			let structCount = 0;
 			if (!(struct in room.memory.structures)) {
 				console.log("[WARN] no plans for", struct, "structures found");
 				continue;
 			}
-			for (let pos of room.memory.structures[struct]) {
+			for (const pos of room.memory.structures[struct]) {
 				room.createConstructionSite(pos.x, pos.y, struct);
 				structCount++;
 				if (structCount >= maxStructs) {
@@ -529,16 +540,16 @@ let brainAutoPlanner = {
 	 * @param {string} struct The STRUCTURE_* type to remove
 	 * @example require("brain.autoplanner").addPlansAtPosition(new RoomPosition(22, 28, "W16N9"), STRUCTURE_TERMINAL)
 	 */
-	addPlansAtPosition(pos, struct) {
+	addPlansAtPosition(pos: RoomPosition, struct: BuildableStructureConstant): string {
 		if (!pos || !struct) {
-			return;
+			return "";
 		}
 
 		const room = new Room(pos.roomName);
-		for (let checkPos of room.memory.structures[struct]) {
-			if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
+		for (const checkPos of room.memory.structures[struct]) {
+			if (room.getPositionAt(checkPos.x, checkPos.y)?.isEqualTo(pos)) {
 				// plans already exist at this position
-				return;
+				return "";
 			}
 		}
 
@@ -552,10 +563,10 @@ let brainAutoPlanner = {
 	 * @param {string} [struct=undefined] The STRUCTURE_* type to remove
 	 * @example require("brain.autoplanner").removePlansAtPosition(new RoomPosition(22, 30, "W16N9"), STRUCTURE_TERMINAL)
 	 */
-	removePlansAtPosition(pos, struct = undefined) {
+	removePlansAtPosition(pos: RoomPosition, struct: BuildableStructureConstant | undefined = undefined): string {
 		const room = new Room(pos.roomName);
 		let count = 0;
-		for (let structure in CONSTRUCTION_COST) {
+		for (const structure in CONSTRUCTION_COST) {
 			// iterate through all structure names
 			if (!(structure in room.memory.structures)) {
 				continue;
@@ -564,7 +575,7 @@ let brainAutoPlanner = {
 				continue;
 			}
 			for (let p = 0; p < room.memory.structures[structure].length; p++) {
-				let checkPos = room.memory.structures[structure][p];
+				const checkPos = room.memory.structures[structure][p];
 				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
 					room.memory.structures[structure].splice(p, 1);
 					count++;
@@ -576,17 +587,17 @@ let brainAutoPlanner = {
 	},
 
 	// var brainAutoPlanner = require('brain.autoplanner'); brainAutoPlanner.planWalls(Game.rooms["ROOM"], true)
-	planWalls(room, debug = true) {
+	planWalls(room: Room, debug = true): void {
 		// these are used for saving positions later
-		let walls = [];
-		let ramparts = [];
+		const walls = [];
+		const ramparts = [];
 
 		let wallPoints = [];
 		for (let numSide = 0; numSide < 4; numSide++) {
 			// if (numSide !== 1) continue
 
-			let ySide = numSide % 2 === 0 ? 0 : 49;
-			let vertical = numSide >= 2;
+			const ySide = numSide % 2 === 0 ? 0 : 49;
+			const vertical = numSide >= 2;
 			// output should be:
 			// numSide: 0 - ySide = 0  vertical = false
 			// numSide: 1 - ySide = 49  vertical = false
@@ -596,7 +607,9 @@ let brainAutoPlanner = {
 			let _startExit_x = -1;
 			let _endExit_x = -1;
 			for (let x = 0; x < 50; x++) {
-				let testpos = !vertical ? new RoomPosition(x, ySide, room.name) : new RoomPosition(ySide, x, room.name);
+				const testpos = !vertical
+					? new RoomPosition(x, ySide, room.name)
+					: new RoomPosition(ySide, x, room.name);
 				// console.log(testpos);
 				if (_startExit_x < 0 && util.getTerrainAt(testpos) === "plain") {
 					_startExit_x = x - 2;
@@ -606,7 +619,7 @@ let brainAutoPlanner = {
 				}
 
 				if (_startExit_x >= 0 && _endExit_x > _startExit_x) {
-					let forbiddenPos = [];
+					const forbiddenPos = [];
 
 					// figure out where the wall should NOT go
 					var costs = new PathFinder.CostMatrix();
@@ -644,7 +657,7 @@ let brainAutoPlanner = {
 								// var costMultiplier = Math.abs(ySide - (rY/2))
 								// if (costMultiplier < 1) costMultiplier = 1
 
-								let rPos = !vertical
+								const rPos = !vertical
 									? new RoomPosition(rX, rY, room.name)
 									: new RoomPosition(rY, rX, room.name);
 								let cost = 1;
@@ -665,7 +678,7 @@ let brainAutoPlanner = {
 											cost = 1;
 											!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
 											if ((!vertical ? rX : rY) < 9) {
-												let structAtPos = util.getStructuresAt(rPos);
+												const structAtPos = util.getStructuresAt(rPos);
 												if (structAtPos[0].structureType === STRUCTURE_WALL) {
 													walls.push(!vertical ? [rX, rY] : [rY, rX]);
 												} else if (structAtPos[0].structureType === STRUCTURE_RAMPART) {
@@ -684,17 +697,17 @@ let brainAutoPlanner = {
 					// console.log("forbidden pos:", forbiddenPos.length);
 
 					// figure out where the wall SHOULD go
-					let wallStartPos = !vertical
+					const wallStartPos = !vertical
 						? new RoomPosition(_startExit_x, Math.abs(ySide - (_startExit_x === 0 ? 1 : 0)), room.name)
 						: new RoomPosition(ySide, _startExit_x, room.name);
-					let wallEndPos = !vertical
+					const wallEndPos = !vertical
 						? new RoomPosition(_endExit_x, Math.abs(ySide), room.name)
 						: new RoomPosition(ySide, _endExit_x, room.name);
 					if (debug) {
 						room.visual.circle(wallStartPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
 						room.visual.circle(wallEndPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
 					}
-					let result = PathFinder.search(
+					const result = PathFinder.search(
 						wallStartPos,
 						{ pos: wallEndPos, range: 1 },
 						{
@@ -736,8 +749,8 @@ let brainAutoPlanner = {
 								) {
 									wallPoints.push(diag1);
 								} else {
-									let dist1 = Math.abs(ySide - (!vertical ? diag1.y : diag1.x));
-									let dist2 = Math.abs(ySide - (!vertical ? diag2.y : diag2.x));
+									const dist1 = Math.abs(ySide - (!vertical ? diag1.y : diag1.x));
+									const dist2 = Math.abs(ySide - (!vertical ? diag2.y : diag2.x));
 									// wallPoints.push(ySide === 0 ? diag1 : diag2)
 									wallPoints.push(dist1 < dist2 ? diag1 : diag2);
 								}
@@ -755,7 +768,7 @@ let brainAutoPlanner = {
 
 		if (debug) room.visual.poly(wallPoints, { lineStyle: "dotted", stroke: "#55ff77" });
 
-		let costs_mod = new PathFinder.CostMatrix();
+		const costs_mod = new PathFinder.CostMatrix();
 		for (var w = 0; w < wallPoints.length; w++) {
 			costs_mod.set(wallPoints[w].x, wallPoints[w].y, Infinity);
 		}
@@ -769,12 +782,12 @@ let brainAutoPlanner = {
 			) {
 				return true;
 			}
-			let testPath = PathFinder.search(
+			const testPath = PathFinder.search(
 				pos,
 				{ pos: Game.rooms[room.name].controller.pos, range: 1 },
 				{
 					roomCallback(roomName) {
-						let temp = costs_mod.clone();
+						const temp = costs_mod.clone();
 						temp.set(pos.x, pos.y, 0);
 						return temp;
 					},
@@ -788,14 +801,14 @@ let brainAutoPlanner = {
 
 		// figure out where the ramparts should go
 		let rampartPoints = [];
-		let spawn = util.getSpawn(room); // TODO: target the rooms storage instead?
-		let pathsToExits = [];
-		let exits = Game.map.describeExits(room.name);
-		for (let e in exits) {
+		const spawn = util.getSpawn(room); // TODO: target the rooms storage instead?
+		const pathsToExits = [];
+		const exits = Game.map.describeExits(room.name);
+		for (const e in exits) {
 			pathsToExits.push(spawn.pos.findPathTo(new RoomPosition(25, 25, exits[e])));
 		}
-		let rampartsEvery = 2; // place ramparts evert X places
-		let offsets = {}; // offset rampart positions by these values (key: [int] side number, value: [int] offset)
+		const rampartsEvery = 2; // place ramparts evert X places
+		const offsets = {}; // offset rampart positions by these values (key: [int] side number, value: [int] offset)
 		// for (var w = 0; w < wallPoints.length; w++) {
 		// 	var wallPoint = wallPoints[w]
 		// 	for (var p = 0; p < pathsToExits.length; p++) {
@@ -813,7 +826,7 @@ let brainAutoPlanner = {
 		// 	}
 		// }
 		for (let p = 0; p < pathsToExits.length; p++) {
-			let path = pathsToExits[p];
+			const path = pathsToExits[p];
 			for (var i = 0; i < path.length; i++) {
 				var pathpos = path[i];
 				for (var w = 0; w < wallPoints.length; w++) {
@@ -825,7 +838,7 @@ let brainAutoPlanner = {
 				}
 			}
 		}
-		let bestOffset = util.mode(_.values(offsets)); // because I'm lazy
+		const bestOffset = util.mode(_.values(offsets)); // because I'm lazy
 		console.log("bestOffset: ", bestOffset);
 		for (var w = 0; w < wallPoints.length; w++) {
 			var wallPoint = wallPoints[w];
@@ -852,7 +865,7 @@ let brainAutoPlanner = {
 		}
 		Memory.rooms[room.name].walls = walls;
 		for (var r in rampartPoints) {
-			let rampartPoint = rampartPoints[r];
+			const rampartPoint = rampartPoints[r];
 			ramparts.push([rampartPoint.x, rampartPoint.y]);
 		}
 		Memory.rooms[room.name].ramparts = ramparts;
@@ -861,8 +874,8 @@ let brainAutoPlanner = {
 	buildWalls(room) {
 		let hasPlacedSite = false;
 		if (Memory.rooms[room.name].walls) {
-			for (let w in Memory.rooms[room.name].walls) {
-				let wall = Memory.rooms[room.name].walls[w];
+			for (const w in Memory.rooms[room.name].walls) {
+				const wall = Memory.rooms[room.name].walls[w];
 				var pos = new RoomPosition(wall[0], wall[1], room.name);
 				if (pos.createConstructionSite(STRUCTURE_WALL) === OK) {
 					hasPlacedSite = true;
@@ -875,8 +888,8 @@ let brainAutoPlanner = {
 		}
 
 		if (Memory.rooms[room.name].ramparts) {
-			for (let r in Memory.rooms[room.name].ramparts) {
-				let rampart = Memory.rooms[room.name].ramparts[r];
+			for (const r in Memory.rooms[room.name].ramparts) {
+				const rampart = Memory.rooms[room.name].ramparts[r];
 				var pos = new RoomPosition(rampart[0], rampart[1], room.name);
 				if (pos.createConstructionSite(STRUCTURE_RAMPART) === OK) {
 					hasPlacedSite = true;
@@ -890,10 +903,10 @@ let brainAutoPlanner = {
 		if (!structure) {
 			return false;
 		}
-		let rX = structure.room.memory.rootPos.x;
-		let rY = structure.room.memory.rootPos.y;
-		let x = structure.pos.x;
-		let y = structure.pos.y;
+		const rX = structure.room.memory.rootPos.x;
+		const rY = structure.room.memory.rootPos.y;
+		const x = structure.pos.x;
+		const y = structure.pos.y;
 		return x <= rX + 2 && x >= rX - 2 && y <= rY && y >= rY - 4;
 	},
 };

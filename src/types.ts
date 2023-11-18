@@ -111,6 +111,7 @@ declare global {
 		storagePos?: { x: number; y: number };
 		/** @deprecated not sure if this is actually being used */
 		storagePosDirection?: DirectionConstant;
+		structures: Record<BuildableStructureConstant, { x: number; y: number }[]> };
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
