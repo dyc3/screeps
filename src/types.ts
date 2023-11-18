@@ -32,7 +32,7 @@ declare global {
 			mode: "claim" | "reserve";
 		}[];
 		jobLastRun: { [jobName: string]: number };
-		forceCreepSpawn: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
+		forceCreepSpawn?: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 		creepSpawnLog: string[];
 		guard: {
 			tasks: GuardTaskSerialized[];

@@ -1658,7 +1658,6 @@ function main() {
 	if (Object.keys(Game.creeps).length === 0 || Memory.forceCreepSpawn || Game.flags.forceSpawn) {
 		runner.forceRunNextTick("creep-spawning");
 		if (Memory.forceCreepSpawn) {
-			// @ts-ignore
 			delete Memory.forceCreepSpawn;
 		}
 	}
