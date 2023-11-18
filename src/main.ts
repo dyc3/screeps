@@ -1488,7 +1488,7 @@ function main() {
 					break;
 				case "upgrader":
 					if (harvesterCount === 0) {
-						// creep.memory.force_mode = "recovery"
+						// creep.memory.forceMode = "recovery"
 						// creep.memory.mode = "recovery"
 						roleHarvester.run(creep);
 					} else {
@@ -1499,7 +1499,7 @@ function main() {
 					// If there is something to build, go build it
 					// otherwise, do repairs
 					if (harvesterCount === 0) {
-						// creep.memory.force_mode = "recovery"
+						// creep.memory.forceMode = "recovery"
 						// creep.memory.mode = "recovery"
 						roleHarvester.run(creep);
 					} else if (roleBuilder.findTargets(creep).length > 0) {

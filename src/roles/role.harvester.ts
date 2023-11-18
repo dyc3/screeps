@@ -17,9 +17,8 @@ const roleHarvester = {
 			let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
 			if (!dedicatedLink && creep.room.controller.level >= 5) {
 				if (
-					!creep.memory.last_check_for_dedicated_link ||
-					(creep.memory.last_check_for_dedicated_link &&
-						Game.time - creep.memory.last_check_for_dedicated_link > 100)
+					!creep.memory.lastCheckForDedicatedLink ||
+					(creep.memory.lastCheckForDedicatedLink && Game.time - creep.memory.lastCheckForDedicatedLink > 100)
 				) {
 					dedicatedLink = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 						filter: struct => {
@@ -29,7 +28,7 @@ const roleHarvester = {
 					if (dedicatedLink) {
 						creep.memory.dedicatedLinkId = dedicatedLink.id;
 					} else {
-						creep.memory.last_check_for_dedicated_link = Game.time;
+						creep.memory.lastCheckForDedicatedLink = Game.time;
 					}
 				}
 			}
@@ -174,8 +173,8 @@ const roleHarvester = {
 		 * `transferTarget` should indicate the current target structure and should NOT be used to determine mode.
 		 */
 
-		if (creep.memory.force_mode) {
-			return creep.memory.force_mode as HarvesterDepositMode;
+		if (creep.memory.forceMode) {
+			return creep.memory.forceMode as HarvesterDepositMode;
 		}
 
 		if (!creep.memory.harvestTarget) {
@@ -233,13 +232,13 @@ const roleHarvester = {
 	/** Meant to replace findTransferTargets **/
 	getTransferTarget(creep: Creep): AnyStoreStructure | undefined {
 		// check adjacent positions for empty extensions
-		if (!creep.memory.refresh_fill_targets) {
-			creep.memory.refresh_fill_targets = Game.time - 50;
+		if (!creep.memory.refreshFillTargets) {
+			creep.memory.refreshFillTargets = Game.time - 50;
 		}
 
 		const harvestPos = this.getHarvestPosition(creep);
 
-		if (!creep.memory.fillTargetIds || Game.time - creep.memory.refresh_fill_targets > 50) {
+		if (!creep.memory.fillTargetIds || Game.time - creep.memory.refreshFillTargets > 50) {
 			const adjacentStructs = _.filter(
 				creep.room.lookForAtArea(
 					LOOK_STRUCTURES,
@@ -256,7 +255,7 @@ const roleHarvester = {
 				targets.push(struct.structure.id as Id<AnyStoreStructure>);
 			}
 			creep.memory.fillTargetIds = targets;
-			creep.memory.refresh_fill_targets = Game.time;
+			creep.memory.refreshFillTargets = Game.time;
 		}
 		const targetIdsNotFull = _.filter(creep.memory.fillTargetIds, id => {
 			const struct = Game.getObjectById(id);
@@ -429,9 +428,8 @@ const roleHarvester = {
 			CONTROLLER_STRUCTURES[STRUCTURE_LINK][creep.room.controller?.level ?? 0] > 0
 		) {
 			if (
-				!creep.memory.last_check_for_dedicated_link ||
-				(creep.memory.last_check_for_dedicated_link &&
-					Game.time - creep.memory.last_check_for_dedicated_link > 100)
+				!creep.memory.lastCheckForDedicatedLink ||
+				(creep.memory.lastCheckForDedicatedLink && Game.time - creep.memory.lastCheckForDedicatedLink > 100)
 			) {
 				const nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 					filter: struct => {
@@ -441,7 +439,7 @@ const roleHarvester = {
 				if (nearbyLinks.length > 0) {
 					creep.memory.dedicatedLinkId = nearbyLinks[0].id;
 				} else {
-					creep.memory.last_check_for_dedicated_link = Game.time;
+					creep.memory.lastCheckForDedicatedLink = Game.time;
 				}
 			}
 		}
@@ -465,7 +463,7 @@ const roleHarvester = {
 			if (nearbyLinks.length > 0) {
 				creep.memory.dedicatedLinkId = nearbyLinks[0].id;
 			} else {
-				creep.memory.last_check_for_dedicated_link = Game.time;
+				creep.memory.lastCheckForDedicatedLink = Game.time;
 			}
 		}
 

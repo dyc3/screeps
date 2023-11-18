@@ -109,10 +109,10 @@ declare global {
 		harvesting?: boolean;
 		dedicatedLinkId?: Id<StructureLink>;
 		haveManagerForRoom?: boolean;
-		last_check_for_dedicated_link?: number;
-		force_mode?: string;
+		lastCheckForDedicatedLink?: number;
+		forceMode?: string;
 		fillTargetIds?: Id<AnyStoreStructure>[];
-		refresh_fill_targets?: number;
+		refreshFillTargets?: number;
 		harvestPos?: RoomPosition;
 	}
 
