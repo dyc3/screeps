@@ -296,7 +296,7 @@ const brainAutoPlanner = {
 					maxRooms: 1,
 					roomCallback(roomName) {
 						const costMatrix = new PathFinder.CostMatrix();
-						const room = new Room(roomName);
+						const thisroom = new Room(roomName);
 						if (!rootPos) {
 							console.log("WARN: no root position found");
 							return false;
@@ -313,7 +313,7 @@ const brainAutoPlanner = {
 								}
 
 								// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-								const pos = room.getPositionAt(x, y)!;
+								const pos = thisroom.getPositionAt(x, y)!;
 								// console.log("DEBUG: ", pos);
 								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
@@ -327,6 +327,7 @@ const brainAutoPlanner = {
 								}
 							}
 						}
+						return costMatrix;
 					},
 				}
 			);
@@ -335,8 +336,8 @@ const brainAutoPlanner = {
 				return;
 			}
 
-			const targetPathIdx = Math.round(pathToControllerResult.path.length * 0.65);
-			room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: 0.4, fill: "#cccc00" });
+			// const targetPathIdx = Math.round(pathToControllerResult.path.length * 0.65);
+			// room.visual.circle(targetPathIdx.x, targetPathIdx.y, { radius: 0.4, fill: "#cccc00" });
 		} else {
 			if (room.storage && room.storage.owner.username === global.WHOAMI) {
 				console.log("WARN: using existing storage as storagePos");
@@ -359,7 +360,8 @@ const brainAutoPlanner = {
 		room.memory.structures[STRUCTURE_NUKER].push({ x: rootStoragePos.x + 1, y: rootStoragePos.y - 1 });
 
 		// NOTE: this part, placing the extensions, should be robust enough though
-		const storeAdj = util.getAdjacent(room.getPositionAt(rootStoragePos.x, rootStoragePos.y));
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const storeAdj = util.getAdjacent(room.getPositionAt(rootStoragePos.x, rootStoragePos.y)!);
 		for (const pos of storeAdj) {
 			if (!this.getPlansAtPosition(pos) && util.getStructuresAt(pos).length === 0) {
 				room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y });
@@ -451,7 +453,7 @@ const brainAutoPlanner = {
 					maxRooms: 1,
 					roomCallback(roomName) {
 						const costMatrix = new PathFinder.CostMatrix();
-						const room = new Room(roomName);
+						const thisroom = new Room(roomName);
 						for (let y = 0; y < 50; y++) {
 							for (let x = 0; x < 50; x++) {
 								if (x > rootPos.x - 2 && x < rootPos.x + 2) {
@@ -467,7 +469,7 @@ const brainAutoPlanner = {
 								}
 
 								// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-								const pos = room.getPositionAt(x, y)!;
+								const pos = thisroom.getPositionAt(x, y)!;
 								// console.log("DEBUG: ", pos);
 								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
@@ -986,15 +988,21 @@ const brainAutoPlanner = {
 	},
 };
 
+// @ts-expect-error global augmentation
 global.autoPlanner = {
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	addPlans: brainAutoPlanner.addPlansAtPosition,
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	removePlans: brainAutoPlanner.removePlansAtPosition,
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
 };
 
+// @ts-expect-error global augmentation
 global.plan = (x: number, y: number, roomName: string, struct: BuildableStructureConstant) => {
 	return brainAutoPlanner.addPlansAtPosition(new RoomPosition(x, y, roomName), struct);
 };
+// @ts-expect-error global augmentation
 global.unplan = (x: number, y: number, roomName: string, struct: BuildableStructureConstant) => {
 	return brainAutoPlanner.removePlansAtPosition(new RoomPosition(x, y, roomName), struct);
 };
