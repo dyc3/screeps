@@ -60,7 +60,7 @@ const roleHarvester = {
 						}
 					} else if (struct.structureType === STRUCTURE_SPAWN) {
 						if (
-							CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 &&
+							CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.controller?.level ?? 0] > 1 &&
 							creep.pos.inRangeTo(struct, 3)
 						) {
 							return true;
@@ -300,7 +300,7 @@ const roleHarvester = {
 							}
 						} else if (struct.structureType === STRUCTURE_SPAWN) {
 							if (
-								CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.level] > 1 &&
+								CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][creep.room.controller?.level ?? 0] > 1 &&
 								creep.pos.inRangeTo(struct, 3)
 							) {
 								return true;
