@@ -126,7 +126,7 @@ const roleRelay = {
 				fillTargetAmount = Memory.factoryEnergyTarget;
 				break;
 		}
-		const r = creep.withdraw(
+		creep.withdraw(
 			overfilledStruct,
 			resource,
 			Math.min(
@@ -290,7 +290,8 @@ const roleRelay = {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
-					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0]));
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0])!);
 				} else {
 					creep.withdraw(storage, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
@@ -342,7 +343,8 @@ const roleRelay = {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
-					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0]));
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0])!);
 				} else if (link.store[RESOURCE_ENERGY] > 0) {
 					creep.withdraw(link, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
