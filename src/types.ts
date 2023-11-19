@@ -116,6 +116,8 @@ declare global {
 		harvestPos?: RoomPosition;
 		_needFillTargetRefresh?: boolean;
 		isStorageModule?: boolean;
+		linkId?: Id<StructureLink>;
+		storageId?: Id<StructureStorage | StructureContainer>;
 	}
 
 	interface PowerCreepMemory {

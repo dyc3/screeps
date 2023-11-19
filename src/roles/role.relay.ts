@@ -1,7 +1,5 @@
 import * as cartographer from "screeps-cartographer";
 
-import util from "../util";
-
 // FIXME: When new structures are built around relays, fillTargetIds does not get updated
 
 const roleRelay = {
@@ -118,7 +116,7 @@ const roleRelay = {
 		creep: Creep,
 		overfilledStruct: AnyStoreStructure,
 		resource: ResourceConstant = RESOURCE_ENERGY
-	) {
+	): void {
 		let fillTargetAmount = 0;
 		switch (overfilledStruct.structureType) {
 			case STRUCTURE_TERMINAL:
@@ -152,7 +150,7 @@ const roleRelay = {
 		);
 		if (!creep.pos.isEqualTo(assignedPos)) {
 			const result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
-			if (result !== 0) {
+			if (result !== OK) {
 				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
 			}
 			return;
@@ -172,7 +170,7 @@ const roleRelay = {
 				console.log(creep.name, "ERR: no link structures found");
 				return;
 			}
-			creep.memory.linkId = foundLinks[0].id;
+			creep.memory.linkId = foundLinks[0].id as Id<StructureLink>;
 
 			const foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
@@ -180,16 +178,22 @@ const roleRelay = {
 				},
 			});
 			if (foundStorage.length > 0) {
-				creep.memory.storageId = foundStorage[0].id;
+				creep.memory.storageId = foundStorage[0].id as Id<StructureContainer | StructureStorage>;
 			} else {
 				console.log(creep.name, "WARN: no found storage");
 			}
 		}
 		const link = Game.getObjectById(creep.memory.linkId);
-		const storage = Game.getObjectById(creep.memory.storageId);
+		const storage = creep.memory.storageId ? Game.getObjectById(creep.memory.storageId) : null;
+		if (!link) {
+			creep.log("Link no longer exists");
+			delete creep.memory.linkId;
+			return;
+		}
 		if (!storage) {
 			creep.log("Storage no longer exists");
 			delete creep.memory.storageId;
+			return;
 		}
 		if (storage && storage.structureType === STRUCTURE_STORAGE) {
 			creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
@@ -216,7 +220,7 @@ const roleRelay = {
 					result.structure.structureType !== STRUCTURE_RAMPART &&
 					result.structure.structureType !== STRUCTURE_WALL &&
 					result.structure.structureType !== STRUCTURE_LINK
-			);
+			) as LookForAtAreaResultArray<AnyStoreStructure>;
 			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
 			const targets = [];
 			for (const look of adjacentStructs) {
@@ -357,7 +361,7 @@ const roleRelay = {
 	},
 
 	/** Force the renew target to be the spawn next to the relay. */
-	autoCorrectRenewTarget(creep) {
+	autoCorrectRenewTarget(creep: Creep): void {
 		if (!creep.memory.fillTargetIds) {
 			return;
 		}
@@ -368,7 +372,7 @@ const roleRelay = {
 				continue;
 			}
 			if (struct.structureType === STRUCTURE_SPAWN) {
-				creep.memory.renewTarget = id;
+				creep.memory.renewTarget = id as Id<StructureSpawn>;
 			}
 		}
 	},
