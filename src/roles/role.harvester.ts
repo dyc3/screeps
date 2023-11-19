@@ -479,7 +479,9 @@ const roleHarvester = {
 			if (dropped.length > 0) {
 				creep.pickup(dropped[0]);
 			} else {
-				const structs = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_CONTAINER);
+				const structs = creep.pos
+					.lookFor(LOOK_STRUCTURES)
+					.filter(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer[];
 				if (structs.length > 0 && structs[0].store[RESOURCE_ENERGY] > 0) {
 					creep.withdraw(structs[0], RESOURCE_ENERGY);
 				}
