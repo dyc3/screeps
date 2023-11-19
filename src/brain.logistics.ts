@@ -1,19 +1,20 @@
 import brainAutoPlanner from "./brain.autoplanner.js";
-import util from "./util";
+import util, { isValidResource } from "./util";
 
 export class ResourceSink {
 	public resource: ResourceConstant;
 	public objectId: Id<AnyStoreStructure>;
 	public roomName = "";
+	/**
+	 * The amount of the resource that this sink needs.
+	 */
+	public amount: number;
 
-	public constructor(args = null) {
-		this.resource = "";
-		this.objectId = "";
-		this.roomName = "";
-		this.amount = 0; // The amount of the resource that this sink needs.
-		if (args) {
-			Object.assign(this, args);
-		}
+	public constructor(resource: ResourceConstant, objectId: Id<AnyStoreStructure>, roomName: string, amount: number) {
+		this.resource = resource;
+		this.objectId = objectId;
+		this.roomName = roomName;
+		this.amount = amount;
 	}
 
 	public get object(): AnyStoreStructure | null {
@@ -26,13 +27,14 @@ export class ResourceSource {
 	public objectId: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
 	public roomName = "";
 
-	public constructor(args = null) {
-		this.resource = "";
-		this.objectId = "";
-		this.roomName = "";
-		if (args) {
-			Object.assign(this, args);
-		}
+	public constructor(
+		resource: ResourceConstant,
+		objectId: Id<AnyStoreStructure | Tombstone | Ruin | Resource>,
+		roomName: string
+	) {
+		this.resource = resource;
+		this.objectId = objectId;
+		this.roomName = roomName;
 	}
 
 	public get object(): AnyStoreStructure | Tombstone | Ruin | Resource | null {
@@ -56,113 +58,6 @@ export class ResourceSource {
 			amount = Math.max(this.object.store.getUsedCapacity(this.resource) - Memory.factoryEnergyTarget, 0);
 		}
 		return amount;
-	}
-}
-
-/** @deprecated: dead code? */
-class DeliveryTask {
-	constructor(source, sink) {
-		// validate
-		if (source.resource !== sink.resource) {
-			throw new Error(`Source ${source.object} and sink ${sink.object} resources do not match`);
-		}
-		if (source.objectId === sink.objectId) {
-			throw new Error(`Source object can't be the same as sink object ${source.object}`);
-		}
-		// if (source.amount === 0) {
-		// 	throw new Error(`Source ${source.object} has ${source.resource} amount === 0`);
-		// }
-		// if (sink.amount === 0) {
-		// 	throw new Error(`Sink ${sink.object} has ${sink.resource} amount === 0`);
-		// }
-
-		this.id = `${Game.shard.name}_${source.resource}_${source.objectId}${sink.objectId}`;
-		this.source = source;
-		this.sink = sink;
-	}
-
-	get resource() {
-		return this.sink.resource;
-	}
-
-	get amount() {
-		return Math.min(this.source.amount, this.sink.amount);
-	}
-
-	get isComplete() {
-		return this.sink.amount <= 0;
-	}
-
-	/**
-	 * Register that a specified amount of resource was delivered to the destination.
-	 * @param {Number} amountDelivered The amount of the resource that was delivered
-	 */
-	registerDelivery(amountDelivered) {
-		this.sink.amount -= amountDelivered;
-	}
-
-	/**
-	 * Returns whether or not this DeliveryTask is equivalent to another given DeliveryTask.
-	 * @param {DeliveryTask} other The task to compare to.
-	 * @returns {Boolean} True if equivalent, otherwise false.
-	 */
-	isEqualTo(other) {
-		return (
-			this.resource === other.resource &&
-			this.sink.objectId === other.sink.objectId &&
-			this.source.objectId === other.sink.objectId
-		);
-	}
-
-	serialize() {
-		return {
-			id: this.id,
-			source: this.source,
-			sink: this.sink,
-		};
-	}
-
-	visualize() {
-		if (!this.source) {
-			console.log("ERR: Delivery task has no source");
-			return;
-		}
-		if (!this.sink) {
-			console.log("ERR: Delivery task has no sink");
-			return;
-		}
-
-		const lineStyle = {
-			color: "#ff0",
-			opacity: 0.7,
-			lineStyle: "dotted",
-			width: Math.max(Math.min(0.05 * 0.001 * this.amount, 0.4), 0.02),
-		};
-		if (this.source.object.pos.roomName === this.sink.object.pos.roomName) {
-			new RoomVisual(this.source.object.pos.roomName).line(
-				this.source.object.pos,
-				this.sink.object.pos,
-				lineStyle
-			);
-		} else {
-			new RoomVisual(this.source.object.pos.roomName).circle(this.source.object.pos, {
-				fill: "#0af",
-				stroke: "#0af",
-				radius: 0.4,
-				opacity: 0.7,
-				lineStyle: "dotted",
-			});
-			new RoomVisual(this.sink.object.pos.roomName).circle(this.sink.object.pos, {
-				fill: "#fa0",
-				stroke: "#fa0",
-				radius: 0.4,
-				opacity: 0.7,
-				lineStyle: "dotted",
-			});
-			const mapLineStyle = lineStyle;
-			mapLineStyle.width *= 100;
-			Game.map.visual.line(this.source.object.pos, this.sink.object.pos, mapLineStyle);
-		}
 	}
 }
 
@@ -190,11 +85,7 @@ function collectAllResourceSources() {
 				},
 			});
 			for (const drop of dropped) {
-				const source = new ResourceSource({
-					resource: drop.resourceType,
-					objectId: drop.id,
-					roomName: drop.pos.roomName,
-				});
+				const source = new ResourceSource(drop.resourceType, drop.id, drop.pos.roomName);
 				if (source.amount <= 0) {
 					continue;
 				}
@@ -212,11 +103,7 @@ function collectAllResourceSources() {
 			});
 			for (const tombstone of tombstones) {
 				for (const resource in tombstone.store) {
-					const source = new ResourceSource({
-						resource,
-						objectId: tombstone.id,
-						roomName: tombstone.pos.roomName,
-					});
+					const source = new ResourceSource(resource, tombstone.id, tombstone.pos.roomName);
 					if (source.amount <= 0) {
 						continue;
 					}
@@ -243,11 +130,7 @@ function collectAllResourceSources() {
 				if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
 					continue;
 				}
-				const source = new ResourceSource({
-					resource,
-					objectId: struct.id,
-					roomName: struct.pos.roomName,
-				});
+				const source = new ResourceSource(resource, struct.id, struct.pos.roomName);
 				if (source.amount <= 0) {
 					continue;
 				}
@@ -255,29 +138,6 @@ function collectAllResourceSources() {
 			}
 		}
 	}
-
-	// add remote mining sources
-	// WARN: this code is effectively useless because there's nothing wrong with the carriers and remote mining can have multiple carriers now, it should probably be removed
-	// for (let miningTarget of Memory.remoteMining.targets) {
-	// 	let harvestPos = new RoomPosition(miningTarget.harvestPos.x, miningTarget.harvestPos.y, miningTarget.roomName);
-	// 	if (!Game.rooms[miningTarget.roomName]) {
-	// 		// No visibility
-	// 		continue;
-	// 	}
-	// 	let lookResult = harvestPos.lookFor(LOOK_RESOURCES);
-	// 	if (lookResult.length === 0) {
-	// 		continue;
-	// 	}
-	// 	let source = new ResourceSource({
-	// 		resource: lookResult[0].resourceType,
-	// 		objectId: lookResult[0].id,
-	// 		roomName: miningTarget.roomName,
-	// 	});
-	// 	if (source.amount <= 0) {
-	// 		continue;
-	// 	}
-	// 	sources.push(source);
-	// }
 
 	sourcesCache = sources;
 
@@ -307,6 +167,10 @@ function collectAllResourceSinks() {
 
 		const flagNameSplit = flag.name.split(":");
 		const resource = flagNameSplit[1];
+		if (!isValidResource(resource)) {
+			console.log(`WARN: fill flag ${flag.name} has invalid resource ${resource}`);
+			continue;
+		}
 		const amount =
 			flagNameSplit.length > 2
 				? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource))
@@ -316,12 +180,7 @@ function collectAllResourceSinks() {
 			continue;
 		}
 
-		const sink = new ResourceSink({
-			resource,
-			objectId: struct.id,
-			amount,
-			roomName: struct.pos.roomName,
-		});
+		const sink = new ResourceSink(resource, struct.id, struct.pos.roomName, amount);
 		sinks.push(sink);
 	}
 
@@ -330,7 +189,7 @@ function collectAllResourceSinks() {
 	const resources = [RESOURCE_ENERGY, RESOURCE_POWER, RESOURCE_GHODIUM];
 	for (const resource of resources) {
 		for (const room of rooms) {
-			const sinkStructures = room.find(FIND_STRUCTURES, {
+			const sinkStructures: AnyStoreStructure[] = room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
 						return (
@@ -353,7 +212,7 @@ function collectAllResourceSinks() {
 				if (resource === RESOURCE_POWER && struct.structureType !== STRUCTURE_POWER_SPAWN) {
 					continue;
 				}
-				let amount = struct.store.getFreeCapacity(resource);
+				let amount = struct.store.getFreeCapacity(resource) ?? 0;
 
 				if (struct.structureType === STRUCTURE_TERMINAL) {
 					amount = Math.min(
@@ -371,12 +230,7 @@ function collectAllResourceSinks() {
 					continue;
 				}
 
-				const sink = new ResourceSink({
-					resource,
-					objectId: struct.id,
-					amount,
-					roomName: struct.pos.roomName,
-				});
+				const sink = new ResourceSink(resource, struct.id, struct.pos.roomName, amount);
 				sinks.push(sink);
 			}
 		}
@@ -394,196 +248,6 @@ const brainLogistics = {
 		// invalidate cache
 		sourcesCache = [];
 		sinksCache = [];
-	},
-
-	old_buildDeliveryTasks(sinks, sources) {
-		const tasks = [];
-
-		for (const sink of sinks) {
-			const sinkStruct = Game.getObjectById(sink.objectId);
-
-			// Try to source from the closest target, ideally in the same room
-			let possibleSources = _.filter(sources, source => {
-				return source.resource === sink.resource && source.objectId !== sink.objectId;
-			});
-			if (possibleSources.length <= 0) {
-				continue;
-			}
-			possibleSources = _.sortBy(possibleSources, source => {
-				const sourceStruct = Game.getObjectById(source.objectId);
-				if (sinkStruct.pos.roomName === sourceStruct.pos.roomName) {
-					return sinkStruct.pos.getRangeTo(sourceStruct.pos);
-				} else {
-					return 50 * Game.map.getRoomLinearDistance(sinkStruct.pos.roomName, sourceStruct.pos.roomName);
-				}
-			});
-
-			// TODO: use links to improve efficiency
-
-			// Split delivery tasks where the source and sink are in different rooms and there are available terminals.
-			const source = possibleSources[0];
-			if (source.roomName !== sink.roomName && source.object.room.terminal && sink.object.room.terminal) {
-				const resource = sink.resource;
-
-				if (source.object.structureType !== STRUCTURE_TERMINAL) {
-					tasks.push(
-						new DeliveryTask(
-							source,
-							new ResourceSink({
-								resource,
-								objectId: source.object.room.terminal.id,
-								roomName: source.roomName,
-								amount: sink.amount,
-							})
-						)
-					);
-				}
-
-				tasks.push(
-					new DeliveryTask(
-						new ResourceSource({
-							resource,
-							objectId: source.object.room.terminal.id,
-							roomName: source.roomName,
-						}),
-						new ResourceSink({
-							resource,
-							objectId: sink.object.room.terminal.id,
-							roomName: sink.roomName,
-							amount: sink.amount,
-						})
-					)
-				);
-
-				if (sink.object.structureType !== STRUCTURE_TERMINAL) {
-					tasks.push(
-						new DeliveryTask(
-							new ResourceSource({
-								resource,
-								objectId: sink.object.room.terminal.id,
-								roomName: sink.roomName,
-							}),
-							sink
-						)
-					);
-				}
-			} else {
-				const task = new DeliveryTask(source, sink);
-				tasks.push(task);
-			}
-		}
-
-		return tasks;
-	},
-
-	visualizeTasks(tasks) {
-		for (const task of tasks) {
-			task.visualize();
-		}
-	},
-
-	/**
-	 * Tell the specified creep what delivery task to fulfil.
-	 * @param {Creep} creep The creep to give a task to.
-	 */
-	allocateCreep(creep: Creep) {
-		let availableTasks = _.filter(this.tasks, task => {
-			if (task.isComplete) {
-				return false;
-			}
-
-			if (task.amount <= 20) {
-				return false;
-			}
-
-			const alreadyAssignedCreeps = _.filter(
-				[].concat(util.getCreeps("manager"), util.getCreeps("scientist"), util.getCreeps("testlogistics")),
-				creep => creep.memory.deliveryTaskId === task.id
-			);
-			if (alreadyAssignedCreeps.length > 0) {
-				if (task.amount <= alreadyAssignedCreeps[0].store.getCapacity() || alreadyAssignedCreeps.length >= 2) {
-					return false;
-				}
-			}
-
-			// keep managers in their rooms
-			if (
-				creep.memory.role === "manager" &&
-				(creep.memory.targetRoom !== task.source.roomName || creep.memory.targetRoom !== task.sink.roomName)
-			) {
-				return false;
-			}
-
-			// don't have creeps transfer stuff from terminal to terminal
-			if ((task.source.object.structureType === task.sink.object.structureType) === STRUCTURE_TERMINAL) {
-				return false;
-			}
-
-			return true;
-		});
-		if (availableTasks.length === 0) {
-			return null;
-		}
-
-		availableTasks = _.sortByOrder(
-			availableTasks,
-			[
-				task =>
-					(creep.memory.role === "manager" && task.resource === RESOURCE_ENERGY) ||
-					(creep.memory.role === "scientist" && task.resource !== RESOURCE_ENERGY),
-				task => {
-					// sort by sink structure priority
-					switch (task.sink.object.structureType) {
-						case STRUCTURE_EXTENSION:
-							return 1;
-						case STRUCTURE_SPAWN:
-							return 1;
-						case STRUCTURE_TOWER:
-							return 2;
-						case STRUCTURE_POWER_SPAWN:
-							return 4;
-						case STRUCTURE_LAB:
-							return 5;
-						case STRUCTURE_FACTORY:
-							return 5;
-						case STRUCTURE_NUKER:
-							return 6;
-						case STRUCTURE_CONTAINER:
-							return 9;
-						case STRUCTURE_STORAGE:
-							return 9;
-						case STRUCTURE_TERMINAL:
-							return 9;
-						default:
-							return 8;
-					}
-				},
-				task => {
-					return task.source.object.pos.getRangeTo(task.sink.object);
-				},
-				"amount",
-			],
-			["desc", "asc", "asc", "asc"]
-		);
-
-		creep.memory.deliveryTaskId = availableTasks[0].id;
-		return availableTasks[0].id;
-	},
-
-	old_fulfillTerminalTransfers() {
-		const terminalTransferTasks = _.filter(
-			this.tasks,
-			task => (task.source.object.structureType === task.sink.object.structureType) === STRUCTURE_TERMINAL
-		);
-		for (const task of terminalTransferTasks) {
-			if (task.source.object.cooldown > 0) {
-				continue;
-			}
-			const result = task.source.object.send(task.resource, task.amount, task.sink.roomName);
-			if (result !== OK) {
-				console.log(`Failed to fulfil ${task.id} with terminals: ${result}`);
-			}
-		}
 	},
 
 	/**

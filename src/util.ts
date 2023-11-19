@@ -12,6 +12,10 @@ export function isStoreStructure(struct: AnyStructure): struct is AnyStoreStruct
 	return struct instanceof Structure && "store" in struct;
 }
 
+export function isValidResource(resource: string): resource is ResourceConstant {
+	return RESOURCES_ALL.includes(resource as ResourceConstant);
+}
+
 export const util = {
 	isOwnedStructure,
 	isStoreStructure,

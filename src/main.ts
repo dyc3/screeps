@@ -112,8 +112,6 @@ import roleScientist from "roles/role.scientist";
 // @ts-expect-error hasn't been converted yet
 import roleRelay from "roles/role.relay.js";
 import roleTmpDeliver from "roles/role.tmpdeliver";
-// @ts-expect-error hasn't been converted yet
-import roleTestLogistics from "roles/role.testlogistics";
 
 import roleTower from "roles/role.tower";
 // @ts-expect-error hasn't been converted yet
@@ -1544,11 +1542,7 @@ function main() {
 					roleClaimer.run(creep);
 					break;
 				case "manager":
-					if (Memory.USE_ADV_LOGISTICS) {
-						roleTestLogistics.run(creep);
-					} else {
-						roleManager.run(creep);
-					}
+					roleManager.run(creep);
 					break;
 				case "remoteharvester":
 					roleRemoteHarvester.run(creep);
@@ -1560,11 +1554,7 @@ function main() {
 					roleMiner.run(creep);
 					break;
 				case "scientist":
-					if (Memory.USE_ADV_LOGISTICS) {
-						roleTestLogistics.run(creep);
-					} else {
-						roleScientist.run(creep);
-					}
+					roleScientist.run(creep);
 					break;
 				case "relay":
 					roleRelay.run(creep);
@@ -1574,9 +1564,6 @@ function main() {
 					break;
 				case "invaderdestroyer":
 					require("./roles/role.invaderdestroyer.js").run(creep);
-					break;
-				case "testlogistics":
-					roleTestLogistics.run(creep);
 					break;
 				case Role.Scout:
 					new Scout(creep).run();
