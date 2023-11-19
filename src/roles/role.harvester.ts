@@ -488,13 +488,28 @@ const roleHarvester = {
 			}
 		}
 
+		// The amount of energy that will drop on the ground if the creep harvests and it becomes full
+		const harvestOverflow = Math.max(
+			HARVEST_POWER * creep.getActiveBodyparts(WORK) - creep.store.getFreeCapacity(),
+			0
+		);
+
 		if (!creep.memory.harvesting && creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 			creep.memory.harvesting = true;
 			creep.say("harvesting");
 		}
-		if (creep.memory.harvesting && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-			creep.memory.harvesting = false;
-			creep.say("transport");
+		if (creep.memory.harvesting) {
+			// this special case helps prevent wasting energy from decay
+			if (
+				creep.memory.depositMode === "link" &&
+				creep.store.getFreeCapacity(RESOURCE_ENERGY) <= harvestOverflow
+			) {
+				creep.memory.harvesting = false;
+				creep.say("transport");
+			} else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+				creep.memory.harvesting = false;
+				creep.say("transport");
+			}
 		}
 
 		if (creep.memory.harvesting) {
