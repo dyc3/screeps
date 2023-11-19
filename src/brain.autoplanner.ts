@@ -290,12 +290,17 @@ const brainAutoPlanner = {
 			const tmpIsPlanned = (pos: RoomPosition) => this.getPlansAtPosition(pos);
 			const pathToControllerResult = PathFinder.search(
 				room.controller.pos,
-				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: global.CONTROLLER_UPGRADE_RANGE },
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				{ pos: room.getPositionAt(rootPos.x, rootPos.y)!, range: global.CONTROLLER_UPGRADE_RANGE },
 				{
 					maxRooms: 1,
 					roomCallback(roomName) {
 						const costMatrix = new PathFinder.CostMatrix();
 						const room = new Room(roomName);
+						if (!rootPos) {
+							console.log("WARN: no root position found");
+							return false;
+						}
 
 						for (let y = 0; y < 50; y++) {
 							for (let x = 0; x < 50; x++) {
@@ -307,7 +312,8 @@ const brainAutoPlanner = {
 									}
 								}
 
-								const pos = room.getPositionAt(x, y);
+								// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+								const pos = room.getPositionAt(x, y)!;
 								// console.log("DEBUG: ", pos);
 								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
