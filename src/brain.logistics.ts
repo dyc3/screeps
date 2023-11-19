@@ -1,5 +1,5 @@
 import brainAutoPlanner from "./brain.autoplanner.js";
-import util, { isValidResource } from "./util";
+import util, { isStoreStructure, isValidResource } from "./util";
 
 export class ResourceSink {
 	public resource: ResourceConstant;
@@ -48,8 +48,8 @@ export class ResourceSource {
 		if (this.object instanceof Resource) {
 			return this.object.amount;
 		}
-		let amount = this.object.store.getUsedCapacity(this.resource);
-		if (this.object instanceof Tombstone) {
+		let amount = this.object.store.getUsedCapacity(this.resource) ?? 0;
+		if (this.object instanceof Tombstone || this.object instanceof Ruin) {
 			return amount;
 		}
 		if (this.object.structureType === STRUCTURE_TERMINAL && this.resource === RESOURCE_ENERGY) {
@@ -103,7 +103,11 @@ function collectAllResourceSources() {
 			});
 			for (const tombstone of tombstones) {
 				for (const resource in tombstone.store) {
-					const source = new ResourceSource(resource, tombstone.id, tombstone.pos.roomName);
+					const source = new ResourceSource(
+						resource as ResourceConstant,
+						tombstone.id,
+						tombstone.pos.roomName
+					);
 					if (source.amount <= 0) {
 						continue;
 					}
@@ -112,15 +116,19 @@ function collectAllResourceSources() {
 			}
 		}
 
-		const sourceStructures = room.find(FIND_STRUCTURES, {
+		const sourceStructures: AnyStoreStructure[] = room.find(FIND_STRUCTURES, {
 			filter: struct => {
 				if (struct.structureType === STRUCTURE_CONTAINER) {
-					return struct.pos.getRangeTo(struct.room.controller) > CONTROLLER_UPGRADE_RANGE;
+					return (
+						!struct.room.controller ||
+						struct.pos.getRangeTo(struct.room.controller) > global.CONTROLLER_UPGRADE_RANGE
+					);
 				}
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				return (
-					[STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB].includes(
-						struct.structureType
-					) && struct.store
+					(
+						[STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY, STRUCTURE_LAB] as StructureConstant[]
+					).includes(struct.structureType) && isStoreStructure(struct)
 				);
 			},
 		});
@@ -130,7 +138,7 @@ function collectAllResourceSources() {
 				if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
 					continue;
 				}
-				const source = new ResourceSource(resource, struct.id, struct.pos.roomName);
+				const source = new ResourceSource(resource as ResourceConstant, struct.id, struct.pos.roomName);
 				if (source.amount <= 0) {
 					continue;
 				}
@@ -159,9 +167,15 @@ function collectAllResourceSinks() {
 
 		const flag = Game.flags[flagName];
 
-		const struct = flag.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType !== STRUCTURE_ROAD)[0];
+		const struct = flag.pos
+			.lookFor(LOOK_STRUCTURES)
+			.filter(s => s.structureType !== STRUCTURE_ROAD)[0] as AnyStructure;
 		if (!struct) {
 			console.log("WARN: fill flag does not have structure");
+			continue;
+		}
+		if (!isStoreStructure(struct)) {
+			console.log(`WARN: fill flag ${flag.name} has invalid structure ${struct.structureType}`);
 			continue;
 		}
 
@@ -173,8 +187,8 @@ function collectAllResourceSinks() {
 		}
 		const amount =
 			flagNameSplit.length > 2
-				? Math.min(parseInt(flagNameSplit[2]), struct.store.getFreeCapacity(resource))
-				: struct.store.getFreeCapacity(resource);
+				? Math.min(parseInt(flagNameSplit[2], 10), struct.store.getFreeCapacity(resource) ?? 0)
+				: struct.store.getFreeCapacity(resource) ?? 0;
 
 		if (amount === 0) {
 			continue;
@@ -193,15 +207,19 @@ function collectAllResourceSinks() {
 				filter: struct => {
 					if (struct.structureType === STRUCTURE_CONTAINER) {
 						return (
-							struct.pos.getRangeTo(struct.room.controller) <= CONTROLLER_UPGRADE_RANGE ||
+							(struct.room.controller &&
+								struct.pos.getRangeTo(struct.room.controller) <= global.CONTROLLER_UPGRADE_RANGE) ||
 							brainAutoPlanner.isInRootModule(struct)
 						);
 					}
 					// FIXME: what happens when there are no relay creeps? what happens when the root module doesn't have a link?
-					if (brainAutoPlanner.isInRootModule(struct) && struct.room.controller.level >= 5) {
+					if (brainAutoPlanner.isInRootModule(struct) && (struct.room.controller?.level ?? 0) >= 5) {
 						return false;
 					}
-					return ![STRUCTURE_ROAD, STRUCTURE_LINK].includes(struct.structureType) && struct.store;
+					return (
+						!([STRUCTURE_ROAD, STRUCTURE_LINK] as StructureConstant[]).includes(struct.structureType) &&
+						isStoreStructure(struct)
+					);
 				},
 			});
 
@@ -242,9 +260,11 @@ function collectAllResourceSinks() {
 const brainLogistics = {
 	tasks: [],
 
-	init() {},
+	init(): void {
+		console.log("brainLogistics init");
+	},
 
-	finalize() {
+	finalize(): void {
 		// invalidate cache
 		sourcesCache = [];
 		sinksCache = [];

@@ -5,7 +5,7 @@ export function calcEffectiveness(
 	creep: Creep | BodyPartDefinition[],
 	part: BodyPartConstant,
 	action?: "attack" | "rangedAttack" | "heal" | "rangedHeal"
-) {
+): number {
 	const body: BodyPartDefinition[] = creep instanceof Creep ? creep.body : creep;
 	// const boosts = _.groupBy(
 	// 	body.filter(p => p.type === part),
@@ -28,11 +28,11 @@ export function calcEffectiveness(
 			} else if (action === "rangedHeal") {
 				base = RANGED_HEAL_POWER;
 			} else {
-				throw new Error("Invalid action: " + action);
+				throw new Error(`Invalid action: ${action}`);
 			}
 			break;
 		default:
-			throw new Error("Unsupported part: " + part);
+			throw new Error(`Unsupported part: ${part}`);
 	}
 	let sum = 0;
 	for (const bodypart of body) {
@@ -47,10 +47,10 @@ export function calcEffectiveness(
 			if (Object.keys(BOOSTS).includes(bodypart.type)) {
 				const boosts = BOOSTS[bodypart.type];
 				if (Object.keys(boosts).includes(bodypart.boost as string)) {
-					// @ts-ignore idk what the problem is, this should work
-					const actions = boosts[bodypart.boost];
+					// @ts-expect-error this is valid
+					const actions = boosts[bodypart.boost] as { [action: string]: number };
 					if (Object.keys(actions).includes(action)) {
-						multiplier = actions[action];
+						multiplier = actions[action] ?? 1;
 					}
 				}
 			}
@@ -67,7 +67,7 @@ export function calcEffectiveness(
  * Gets the damage multiplier for tower damage
  * @example let damage = TOWER_POWER_ATTACK * util.towerImpactFactor(10)
  */
-export function towerImpactFactor(distance: number) {
+export function towerImpactFactor(distance: number): number {
 	if (distance <= TOWER_OPTIMAL_RANGE) {
 		return 1;
 	}

@@ -5,6 +5,24 @@ interface Pos {
 	y: number;
 }
 
+const ALL_BUILDABLE_STRUCTURES: BuildableStructureConstant[] = [
+	STRUCTURE_SPAWN,
+	STRUCTURE_EXTENSION,
+	STRUCTURE_ROAD,
+	STRUCTURE_WALL,
+	STRUCTURE_RAMPART,
+	STRUCTURE_LINK,
+	STRUCTURE_TOWER,
+	STRUCTURE_LAB,
+	STRUCTURE_CONTAINER,
+	STRUCTURE_OBSERVER,
+	STRUCTURE_POWER_SPAWN,
+	STRUCTURE_EXTRACTOR,
+	STRUCTURE_NUKER,
+	STRUCTURE_FACTORY,
+	STRUCTURE_TERMINAL,
+];
+
 /**
  * this function is also used for finding the best storage module position
  * the best root position is one that is equidistant to the sources and the controller
@@ -129,8 +147,7 @@ const brainAutoPlanner = {
 			Memory.rooms[room.name] = {};
 		}
 		room.memory.structures = {};
-		for (const s in CONSTRUCTION_COST) {
-			// HACK: using CONSTRUCTION_COST to get all the structure names because there is to STRUCTURES_ALL
+		for (const s of ALL_BUILDABLE_STRUCTURES) {
 			room.memory.structures[s] = [];
 		}
 
@@ -353,6 +370,10 @@ const brainAutoPlanner = {
 	 * @example require("brain.autoplanner").planHarvestPositions(Game.rooms["W17N11"]);
 	 */
 	planHarvestPositions(room: Room): boolean {
+		if (!room.memory.rootPos) {
+			console.log("WARN: no root position found");
+			return false;
+		}
 		room.memory.harvestPositions = {};
 		const sources = room.find(FIND_SOURCES);
 
@@ -372,16 +393,16 @@ const brainAutoPlanner = {
 
 					if (look.type === LOOK_STRUCTURES) {
 						if (
-							look.structure.structureType !== STRUCTURE_ROAD &&
-							look.structure.structureType !== STRUCTURE_CONTAINER &&
-							look.structure.structureType !== STRUCTURE_RAMPART
+							look.structure?.structureType !== STRUCTURE_ROAD &&
+							look.structure?.structureType !== STRUCTURE_CONTAINER &&
+							look.structure?.structureType !== STRUCTURE_RAMPART
 						) {
 							return false;
 						}
 					}
 				}
 				const planned = brainAutoPlanner.getPlansAtPosition(pos);
-				return !planned || [STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(planned);
+				return !planned || ([STRUCTURE_ROAD, STRUCTURE_CONTAINER] as StructureConstant[]).includes(planned);
 			});
 			adjacent = _.sortByOrder(
 				adjacent,
@@ -497,13 +518,13 @@ const brainAutoPlanner = {
 	 * @param {RoomPosition} pos
 	 * @returns {String}
 	 */
-	getPlansAtPosition(pos: RoomPosition): string | false {
+	getPlansAtPosition(pos: RoomPosition): BuildableStructureConstant | false {
 		const memory = Memory.rooms[pos.roomName];
 		if (!memory.structures) {
 			return false;
 		}
 		// iterate through all structure names
-		for (const struct in CONSTRUCTION_COST) {
+		for (const struct of ALL_BUILDABLE_STRUCTURES) {
 			if (!(struct in memory.structures)) {
 				continue;
 			}
@@ -517,7 +538,7 @@ const brainAutoPlanner = {
 	},
 
 	drawRoomPlans(room: Room): void {
-		for (const struct in CONSTRUCTION_COST) {
+		for (const struct of ALL_BUILDABLE_STRUCTURES) {
 			// iterate through all structure names
 			if (!(struct in room.memory.structures)) {
 				continue;
@@ -538,9 +559,9 @@ const brainAutoPlanner = {
 	},
 
 	applyRoomPlans(room: Room): void {
-		for (const struct in CONSTRUCTION_COST) {
+		for (const struct of ALL_BUILDABLE_STRUCTURES) {
 			// iterate through all structure names
-			const maxStructs = CONTROLLER_STRUCTURES[struct];
+			const maxStructs = CONTROLLER_STRUCTURES[struct][room.controller?.level ?? 0];
 			let structCount = 0;
 			if (!(struct in room.memory.structures)) {
 				console.log("[WARN] no plans for", struct, "structures found");
@@ -588,7 +609,7 @@ const brainAutoPlanner = {
 	removePlansAtPosition(pos: RoomPosition, struct: BuildableStructureConstant | undefined = undefined): string {
 		const room = new Room(pos.roomName);
 		let count = 0;
-		for (const structure in CONSTRUCTION_COST) {
+		for (const structure of ALL_BUILDABLE_STRUCTURES) {
 			// iterate through all structure names
 			if (!(structure in room.memory.structures)) {
 				continue;
@@ -598,7 +619,8 @@ const brainAutoPlanner = {
 			}
 			for (let p = 0; p < room.memory.structures[structure].length; p++) {
 				const checkPos = room.memory.structures[structure][p];
-				if (room.getPositionAt(checkPos.x, checkPos.y).isEqualTo(pos)) {
+				const check = room.getPositionAt(checkPos.x, checkPos.y);
+				if (check && check.isEqualTo(pos)) {
 					room.memory.structures[structure].splice(p, 1);
 					count++;
 				}
