@@ -287,7 +287,7 @@ const brainAutoPlanner = {
 			room.memory.storagePos = storagePos;
 
 			// TODO: plan path from root to controller
-			const tmpIsPlanned = this.getPlansAtPosition;
+			const tmpIsPlanned = (pos: RoomPosition) => this.getPlansAtPosition(pos);
 			const pathToControllerResult = PathFinder.search(
 				room.controller.pos,
 				{ pos: room.getPositionAt(rootPos.x, rootPos.y), range: global.CONTROLLER_UPGRADE_RANGE },
@@ -437,9 +437,9 @@ const brainAutoPlanner = {
 				console.log("WARN: no root position found");
 				return false;
 			}
-			const tmpIsPlanned = this.getPlansAtPosition;
+			const tmpIsPlanned = (pos: RoomPosition) => this.getPlansAtPosition(pos);
 			const pathingResult = PathFinder.search(
-				room.getPositionAt(rootPos.x, rootPos.y),
+				rootPos,
 				{ pos: harvestPos, range: 1 },
 				{
 					maxRooms: 1,
@@ -460,7 +460,8 @@ const brainAutoPlanner = {
 									continue;
 								}
 
-								const pos = room.getPositionAt(x, y);
+								// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+								const pos = room.getPositionAt(x, y)!;
 								// console.log("DEBUG: ", pos);
 								const isPlanned = tmpIsPlanned(pos);
 								if (isPlanned) {
@@ -631,296 +632,321 @@ const brainAutoPlanner = {
 	},
 
 	// var brainAutoPlanner = require('brain.autoplanner'); brainAutoPlanner.planWalls(Game.rooms["ROOM"], true)
+	/** FIXME: temporarily disabled because it has a lot of linting errors */
 	planWalls(room: Room, debug = true): void {
-		// these are used for saving positions later
-		const walls = [];
-		const ramparts = [];
-
-		let wallPoints = [];
-		for (let numSide = 0; numSide < 4; numSide++) {
-			// if (numSide !== 1) continue
-
-			const ySide = numSide % 2 === 0 ? 0 : 49;
-			const vertical = numSide >= 2;
-			// output should be:
-			// numSide: 0 - ySide = 0  vertical = false
-			// numSide: 1 - ySide = 49  vertical = false
-			// numSide: 2 - ySide = 0  vertical = true
-			// numSide: 3 - ySide = 49  vertical = true
-			// console.log("numSide:", numSide, "- ySide =", ySide, " vertical =", vertical);
-			let _startExit_x = -1;
-			let _endExit_x = -1;
-			for (let x = 0; x < 50; x++) {
-				const testpos = !vertical
-					? new RoomPosition(x, ySide, room.name)
-					: new RoomPosition(ySide, x, room.name);
-				// console.log(testpos);
-				if (_startExit_x < 0 && util.getTerrainAt(testpos) === "plain") {
-					_startExit_x = x - 2;
-				}
-				if (_startExit_x >= 0 && _endExit_x < _startExit_x && util.getTerrainAt(testpos) === "wall") {
-					_endExit_x = x + 1;
-				}
-
-				if (_startExit_x >= 0 && _endExit_x > _startExit_x) {
-					const forbiddenPos = [];
-
-					// figure out where the wall should NOT go
-					var costs = new PathFinder.CostMatrix();
-					for (let rY = 0; rY < 50; rY++) {
-						for (let rX = 0; rX < 50; rX++) {
-							if (
-								_startExit_x < rX &&
-								rX < _endExit_x &&
-								(ySide === 0 ? 0 <= rY && rY <= 1 : 48 <= rY && rY <= 49)
-							) {
-								!vertical ? costs.set(rX, rY, Infinity) : costs.set(rY, rX, Infinity);
-								!vertical ? forbiddenPos.push([rX, rY]) : forbiddenPos.push([rY, rX]);
-								if (debug)
-									!vertical
-										? room.visual.circle(rX, rY, {
-												fill: "#ff0000",
-												radius: 0.3,
-												stroke: "#ff0000",
-										  })
-										: room.visual.circle(rY, rX, {
-												fill: "#ff0000",
-												radius: 0.3,
-												stroke: "#ff0000",
-										  });
-								continue;
-							} else if ((rX === _startExit_x || rX === _endExit_x) && rY === ySide) {
-								!vertical ? costs.set(rX, rY, 1) : costs.set(rY, rX, 1);
-								// if (numSide === 1) room.visual.circle(rX, rY, {fill: '#88cc44', radius: 0.4, stroke: '#8844cc'})
-								continue;
-							} else {
-								let costMultiplier = Math.abs(ySide - rY);
-								if (costMultiplier === 0) {
-									costMultiplier = 1;
-								}
-								// var costMultiplier = Math.abs(ySide - (rY/2))
-								// if (costMultiplier < 1) costMultiplier = 1
-
-								const rPos = !vertical
-									? new RoomPosition(rX, rY, room.name)
-									: new RoomPosition(rY, rX, room.name);
-								let cost = 1;
-								switch (util.getTerrainAt(rPos)) {
-									case "wall":
-										cost = 1 * costMultiplier;
-										!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
-										break;
-									default:
-										if (
-											util.getStructuresAt(rPos).some(function (struct) {
-												return (
-													struct.structureType === STRUCTURE_WALL ||
-													struct.structureType === STRUCTURE_RAMPART
-												);
-											})
-										) {
-											cost = 1;
-											!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
-											if ((!vertical ? rX : rY) < 9) {
-												const structAtPos = util.getStructuresAt(rPos);
-												if (structAtPos[0].structureType === STRUCTURE_WALL) {
-													walls.push(!vertical ? [rX, rY] : [rY, rX]);
-												} else if (structAtPos[0].structureType === STRUCTURE_RAMPART) {
-													ramparts.push(!vertical ? [rX, rY] : [rY, rX]);
-												}
-											}
-										} else {
-											cost = 4 * costMultiplier;
-											!vertical ? costs.set(rX, rY, cost) : costs.set(rY, rX, cost);
-										}
-								}
-								// if (numSide === 1 && cost < 20) room.visual.circle(rX, rY, {fill: '#8844cc', radius: (cost/30), stroke: '#8844cc'})
-							}
-						}
-					}
-					// console.log("forbidden pos:", forbiddenPos.length);
-
-					// figure out where the wall SHOULD go
-					const wallStartPos = !vertical
-						? new RoomPosition(_startExit_x, Math.abs(ySide - (_startExit_x === 0 ? 1 : 0)), room.name)
-						: new RoomPosition(ySide, _startExit_x, room.name);
-					const wallEndPos = !vertical
-						? new RoomPosition(_endExit_x, Math.abs(ySide), room.name)
-						: new RoomPosition(ySide, _endExit_x, room.name);
-					if (debug) {
-						room.visual.circle(wallStartPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
-						room.visual.circle(wallEndPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
-					}
-					const result = PathFinder.search(
-						wallStartPos,
-						{ pos: wallEndPos, range: 1 },
-						{
-							roomCallback: roomName => {
-								return costs;
-							},
-							maxRooms: 1, // maxCost:600,
-							plainCost: 2,
-							swampCost: 2,
-						}
-					);
-					// room.visual.poly(result.path, {stroke:"#ff8800"})
-
-					for (var i = 0; i < result.path.length; i++) {
-						var pathpos = result.path[i];
-
-						// fix diagonals
-						if (i > 0) {
-							if (
-								result.path[i].x !== result.path[i - 1].x &&
-								result.path[i].y !== result.path[i - 1].y
-							) {
-								var diag1 = new RoomPosition(result.path[i].x, result.path[i - 1].y, room.name);
-								var diag2 = new RoomPosition(result.path[i - 1].x, result.path[i].y, room.name);
-								// if (debug) {
-								// 	room.visual.circle(diag1, {fill: '#ff8800', radius: 0.3, stroke: '#ff8800'})
-								// 	room.visual.circle(diag2, {fill: '#ffff00', radius: 0.5, stroke: '#ffff00'})
-								// }
-								if (
-									_.some(forbiddenPos, p => {
-										return p[0] === diag1.x && p[1] === diag1.y;
-									})
-								) {
-									wallPoints.push(diag2);
-								} else if (
-									_.some(forbiddenPos, p => {
-										return p[0] === diag2.x && p[1] === diag2.y;
-									})
-								) {
-									wallPoints.push(diag1);
-								} else {
-									const dist1 = Math.abs(ySide - (!vertical ? diag1.y : diag1.x));
-									const dist2 = Math.abs(ySide - (!vertical ? diag2.y : diag2.x));
-									// wallPoints.push(ySide === 0 ? diag1 : diag2)
-									wallPoints.push(dist1 < dist2 ? diag1 : diag2);
-								}
-							}
-						}
-						wallPoints.push(pathpos);
-					}
-
-					_startExit_x = -1;
-					_endExit_x = -1;
-				}
-			}
-		}
-		wallPoints = _.uniq(wallPoints);
-
-		if (debug) room.visual.poly(wallPoints, { lineStyle: "dotted", stroke: "#55ff77" });
-
-		const costs_mod = new PathFinder.CostMatrix();
-		for (var w = 0; w < wallPoints.length; w++) {
-			costs_mod.set(wallPoints[w].x, wallPoints[w].y, Infinity);
-		}
-		wallPoints = _.reject(wallPoints, function (pos) {
-			if (util.getTerrainAt(pos) === "wall") {
-				return true;
-			}
-			if (
-				util.getStructuresAt(pos, STRUCTURE_WALL).length > 0 ||
-				util.getStructuresAt(pos, STRUCTURE_RAMPART).length > 0
-			) {
-				return true;
-			}
-			const testPath = PathFinder.search(
-				pos,
-				{ pos: Game.rooms[room.name].controller.pos, range: 1 },
-				{
-					roomCallback(roomName) {
-						const temp = costs_mod.clone();
-						temp.set(pos.x, pos.y, 0);
-						return temp;
-					},
-					maxRooms: 1, // maxCost:800,
-				}
-			);
-			if (testPath.incomplete) {
-				return true;
-			}
-		});
-
-		// figure out where the ramparts should go
-		let rampartPoints = [];
-		const spawn = util.getSpawn(room); // TODO: target the rooms storage instead?
-		const pathsToExits = [];
-		const exits = Game.map.describeExits(room.name);
-		for (const e in exits) {
-			pathsToExits.push(spawn.pos.findPathTo(new RoomPosition(25, 25, exits[e])));
-		}
-		const rampartsEvery = 2; // place ramparts evert X places
-		const offsets = {}; // offset rampart positions by these values (key: [int] side number, value: [int] offset)
-		// for (var w = 0; w < wallPoints.length; w++) {
-		// 	var wallPoint = wallPoints[w]
-		// 	for (var p = 0; p < pathsToExits.length; p++) {
-		// 		var path = pathsToExits[p]
-		// 		for (var i = 0; i < path.length; i++) {
-		// 			var pathpos = path[i]
-		// 			if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
-		// 				// take the wallPoint out of wallPoints and put it in rampartPoints
-		// 				// .splice() removes and returns an array of values from the original array
-		// 				rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 2))
-		// 				w -= 2
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-		// }
-		for (let p = 0; p < pathsToExits.length; p++) {
-			const path = pathsToExits[p];
-			for (var i = 0; i < path.length; i++) {
-				var pathpos = path[i];
-				for (var w = 0; w < wallPoints.length; w++) {
-					var wallPoint = wallPoints[w];
-					if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
-						offsets[exits[p]] = w % rampartsEvery;
-						break;
-					}
-				}
-			}
-		}
-		const bestOffset = util.mode(_.values(offsets)); // because I'm lazy
-		console.log("bestOffset: ", bestOffset);
-		for (var w = 0; w < wallPoints.length; w++) {
-			var wallPoint = wallPoints[w];
-			if (w % rampartsEvery === bestOffset) {
-				// take the wallPoint out of wallPoints and put it in rampartPoints
-				// .splice() removes and returns an array of values from the original array
-				rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 1));
-			}
-		}
-
-		if (debug) {
-			for (var w = 0; w < wallPoints.length; w++) {
-				room.visual.circle(wallPoints[w], { fill: "#5577ff", radius: 0.3, stroke: "#5577ff" });
-			}
-			for (var r = 0; r < rampartPoints.length; r++) {
-				room.visual.circle(rampartPoints[r], { fill: "#ff44ff", radius: 0.3, stroke: "#ff44ff" });
-			}
-		}
-
-		// save points in memory so we can rebuild walls later without recalculating
-		for (var w in wallPoints) {
-			var wallPoint = wallPoints[w];
-			walls.push([wallPoint.x, wallPoint.y]);
-		}
-		Memory.rooms[room.name].walls = walls;
-		for (var r in rampartPoints) {
-			const rampartPoint = rampartPoints[r];
-			ramparts.push([rampartPoint.x, rampartPoint.y]);
-		}
-		Memory.rooms[room.name].ramparts = ramparts;
+		console.log("planWalls is disabled");
 	},
+	// planWalls(room: Room, debug = true): void {
+	// 	// these are used for saving positions later
+	// 	const walls = [];
+	// 	const ramparts = [];
+
+	// 	let wallPoints = [];
+	// 	for (let numSide = 0; numSide < 4; numSide++) {
+	// 		// if (numSide !== 1) continue
+
+	// 		const ySide = numSide % 2 === 0 ? 0 : 49;
+	// 		const vertical = numSide >= 2;
+	// 		// output should be:
+	// 		// numSide: 0 - ySide = 0  vertical = false
+	// 		// numSide: 1 - ySide = 49  vertical = false
+	// 		// numSide: 2 - ySide = 0  vertical = true
+	// 		// numSide: 3 - ySide = 49  vertical = true
+	// 		// console.log("numSide:", numSide, "- ySide =", ySide, " vertical =", vertical);
+	// 		let startExitX = -1;
+	// 		let endExitX = -1;
+	// 		for (let x = 0; x < 50; x++) {
+	// 			const testpos = !vertical
+	// 				? new RoomPosition(x, ySide, room.name)
+	// 				: new RoomPosition(ySide, x, room.name);
+	// 			// console.log(testpos);
+	// 			if (startExitX < 0 && util.getTerrainAt(testpos) === "plain") {
+	// 				startExitX = x - 2;
+	// 			}
+	// 			if (startExitX >= 0 && endExitX < startExitX && util.getTerrainAt(testpos) === "wall") {
+	// 				endExitX = x + 1;
+	// 			}
+
+	// 			if (startExitX >= 0 && endExitX > startExitX) {
+	// 				const forbiddenPos = [];
+
+	// 				// figure out where the wall should NOT go
+	// 				const costs = new PathFinder.CostMatrix();
+	// 				for (let rY = 0; rY < 50; rY++) {
+	// 					for (let rX = 0; rX < 50; rX++) {
+	// 						if (
+	// 							startExitX < rX &&
+	// 							rX < endExitX &&
+	// 							(ySide === 0 ? 0 <= rY && rY <= 1 : 48 <= rY && rY <= 49)
+	// 						) {
+	// 							if (!vertical) {
+	// 								costs.set(rX, rY, Infinity);
+	// 								forbiddenPos.push([rX, rY]);
+	// 							} else {
+	// 								costs.set(rY, rX, Infinity);
+	// 								forbiddenPos.push([rY, rX]);
+	// 							}
+	// 							if (debug)
+	// 								if (!vertical) {
+	// 									room.visual.circle(rX, rY, {
+	// 										fill: "#ff0000",
+	// 										radius: 0.3,
+	// 										stroke: "#ff0000",
+	// 									});
+	// 								} else {
+	// 									room.visual.circle(rY, rX, {
+	// 										fill: "#ff0000",
+	// 										radius: 0.3,
+	// 										stroke: "#ff0000",
+	// 									});
+	// 								}
+	// 							continue;
+	// 						} else if ((rX === startExitX || rX === endExitX) && rY === ySide) {
+	// 							if (!vertical) {
+	// 								costs.set(rX, rY, 1);
+	// 							} else {
+	// 								costs.set(rY, rX, 1);
+	// 							}
+	// 							// if (numSide === 1) room.visual.circle(rX, rY, {fill: '#88cc44', radius: 0.4, stroke: '#8844cc'})
+	// 							continue;
+	// 						} else {
+	// 							let costMultiplier = Math.abs(ySide - rY);
+	// 							if (costMultiplier === 0) {
+	// 								costMultiplier = 1;
+	// 							}
+	// 							// var costMultiplier = Math.abs(ySide - (rY/2))
+	// 							// if (costMultiplier < 1) costMultiplier = 1
+
+	// 							const rPos = !vertical
+	// 								? new RoomPosition(rX, rY, room.name)
+	// 								: new RoomPosition(rY, rX, room.name);
+	// 							let cost = 1;
+	// 							switch (util.getTerrainAt(rPos)) {
+	// 								case "wall":
+	// 									cost = 1 * costMultiplier;
+	// 									if (!vertical) {
+	// 										costs.set(rX, rY, cost);
+	// 									} else {
+	// 										costs.set(rY, rX, cost);
+	// 									}
+	// 									break;
+	// 								default:
+	// 									if (
+	// 										util.getStructuresAt(rPos).some(function (struct) {
+	// 											return (
+	// 												struct.structureType === STRUCTURE_WALL ||
+	// 												struct.structureType === STRUCTURE_RAMPART
+	// 											);
+	// 										})
+	// 									) {
+	// 										cost = 1;
+	// 										if (!vertical) {
+	// 											costs.set(rX, rY, cost);
+	// 										} else {
+	// 											costs.set(rY, rX, cost);
+	// 										}
+	// 										if ((!vertical ? rX : rY) < 9) {
+	// 											const structAtPos = util.getStructuresAt(rPos);
+	// 											if (structAtPos[0].structureType === STRUCTURE_WALL) {
+	// 												walls.push(!vertical ? [rX, rY] : [rY, rX]);
+	// 											} else if (structAtPos[0].structureType === STRUCTURE_RAMPART) {
+	// 												ramparts.push(!vertical ? [rX, rY] : [rY, rX]);
+	// 											}
+	// 										}
+	// 									} else {
+	// 										cost = 4 * costMultiplier;
+	// 										if (!vertical) {
+	// 											costs.set(rX, rY, cost);
+	// 										} else {
+	// 											costs.set(rY, rX, cost);
+	// 										}
+	// 									}
+	// 							}
+	// 							// if (numSide === 1 && cost < 20) room.visual.circle(rX, rY, {fill: '#8844cc', radius: (cost/30), stroke: '#8844cc'})
+	// 						}
+	// 					}
+	// 				}
+	// 				// console.log("forbidden pos:", forbiddenPos.length);
+
+	// 				// figure out where the wall SHOULD go
+	// 				const wallStartPos = !vertical
+	// 					? new RoomPosition(startExitX, Math.abs(ySide - (startExitX === 0 ? 1 : 0)), room.name)
+	// 					: new RoomPosition(ySide, startExitX, room.name);
+	// 				const wallEndPos = !vertical
+	// 					? new RoomPosition(endExitX, Math.abs(ySide), room.name)
+	// 					: new RoomPosition(ySide, endExitX, room.name);
+	// 				if (debug) {
+	// 					room.visual.circle(wallStartPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
+	// 					room.visual.circle(wallEndPos, { fill: "transparent", radius: 0.2, stroke: "#ff5577" });
+	// 				}
+	// 				const result = PathFinder.search(
+	// 					wallStartPos,
+	// 					{ pos: wallEndPos, range: 1 },
+	// 					{
+	// 						roomCallback: roomName => {
+	// 							return costs;
+	// 						},
+	// 						maxRooms: 1, // maxCost:600,
+	// 						plainCost: 2,
+	// 						swampCost: 2,
+	// 					}
+	// 				);
+	// 				// room.visual.poly(result.path, {stroke:"#ff8800"})
+
+	// 				for (let i = 0; i < result.path.length; i++) {
+	// 					const pathpos = result.path[i];
+
+	// 					// fix diagonals
+	// 					if (i > 0) {
+	// 						if (
+	// 							result.path[i].x !== result.path[i - 1].x &&
+	// 							result.path[i].y !== result.path[i - 1].y
+	// 						) {
+	// 							const diag1 = new RoomPosition(result.path[i].x, result.path[i - 1].y, room.name);
+	// 							const diag2 = new RoomPosition(result.path[i - 1].x, result.path[i].y, room.name);
+	// 							// if (debug) {
+	// 							// 	room.visual.circle(diag1, {fill: '#ff8800', radius: 0.3, stroke: '#ff8800'})
+	// 							// 	room.visual.circle(diag2, {fill: '#ffff00', radius: 0.5, stroke: '#ffff00'})
+	// 							// }
+	// 							if (
+	// 								_.some(forbiddenPos, p => {
+	// 									return p[0] === diag1.x && p[1] === diag1.y;
+	// 								})
+	// 							) {
+	// 								wallPoints.push(diag2);
+	// 							} else if (
+	// 								_.some(forbiddenPos, p => {
+	// 									return p[0] === diag2.x && p[1] === diag2.y;
+	// 								})
+	// 							) {
+	// 								wallPoints.push(diag1);
+	// 							} else {
+	// 								const dist1 = Math.abs(ySide - (!vertical ? diag1.y : diag1.x));
+	// 								const dist2 = Math.abs(ySide - (!vertical ? diag2.y : diag2.x));
+	// 								// wallPoints.push(ySide === 0 ? diag1 : diag2)
+	// 								wallPoints.push(dist1 < dist2 ? diag1 : diag2);
+	// 							}
+	// 						}
+	// 					}
+	// 					wallPoints.push(pathpos);
+	// 				}
+
+	// 				startExitX = -1;
+	// 				endExitX = -1;
+	// 			}
+	// 		}
+	// 	}
+	// 	wallPoints = _.uniq(wallPoints);
+
+	// 	if (debug) room.visual.poly(wallPoints, { lineStyle: "dotted", stroke: "#55ff77" });
+
+	// 	const costsMod = new PathFinder.CostMatrix();
+	// 	for (const w of wallPoints) {
+	// 		costsMod.set(w.x, w.y, Infinity);
+	// 	}
+	// 	wallPoints = _.reject(wallPoints, function (pos) {
+	// 		if (util.getTerrainAt(pos) === "wall") {
+	// 			return true;
+	// 		}
+	// 		if (
+	// 			util.getStructuresAt(pos, STRUCTURE_WALL).length > 0 ||
+	// 			util.getStructuresAt(pos, STRUCTURE_RAMPART).length > 0
+	// 		) {
+	// 			return true;
+	// 		}
+	// 		const testPath = PathFinder.search(
+	// 			pos,
+	// 			{ pos: Game.rooms[room.name].controller.pos, range: 1 },
+	// 			{
+	// 				roomCallback(roomName) {
+	// 					const temp = costsMod.clone();
+	// 					temp.set(pos.x, pos.y, 0);
+	// 					return temp;
+	// 				},
+	// 				maxRooms: 1, // maxCost:800,
+	// 			}
+	// 		);
+	// 		if (testPath.incomplete) {
+	// 			return true;
+	// 		}
+	// 		return false;
+	// 	});
+
+	// 	// figure out where the ramparts should go
+	// 	let rampartPoints = [];
+	// 	const spawn = util.getSpawn(room); // TODO: target the rooms storage instead?
+	// 	const pathsToExits = [];
+	// 	const exits = Game.map.describeExits(room.name);
+	// 	for (const e in exits) {
+	// 		pathsToExits.push(spawn.pos.findPathTo(new RoomPosition(25, 25, exits[e])));
+	// 	}
+	// 	const rampartsEvery = 2; // place ramparts evert X places
+	// 	const offsets = {}; // offset rampart positions by these values (key: [int] side number, value: [int] offset)
+	// 	// for (var w = 0; w < wallPoints.length; w++) {
+	// 	// 	var wallPoint = wallPoints[w]
+	// 	// 	for (var p = 0; p < pathsToExits.length; p++) {
+	// 	// 		var path = pathsToExits[p]
+	// 	// 		for (var i = 0; i < path.length; i++) {
+	// 	// 			var pathpos = path[i]
+	// 	// 			if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
+	// 	// 				// take the wallPoint out of wallPoints and put it in rampartPoints
+	// 	// 				// .splice() removes and returns an array of values from the original array
+	// 	// 				rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 2))
+	// 	// 				w -= 2
+	// 	// 				break;
+	// 	// 			}
+	// 	// 		}
+	// 	// 	}
+	// 	// }
+	// 	for (let p = 0; p < pathsToExits.length; p++) {
+	// 		const path = pathsToExits[p];
+	// 		for (let i = 0; i < path.length; i++) {
+	// 			const pathpos = path[i];
+	// 			for (var w = 0; w < wallPoints.length; w++) {
+	// 				var wallPoint = wallPoints[w];
+	// 				if (pathpos.x === wallPoint.x && pathpos.y === wallPoint.y) {
+	// 					offsets[exits[p]] = w % rampartsEvery;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	const bestOffset = util.mode(_.values(offsets)); // because I'm lazy
+	// 	console.log("bestOffset: ", bestOffset);
+	// 	for (var w = 0; w < wallPoints.length; w++) {
+	// 		var wallPoint = wallPoints[w];
+	// 		if (w % rampartsEvery === bestOffset) {
+	// 			// take the wallPoint out of wallPoints and put it in rampartPoints
+	// 			// .splice() removes and returns an array of values from the original array
+	// 			rampartPoints = _.union(rampartPoints, wallPoints.splice(w, 1));
+	// 		}
+	// 	}
+
+	// 	if (debug) {
+	// 		for (var w = 0; w < wallPoints.length; w++) {
+	// 			room.visual.circle(wallPoints[w], { fill: "#5577ff", radius: 0.3, stroke: "#5577ff" });
+	// 		}
+	// 		for (let r = 0; r < rampartPoints.length; r++) {
+	// 			room.visual.circle(rampartPoints[r], { fill: "#ff44ff", radius: 0.3, stroke: "#ff44ff" });
+	// 		}
+	// 	}
+
+	// 	// save points in memory so we can rebuild walls later without recalculating
+	// 	for (const w of wallPoints) {
+	// 		walls.push([w.x, w.y]);
+	// 	}
+	// 	Memory.rooms[room.name].walls = walls;
+	// 	for (const r of rampartPoints) {
+	// 		ramparts.push([r.x, r.y]);
+	// 	}
+	// 	Memory.rooms[room.name].ramparts = ramparts;
+	// },
 
 	buildWalls(room: Room): void {
 		let hasPlacedSite = false;
 		if (Memory.rooms[room.name].walls) {
-			for (const w in Memory.rooms[room.name].walls) {
-				const wall = Memory.rooms[room.name].walls[w];
-				var pos = new RoomPosition(wall[0], wall[1], room.name);
+			for (const wall of Memory.rooms[room.name].walls) {
+				const pos = new RoomPosition(wall[0], wall[1], room.name);
 				if (pos.createConstructionSite(STRUCTURE_WALL) === OK) {
 					hasPlacedSite = true;
 					break;
@@ -932,9 +958,8 @@ const brainAutoPlanner = {
 		}
 
 		if (Memory.rooms[room.name].ramparts) {
-			for (const r in Memory.rooms[room.name].ramparts) {
-				const rampart = Memory.rooms[room.name].ramparts[r];
-				var pos = new RoomPosition(rampart[0], rampart[1], room.name);
+			for (const rampart of Memory.rooms[room.name].ramparts) {
+				const pos = new RoomPosition(rampart[0], rampart[1], room.name);
 				if (pos.createConstructionSite(STRUCTURE_RAMPART) === OK) {
 					hasPlacedSite = true;
 					break;
@@ -944,7 +969,7 @@ const brainAutoPlanner = {
 	},
 
 	isInRootModule(structure: Structure): boolean {
-		if (!structure) {
+		if (!structure || !structure.room.memory.rootPos) {
 			return false;
 		}
 		const rX = structure.room.memory.rootPos.x;
