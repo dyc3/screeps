@@ -120,6 +120,7 @@ declare global {
 		storageId?: Id<StructureStorage | StructureContainer>;
 		_lastWithdrawId?: Id<AnyStoreStructure>;
 		_lastDepositId?: Id<AnyStoreStructure>;
+		transferTarget?: Id<AnyStoreStructure>;
 	}
 
 	interface PowerCreepMemory {

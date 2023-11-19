@@ -273,11 +273,16 @@ const roleHarvester = {
 		}
 
 		if (creep.memory.depositMode === "link" && creep.memory.dedicatedLinkId) {
-			return Game.getObjectById(creep.memory.dedicatedLinkId);
+			const link = Game.getObjectById(creep.memory.dedicatedLinkId);
+			if (link) {
+				return link;
+			} else {
+				delete creep.memory.dedicatedLinkId;
+			}
 		}
 
 		if (creep.memory.depositMode === "recovery") {
-			const targets = creep.room.find(FIND_STRUCTURES, {
+			const targets: AnyStoreStructure[] = creep.room.find(FIND_STRUCTURES, {
 				filter: struct => {
 					const flags = struct.pos.lookFor(LOOK_FLAGS);
 					if (flags.length > 0) {
@@ -329,18 +334,17 @@ const roleHarvester = {
 								// checks if the creep is alive? maybe?
 								return false;
 							}
-							return c.memory.role === "manager" && c.memory.targetRoom === creep.room.name;
+							return c.memory.role === Role.Manager && c.memory.targetRoom === creep.room.name;
 						}).length > 0;
 				}
 				// console.log(creep.name, "has manager in room", creep.room.name, "=", haveManagerForRoom);
-				// HACK: these aren't using the STRUCTURE_* constants
 				const structPriority = {
-					extension: 1,
-					spawn: 1,
-					tower: 2,
-					link: 4,
-					container: 5,
-					storage: 6,
+					[STRUCTURE_EXTENSION]: 1,
+					[STRUCTURE_SPAWN]: 1,
+					[STRUCTURE_TOWER]: 2,
+					[STRUCTURE_LINK]: 4,
+					[STRUCTURE_CONTAINER]: 5,
+					[STRUCTURE_STORAGE]: 6,
 				};
 				if (creep.memory.haveManagerForRoom) {
 					structPriority[STRUCTURE_LINK] = 1;
@@ -352,6 +356,7 @@ const roleHarvester = {
 				}
 				targets.sort(function (a, b) {
 					if (a.structureType !== b.structureType) {
+						// @ts-expect-error this is fine
 						return structPriority[a.structureType] - structPriority[b.structureType];
 					} else {
 						return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);
@@ -431,7 +436,7 @@ const roleHarvester = {
 				!creep.memory.lastCheckForDedicatedLink ||
 				(creep.memory.lastCheckForDedicatedLink && Game.time - creep.memory.lastCheckForDedicatedLink > 100)
 			) {
-				const nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
+				const nearbyLinks: StructureLink[] = harvestTarget.pos.findInRange(FIND_STRUCTURES, 3, {
 					filter: struct => {
 						return struct.structureType === STRUCTURE_LINK;
 					},
