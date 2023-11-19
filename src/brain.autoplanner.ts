@@ -5,6 +5,103 @@ interface Pos {
 	y: number;
 }
 
+/**
+ * this function is also used for finding the best storage module position
+ * the best root position is one that is equidistant to the sources and the controller
+ *
+ * @param room
+ * @param Pos
+ * @param includeMineral
+ * @param excludeSources
+ * @param usePaths
+ * @returns
+ */
+function getTotalDistances(room: Room, point: Pos, includeMineral = false, excludeSources = false, usePaths = false) {
+	if (!room.controller) {
+		return 0;
+	}
+	const opts = {
+		maxRooms: 1,
+		costCallback: (roomName: string, costMatrix: CostMatrix) => {
+			for (let y = 0; y <= 3; y++) {
+				for (let x = 0; x <= 3; x++) {
+					costMatrix.set(x, y, 0xff);
+				}
+			}
+			for (let y = 47; y < 50; y++) {
+				for (let x = 47; x < 50; x++) {
+					costMatrix.set(x, y, 0xff);
+				}
+			}
+		},
+	};
+	// NOTE: maybe this should the length of paths to the objects instead of ranges?
+	const pos = new RoomPosition(point.x, point.y, room.name);
+	let total = usePaths ? pos.findPathTo(room.controller, opts).length : pos.getRangeTo(room.controller);
+	if (!excludeSources) {
+		const sources = room.find(FIND_SOURCES);
+		for (const source of sources) {
+			total += usePaths ? pos.findPathTo(source, opts).length : pos.getRangeTo(source);
+		}
+	}
+	if (includeMineral) {
+		const minerals = room.find(FIND_MINERALS);
+		for (const mineral of minerals) {
+			total += usePaths ? pos.findPathTo(mineral, opts).length : pos.getRangeTo(mineral);
+		}
+	}
+	return total;
+}
+
+/**
+ * Add plans for the root module at the specified position
+ * @param room
+ * @param pos
+ */
+function planRootModule(room: Room, pos: Pos) {
+	// roads
+	for (let i = -2; i <= 2; i++) {
+		room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x + i, y: pos.y - 5 });
+		room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x + i, y: pos.y + 1 });
+	}
+	for (let i = -4; i <= 0; i++) {
+		room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x - 3, y: pos.y + i });
+		room.memory.structures[STRUCTURE_ROAD].push({ x: pos.x + 3, y: pos.y + i });
+	}
+
+	// extensions
+	for (let i = -2; i <= 2; i++) {
+		room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x + i, y: pos.y - 4 });
+		if (i !== 0) {
+			room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x + i, y: pos.y });
+		}
+		if (Math.abs(i) !== 1) {
+			room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x + i, y: pos.y - 1 });
+		}
+	}
+	room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x, y: pos.y - 3 });
+	room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x - 1, y: pos.y - 2 });
+	room.memory.structures[STRUCTURE_EXTENSION].push({ x: pos.x + 1, y: pos.y - 2 });
+
+	// spawns
+	room.memory.structures[STRUCTURE_SPAWN].push({ x: pos.x, y: pos.y });
+	room.memory.structures[STRUCTURE_SPAWN].push({ x: pos.x + 2, y: pos.y - 3 });
+	room.memory.structures[STRUCTURE_SPAWN].push({ x: pos.x - 2, y: pos.y - 3 });
+
+	// link
+	room.memory.structures[STRUCTURE_LINK].push({ x: pos.x, y: pos.y - 2 });
+
+	// containers
+	room.memory.structures[STRUCTURE_CONTAINER].push({ x: pos.x - 2, y: pos.y - 2 });
+	room.memory.structures[STRUCTURE_CONTAINER].push({ x: pos.x + 2, y: pos.y - 2 });
+
+	// towers
+	room.memory.structures[STRUCTURE_TOWER].push({ x: pos.x - 3, y: pos.y + 1 });
+	room.memory.structures[STRUCTURE_TOWER].push({ x: pos.x + 3, y: pos.y + 1 });
+	room.memory.structures[STRUCTURE_TOWER].push({ x: pos.x - 3, y: pos.y - 5 });
+	room.memory.structures[STRUCTURE_TOWER].push({ x: pos.x + 3, y: pos.y - 5 });
+}
+
 const brainAutoPlanner = {
 	run(): void {
 		const rooms = util.getOwnedRooms();
@@ -52,42 +149,6 @@ const brainAutoPlanner = {
 		// . r r r r r .
 		let rootPos: Pos | undefined = room.memory.rootPos;
 
-		// the best root position is one that is equidistant to the sources and the controller
-		// (this function is also used for finding the best storage module position)
-		function getTotalDistances(point: Pos, includeMineral = false, excludeSources = false, usePaths = false) {
-			const opts = {
-				maxRooms: 1,
-				costCallback: (roomName: string, costMatrix: CostMatrix) => {
-					for (let y = 0; y <= 3; y++) {
-						for (let x = 0; x <= 3; x++) {
-							costMatrix.set(x, y, 0xff);
-						}
-					}
-					for (let y = 47; y < 50; y++) {
-						for (let x = 47; x < 50; x++) {
-							costMatrix.set(x, y, 0xff);
-						}
-					}
-				},
-			};
-			// NOTE: maybe this should the length of paths to the objects instead of ranges?
-			const pos = new RoomPosition(point.x, point.y, room.name);
-			let total = usePaths ? pos.findPathTo(room.controller, opts).length : pos.getRangeTo(room.controller);
-			if (!excludeSources) {
-				const sources = room.find(FIND_SOURCES);
-				for (const source of sources) {
-					total += usePaths ? pos.findPathTo(source, opts).length : pos.getRangeTo(source);
-				}
-			}
-			if (includeMineral) {
-				const minerals = room.find(FIND_MINERALS);
-				for (const mineral of minerals) {
-					total += usePaths ? pos.findPathTo(mineral, opts).length : pos.getRangeTo(mineral);
-				}
-			}
-			return total;
-		}
-
 		if (!rootPos) {
 			// first, valid 6x6 areas
 			let goodRootPositions = [];
@@ -124,7 +185,7 @@ const brainAutoPlanner = {
 						return new RoomPosition(pos.x, pos.y, room.name).getRangeTo(center);
 					},
 					(pos: Pos) => {
-						return getTotalDistances(pos);
+						return getTotalDistances(room, pos);
 					},
 				],
 				["asc", "asc"]
@@ -146,47 +207,7 @@ const brainAutoPlanner = {
 		}
 
 		// add structures to room memory
-		// roads
-		for (let i = -2; i <= 2; i++) {
-			room.memory.structures[STRUCTURE_ROAD].push({ x: rootPos.x + i, y: rootPos.y - 5 });
-			room.memory.structures[STRUCTURE_ROAD].push({ x: rootPos.x + i, y: rootPos.y + 1 });
-		}
-		for (let i = -4; i <= 0; i++) {
-			room.memory.structures[STRUCTURE_ROAD].push({ x: rootPos.x - 3, y: rootPos.y + i });
-			room.memory.structures[STRUCTURE_ROAD].push({ x: rootPos.x + 3, y: rootPos.y + i });
-		}
-
-		// extensions
-		for (let i = -2; i <= 2; i++) {
-			room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y - 4 });
-			if (i !== 0) {
-				room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y });
-			}
-			if (Math.abs(i) !== 1) {
-				room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + i, y: rootPos.y - 1 });
-			}
-		}
-		room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x, y: rootPos.y - 3 });
-		room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x - 1, y: rootPos.y - 2 });
-		room.memory.structures[STRUCTURE_EXTENSION].push({ x: rootPos.x + 1, y: rootPos.y - 2 });
-
-		// spawns
-		room.memory.structures[STRUCTURE_SPAWN].push({ x: rootPos.x, y: rootPos.y });
-		room.memory.structures[STRUCTURE_SPAWN].push({ x: rootPos.x + 2, y: rootPos.y - 3 });
-		room.memory.structures[STRUCTURE_SPAWN].push({ x: rootPos.x - 2, y: rootPos.y - 3 });
-
-		// link
-		room.memory.structures[STRUCTURE_LINK].push({ x: rootPos.x, y: rootPos.y - 2 });
-
-		// containers
-		room.memory.structures[STRUCTURE_CONTAINER].push({ x: rootPos.x - 2, y: rootPos.y - 2 });
-		room.memory.structures[STRUCTURE_CONTAINER].push({ x: rootPos.x + 2, y: rootPos.y - 2 });
-
-		// towers
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y + 1 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y + 1 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x - 3, y: rootPos.y - 5 });
-		room.memory.structures[STRUCTURE_TOWER].push({ x: rootPos.x + 3, y: rootPos.y - 5 });
+		planRootModule(room, rootPos);
 
 		// build storage/trade unit
 		const validStoragePos = [];
@@ -243,7 +264,7 @@ const brainAutoPlanner = {
 				}
 			}
 			validStoragePos.sort(function (a, b) {
-				return getTotalDistances(a, true, true, true) - getTotalDistances(b, true, true, true);
+				return getTotalDistances(room, a, true, true, true) - getTotalDistances(room, b, true, true, true);
 			});
 			storagePos = validStoragePos[0];
 			room.memory.storagePos = storagePos;
@@ -468,6 +489,7 @@ const brainAutoPlanner = {
 			// 	}
 			// }
 		}
+		return true;
 	},
 
 	/**
@@ -871,7 +893,7 @@ const brainAutoPlanner = {
 		Memory.rooms[room.name].ramparts = ramparts;
 	},
 
-	buildWalls(room) {
+	buildWalls(room: Room): void {
 		let hasPlacedSite = false;
 		if (Memory.rooms[room.name].walls) {
 			for (const w in Memory.rooms[room.name].walls) {
@@ -899,7 +921,7 @@ const brainAutoPlanner = {
 		}
 	},
 
-	isInRootModule(structure) {
+	isInRootModule(structure: Structure): boolean {
 		if (!structure) {
 			return false;
 		}
@@ -917,11 +939,11 @@ global.autoPlanner = {
 	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
 };
 
-global.plan = (x, y, roomName, struct) => {
+global.plan = (x: number, y: number, roomName: string, struct: BuildableStructureConstant) => {
 	return brainAutoPlanner.addPlansAtPosition(new RoomPosition(x, y, roomName), struct);
 };
-(global.unplan = (x, y, roomName, struct) => {
+global.unplan = (x: number, y: number, roomName: string, struct: BuildableStructureConstant) => {
 	return brainAutoPlanner.removePlansAtPosition(new RoomPosition(x, y, roomName), struct);
-}),
-	(module.exports = brainAutoPlanner);
+};
+
 export default brainAutoPlanner;
