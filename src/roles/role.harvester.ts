@@ -522,7 +522,7 @@ const roleHarvester = {
 				if (creep.pos.isEqualTo(harvestPos)) {
 					creep.harvest(harvestTarget);
 				} else {
-					cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 100 });
+					cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 1000 });
 				}
 			} else {
 				cartographer.moveTo(creep, new RoomPosition(25, 25, harvestTarget.room.name), {
