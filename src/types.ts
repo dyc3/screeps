@@ -71,7 +71,7 @@ declare global {
 		harvestTarget?: Id<Source>;
 		targetRoom?: string;
 		assignedPos?: { x: number; y: number };
-		mode?: any;
+		mode?: string;
 		taskId?: string;
 		repairTarget?: Id<AnyStructure>;
 		repairing?: boolean;

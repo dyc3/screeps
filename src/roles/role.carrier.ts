@@ -1,6 +1,5 @@
 import * as cartographer from "screeps-cartographer";
 
-import { Role } from "./meta";
 import util from "../util";
 
 // Game.spawns["Spawn5"].createCreep([WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,MOVE], "remoteharvester_1", {role:"remoteharvester", keepAlive:true, stage: 0 }); Game.spawns["Spawn1"].createCreep([CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], "carrier_1", {role:"carrier", keepAlive:true, stage: 0 })
@@ -266,7 +265,13 @@ const roleCarrier = {
 		}
 
 		// run different code for different modes
-		this.modes[creep.memory.mode](creep);
+		// @ts-expect-error this is valid, but typescript doesn't like it
+		const mode = this.modes[creep.memory.mode] as (creep: Creep) => void;
+		if (!mode) {
+			creep.log("ERR: invalid mode", creep.memory.mode);
+			return;
+		}
+		mode(creep);
 	},
 };
 
