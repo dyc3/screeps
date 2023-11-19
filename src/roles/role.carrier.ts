@@ -33,7 +33,7 @@ function findDespositTarget(creep: Creep) {
 		}
 
 		pos = new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName);
-	} else if (creep.memory.mode === "invader-core-harvesting") {
+	} else if (creep.memory.mode === "invader-core-harvesting" && creep.memory.targetRoom) {
 		pos = new RoomPosition(25, 25, creep.memory.targetRoom);
 	}
 
