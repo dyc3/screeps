@@ -926,7 +926,7 @@ function doAutoTrading() {
 				mineral === RESOURCE_LEMERGIUM_BAR ||
 				mineral === RESOURCE_REDUCTANT
 			) {
-				if (room.terminal.store[mineral] < 3000) {
+				if (room.terminal.store[mineral] < 1000) {
 					continue;
 				}
 			} else {
