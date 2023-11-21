@@ -949,20 +949,20 @@ function doAutoTrading() {
 			}
 
 			const amount = Math.min(room.terminal.store[mineral], 20000);
-			// TODO: sort orders by order of credit price and energy price
-			const buy = buyOrders[0];
+			const orders = _.sortByOrder(
+				buyOrders,
+				[
+					"price",
+					o => {
+						return Game.market.calcTransactionCost(amount, room.name, o.roomName ?? "");
+					},
+				],
+				["desc", "asc"]
+			);
+			const buy = orders[0];
 			const cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName ?? "");
 			console.log(
-				buy.id,
-				buy.roomName,
-				buy.type,
-				"amount:",
-				buy.remainingAmount,
-				"/",
-				buy.amount,
-				buy.resourceType,
-				"cost:",
-				cost
+				`${buy.id} ${buy.roomName} ${buy.type} amount: ${buy.remainingAmount}/${buy.amount} ${buy.resourceType} cost: ${cost}`
 			);
 			if (cost <= room.terminal.store[RESOURCE_ENERGY]) {
 				const result = Game.market.deal(buy.id, amount, room.name);
