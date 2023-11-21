@@ -4,7 +4,7 @@ import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
 import taskGather from "../task.gather.js";
 
-const ENABLE_WALL_REPAIR = false;
+const ENABLE_WALL_REPAIR = true;
 
 /**
  * get number of repairers assigned to a room
@@ -114,7 +114,7 @@ const roleRepairer = {
 
 	run(creep: Creep): void {
 		// make sure we are in our assigned room first
-		if (creep.memory.role === "repairer") {
+		if (creep.memory.role === Role.Repairer) {
 			// exclude builders
 			if (!creep.memory.targetRoom) {
 				const rooms = util.getOwnedRooms();
