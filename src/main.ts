@@ -106,11 +106,9 @@ import roleRepairer from "roles/role.repairer";
 import roleClaimer from "roles/role.claimer";
 import roleRemoteHarvester from "roles/role.remoteharvester";
 import roleCarrier from "roles/role.carrier";
-// @ts-expect-error hasn't been converted yet
-import roleMiner from "roles/role.miner.js";
+import roleMiner from "roles/role.miner";
 import roleScientist from "roles/role.scientist";
-// @ts-expect-error hasn't been converted yet
-import roleRelay from "roles/role.relay.js";
+import roleRelay from "roles/role.relay";
 import roleTmpDeliver from "roles/role.tmpdeliver";
 
 import roleTower from "roles/role.tower";

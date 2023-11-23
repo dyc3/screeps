@@ -1,5 +1,6 @@
 import * as cartographer from "screeps-cartographer";
 
+import { Role } from "./meta";
 import util from "../util";
 
 /*
@@ -9,9 +10,8 @@ import util from "../util";
 
 const roleMiner = {
 	/**
-	 * @param {Creep} creep
 	 */
-	findMineralTarget(creep) {
+	findMineralTarget(creep: Creep): Id<Mineral> | undefined {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
 			const minerals = room.find(FIND_MINERALS);
@@ -20,31 +20,31 @@ const roleMiner = {
 					continue;
 				}
 				const minersAssigned = util
-					.getCreeps("miner")
+					.getCreeps(Role.Miner)
 					.filter(
 						c => c.memory.mineralTarget === mineral.id || c.memory.mineralTargetSecondary === mineral.id
 					);
-				if (minersAssigned < 1) {
+				if (minersAssigned.length < 1) {
 					return mineral.id;
 				}
 			}
 		}
+		return undefined;
 	},
 
 	/**
 	 * Finds where to store minerals. Sets creeps memory for storage target.
 	 * Target must be in the same room.
-	 * @param {Creep} creep
 	 * @returns {Structure} The structure to store the mined minerals in.
 	 **/
-	getTargetStorage(creep) {
+	getTargetStorage(creep: Creep): Structure | undefined {
 		const fillFlags = _.filter(Game.flags, flag => {
 			return (
 				(flag.name.includes("fill") || flag.name.includes("miner")) && flag.pos.roomName === creep.pos.roomName
 			);
 		});
 		for (const flag of fillFlags) {
-			let material = flag.name.split(":")[1];
+			const material = flag.name.split(":")[1];
 			if (creep.store[material] > 0) {
 				const target = flag.pos
 					.lookFor(LOOK_STRUCTURES)
@@ -77,14 +77,14 @@ const roleMiner = {
 	 * @param {Creep} creep
 	 * @returns {void}
 	 */
-	run(creep) {
+	run(creep: Creep): void {
 		if (!creep.memory.mineralTarget) {
 			if (Game.cpu.bucket <= 100) {
 				return;
 			}
 			creep.memory.mineralTarget = this.findMineralTarget(creep);
 		}
-		if (!creep.memory.mineralTargetSecondary) {
+		if (!creep.memory.mineralTargetSecondary && util.getOwnedRooms().length > 1) {
 			if (Game.cpu.bucket <= 100) {
 				return;
 			}
@@ -94,10 +94,10 @@ const roleMiner = {
 			creep.memory.useSecondaryRoute = false;
 		}
 
-		let totalCarry = creep.store.getUsedCapacity();
+		const totalCarry = creep.store.getUsedCapacity();
 
-		let mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
-		let mineralTargetSecondary = Game.getObjectById(creep.memory.mineralTargetSecondary);
+		const mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
+		const mineralTargetSecondary = Game.getObjectById(creep.memory.mineralTargetSecondary);
 		if (!mineralTarget) {
 			console.log(creep.name, "no mineral target");
 			return;
@@ -139,7 +139,7 @@ const roleMiner = {
 		}
 		if (
 			creep.memory.mining &&
-			(totalCarry === creep.carryCapacity ||
+			(creep.store.getFreeCapacity() === 0 ||
 				((creep.memory.useSecondaryRoute
 					? mineralTargetSecondary.ticksToRegeneration
 					: mineralTarget.ticksToRegeneration) > 0 &&
@@ -180,9 +180,10 @@ const roleMiner = {
 						creep.store[creep.memory.materialToStore]
 					);
 				} else {
-					for (let resource of RESOURCES_ALL) {
+					for (const resource of RESOURCES_ALL) {
 						if (creep.store[resource] > 0) {
 							creep.transfer(storageTarget, resource);
+							break;
 						}
 					}
 				}
