@@ -127,8 +127,7 @@ import brainAutoPlanner from "./brain.autoplanner";
 import brainGuard from "./brain.guard";
 import brainHighwayHarvesting from "./brain.highwayharvesting";
 import brainLogistics from "./brain.logistics";
-// @ts-expect-error hasn't been converted yet
-import brainOffense from "./brain.offense.js";
+import brainOffense from "./brain.offense";
 
 import { RemoteMiningTarget, commandRemoteMining } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
