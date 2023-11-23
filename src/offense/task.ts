@@ -119,10 +119,9 @@ export class OffenseTask {
 }
 
 /** Quick and dirty automated spawner for Offense tasks. Should be good enough for now. */
-export function autoSpawn(taskIdx: number) {
+export function autoSpawn(taskIdx: number): void {
 	const task = new OffenseTask(Memory.offense.tasks[taskIdx]);
 	const strat = task.getStrategy();
-	// @ts-expect-error FIXME: need to add `c.memory.type` to creep memory to CreepMemory
 	const grouped = _.groupBy(task.creeps, c => c.memory.type);
 	for (const [type, needCount] of Object.entries(strat.neededCreeps)) {
 		const haveCount = grouped[type] ? grouped[type].length : 0;
@@ -140,10 +139,10 @@ export function autoSpawn(taskIdx: number) {
 			const creepName = `offense_${Game.time.toString(16)}`; // _${Math.floor(Math.random() * 64).toString(16)}
 			for (const spawn of spawns) {
 				const result = spawn.spawnCreep(CREEP_BODIES[type], creepName, {
+					// @ts-expect-error this is all the info the creep needs
 					memory: {
 						role: Role.Offense,
 						keepAlive: true,
-						// @ts-expect-error
 						type,
 					},
 				});
