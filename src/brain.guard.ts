@@ -531,14 +531,14 @@ export default {
 					if (towers.length > 0) {
 						task._currentTarget = towers[0].id;
 					} else {
-						let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, {
+						hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS, {
 							filter: hostile => {
 								if (hostile.owner.username !== "Source Keeper") {
 									return true;
 								}
 								const struct = _.first(
 									hostile.pos.findInRange(FIND_HOSTILE_STRUCTURES, 8, {
-										filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
+										filter: s => s.structureType === STRUCTURE_KEEPER_LAIR,
 									})
 								);
 								if (struct) {
@@ -595,7 +595,7 @@ export default {
 						continue;
 					}
 				} else {
-					let hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
+					hostiles = task.targetRoom.find(FIND_HOSTILE_CREEPS);
 
 					if (hostiles.length === 0) {
 						task.complete = true;

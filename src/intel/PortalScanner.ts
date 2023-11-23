@@ -7,13 +7,13 @@ import util from "../util";
  */
 export default class PortalScanner {
 	/** Have the maps been loaded from memory? */
-	static loaded = false;
+	private static loaded = false;
 	/** Have the maps been modified since they've been loaded? If so, they need to be saved to memory. */
-	static dirty = false;
-	static intershardPortals: Map<string, { shard: string; room: string }> = new Map();
-	static interroomPortals: Map<string, string> = new Map();
+	private static dirty = false;
+	private static intershardPortals: Map<string, { shard: string; room: string }> = new Map();
+	private static interroomPortals: Map<string, string> = new Map();
 
-	public static initialize() {
+	public static initialize(): void {
 		if (!Memory.portals) {
 			Memory.portals = {
 				intershard: [],
@@ -22,7 +22,7 @@ export default class PortalScanner {
 		}
 	}
 
-	public static finalize() {
+	public static finalize(): void {
 		PortalScanner.saveMaps();
 	}
 
