@@ -57,12 +57,12 @@ export class HighwayHarvestTask {
 
 let tasks: HighwayHarvestTask[] = [];
 
-module.exports = {
-	init() {
+export default {
+	init(): void {
 		if (!Memory.highwayHarvesting) {
 			Memory.highwayHarvesting = {
 				tasks: [],
-				viableRooms: [], // list of strings
+				viableRooms: [],
 				lastObserved: {},
 			};
 		}
@@ -72,7 +72,7 @@ module.exports = {
 		}
 	},
 
-	finalize() {
+	finalize(): void {
 		Memory.highwayHarvesting.tasks = _.map(tasks, task => task.serialize());
 	},
 
@@ -80,13 +80,11 @@ module.exports = {
 		return tasks;
 	},
 
-	getTask(id: string) {
+	getTask(id: string): HighwayHarvestTask | undefined {
 		return _.find(tasks, task => task.id === id);
 	},
 
-	markObserved(roomName: string) {
+	markObserved(roomName: string): void {
 		Memory.highwayHarvesting.lastObserved[roomName] = Game.time;
 	},
 };
-
-export default module.exports;

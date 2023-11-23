@@ -1,4 +1,5 @@
 import type { GuardTaskSerialized } from "./brain.guard";
+import type { HighwayHarvestTaskSerialized } from "brain.highwayharvesting";
 import type { ObserveQueue } from "./observequeue";
 import type { OffenseTask } from "offense/task";
 import type { RemoteMiningTarget } from "./remotemining";
@@ -52,6 +53,12 @@ declare global {
 		portals: {
 			intershard: [string, { shard: string; room: string }][];
 			interroom: [string, string][];
+		};
+		highwayHarvesting: {
+			tasks: HighwayHarvestTaskSerialized[];
+			/** The set of rooms we are allowed to search */
+			viableRooms: string[];
+			lastObserved: { [roomName: string]: number };
 		};
 	}
 

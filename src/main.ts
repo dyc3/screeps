@@ -108,6 +108,8 @@ import roleRemoteHarvester from "roles/role.remoteharvester";
 import roleCarrier from "roles/role.carrier";
 import roleMiner from "roles/role.miner";
 import roleScientist from "roles/role.scientist";
+// @ts-expect-error hasn't been converted yet
+import roleInvaderDestroyer from "./roles/role.invaderdestroyer.js";
 import roleRelay from "roles/role.relay";
 import roleTmpDeliver from "roles/role.tmpdeliver";
 
@@ -124,9 +126,8 @@ import toolRoadPlanner from "tool.roadplanner.js";
 
 import brainAutoPlanner from "./brain.autoplanner";
 import brainGuard from "./brain.guard";
+import brainHighwayHarvesting from "./brain.highwayharvesting";
 import brainLogistics from "./brain.logistics";
-// @ts-expect-error hasn't been converted yet
-import brainHighwayHarvesting from "./brain.highwayharvesting.js";
 // @ts-expect-error hasn't been converted yet
 import brainOffense from "./brain.offense.js";
 
@@ -1566,7 +1567,7 @@ function main() {
 					roleTmpDeliver.run(creep);
 					break;
 				case "invaderdestroyer":
-					require("./roles/role.invaderdestroyer.js").run(creep);
+					roleInvaderDestroyer.run(creep);
 					break;
 				case Role.Scout:
 					new Scout(creep).run();
