@@ -16,7 +16,7 @@ export class ObserveQueue {
 		return Memory.observe.observers.map(id => Game.getObjectById(id)).filter(o => !!o) as StructureObserver[];
 	}
 
-	public static updateCachedObserverIds(): void {
+	public static updateCachedObserverIds(this: void): void {
 		Memory.observe.observers = (
 			_.filter(Game.structures, s => s.structureType === STRUCTURE_OBSERVER) as StructureObserver[]
 		).map(o => o.id);

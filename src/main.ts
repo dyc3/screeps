@@ -1355,6 +1355,7 @@ runner.registerJob({
 });
 runner.registerJob({
 	name: "portal-scan",
+	// @ts-expect-error this is intentional, not sure how to fix types here
 	run: PortalScanner.scanVisibleRooms,
 	interval: 10,
 });

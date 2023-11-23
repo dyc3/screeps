@@ -53,7 +53,7 @@ export default class PortalScanner {
 		// TODO: determine rooms to observe based on the portals we know about, and the rooms we already know are closed
 	}
 
-	public static scanVisibleRooms(doScanning: boolean) {
+	public static scanVisibleRooms(this: void, doScanning: boolean) {
 		if (!doScanning) {
 			PortalScanner.requestObservations();
 			JobRunner.getInstance().forceRunNextTick("portal-scan", true);
