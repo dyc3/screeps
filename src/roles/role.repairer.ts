@@ -4,7 +4,7 @@ import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
 import taskGather from "../task.gather.js";
 
-const ENABLE_WALL_REPAIR = true;
+const ENABLE_WALL_REPAIR = false;
 
 /**
  * get number of repairers assigned to a room
