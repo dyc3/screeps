@@ -5,7 +5,7 @@ import util from "./util";
  */
 export interface Job {
 	name: string;
-	run: (...args: unknown[]) => void;
+	run: (this: void, ...args: unknown[]) => void;
 	interval: number;
 }
 
