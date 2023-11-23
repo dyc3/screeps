@@ -472,10 +472,13 @@ const roleHarvester = {
 			}
 		}
 
+		const dedicatedLink = creep.memory.dedicatedLinkId ? Game.getObjectById(creep.memory.dedicatedLinkId) : null;
+
 		// for link mode, pick up energy on the ground below the harvester
 		if (
 			((creep.memory.depositMode === "link" &&
-				Game.getObjectById(creep.memory.dedicatedLinkId).store[RESOURCE_ENERGY] < LINK_CAPACITY) ||
+				dedicatedLink &&
+				dedicatedLink.store[RESOURCE_ENERGY] < LINK_CAPACITY) ||
 				creep.memory.depositMode === "recovery" ||
 				creep.memory.depositMode === "direct") &&
 			creep.memory.harvesting
