@@ -697,7 +697,7 @@ function doCreepSpawning() {
 			return true;
 		}
 
-		const hiStage = toolCreepUpgrader.getHighestStage(role.name, (room = room));
+		const hiStage = toolCreepUpgrader.getHighestStage(role.name, room);
 		if (hiStage < 0) {
 			return false;
 		}
@@ -790,10 +790,10 @@ function doCreepSpawning() {
 						}
 						otherRooms = [_.max(otherRooms, r => r.energyAvailable)];
 					}
-					// 	let target_room = rooms[Math.floor(Math.random() * rooms.length)];
-					const target_room = otherRooms[0];
+					// 	let targetRoom = rooms[Math.floor(Math.random() * rooms.length)];
+					const targetRoom = otherRooms[0];
 					spawns = util
-						.getStructures(target_room, STRUCTURE_SPAWN)
+						.getStructures(targetRoom, STRUCTURE_SPAWN)
 						.filter(s => !s.spawning && s.isActive())
 						.filter(
 							s =>
@@ -1021,7 +1021,8 @@ function doWorkLabs() {
 				continue;
 			}
 			// console.log(workFlag)
-			let [method, makingWhat] = workFlag.name.split(":");
+			const [m, makingWhat] = workFlag.name.split(":");
+			let method = m;
 			if (method.startsWith("make")) {
 				method = "make";
 			} else if (method.startsWith("unmake")) {
@@ -1050,7 +1051,9 @@ function doWorkLabs() {
 				try {
 					new RoomVisual(lab.room.name).line(lab.pos, sourceLabs[0].pos);
 					new RoomVisual(lab.room.name).line(lab.pos, sourceLabs[1].pos);
-				} catch (e) {}
+				} catch (e) {
+					console.log("Error drawing line:", e);
+				}
 				if (sourceLabs.length === 2) {
 					lab.runReaction(sourceLabs[0], sourceLabs[1]);
 				} else {
@@ -1080,7 +1083,9 @@ function doWorkLabs() {
 				try {
 					const vis = new RoomVisual(lab.room.name);
 					destLabs.forEach((l: StructureLab) => vis.line(l.pos, l.pos));
-				} catch (e) {}
+				} catch (e) {
+					console.log("Error drawing line:", e);
+				}
 
 				lab.reverseReaction(destLabs[0], destLabs[1]);
 			} else {
