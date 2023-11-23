@@ -7,9 +7,9 @@ import taskRenew from "./task.renew";
 Ligma can reduce spawn times.
 */
 
-module.exports = {
-	run(creep) {
-		let powerSpawn = Game.getObjectById("5ca9a834279bd66008505768");
+export default {
+	run(creep: PowerCreep): void {
+		const powerSpawn = Game.getObjectById("5ca9a834279bd66008505768");
 		if (!(creep.spawnCooldownTime > Date.now())) {
 			// TODO: make this not hard coded
 			creep.spawn(powerSpawn);
@@ -45,7 +45,7 @@ module.exports = {
 		}
 
 		if (creep.powers[PWR_GENERATE_OPS].cooldown === 0 && creep.room.terminal.store[RESOURCE_OPS] < 10000) {
-			let result = creep.usePower(PWR_GENERATE_OPS);
+			const result = creep.usePower(PWR_GENERATE_OPS);
 			creep.log(`generate ops result: ${result}`);
 		}
 
@@ -74,5 +74,3 @@ module.exports = {
 		}
 	},
 };
-
-export default module.exports;

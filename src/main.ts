@@ -114,8 +114,7 @@ import roleRelay from "roles/role.relay";
 import roleTmpDeliver from "roles/role.tmpdeliver";
 
 import roleTower from "roles/role.tower";
-// @ts-expect-error hasn't been converted yet
-import powercreepLigma from "./powercreep.ligma.js";
+import powercreepLigma from "./powercreep.ligma";
 
 import * as taskDepositMaterials from "./task.depositmaterials";
 import taskRenew from "./task.renew";
@@ -1575,12 +1574,11 @@ function main() {
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");
 					console.log("Parsing role from name...");
-					const role = creep.name.split("_")[0];
-					console.log("Found role:", role);
-					creep.memory.role = role as Role;
+					creep.memory.role = creep.name.split("_")[0] as Role;
 					if (!creep.memory.stage) {
 						creep.memory.stage = -1;
 					}
+					break;
 			}
 		} catch (e) {
 			util.printException(e, creep);
@@ -1615,12 +1613,10 @@ function main() {
 			return b.ticksToLive - a.ticksToLive;
 		}
 		// priortize creeps based on role, lowest number has highest priority
-		// @ts-ignore
-		const pA = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, a.memory.role)
+		const pA = Object.prototype.hasOwnProperty.call(CREEP_RENEW_PRIORITY, a.memory.role)
 			? CREEP_RENEW_PRIORITY[a.memory.role]
 			: CREEP_RENEW_PRIORITY._default;
-		// @ts-ignore
-		const pB = Object.hasOwnProperty(CREEP_RENEW_PRIORITY, b.memory.role)
+		const pB = Object.prototype.hasOwnProperty.call(CREEP_RENEW_PRIORITY, b.memory.role)
 			? CREEP_RENEW_PRIORITY[b.memory.role]
 			: CREEP_RENEW_PRIORITY._default;
 		return pB - pA;
