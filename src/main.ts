@@ -1009,7 +1009,7 @@ function doAutoPlanning() {
 function doWorkLabs() {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
-		if (room.controller?.level ?? 0 < 6) {
+		if ((room.controller?.level ?? 0) < 6) {
 			continue;
 		}
 		const labs = util.getStructures(room, STRUCTURE_LAB);
