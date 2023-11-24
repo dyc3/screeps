@@ -1016,7 +1016,7 @@ function doWorkLabs() {
 
 		for (const lab of labs) {
 			const workFlag = util.getWorkFlag(lab.pos);
-			if (!workFlag || workFlag.secondaryColor !== COLOR_GREEN) {
+			if (!workFlag || workFlag.secondaryColor !== COLOR_GREEN || lab.cooldown > 0) {
 				continue;
 			}
 			// console.log(workFlag)
