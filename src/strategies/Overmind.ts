@@ -25,7 +25,7 @@ import util from "../util";
  * Memory.offense.tasks.map(t => t.autoSpawn = true)
  */
 export class OffenseStrategyOvermindRemoteMinerBait extends OffenseStrategy {
-	public static get strategyName() {
+	public static get strategyName(): string {
 		return "OvermindRemoteMinerBait";
 	}
 
@@ -257,6 +257,7 @@ export class OffenseStrategyHiveBuster extends OffenseStrategy {
 
 	public constructor(mem: any) {
 		super(mem);
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 		this.hive = mem.hive;
 		Object.assign(this, mem);
 	}
@@ -268,5 +269,6 @@ export class OffenseStrategyHiveBuster extends OffenseStrategy {
 		return controller.safeModeAvailable > 0 && !controller.safeMode && !controller.safeModeCooldown;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	public act(creeps: Creep[]) {}
 }
