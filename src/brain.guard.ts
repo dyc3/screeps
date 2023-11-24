@@ -275,8 +275,8 @@ export default {
 				0
 		);
 
-		if (hostiles.length === 0) {
-			console.log(`[guard] room ${room.name} is not in danger`);
+		if (hostiles.length === 0 && !foundInvaderCore) {
+			console.log(`[guard] room ${room.name} is not in danger, has no hostiles or invader core`);
 			return;
 		}
 
