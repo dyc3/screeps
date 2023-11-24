@@ -1135,12 +1135,20 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			const reserv = room.controller.reservation;
-			if (reserv && reserv.username !== global.WHOAMI && room.controller.upgradeBlocked > 20) {
-				console.log(
-					`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${Memory.claimTargets[t].room})`
-				);
-				satisfiedIdxs.push(t);
-				continue;
+			if (reserv) {
+				if (reserv.username !== global.WHOAMI && room.controller.upgradeBlocked > 20) {
+					console.log(
+						`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${Memory.claimTargets[t].room})`
+					);
+					satisfiedIdxs.push(t);
+					continue;
+				} else if (reserv.username === global.WHOAMI && reserv.ticksToEnd > 2000) {
+					console.log(
+						`[satisfy-claim-targets] Already plenty satisfied reservation (${Memory.claimTargets[t].room})`
+					);
+					satisfiedIdxs.push(t);
+					continue;
+				}
 			}
 		}
 		for (const creep of claimers) {
