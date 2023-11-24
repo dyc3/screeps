@@ -177,7 +177,7 @@ const roleMiner = {
 					creep.transfer(
 						storageTarget,
 						creep.memory.materialToStore,
-						creep.store[creep.memory.materialToStore]
+						creep.store.getUsedCapacity(creep.memory.materialToStore)
 					);
 				} else {
 					for (const resource of RESOURCES_ALL) {
