@@ -1059,7 +1059,11 @@ function doWorkLabs() {
 					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
 				}
 			} else if (method === "unmake") {
-				const splitsInto = lab.mineralType?.split("") as ResourceConstant[];
+				if (!lab.mineralType) {
+					console.log("[work-labs] WARN: lab", lab, "has no mineral");
+					continue;
+				}
+				const splitsInto = lab.mineralType.split("") as ResourceConstant[];
 				console.log("[work-labs] unmaking", lab.mineralType, "into", splitsInto);
 				let destLabs: StructureLab[] = lab.pos.findInRange(FIND_STRUCTURES, 2, {
 					filter: (l: StructureLab) => {
