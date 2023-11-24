@@ -1065,7 +1065,7 @@ function doWorkLabs() {
 					filter: (l: StructureLab) => {
 						return (
 							l.structureType === STRUCTURE_LAB &&
-							(_.contains(splitsInto, l.mineralType) || l.mineralType === undefined)
+							(!l.mineralType || _.contains(splitsInto, l.mineralType))
 						);
 					},
 				});
