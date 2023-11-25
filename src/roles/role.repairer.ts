@@ -4,7 +4,8 @@ import { Role } from "./meta";
 import taskDismantle from "../task.dismantle.js";
 import taskGather from "../task.gather.js";
 
-const ENABLE_WALL_REPAIR = false;
+const ENABLE_WALL_REPAIR = true;
+const WALL_REPAIR_HARD_LIMIT = 200000; // to disable, set to infinity
 
 /**
  * get number of repairers assigned to a room
@@ -75,12 +76,15 @@ const roleRepairer = {
 			targets = _.reject(targets, struct => {
 				return (
 					(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
-					struct.hits > avgWallHits * 1.1
+					(struct.hits > avgWallHits * 1.1 || struct.hits > WALL_REPAIR_HARD_LIMIT)
 				);
 			});
 		} else {
 			targets = _.reject(targets, struct => {
-				return struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART;
+				return (
+					(struct.structureType === STRUCTURE_WALL || struct.structureType === STRUCTURE_RAMPART) &&
+					struct.hits > WALL_REPAIR_HARD_LIMIT
+				);
 			});
 		}
 
