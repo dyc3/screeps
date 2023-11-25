@@ -1736,6 +1736,8 @@ profiler.registerObject(roleClaimer, "role.claimer");
 profiler.registerObject(visualize, "visualize");
 profiler.registerObject(util, "util");
 profiler.registerObject(brainGuard, "brain.guard");
+profiler.registerObject(brainLogistics, "brain.logistics");
+profiler.registerObject(brainOffense, "brain.offense");
 profiler.registerClass(ObserveQueue, "ObserveQueue");
 profiler.registerClass(JobRunner, "JobRunner");
 
