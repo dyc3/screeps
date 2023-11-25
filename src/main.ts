@@ -1222,6 +1222,7 @@ function satisfyClaimTargets() {
 }
 
 function doWorkFactories() {
+	let minWaitTime = runner.getInterval("work-factories") ?? Infinity; // minimum time to wait before running again
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
 		const factory = util.getStructures(room, STRUCTURE_FACTORY)[0];
@@ -1299,11 +1300,14 @@ function doWorkFactories() {
 				if (productionResult !== OK) {
 					console.log(`[work-factories] unable to produce ${productionTarget} => ${productionResult}`);
 				} else {
+					minWaitTime = Math.min(minWaitTime, 20); // FIXME: this is hardcoded, get real cooldown from factory
 					break;
 				}
 			}
 		}
 	}
+
+	runner.forceRunAfter("work-factories", minWaitTime);
 }
 
 runner.registerJob({
