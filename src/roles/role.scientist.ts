@@ -91,13 +91,19 @@ const roleScientist = {
 					sources,
 					[
 						(s: ResourceSource) => s.roomName === depositSink.roomName,
+						(s: ResourceSource) => (s.object ? s.amount : 0),
 						(s: ResourceSource) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
 						(s: ResourceSource) => (s.object ? depositTarget.pos.getRangeTo(s.object) : Infinity),
 					],
-					["desc", "asc", "asc"]
+					["desc", "desc", "asc", "asc"]
 				);
 
 				if (sources.length === 0) {
+					continue;
+				}
+				// kinda sorta avoid doing a bunch of small transfers
+				const sourcesTotal = _.sum(sources, s => s.amount);
+				if (sourcesTotal <= 20) {
 					continue;
 				}
 
