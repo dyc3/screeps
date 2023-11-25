@@ -32,6 +32,7 @@ export class JobRunner {
 	private jobs: Job[] = [];
 	private queued: [number, unknown[]][] = [];
 	private deferedJobs: [number, unknown[]][] = [];
+	private delayedJobs: [number, number][] = [];
 
 	private constructor() {
 		if (instance) {
@@ -96,6 +97,11 @@ export class JobRunner {
 			}
 			this.lastRun[this.jobs[i].name] = Game.time;
 		}
+		for (const [j, delay] of this.delayedJobs) {
+			const job = this.jobs[j];
+			this.lastRun[job.name] = Game.time - job.interval + delay;
+		}
+		this.delayedJobs = [];
 	}
 
 	/**
@@ -108,6 +114,25 @@ export class JobRunner {
 			if (job.name === jobName) {
 				this.deferedJobs.push([j, args]);
 				console.log("JobRunner: forced job next tick", job.name);
+				return;
+			}
+		}
+		console.log(`JobRunner: could not find job with name ${jobName}!`);
+	}
+
+	public forceRunAfter(jobName: string, afterTicks: number): void {
+		if (afterTicks < 1) {
+			console.log("JobRunner: forceRunAfter: afterTicks must be >= 1");
+			return;
+		}
+		if (afterTicks === Infinity) {
+			console.log("JobRunner: forceRunAfter: afterTicks must be finite");
+			return;
+		}
+		for (const [j, job] of this.jobs.entries()) {
+			if (job.name === jobName) {
+				this.delayedJobs.push([j, afterTicks]);
+				console.log(`JobRunner: forced job ${jobName} after ${afterTicks} ticks`);
 				return;
 			}
 		}
