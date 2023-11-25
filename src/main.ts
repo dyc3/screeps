@@ -1012,6 +1012,7 @@ function doAutoPlanning() {
 
 function doWorkLabs() {
 	const rooms = util.getOwnedRooms();
+	let minWaitTime = runner.getInterval("work-labs") ?? Infinity; // minimum time to wait before running again
 	for (const room of rooms) {
 		if ((room.controller?.level ?? 0) < 6) {
 			continue;
@@ -1059,6 +1060,7 @@ function doWorkLabs() {
 				}
 				if (sourceLabs.length === 2) {
 					lab.runReaction(sourceLabs[0], sourceLabs[1]);
+					minWaitTime = Math.min(minWaitTime, LAB_COOLDOWN);
 				} else {
 					// console.log("Too many/little source labs for", labs[l], ": ", sourceLabs);
 				}
@@ -1095,11 +1097,13 @@ function doWorkLabs() {
 				}
 
 				lab.reverseReaction(destLabs[0], destLabs[1]);
+				minWaitTime = Math.min(minWaitTime, LAB_COOLDOWN);
 			} else {
 				console.log("Unknown method:", method);
 			}
 		}
 	}
+	runner.forceRunAfter("work-labs", minWaitTime);
 }
 
 function satisfyClaimTargets() {
