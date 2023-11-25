@@ -923,9 +923,11 @@ function doAutoTrading() {
 				mineral === RESOURCE_UTRIUM_BAR ||
 				mineral === RESOURCE_ZYNTHIUM_BAR ||
 				mineral === RESOURCE_LEMERGIUM_BAR ||
-				mineral === RESOURCE_REDUCTANT
+				mineral === RESOURCE_REDUCTANT ||
+				mineral === RESOURCE_OXIDANT ||
+				mineral === RESOURCE_GHODIUM_MELT
 			) {
-				if (room.terminal.store[mineral] < 1000) {
+				if (room.terminal.store[mineral] < 100) {
 					continue;
 				}
 			} else {
