@@ -660,12 +660,13 @@ function doCreepSpawning() {
 					console.log("[spawning] spawning harvester with extra move");
 					body.push(...([MOVE, MOVE, MOVE, MOVE, MOVE] as BodyPartConstant[]));
 				}
+				// @ts-expect-error this is valid, caused by bad creep memory definitions
 				const result = targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				if (result !== OK) {
 					return false;
 				}
 			} else {
-				// @ts-expect-error this is valid
+				// @ts-expect-error this is valid, caused by bad creep memory definitions
 				targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 			}
 			return true;
@@ -1690,7 +1691,8 @@ function main() {
 	if (Game.flags.planWalls) {
 		if (Game.cpu.bucket > 9000) {
 			try {
-				brainAutoPlanner.planWalls(Game.flags.planWalls.room);
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				brainAutoPlanner.planWalls(Game.flags.planWalls.room!);
 			} catch (e) {
 				util.printException(e);
 			}
