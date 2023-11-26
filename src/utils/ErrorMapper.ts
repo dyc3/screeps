@@ -28,7 +28,7 @@ export class ErrorMapper {
 	 * @returns {string} The source-mapped stack trace
 	 */
 	public static sourceMappedStackTrace(error: Error | string): string {
-		const stack: string = error instanceof Error ? error.stack : error;
+		const stack: string = error instanceof Error ? error.stack ?? "unknown stack" : error;
 		if (Object.prototype.hasOwnProperty.call(this.cache, stack)) {
 			return this.cache[stack];
 		}
