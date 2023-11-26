@@ -481,8 +481,7 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 		quota: getScientistQuota,
 		// quota:0,
 		quotaPerRoom: true,
-		stages: [[CARRY, CARRY, MOVE, MOVE]],
-		// stages: [[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]],
+		stages: [[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]],
 	},
 };
 
