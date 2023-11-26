@@ -10,8 +10,8 @@ export default class PortalScanner {
 	private static loaded = false;
 	/** Have the maps been modified since they've been loaded? If so, they need to be saved to memory. */
 	private static dirty = false;
-	private static intershardPortals: Map<string, { shard: string; room: string }> = new Map();
-	private static interroomPortals: Map<string, string> = new Map();
+	public static intershardPortals: Map<string, { shard: string; room: string }> = new Map();
+	public static interroomPortals: Map<string, string> = new Map();
 
 	public static initialize(): void {
 		if (!Memory.portals) {
