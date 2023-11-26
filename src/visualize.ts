@@ -170,7 +170,8 @@ export default {
 					}
 				}
 				vis.text(
-					`${task.targetRoom}: ${task.guardType} creeps: ${
+					// eslint-disable-next-line no-underscore-dangle
+					`${task._targetRoom}: ${task.guardType} creeps: ${
 						task.assignedCreeps ? task.assignedCreeps.length : 0
 					}/${task.neededCreeps} ${disabledText} ${spawningText}`,
 					baseX,
@@ -266,7 +267,7 @@ export default {
 			// draw relay status
 			const relays = util.getCreeps(Role.Relay).filter(creep => creep.memory.targetRoom === room.name);
 			for (const relay of relays) {
-				if (!relay.memory.assignedPos) {
+				if (!relay.memory.assignedPos || !relay.memory.targetRoom) {
 					continue;
 				}
 				const pos = new RoomPosition(
