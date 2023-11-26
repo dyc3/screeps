@@ -58,5 +58,14 @@ global.TOUGH = "tough";
 global.HEAL = "heal";
 global.CLAIM = "claim";
 
+global.TOP = 1;
+global.TOP_RIGHT = 2;
+global.RIGHT = 3;
+global.BOTTOM_RIGHT = 4;
+global.BOTTOM = 5;
+global.BOTTOM_LEFT = 6;
+global.LEFT = 7;
+global.TOP_LEFT = 8;
+
 // Override ts-node compiler options
 process.env.TS_NODE_PROJECT = "tsconfig.test.json";

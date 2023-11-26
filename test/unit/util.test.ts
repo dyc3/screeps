@@ -1,5 +1,4 @@
 import { assert } from "chai";
-import { Game, Memory } from "./mock";
 import util from "../../src/util";
 
 describe("util", () => {
@@ -16,11 +15,36 @@ describe("util", () => {
 	}
 
 	for (const [inputPos, direction, offset, expected] of [
-		[new RoomPosition(10, 10, "W0N0"), LEFT, 1, new RoomPosition(9, 10, "W0N0")],
-		[new RoomPosition(10, 10, "W0N0"), TOP_LEFT, 1, new RoomPosition(9, 9, "W0N0")],
-		[new RoomPosition(10, 10, "W0N0"), TOP_LEFT, 2, new RoomPosition(8, 8, "W0N0")],
-		[new RoomPosition(0, 0, "W0N0"), TOP_LEFT, 1, new RoomPosition(0, 0, "W0N0")],
-		[new RoomPosition(2, 2, "W0N0"), TOP_LEFT, 5, new RoomPosition(0, 0, "W0N0")],
+		[
+			{ x: 10, y: 10, roomName: "W0N0" } as RoomPosition,
+			LEFT,
+			1,
+			{ x: 9, y: 10, roomName: "W0N0" } as RoomPosition,
+		],
+		[
+			{ x: 10, y: 10, roomName: "W0N0" } as RoomPosition,
+			TOP_LEFT,
+			1,
+			{ x: 9, y: 9, roomName: "W0N0" } as RoomPosition,
+		],
+		[
+			{ x: 10, y: 10, roomName: "W0N0" } as RoomPosition,
+			TOP_LEFT,
+			2,
+			{ x: 8, y: 8, roomName: "W0N0" } as RoomPosition,
+		],
+		[
+			{ x: 0, y: 0, roomName: "W0N0" } as RoomPosition,
+			TOP_LEFT,
+			1,
+			{ x: 0, y: 0, roomName: "W0N0" } as RoomPosition,
+		],
+		[
+			{ x: 2, y: 2, roomName: "W0N0" } as RoomPosition,
+			TOP_LEFT,
+			5,
+			{ x: 0, y: 0, roomName: "W0N0" } as RoomPosition,
+		],
 	] as const) {
 		it(`should return position ${expected} from ${inputPos} with direction ${direction} and offset ${offset}`, () => {
 			const got = util.getPositionInDirection(inputPos, direction, offset);
