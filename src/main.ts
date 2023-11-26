@@ -521,6 +521,10 @@ function commandEnergyRelays() {
 
 	for (const room of rooms) {
 		const roleMeta = toolCreepUpgrader.getRoleMetadata(Role.Relay);
+		if (!roleMeta) {
+			console.log("ERR: no role meta for role", Role.Relay);
+			continue;
+		}
 
 		// skip room if it's not supposed to have relays
 		if (roleMeta.quota(room) === 0) {
@@ -568,7 +572,7 @@ function commandEnergyRelays() {
 		relayPositions.splice(roleMeta.quota(room));
 		const availableRelayPos = _.filter(relayPositions, pos => {
 			for (const creep of relayCreeps) {
-				if (!creep.memory.assignedPos) {
+				if (!creep.memory.assignedPos || !creep.memory.targetRoom) {
 					continue;
 				}
 				const assignedPos = new RoomPosition(
@@ -654,7 +658,7 @@ function doCreepSpawning() {
 				// HACK: if the harvester is going to another room, do not spawn the super optimized creep because it will be ultimately less effective.
 				if (targetSpawn.room.name !== newCreepMemory.targetRoom) {
 					console.log("[spawning] spawning harvester with extra move");
-					body.push([MOVE, MOVE, MOVE, MOVE, MOVE]);
+					body.push(...([MOVE, MOVE, MOVE, MOVE, MOVE] as BodyPartConstant[]));
 				}
 				const result = targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
 				if (result !== OK) {
@@ -1531,7 +1535,7 @@ function main() {
 						// creep.memory.forceMode = "recovery"
 						// creep.memory.mode = "recovery"
 						roleHarvester.run(creep);
-					} else if (roleBuilder.findTargets(creep).length > 0) {
+					} else if (roleBuilder.findTargets().length > 0) {
 						if (taskDepositMaterials.checkForMaterials(creep, true)) {
 							creep.say("deposit");
 							taskDepositMaterials.run(creep, true);
@@ -1697,8 +1701,10 @@ function main() {
 
 	if (Game.flags.forcePlan && Game.flags.forcePlan.color === COLOR_WHITE) {
 		try {
-			brainAutoPlanner.planRoom(Game.flags.forcePlan.room, true);
-			brainAutoPlanner.drawRoomPlans(Game.flags.forcePlan.room);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			brainAutoPlanner.planRoom(Game.flags.forcePlan.room!, true);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			brainAutoPlanner.drawRoomPlans(Game.flags.forcePlan.room!);
 		} catch (e) {
 			util.printException(e);
 		}
@@ -1709,7 +1715,8 @@ function main() {
 
 	if (Game.flags.showPlans && Game.flags.showPlans.color === COLOR_WHITE) {
 		try {
-			brainAutoPlanner.drawRoomPlans(Game.flags.showPlans.room);
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			brainAutoPlanner.drawRoomPlans(Game.flags.showPlans.room!);
 		} catch (e) {
 			util.printException(e);
 		}
