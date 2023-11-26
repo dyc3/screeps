@@ -340,7 +340,11 @@ export const util = {
 	},
 
 	getOppositeDirection(direction: DirectionConstant): DirectionConstant {
-		return ((direction + 4) % 8) as DirectionConstant;
+		let d = direction + 4;
+		if (d > 8) {
+			d -= 8;
+		}
+		return d as DirectionConstant;
 	},
 
 	getPositionInDirection(pos: RoomPosition, direction: DirectionConstant, amount = 1): RoomPosition {

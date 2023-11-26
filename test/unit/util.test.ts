@@ -5,8 +5,12 @@ describe("util", () => {
 	for (const [input, expected] of [
 		[TOP, BOTTOM],
 		[BOTTOM, TOP],
+		[LEFT, RIGHT],
+		[RIGHT, LEFT],
 		[TOP_LEFT, BOTTOM_RIGHT],
 		[BOTTOM_RIGHT, TOP_LEFT],
+		[TOP_RIGHT, BOTTOM_LEFT],
+		[BOTTOM_LEFT, TOP_RIGHT],
 	]) {
 		it(`should return opposite direction of ${input} => ${expected}`, () => {
 			const got = util.getOppositeDirection(input);
