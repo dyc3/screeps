@@ -125,6 +125,7 @@ const brainAutoPlanner = {
 		const rooms = util.getOwnedRooms();
 		for (const room of rooms) {
 			if (!Memory.rooms[room.name]) {
+				// @ts-expect-error this is fine
 				Memory.rooms[room.name] = {};
 			}
 			if (!room.memory.structures) {
@@ -144,8 +145,10 @@ const brainAutoPlanner = {
 	planRoom(room: Room, debug = false): void {
 		// fix room memory, if needed
 		if (!Memory.rooms[room.name]) {
+			// @ts-expect-error this is fine
 			Memory.rooms[room.name] = {};
 		}
+		// @ts-expect-error this is fine
 		room.memory.structures = {};
 		for (const s of ALL_BUILDABLE_STRUCTURES) {
 			room.memory.structures[s] = [];
@@ -267,7 +270,7 @@ const brainAutoPlanner = {
 					}
 					for (const source of sources) {
 						const pos = room.getPositionAt(x, y);
-						if (pos.getRangeTo(source) <= 2) {
+						if (pos && pos.getRangeTo(source) <= 2) {
 							valid = false;
 							break;
 						}
@@ -346,6 +349,10 @@ const brainAutoPlanner = {
 			} else {
 				console.log("WARN: storagePos must be assigned manually maybe?");
 			}
+		}
+		if (!storagePos) {
+			console.log("ERR: no storage position found, aborting");
+			return;
 		}
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
@@ -483,6 +490,7 @@ const brainAutoPlanner = {
 								}
 							}
 						}
+						return costMatrix;
 					},
 				}
 			);
@@ -562,7 +570,7 @@ const brainAutoPlanner = {
 				} else {
 					room.visual.circle(pos.x, pos.y, { fill: "#ffffff" });
 				}
-				room.visual.text(struct.substring(0, 3), pos.x, pos.y, { fill: "#ffffff", font: 0.25 });
+				room.visual.text(struct.substring(0, 3), pos.x, pos.y, { stroke: "#ffffff", font: 0.25 });
 			}
 		}
 	},
