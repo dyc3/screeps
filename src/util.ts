@@ -350,21 +350,37 @@ export const util = {
 	getPositionInDirection(pos: RoomPosition, direction: DirectionConstant, amount = 1): RoomPosition {
 		switch (direction) {
 			case TOP:
-				return new RoomPosition(pos.x, (pos.y - amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(pos.x, this.clamp(pos.y - amount, 0, 49), pos.roomName);
 			case BOTTOM:
-				return new RoomPosition(pos.x, (pos.y + amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(pos.x, this.clamp(pos.y + amount, 0, 49), pos.roomName);
 			case LEFT:
-				return new RoomPosition((pos.x - amount).clamp(0, 49), pos.y, pos.roomName);
+				return new RoomPosition(this.clamp(pos.x - amount, 0, 49), pos.y, pos.roomName);
 			case RIGHT:
-				return new RoomPosition((pos.x + amount).clamp(0, 49), pos.y, pos.roomName);
+				return new RoomPosition(this.clamp(pos.x + amount, 0, 49), pos.y, pos.roomName);
 			case TOP_LEFT:
-				return new RoomPosition((pos.x - amount).clamp(0, 49), (pos.y - amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(
+					this.clamp(pos.x - amount, 0, 49),
+					this.clamp(pos.y - amount, 0, 49),
+					pos.roomName
+				);
 			case TOP_RIGHT:
-				return new RoomPosition((pos.x + amount).clamp(0, 49), (pos.y - amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(
+					this.clamp(pos.x + amount, 0, 49),
+					this.clamp(pos.y - amount, 0, 49),
+					pos.roomName
+				);
 			case BOTTOM_LEFT:
-				return new RoomPosition((pos.x - amount).clamp(0, 49), (pos.y + amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(
+					this.clamp(pos.x - amount, 0, 49),
+					this.clamp(pos.y + amount, 0, 49),
+					pos.roomName
+				);
 			case BOTTOM_RIGHT:
-				return new RoomPosition((pos.x + amount).clamp(0, 49), (pos.y + amount).clamp(0, 49), pos.roomName);
+				return new RoomPosition(
+					this.clamp(pos.x + amount, 0, 49),
+					this.clamp(pos.y + amount, 0, 49),
+					pos.roomName
+				);
 			default:
 				throw new Error("Invalid direction");
 		}

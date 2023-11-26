@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // inject mocha globally to allow custom interface refer without direct import - bypass bundle issue
 global._ = require("lodash");
 global.mocha = require("mocha");
@@ -24,7 +25,15 @@ global.RawMemory = {};
 global.Spawn = {};
 global.Source = {};
 global.Tombstone = {};
-global.RoomPosition = {};
+class RoomPosition {
+	// eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+	constructor(x, y, roomName) {
+		this.x = x;
+		this.y = y;
+		this.roomName = roomName;
+	}
+}
+global.RoomPosition = RoomPosition;
 global.STRUCTURE_SPAWN = "spawn";
 global.STRUCTURE_EXTENSION = "extension";
 global.STRUCTURE_ROAD = "road";

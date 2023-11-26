@@ -50,7 +50,9 @@ describe("util", () => {
 			{ x: 0, y: 0, roomName: "W0N0" } as RoomPosition,
 		],
 	] as const) {
-		it(`should return position ${expected} from ${inputPos} with direction ${direction} and offset ${offset}`, () => {
+		it(`should return position ${JSON.stringify(expected)} from ${JSON.stringify(
+			inputPos
+		)} with direction ${direction} and offset ${offset}`, () => {
 			const got = util.getPositionInDirection(inputPos, direction, offset);
 			assert.equal(got.x, expected.x);
 			assert.equal(got.y, expected.y);
