@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+import brainAutoPlanner from "brain.autoplanner";
 import util from "./util";
+import { Role } from "roles/meta";
 /**
  * Tools for use in the screeps console.
  *
@@ -27,6 +30,7 @@ Spawns a very large builder creep with:
 - 25 `MOVE`
 */
 
+// @ts-expect-error allow for console access
 global.Market = {
 	/**
 	 * Utility function to sell excess energy on the market.
@@ -35,7 +39,7 @@ global.Market = {
 	 * @returns String indicating the amount of energy sold, energy used for transation costs, and total energy spent.
 	 */
 	quickSellEnergy() {
-		let buyOrders = Game.market.getAllOrders(order => {
+		const buyOrders = Game.market.getAllOrders(order => {
 			return order.type === ORDER_BUY && order.resourceType === RESOURCE_ENERGY && order.remainingAmount > 0;
 		});
 
@@ -43,14 +47,14 @@ global.Market = {
 			return "No energy buy orders.";
 		}
 
-		let rooms = util.getOwnedRooms();
+		const rooms = util.getOwnedRooms();
 		let totalEnergySold = 0;
 		let totalEnergyCost = 0;
 		let totalDeals = 0;
-		let fromRooms = [];
+		const fromRooms = [];
 		let totalDealsAttempted = 0;
 
-		for (let room of rooms) {
+		for (const room of rooms) {
 			// we can only make 10 deals per tick
 			if (totalDealsAttempted > 10 || buyOrders.length === 0) {
 				break;
@@ -70,9 +74,10 @@ global.Market = {
 			let result = null;
 			let attempts = 0;
 			do {
-				let buy = buyOrders[0];
-				let amount = Math.min(buy.remainingAmount, room.terminal.store[RESOURCE_ENERGY] / 2);
-				let cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName);
+				const buy = buyOrders[0];
+				const amount = Math.min(buy.remainingAmount, room.terminal.store[RESOURCE_ENERGY] / 2);
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName!);
 				if (amount + cost > room.terminal.store[RESOURCE_ENERGY]) {
 					buyOrders.splice(0, 1);
 					attempts++;
@@ -102,6 +107,7 @@ global.Market = {
 	},
 };
 
+// @ts-expect-error allow for console access
 global.Logistics = {
 	/**
 	 * An easier way to transfer a resource from one room's terminal to another.
@@ -110,21 +116,32 @@ global.Logistics = {
 	 * @param {String} resource the name of the resource
 	 * @param {Number} [amount=undefined] number of the resource to send, default sends all possible of the resource
 	 */
-	send(from, to, resource, amount = undefined) {
+	send(from: string, to: string, resource: ResourceConstant, amount: number | undefined = undefined) {
+		const fromRoom = Game.rooms[from];
+		const toRoom = Game.rooms[to];
+		if (!fromRoom || !fromRoom.terminal || !toRoom || !toRoom.terminal) {
+			return "One of the rooms does not have a terminal or vision.";
+		}
 		if (amount === undefined) {
 			amount = Math.min(
-				Game.rooms[from].terminal.store.getCapacity(resource),
-				Game.rooms[to].terminal.store.getFreeCapacity(resource)
+				fromRoom.terminal.store.getCapacity(resource),
+				toRoom.terminal.store.getFreeCapacity(resource)
 			);
 		}
 		console.log(`Transfering ${amount} ${resource} from ${from} to ${to}`);
-		let result = Game.rooms[from].terminal.send(resource, amount, to);
+		const result = fromRoom.terminal.send(resource, amount, to);
 		return util.errorCodeToString(result);
 	},
 
-	sendEnergy(from, to, amount = 75000) {
+	sendEnergy(from: string, to: string, amount = 75000) {
+		const fromRoom = Game.rooms[from];
+		const toRoom = Game.rooms[to];
+		if (!fromRoom || !fromRoom.terminal || !toRoom || !toRoom.terminal) {
+			return "One of the rooms does not have a terminal or vision.";
+		}
 		console.log(`Transfering ${amount} energy from ${from} to ${to}`);
-		return Game.rooms[from].terminal.send(RESOURCE_ENERGY, amount, to);
+		const result = fromRoom.terminal.send(RESOURCE_ENERGY, amount, to);
+		return util.errorCodeToString(result);
 	},
 
 	/**
@@ -134,8 +151,16 @@ global.Logistics = {
 	 * `recycleAfterDeposit`: bool, default false - if true, the creep will recycle immediately after the first deposit
 	 * `renewAtWithdraw`: bool, default true - Prefer to renew the creep before it withdraws energy.
 	 */
-	spawnTmpDelivery(fromId, toId, options = {}) {
-		let opts = _.defaults(options, {
+	spawnTmpDelivery(fromId: Id<AnyStoreStructure>, toId: Id<AnyStoreStructure>, options = {}) {
+		const opts: {
+			size: number;
+			recycleAfterDelivery: boolean;
+			recycleAfterDeposit: boolean;
+			renewAtWithdraw: boolean;
+			dropAfterDeposit: boolean;
+			memory: CreepMemory;
+			spawnName: string | undefined;
+		} = _.defaults(options, {
 			size: 20,
 			recycleAfterDelivery: false,
 			recycleAfterDeposit: false,
@@ -145,16 +170,21 @@ global.Logistics = {
 		});
 		let spawn = null;
 		if (!opts.spawnName) {
-			rooms = util.getOwnedRooms();
+			const rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
 		} else {
 			spawn = Game.spawns[opts.spawnName];
 		}
+		if (!spawn) {
+			return "Invalid spawn";
+		}
 		opts.size = opts.size.clamp(1, 25);
-		let result = spawn.createCreep(
-			Array.apply(null, Array(opts.size))
-				.map(_ => CARRY)
-				.concat(Array.apply(null, Array(opts.size)).map(_ => MOVE)),
+		const bodySection = [...(Array(opts.size) as unknown[])];
+		const bodyCarry = bodySection.map(() => CARRY) as BodyPartConstant[];
+		const bodyMove = bodySection.map(() => MOVE) as BodyPartConstant[];
+		const body = bodyCarry.concat(bodyMove);
+		const result = spawn.createCreep(
+			body,
 			`tmpdeliver_${Game.time.toString(16)}${Math.floor(Math.random() * 16).toString(16)}`,
 			Object.assign(
 				{
@@ -180,8 +210,8 @@ global.Logistics = {
 	},
 
 	balance() {
-		let rooms = util.getOwnedRooms();
-		let hungryRooms = rooms.filter(room => {
+		const rooms = util.getOwnedRooms();
+		const hungryRooms = rooms.filter(room => {
 			if (!room.storage || !room.terminal) {
 				return false;
 			}
@@ -194,7 +224,7 @@ global.Logistics = {
 		if (hungryRooms.length === 0) {
 			return "No hungry rooms";
 		}
-		let overflowingRooms = rooms
+		const overflowingRooms = rooms
 			.filter(room => !hungryRooms.map(r => r.name).includes(room.name))
 			.filter(room => {
 				if (!room.storage || !room.terminal || room.terminal.cooldown > 0) {
@@ -210,24 +240,30 @@ global.Logistics = {
 		console.log(`overflowingRooms: ${overflowingRooms}`);
 
 		let roomsFed = 0;
-		let feedLog = [];
-		for (let receiver of hungryRooms) {
+		const feedLog = [];
+		for (const receiver of hungryRooms) {
 			// TODO: get room that is closest linearly to optimize energy spent on transfer.
 			if (overflowingRooms.length === 0) {
 				break;
 			}
-			let sender = overflowingRooms.pop();
+			if (!receiver.terminal) {
+				continue;
+			}
+			const sender = overflowingRooms.pop();
+			if (!sender || !sender.terminal) {
+				continue;
+			}
 
 			// TODO: find actual maximum we can send instead of this approximation
-			let needAmount = receiver.terminal.store.getFreeCapacity(RESOURCE_ENERGY);
+			const needAmount = receiver.terminal.store.getFreeCapacity(RESOURCE_ENERGY);
 			// Game.market.calcTransactionCost
-			let cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name);
-			let totalNeeded = needAmount + cost;
+			const cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name);
+			const totalNeeded = needAmount + cost;
 			let toSend = needAmount;
 			if (totalNeeded > sender.terminal.store.getUsedCapacity(RESOURCE_ENERGY)) {
 				toSend -= cost;
 			}
-			let result = sender.terminal.send(RESOURCE_ENERGY, toSend, receiver.name);
+			const result = sender.terminal.send(RESOURCE_ENERGY, toSend, receiver.name);
 			feedLog.push(`[${toSend} energy ${sender.name} -> ${receiver.name}; ${util.errorCodeToString(result)}]`);
 			if (result === OK) {
 				roomsFed++;
@@ -240,6 +276,7 @@ global.Logistics = {
 	},
 };
 
+// @ts-expect-error allow for console access
 global.Util = {
 	module: util,
 
@@ -248,12 +285,15 @@ global.Util = {
 	spawnMegaBuilder(spawnName = null) {
 		let spawn = null;
 		if (!spawnName) {
-			rooms = util.getOwnedRooms();
+			const rooms = util.getOwnedRooms();
 			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
 		} else {
 			spawn = Game.spawns[spawnName];
 		}
-		let result = spawn.spawnCreep(
+		if (!spawn) {
+			return "Invalid spawn";
+		}
+		const result = spawn.spawnCreep(
 			[
 				WORK,
 				WORK,
@@ -308,8 +348,9 @@ global.Util = {
 			],
 			`builder_${Game.time.toString(16)}`,
 			{
+				// @ts-expect-error ignore, this is a console tool
 				memory: {
-					role: "builder",
+					role: Role.Builder,
 					keepAlive: false,
 					stage: 5,
 				},
@@ -323,56 +364,30 @@ global.Util = {
 		}
 	},
 
-	spawnTestLogisticsCreep(spawnName = null, size = 2) {
-		let spawn = null;
-		if (!spawnName) {
-			rooms = util.getOwnedRooms();
-			spawn = util.getSpawn(rooms[Math.floor(Math.random() * rooms.length)]);
-		} else {
-			spawn = Game.spawns[spawnName];
-		}
-		let body = [];
-		for (let i = 0; i < size; i++) {
-			body.unshift(CARRY);
-			body.push(MOVE);
-		}
-		return spawn.spawnCreep(body, `testlogistics_${Game.time.toString(16)}`, {
-			memory: {
-				role: "testlogistics",
-				keepAlive: true,
-				stage: size,
-			},
-		});
-	},
-
-	destroyAllTestLogisticsCreeps() {
-		for (let creep of util.getCreeps("testlogistics")) {
-			creep.suicide();
-		}
-	},
-
-	forceReplan(roomName, full = false) {
+	forceReplan(roomName: string, full = false) {
+		// @ts-expect-error ignore, this is a console tool
 		delete Memory.rooms[roomName].structures;
 		if (full) {
 			delete Memory.rooms[roomName].rootPos;
 			delete Memory.rooms[roomName].storagePos;
 		}
 		Game.rooms[roomName].find(FIND_MY_CONSTRUCTION_SITES).forEach(site => site.remove());
-		require("brain.autoplanner").planRoom(Game.rooms[roomName]);
+		brainAutoPlanner.planRoom(Game.rooms[roomName]);
 	},
 };
 
+// @ts-expect-error allow for console access
 global.Debug = {
 	/**
 	 * Print debug info about a given harvester.
 	 * @param {String|Creep} creep Creep name, object id, or creep object.
 	 */
-	harvester(creep) {
+	harvester(creep: Creep | string) {
 		if (typeof creep === "string") {
 			if (creep in Game.creeps) {
 				creep = Game.creeps[creep];
 			} else {
-				creep = Game.getObjectById(creep);
+				creep = Game.getObjectById(creep) as Creep;
 			}
 		}
 
@@ -383,9 +398,19 @@ global.Debug = {
 			return "Creep is not a harvester";
 		}
 
-		let harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
-		let renewTarget = Game.getObjectById(creep.memory.renewTarget);
-		let out = [`pos=${creep.pos}`, `targetRoom=${creep.memory.targetRoom}`];
+		if (!creep.memory.harvestTarget) {
+			return `Harvester ${creep.name} has no harvest target`;
+		}
+
+		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
+		if (!harvestTarget) {
+			return `Harvester ${creep.name} has no vision on harvest target ${creep.memory.harvestTarget}`;
+		}
+		const renewTarget = Game.getObjectById(creep.memory.renewTarget);
+		if (!renewTarget) {
+			return `Harvester ${creep.name} has no vision on renew target ${creep.memory.renewTarget}`;
+		}
+		const out = [`pos=${creep.pos}`, `targetRoom=${creep.memory.targetRoom}`];
 		if (creep.memory.harvestTarget) {
 			out.push(`harvestTarget=${harvestTarget}${harvestTarget.pos}`);
 		}
@@ -397,9 +422,12 @@ global.Debug = {
 	},
 };
 
+// @ts-expect-error allow for console access
 global.id = Game.getObjectById;
-global.creep = creepName => Game.creeps[creepName];
-global.obj = identifier => {
+// @ts-expect-error allow for console access
+global.creep = (creepName: string) => Game.creeps[creepName];
+// @ts-expect-error allow for console access
+global.obj = (identifier: Id<RoomObject>) => {
 	if (identifier in Game.creeps) {
 		return Game.creeps[identifier];
 	} else {
@@ -424,5 +452,5 @@ PowerCreep.prototype.log = function (...args) {
 };
 
 Number.prototype.clamp = function (min, max) {
-	return util.clamp(this, min, max);
+	return util.clamp(this as number, min, max);
 };

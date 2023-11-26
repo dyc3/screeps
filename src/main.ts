@@ -90,7 +90,7 @@ global.move = (creep: string, direction: DirectionConstant) => {
 	c.move(direction);
 };
 
-import "./tools.js";
+import "./tools";
 import "./types";
 import _ from "lodash";
 import { Scout } from "roles/role.scout";
