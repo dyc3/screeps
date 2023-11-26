@@ -15,7 +15,7 @@ export const Game: {
 export const Memory: {
 	creeps: { [name: string]: any };
 	portals: {
-		intershard: [string, { shard: string, room: string }][];
+		intershard: [string, { shard: string; room: string }][];
 		interroom: [string, string][];
 	};
 } = {
@@ -23,7 +23,7 @@ export const Memory: {
 	portals: {
 		intershard: [],
 		interroom: [],
-	}
+	},
 };
 
 declare global {

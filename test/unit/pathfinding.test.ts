@@ -1,5 +1,5 @@
 import "types";
-import {Game, Memory} from "./mock";
+import { Game, Memory } from "./mock";
 import { assert } from "chai";
 import PortalScanner from "intel/PortalScanner";
 import pathfinding from "utils/pathfinding";
@@ -22,8 +22,8 @@ describe("Map-level pathfinding", () => {
 				[FIND_EXIT_LEFT]: "W4N5",
 				[FIND_EXIT_BOTTOM]: "W5N4",
 				[FIND_EXIT_RIGHT]: "W6N5",
-			}
-		}
+			};
+		};
 		PortalScanner.interroomPortals.set("W5N5", "W10N10");
 
 		const exits = pathfinding.getConnections(room);
