@@ -519,13 +519,13 @@ function commandEnergyRelays() {
 		return;
 	}
 
-	for (const room of rooms) {
-		const roleMeta = toolCreepUpgrader.getRoleMetadata(Role.Relay);
-		if (!roleMeta) {
-			console.log("ERR: no role meta for role", Role.Relay);
-			continue;
-		}
+	const roleMeta = toolCreepUpgrader.getRoleMetadata(Role.Relay);
+	if (!roleMeta) {
+		console.log("ERR: no role meta for role", Role.Relay);
+		return;
+	}
 
+	for (const room of rooms) {
 		// skip room if it's not supposed to have relays
 		if (roleMeta.quota(room) === 0) {
 			continue;
