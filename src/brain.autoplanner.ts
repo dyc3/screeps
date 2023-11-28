@@ -21,6 +21,7 @@ const ALL_BUILDABLE_STRUCTURES: BuildableStructureConstant[] = [
 	STRUCTURE_NUKER,
 	STRUCTURE_FACTORY,
 	STRUCTURE_TERMINAL,
+	STRUCTURE_STORAGE,
 ];
 
 /**
@@ -352,7 +353,7 @@ const brainAutoPlanner = {
 		}
 		if (!storagePos) {
 			console.log("ERR: no storage position found, aborting");
-			return;
+			throw new Error("no storage position found");
 		}
 		room.memory.structures[STRUCTURE_STORAGE].push({ x: storagePos.x, y: storagePos.y });
 
