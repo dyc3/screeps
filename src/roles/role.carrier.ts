@@ -29,6 +29,7 @@ function findDespositTarget(creep: Creep) {
 		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
 		if (!harvestTarget) {
 			creep.log("ERR: depositTarget: can't find harvest target");
+			delete creep.memory.harvestTarget;
 			return;
 		}
 

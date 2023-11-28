@@ -11,6 +11,7 @@ const roleRemoteHarvester = {
 		const harvestTarget = _.find(Memory.remoteMining.targets, target => target.id === creep.memory.harvestTarget);
 		if (!harvestTarget) {
 			creep.log("ERR: harvest target not found in memory");
+			delete creep.memory.harvestTarget;
 			return;
 		}
 
