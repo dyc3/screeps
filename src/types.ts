@@ -129,6 +129,10 @@ declare global {
 		_lastDepositId?: Id<AnyStoreStructure>;
 		transferTarget?: Id<AnyStoreStructure>;
 		materialToStore?: ResourceConstant;
+		gatherTarget?: Id<Source | Resource | AnyStoreStructure | Tombstone | Ruin>;
+		_gatherLastRun?: number;
+		forceGatherTarget?: Id<Source | Resource | AnyStoreStructure | Tombstone | Ruin>;
+		rememberGatherTarget?: boolean;
 	}
 
 	interface PowerCreepMemory {
