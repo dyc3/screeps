@@ -1,8 +1,5 @@
 const taskDismantle = {
-	run(creep) {
-		// if (creep.carry[RESOURCE_ENERGY] === creep.carryCapacity) {
-		//	return false;
-		// }
+	run(creep: Creep): boolean {
 		const dismantleFlags = _.filter(Game.flags, flag => {
 			return flag.name.includes("dismantle");
 		});
