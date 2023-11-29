@@ -1566,9 +1566,9 @@ function main() {
 					}
 					break;
 				case "repairer":
-					// roleRepairer.run(creep);
+					roleRepairer.run(creep);
 					// roleBuilder.run(creep);
-					roleUpgrader.run(creep);
+					// roleUpgrader.run(creep);
 					// roleMiner.run(creep);
 					break;
 				case "claimer":
