@@ -56,44 +56,7 @@ export function commandRemoteMining(): void {
 	Memory.remoteMining.needHarvesterCount = unpausedTargets.length;
 	Memory.remoteMining.needCarrierCount = _.sum(unpausedTargets, "neededCarriers");
 
-	// handle spawning claimers
-	let targetRooms = _.uniq(
-		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
-			// this is safe because we filter out targets with no source
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			target => Game.getObjectById(target.id)!.room.name
-		)
-	);
-	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
-	for (const room of targetRooms) {
-		const controller = new Room(room).controller;
-		if (!controller) {
-			console.log("[remote mining] ERR: can't find controller");
-		}
-		if (
-			controller &&
-			controller.reservation &&
-			controller.reservation.username === global.WHOAMI &&
-			controller.reservation.ticksToEnd > 400
-		) {
-			continue;
-		}
-
-		let alreadyTargeted = false;
-		for (const claimTarget of Memory.claimTargets) {
-			if (claimTarget.room === room) {
-				alreadyTargeted = true;
-				break;
-			}
-		}
-
-		if (!alreadyTargeted) {
-			Memory.claimTargets.push({
-				room,
-				mode: "reserve",
-			});
-		}
-	}
+	requestReservations();
 }
 
 function getHarvestTarget(id: Id<Source>): RemoteMiningTarget | undefined {
@@ -364,4 +327,47 @@ function evaluateDanger(target: RemoteMiningTarget): number {
 	}
 
 	return 0;
+}
+
+/**
+ * Handles requesting claimers to reserve remote mining rooms.
+ */
+function requestReservations() {
+	let targetRooms = _.uniq(
+		_.filter(Memory.remoteMining.targets, target => target.danger === 0 && Game.getObjectById(target.id)).map(
+			// this is safe because we filter out targets with no source
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			target => Game.getObjectById(target.id)!.room.name
+		)
+	);
+	targetRooms = _.reject(targetRooms, roomName => util.isTreasureRoom(roomName) || util.isHighwayRoom(roomName));
+	for (const room of targetRooms) {
+		const controller = new Room(room).controller;
+		if (!controller) {
+			console.log("[remote mining] ERR: can't find controller");
+		}
+		if (
+			controller &&
+			controller.reservation &&
+			controller.reservation.username === global.WHOAMI &&
+			controller.reservation.ticksToEnd > 400
+		) {
+			continue;
+		}
+
+		let alreadyTargeted = false;
+		for (const claimTarget of Memory.claimTargets) {
+			if (claimTarget.room === room) {
+				alreadyTargeted = true;
+				break;
+			}
+		}
+
+		if (!alreadyTargeted) {
+			Memory.claimTargets.push({
+				room,
+				mode: "reserve",
+			});
+		}
+	}
 }
