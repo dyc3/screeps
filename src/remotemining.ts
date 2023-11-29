@@ -40,76 +40,8 @@ export function commandRemoteMining(): void {
 			ObserveQueue.queue(target.roomName);
 			continue;
 		}
-		const source = Game.getObjectById(target.id);
-		if (!source) {
-			console.log("[remote mining]", target.id, "ERR: can't find source");
-			continue;
-		}
-		const hostiles = room.find(FIND_HOSTILE_CREEPS);
-		let keeperLair: StructureKeeperLair | undefined;
-		if (
-			hostiles
-				.filter(
-					creep =>
-						creep.getActiveBodyparts(ATTACK) +
-							creep.getActiveBodyparts(RANGED_ATTACK) +
-							creep.getActiveBodyparts(HEAL) >
-						0
-				)
-				.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0
-		) {
-			target.danger = 2;
-		} else if (util.isTreasureRoom(target.roomName)) {
-			// at this point, all hostiles must be source keepers
-			if (!target.keeperLairId) {
-				keeperLair = (source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
-					filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
-				}) ?? undefined) as StructureKeeperLair | undefined;
-				target.keeperLairId = keeperLair?.id;
-			} else {
-				keeperLair = Game.getObjectById(target.keeperLairId) ?? undefined;
-			}
 
-			const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
-			const foundInvaderCore = _.first(
-				hostileStructures.filter(struct => struct.structureType === STRUCTURE_INVADER_CORE)
-			);
-			if (
-				foundInvaderCore &&
-				hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0
-			) {
-				target.danger = 2;
-			} else if (
-				hostiles
-					.filter(
-						creep =>
-							creep.getActiveBodyparts(ATTACK) +
-								creep.getActiveBodyparts(RANGED_ATTACK) +
-								creep.getActiveBodyparts(HEAL) >
-							0
-					)
-					.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0
-			) {
-				target.danger = 1;
-			} else if (
-				keeperLair &&
-				keeperLair.ticksToSpawn &&
-				keeperLair.ticksToSpawn <= (JobRunner.getInstance().getInterval("command-remote-mining") ?? 0) + 5
-			) {
-				target.danger = 1;
-			} else {
-				target.danger = 0;
-			}
-		} else {
-			target.danger = 0;
-		}
-
-		// determine ideal creep positions for increased danger levels
-		if (!target.dangerPos) {
-			target.dangerPos = determineDangerPos(target.harvestPos, target.roomName, source, keeperLair);
-		}
-
-		Memory.remoteMining.targets[t] = target;
+		target.danger = evaluateDanger(target);
 	}
 
 	if (creepAllocation.neededHarvesters > 0) {
@@ -351,4 +283,85 @@ function determineDangerPos(
 			pos => pos.roomName !== roomName && !util.isDistFromEdge(pos, 3)
 		)[0],
 	};
+}
+
+function evaluateDanger(target: RemoteMiningTarget): number {
+	const room = Game.rooms[target.roomName];
+	const source = Game.getObjectById(target.id);
+	if (!source) {
+		console.log("[remote mining]", target.id, "ERR: can't find source");
+		throw new Error("Can't find source");
+	}
+	const isTreasureRoom = util.isTreasureRoom(target.roomName);
+	const hostiles = room.find(FIND_HOSTILE_CREEPS);
+	let keeperLair: StructureKeeperLair | undefined;
+
+	if (isTreasureRoom) {
+		if (!target.keeperLairId) {
+			keeperLair = (source.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {
+				filter: struct => struct.structureType === STRUCTURE_KEEPER_LAIR,
+			}) ?? undefined) as StructureKeeperLair | undefined;
+			target.keeperLairId = keeperLair?.id;
+		} else {
+			keeperLair = Game.getObjectById(target.keeperLairId) ?? undefined;
+		}
+	}
+
+	// determine ideal creep positions for increased danger levels
+	if (!target.dangerPos) {
+		target.dangerPos = determineDangerPos(target.harvestPos, target.roomName, source, keeperLair);
+	}
+
+	if (
+		hostiles
+			.filter(
+				creep =>
+					creep.getActiveBodyparts(ATTACK) +
+						creep.getActiveBodyparts(RANGED_ATTACK) +
+						creep.getActiveBodyparts(HEAL) >
+					0
+			)
+			.filter(hostile => hostile.owner.username !== "Source Keeper").length > 0
+	) {
+		return 2;
+	}
+
+	if (isTreasureRoom) {
+		const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
+		const foundInvaderCore = _.first(
+			hostileStructures.filter(struct => struct.structureType === STRUCTURE_INVADER_CORE)
+		);
+		if (
+			foundInvaderCore &&
+			hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0
+		) {
+			return 2;
+		}
+
+		if (
+			hostiles
+				.filter(
+					creep =>
+						creep.getActiveBodyparts(ATTACK) +
+							creep.getActiveBodyparts(RANGED_ATTACK) +
+							creep.getActiveBodyparts(HEAL) >
+						0
+				)
+				.filter(hostile => hostile.pos.getRangeTo(source) <= 8).length > 0
+		) {
+			return 1;
+		}
+
+		if (
+			keeperLair &&
+			keeperLair.ticksToSpawn &&
+			keeperLair.ticksToSpawn <= (JobRunner.getInstance().getInterval("command-remote-mining") ?? 0) + 5
+		) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	return 0;
 }
