@@ -31,7 +31,15 @@ const roleScientist = {
 
 				if (sinks.length === 0) {
 					creep.log(`WARN: Can't find any sinks for ${resource}`);
-					continue;
+					if (creep.room.storage) {
+						creep.log("WARN: falling back to storing in storage");
+						return {
+							resource,
+							depositTargetId: creep.room.storage.id,
+						};
+					} else {
+						continue;
+					}
 				}
 
 				const depositSink = _.first(sinks);
@@ -235,7 +243,11 @@ const roleScientist = {
 			}
 			if ((depositTarget.store.getFreeCapacity(creep.memory.route.resource) ?? 0) > 0) {
 				if (creep.pos.isNearTo(depositTarget)) {
-					creep.transfer(depositTarget, creep.memory.route.resource);
+					const result = creep.transfer(depositTarget, creep.memory.route.resource);
+					if (result === ERR_FULL) {
+						creep.log("deposit target is full, deleting route");
+						delete creep.memory.route;
+					}
 				} else {
 					cartographer.moveTo(creep, depositTarget);
 				}
