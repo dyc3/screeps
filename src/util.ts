@@ -8,7 +8,7 @@ export function isOwnedStructure(struct: AnyStructure): struct is AnyOwnedStruct
 	return struct instanceof Structure && "owner" in struct;
 }
 
-export function isStoreStructure(struct: AnyStructure): struct is AnyStoreStructure {
+export function isStoreStructure(struct: unknown): struct is AnyStoreStructure {
 	return struct instanceof Structure && "store" in struct;
 }
 
