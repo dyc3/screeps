@@ -106,32 +106,7 @@ export function commandRemoteMining(): void {
 
 		// determine ideal creep positions for increased danger levels
 		if (!target.dangerPos) {
-			const harvestPos = new RoomPosition(target.harvestPos.x, target.harvestPos.y, target.roomName);
-			const keepAwayFrom = keeperLair
-				? [
-						{ pos: source.pos, range: 6 },
-						{ pos: keeperLair.pos, range: 5 },
-				  ]
-				: { pos: source.pos, range: 6 };
-			target.dangerPos = {
-				1: _.last(
-					PathFinder.search(harvestPos, keepAwayFrom, {
-						flee: true,
-					}).path
-				),
-				2: _.filter(
-					PathFinder.search(
-						harvestPos,
-						{
-							// @ts-expect-error FIXME: this could use a refactor probably
-							pos: _.filter(util.findClosestOwnedRooms(harvestPos), r => r.storage)[0].storage.pos,
-							range: 4,
-						},
-						{}
-					).path,
-					pos => pos.roomName !== target.roomName && !util.isDistFromEdge(pos, 3)
-				)[0],
-			};
+			target.dangerPos = determineDangerPos(target.harvestPos, target.roomName, source, keeperLair);
 		}
 
 		Memory.remoteMining.targets[t] = target;
@@ -342,4 +317,38 @@ export function cleanUpAllocationInconsistencies(): void {
 			}
 		}
 	}
+}
+
+function determineDangerPos(
+	harvestPosition: { x: number; y: number },
+	roomName: string,
+	source: Source,
+	keeperLair: StructureKeeperLair | undefined
+): { [danger: number]: RoomPosition } {
+	const harvestPos = new RoomPosition(harvestPosition.x, harvestPosition.y, roomName);
+	const keepAwayFrom = keeperLair
+		? [
+				{ pos: source.pos, range: 6 },
+				{ pos: keeperLair.pos, range: 5 },
+		  ]
+		: { pos: source.pos, range: 6 };
+	return {
+		1: _.last(
+			PathFinder.search(harvestPos, keepAwayFrom, {
+				flee: true,
+			}).path
+		),
+		2: _.filter(
+			PathFinder.search(
+				harvestPos,
+				{
+					// @ts-expect-error FIXME: this could use a refactor probably
+					pos: _.filter(util.findClosestOwnedRooms(harvestPos), r => r.storage)[0].storage.pos,
+					range: 4,
+				},
+				{}
+			).path,
+			pos => pos.roomName !== roomName && !util.isDistFromEdge(pos, 3)
+		)[0],
+	};
 }
