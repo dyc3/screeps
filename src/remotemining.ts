@@ -25,85 +25,12 @@ export interface RemoteMiningTarget {
 
 export function commandRemoteMining(): void {
 	// Force job to run: Memory.jobLastRun["command-remote-mining"] = 0
-	let neededHarvesters = 0;
-	let neededCarriers = 0;
+	const creepAllocation = allocateCreeps();
+
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		const target = Memory.remoteMining.targets[t];
 		if (target.paused) {
 			continue;
-		}
-		// remove invalid creep references, and initialize potentially missing or invalid memory
-		if (
-			target.creepHarvester &&
-			(!Game.creeps[target.creepHarvester] ||
-				!Game.creeps[target.creepHarvester].memory.harvestTarget ||
-				Game.creeps[target.creepHarvester].memory.harvestTarget !== target.id)
-		) {
-			delete target.creepHarvester;
-		}
-		if (target.creepCarriers) {
-			for (let i = 0; i < target.creepCarriers.length; i++) {
-				const carrierName = target.creepCarriers[i];
-				if (
-					!Game.creeps[carrierName] ||
-					!Game.creeps[carrierName].memory.harvestTarget ||
-					Game.creeps[carrierName].memory.harvestTarget !== target.id
-				) {
-					target.creepCarriers.splice(i, 1);
-					i--;
-				}
-			}
-		} else {
-			target.creepCarriers = [];
-		}
-
-		if (!target.neededCarriers || target.neededCarriers < 1) {
-			target.neededCarriers = 1;
-		}
-
-		if (!target.creepHarvester || !target.creepCarriers) {
-			console.log("[remote mining]", target.id, "needs harvester or carriers");
-		}
-
-		// assign harvester
-		if (!target.creepHarvester) {
-			const remoteHarvesters = util
-				.getCreeps(Role.RemoteHarvester)
-				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
-			let didAssign = false;
-			for (const creep of remoteHarvesters) {
-				if (!creep.memory.harvestTarget || creep.memory.harvestTarget === target.id) {
-					target.creepHarvester = creep.name;
-					creep.memory.harvestTarget = target.id;
-					didAssign = true;
-					break;
-				}
-			}
-			if (!didAssign) {
-				neededHarvesters++;
-			}
-		}
-
-		// assign carriers that need to be assigned
-		if (target.creepCarriers.length < target.neededCarriers) {
-			const carriers = util
-				.getCreeps(Role.Carrier)
-				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
-			let countAssigned = 0;
-			for (const creep of carriers) {
-				if (creep.memory.harvestTarget && creep.memory.harvestTarget === target.id) {
-					creep.memory.harvestTarget = target.id;
-					countAssigned++;
-				} else if (!creep.memory.harvestTarget && !target.creepCarriers.includes(creep.name)) {
-					target.creepCarriers.push(creep.name);
-					creep.memory.harvestTarget = target.id;
-					countAssigned++;
-				}
-				if (countAssigned >= target.neededCarriers) {
-					break;
-				}
-			}
-			neededCarriers += target.neededCarriers - countAssigned;
 		}
 
 		// Determine the danger level for this source
@@ -210,12 +137,12 @@ export function commandRemoteMining(): void {
 		Memory.remoteMining.targets[t] = target;
 	}
 
-	if (neededHarvesters > 0) {
-		console.log("[remote mining]", "need to spawn", neededHarvesters, "remote harvesters");
+	if (creepAllocation.neededHarvesters > 0) {
+		console.log(`[remote mining] need to spawn ${creepAllocation.neededHarvesters} remote harvesters`);
 	}
 
-	if (neededCarriers > 0) {
-		console.log("[remote mining]", "need to spawn", neededCarriers, "carriers");
+	if (creepAllocation.neededCarriers > 0) {
+		console.log(`[remote mining] need to spawn ${creepAllocation.neededCarriers} carriers`);
 	}
 
 	const unpausedTargets = Memory.remoteMining.targets.filter(t => !t.paused);
@@ -258,6 +185,161 @@ export function commandRemoteMining(): void {
 				room,
 				mode: "reserve",
 			});
+		}
+	}
+}
+
+function getHarvestTarget(id: Id<Source>): RemoteMiningTarget | undefined {
+	return _.find(Memory.remoteMining.targets, target => target.id === id);
+}
+
+interface AllocateResult {
+	neededHarvesters: number;
+	neededCarriers: number;
+}
+
+/**
+ * Allocate creeps to remote mining targets.
+ */
+function allocateCreeps(): AllocateResult {
+	cleanUpInvalidAllocations();
+	cleanUpAllocationInconsistencies();
+
+	let neededHarvesters = 0;
+	let neededCarriers = 0;
+
+	for (const target of Memory.remoteMining.targets) {
+		if (target.paused) {
+			continue;
+		}
+		if (target.creepHarvester) {
+			const creep = Game.creeps[target.creepHarvester];
+			if (!creep) {
+				console.log("[remote mining]", target.id, "ERR: can't find creep");
+				continue;
+			}
+			if (creep.memory.role !== Role.RemoteHarvester) {
+				console.log("[remote mining]", target.id, "ERR: creep is not a remote harvester");
+				continue;
+			}
+			creep.memory.harvestTarget = target.id;
+		}
+		if (target.creepCarriers) {
+			for (const carrierName of target.creepCarriers) {
+				const creep = Game.creeps[carrierName];
+				if (!creep) {
+					console.log("[remote mining]", target.id, "ERR: can't find creep");
+					continue;
+				}
+				if (creep.memory.role !== Role.Carrier) {
+					console.log("[remote mining]", target.id, "ERR: creep is not a carrier");
+					continue;
+				}
+				creep.memory.harvestTarget = target.id;
+			}
+		}
+
+		if (!target.neededCarriers || target.neededCarriers < 1) {
+			target.neededCarriers = 1;
+		}
+
+		if (!target.creepHarvester || !target.creepCarriers) {
+			console.log("[remote mining]", target.id, "needs harvester or carriers");
+		}
+
+		// assign harvester
+		if (!target.creepHarvester) {
+			const remoteHarvesters = util
+				.getCreeps(Role.RemoteHarvester)
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
+			let didAssign = false;
+			for (const creep of remoteHarvesters) {
+				if (!creep.memory.harvestTarget || creep.memory.harvestTarget === target.id) {
+					target.creepHarvester = creep.name;
+					creep.memory.harvestTarget = target.id;
+					didAssign = true;
+					break;
+				}
+			}
+			if (!didAssign) {
+				neededHarvesters++;
+			}
+		}
+
+		// assign carriers that need to be assigned
+		if (target.creepCarriers.length < target.neededCarriers) {
+			const carriers = util
+				.getCreeps(Role.Carrier)
+				.filter((creep: Creep) => !creep.memory.harvestTarget || creep.memory.harvestTarget === target.id);
+			let countAssigned = 0;
+			for (const creep of carriers) {
+				if (creep.memory.harvestTarget && creep.memory.harvestTarget === target.id) {
+					creep.memory.harvestTarget = target.id;
+					countAssigned++;
+				} else if (!creep.memory.harvestTarget && !target.creepCarriers.includes(creep.name)) {
+					target.creepCarriers.push(creep.name);
+					creep.memory.harvestTarget = target.id;
+					countAssigned++;
+				}
+				if (countAssigned >= target.neededCarriers) {
+					break;
+				}
+			}
+			neededCarriers += target.neededCarriers - countAssigned;
+		}
+	}
+
+	return { neededHarvesters, neededCarriers };
+}
+
+export function cleanUpInvalidAllocations(): void {
+	// clean up invalid references in creep memory
+	for (const creep of util.getCreeps(Role.RemoteHarvester, Role.Carrier)) {
+		if (!creep.memory.harvestTarget) {
+			continue;
+		}
+		const target = getHarvestTarget(creep.memory.harvestTarget);
+		if (!target) {
+			delete creep.memory.harvestTarget;
+		}
+	}
+
+	// clean up invalid references in targets
+	for (const target of Memory.remoteMining.targets) {
+		if (!target.creepHarvester) {
+			continue;
+		}
+		const creep = Game.creeps[target.creepHarvester];
+		if (!creep) {
+			target.creepHarvester = undefined;
+		}
+		for (const carrier of target.creepCarriers) {
+			const creepCarrier = Game.creeps[carrier];
+			if (!creepCarrier) {
+				target.creepCarriers = _.without(target.creepCarriers, carrier);
+			}
+		}
+	}
+}
+
+export function cleanUpAllocationInconsistencies(): void {
+	for (const creep of util.getCreeps(Role.RemoteHarvester, Role.Carrier)) {
+		if (!creep.memory.harvestTarget) {
+			continue;
+		}
+		const target = getHarvestTarget(creep.memory.harvestTarget);
+		if (!target) {
+			continue;
+		}
+
+		if (creep.memory.role === Role.RemoteHarvester) {
+			if (creep.name !== target.creepHarvester) {
+				delete creep.memory.harvestTarget;
+			}
+		} else if (creep.memory.role === Role.Carrier) {
+			if (!target.creepCarriers.includes(creep.name)) {
+				delete creep.memory.harvestTarget;
+			}
 		}
 	}
 }

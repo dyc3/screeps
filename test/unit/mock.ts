@@ -1,3 +1,5 @@
+import type { RemoteMiningTarget } from "remotemining";
+
 export const Game: {
 	creeps: { [name: string]: any };
 	rooms: any;
@@ -18,11 +20,17 @@ export const Memory: {
 		intershard: [string, { shard: string; room: string }][];
 		interroom: [string, string][];
 	};
+	remoteMining: {
+		targets: RemoteMiningTarget[];
+	};
 } = {
 	creeps: {},
 	portals: {
 		intershard: [],
 		interroom: [],
+	},
+	remoteMining: {
+		targets: [],
 	},
 };
 
