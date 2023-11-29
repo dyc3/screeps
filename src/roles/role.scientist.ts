@@ -277,6 +277,10 @@ const roleScientist = {
 						creep.pickup(withdrawTarget);
 					} else {
 						creep.withdraw(withdrawTarget, creep.memory.route.resource);
+						if (resourceAmount <= creep.store.getCapacity()) {
+							creep.log("withdraw target is empty, deleting withdraw target");
+							delete creep.memory.withdrawTargetId;
+						}
 					}
 				} else {
 					cartographer.moveTo(creep, withdrawTarget);
