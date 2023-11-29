@@ -6,13 +6,12 @@ export class ErrorMapper {
 	private static _consumer?: SourceMapConsumer;
 
 	public static get consumer(): SourceMapConsumer {
-		if (this._consumer === null) {
+		if (!this._consumer) {
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			this._consumer = new SourceMapConsumer(require("main.js.map"));
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return this._consumer!;
+		return this._consumer;
 	}
 
 	// Cache previously mapped traces to improve performance
@@ -28,7 +27,7 @@ export class ErrorMapper {
 	 * @returns {string} The source-mapped stack trace
 	 */
 	public static sourceMappedStackTrace(error: Error | string): string {
-		const stack: string = error instanceof Error ? error.stack ?? "unknown stack" : error;
+		const stack: string = error instanceof Error ? (error.stack as string) : error;
 		if (Object.prototype.hasOwnProperty.call(this.cache, stack)) {
 			return this.cache[stack];
 		}
@@ -40,16 +39,12 @@ export class ErrorMapper {
 
 		while ((match = re.exec(stack))) {
 			if (match[2] === "main") {
-				if (!this.consumer) {
-					console.log("!!! SourceMapConsumer not initialized !!!");
-					break;
-				}
 				const pos = this.consumer.originalPositionFor({
 					column: parseInt(match[4], 10),
 					line: parseInt(match[3], 10),
 				});
 
-				if (pos.line !== null) {
+				if (pos.line != null) {
 					if (pos.name) {
 						outStack += `\n    at ${pos.name} (${pos.source}:${pos.line}:${pos.column})`;
 					} else {
