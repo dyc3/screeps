@@ -69,6 +69,10 @@ let taskGather = {
 			delete creep.memory.gatherTarget;
 		}
 		let gatherTarget = this.getGatherTarget(creep);
+		if (!gatherTarget) {
+			creep.log(`No gather target found`);
+			return;
+		}
 
 		if (creep.pos.isNearTo(gatherTarget)) {
 			if (gatherTarget instanceof Source) {
