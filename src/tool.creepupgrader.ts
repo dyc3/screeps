@@ -17,7 +17,7 @@ export function getUpgraderQuota(room: Room): number {
 			case 3:
 			case 4:
 			case 5:
-				value = util.getOwnedRooms().length > 1 ? 4 : 2;
+				value = util.getOwnedRooms().length > 1 ? 2 : 2;
 				break;
 			case 6:
 				value = 2;
