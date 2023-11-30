@@ -228,6 +228,11 @@ const roleCarrier = {
 				creep.memory.depositTarget = findDespositTarget(creep);
 			}
 
+			if (!creep.memory.depositTarget) {
+				creep.log("ERR: need deposit target");
+				return;
+			}
+
 			if (creep.memory.delivering && _.sum(creep.store) === 0) {
 				creep.memory.delivering = false;
 			} else if (!creep.memory.delivering && _.sum(creep.store) >= creep.store.getCapacity()) {
@@ -237,6 +242,10 @@ const roleCarrier = {
 			if (creep.memory.delivering) {
 				// take resources back to deposit target
 				const depositTarget = Game.getObjectById(creep.memory.depositTarget);
+				if (!depositTarget) {
+					creep.log("ERR: can't find deposit target");
+					return;
+				}
 				if (creep.pos.isNearTo(depositTarget)) {
 					for (const resource of RESOURCES_ALL) {
 						if (creep.store[resource] > 0) {
@@ -252,9 +261,8 @@ const roleCarrier = {
 					return;
 				}
 
-				let containers: (Ruin | StructureContainer)[] = creep.room
-					.find(FIND_RUINS)
-					.concat(util.getStructures(creep.room, STRUCTURE_CONTAINER));
+				let containers: (Ruin | StructureContainer)[] = creep.room.find(FIND_RUINS);
+				containers = containers.concat(util.getStructures(creep.room, STRUCTURE_CONTAINER));
 				containers = _.filter(containers, s => s.store.getUsedCapacity() > 0);
 				if (containers.length > 0) {
 					const target = containers[0];
