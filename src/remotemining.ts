@@ -371,3 +371,9 @@ function requestReservations() {
 		}
 	}
 }
+
+/** Rooms that are not safe to traverse right now. */
+export function remoteMiningDangerousRooms(): string[] {
+	// TODO: cache result for 1 tick
+	return _.filter(Memory.remoteMining.targets, target => target.danger > 1).map(target => target.roomName);
+}
