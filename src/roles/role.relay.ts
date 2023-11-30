@@ -193,7 +193,6 @@ const roleRelay = {
 		if (!storage) {
 			creep.log("Storage no longer exists");
 			delete creep.memory.storageId;
-			return;
 		}
 		if (storage && storage.structureType === STRUCTURE_STORAGE) {
 			creep.memory.isStorageModule = true; // indicates that the creep is in the storage module
@@ -351,7 +350,7 @@ const roleRelay = {
 				}
 			}
 
-			if (creep.store[RESOURCE_ENERGY] > 0) {
+			if (storage && creep.store[RESOURCE_ENERGY] > 0) {
 				creep.transfer(storage, RESOURCE_ENERGY);
 				creep.memory._lastDepositId = storage.id; // used for visualizeState
 			}
