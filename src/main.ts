@@ -563,11 +563,11 @@ function commandEnergyRelays() {
 		// HACK: because the way the storage module is placed is STILL jank af, rooms can opt in to change the relay position for the storage
 		const storagePosRelayDirection = room.memory.storagePosDirection ?? RIGHT;
 		const relayPositions = [
-			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
-			util.getPositionInDirection(storagePos, storagePosRelayDirection),
-			util.getPositionInDirection(rootLinkPos, TOP_RIGHT),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_LEFT),
+			util.getPositionInDirection(storagePos, storagePosRelayDirection),
 			util.getPositionInDirection(rootLinkPos, BOTTOM_RIGHT),
+			util.getPositionInDirection(rootLinkPos, TOP_LEFT),
+			util.getPositionInDirection(rootLinkPos, TOP_RIGHT),
 		];
 		relayPositions.splice(roleMeta.quota(room));
 		const availableRelayPos = _.filter(relayPositions, pos => {
