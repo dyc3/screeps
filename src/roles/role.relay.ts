@@ -305,15 +305,17 @@ const roleRelay = {
 		else if (targetIdsNotFull.length > 0) {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+				let fallbackToStorage = !link;
+
 				if (link && creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
-					if (storage) {
-						creep.withdraw(storage, RESOURCE_ENERGY);
-						creep.memory._lastWithdrawId = storage.id; // used for visualizeState
-					} else {
-						creep.log("No storage present.");
-					}
+					fallbackToStorage = true;
 				} else if (link) {
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
+				}
+
+				if (storage && fallbackToStorage) {
+					creep.withdraw(storage, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
 				}
 			}
 
@@ -323,25 +325,27 @@ const roleRelay = {
 					creep.log("WARN: target", id, "does not exist");
 					continue;
 				}
-				if (
-					target.structureType === STRUCTURE_TERMINAL &&
-					Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()
-				) {
-					creep.transfer(
-						target,
-						RESOURCE_ENERGY,
-						Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]
-					);
+				if (target.structureType === STRUCTURE_TERMINAL) {
+					if (Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+						creep.transfer(
+							target,
+							RESOURCE_ENERGY,
+							Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]
+						);
+					} else {
+						continue;
+					}
 				} else {
 					creep.transfer(target, RESOURCE_ENERGY);
 				}
+				// creep.log("Filled target", target.structureType, target.id);
 				creep.memory._lastDepositId = target.id; // used for visualizeState
 			}
 		}
 		// otherwise, fill the storage with energy from the link.
 		else {
 			// check if the creep is carrying energy, and pick some up if needed
-			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+			if (creep.store.getFreeCapacity() > 0) {
 				if (targetIdsOverFilled.length > 0) {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0])!);
@@ -349,9 +353,7 @@ const roleRelay = {
 					creep.withdraw(link, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
-			}
-
-			if (storage && creep.store[RESOURCE_ENERGY] > 0) {
+			} else if (storage && creep.store[RESOURCE_ENERGY] > 0) {
 				creep.transfer(storage, RESOURCE_ENERGY);
 				creep.memory._lastDepositId = storage.id; // used for visualizeState
 			}
