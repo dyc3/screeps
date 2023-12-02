@@ -168,9 +168,9 @@ const roleRelay = {
 			});
 			if (foundLinks.length === 0) {
 				console.log(creep.name, "ERR: no link structures found");
-				return;
+			} else {
+				creep.memory.linkId = foundLinks[0].id as Id<StructureLink>;
 			}
-			creep.memory.linkId = foundLinks[0].id as Id<StructureLink>;
 
 			const foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
@@ -183,12 +183,11 @@ const roleRelay = {
 				console.log(creep.name, "WARN: no found storage");
 			}
 		}
-		const link = Game.getObjectById(creep.memory.linkId);
+		const link = creep.memory.linkId ? Game.getObjectById(creep.memory.linkId) : null;
 		const storage = creep.memory.storageId ? Game.getObjectById(creep.memory.storageId) : null;
 		if (!link) {
 			creep.log("Link no longer exists");
 			delete creep.memory.linkId;
-			return;
 		}
 		if (!storage) {
 			creep.log("Storage no longer exists");
@@ -285,13 +284,13 @@ const roleRelay = {
 		});
 
 		// if the root needs energy, put it in the link
-		if (rootNeedsEnergy) {
+		if (rootNeedsEnergy && link) {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0])!);
-				} else {
+				} else if (storage) {
 					creep.withdraw(storage, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
 				}
@@ -304,14 +303,14 @@ const roleRelay = {
 		else if (targetIdsNotFull.length > 0) {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
-				if (creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
+				if (link && creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
 					if (storage) {
 						creep.withdraw(storage, RESOURCE_ENERGY);
 						creep.memory._lastWithdrawId = storage.id; // used for visualizeState
 					} else {
 						creep.log("No storage present.");
 					}
-				} else {
+				} else if (link) {
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
 			}
@@ -344,7 +343,7 @@ const roleRelay = {
 				if (targetIdsOverFilled.length > 0) {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					this.withdrawOverfillTarget(creep, Game.getObjectById(targetIdsOverFilled[0])!);
-				} else if (link.store[RESOURCE_ENERGY] > 0) {
+				} else if (link && link.store[RESOURCE_ENERGY] > 0) {
 					creep.withdraw(link, RESOURCE_ENERGY);
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
