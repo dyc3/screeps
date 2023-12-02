@@ -148,9 +148,9 @@ const roleRelay = {
 			creep.memory.assignedPos.y,
 			creep.memory.targetRoom
 		);
-		const result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
-		if (result !== OK) {
-			creep.log("MOVE TO ASSIGNED POS:", result);
+		const moveResult = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
+		if (moveResult !== OK) {
+			creep.log(`MOVE TO ASSIGNED POS: ${moveResult}`);
 		}
 
 		if (assignedPos.roomName !== creep.memory.targetRoom) {
