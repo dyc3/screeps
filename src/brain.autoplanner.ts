@@ -1005,6 +1005,8 @@ global.autoPlanner = {
 	removePlans: brainAutoPlanner.removePlansAtPosition,
 	// eslint-disable-next-line @typescript-eslint/unbound-method
 	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
+	// eslint-disable-next-line @typescript-eslint/unbound-method
+	getPlans: brainAutoPlanner.getPlansAtPosition,
 };
 
 // @ts-expect-error global augmentation
