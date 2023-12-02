@@ -17,7 +17,7 @@ const roleRelay = {
 	 *
 	 */
 	visualizeState(creep: Creep): void {
-		if (!creep.memory.assignedPos) {
+		if (!creep.memory.assignedPos || !creep.memory.targetRoom) {
 			creep.log("ERROR: Can't visualize state because this creep does not have an assigned position");
 			return;
 		}
@@ -28,45 +28,50 @@ const roleRelay = {
 		const assignedPos = new RoomPosition(
 			creep.memory.assignedPos.x,
 			creep.memory.assignedPos.y,
-			creep.memory.assignedPos.roomName
+			creep.memory.targetRoom
 		);
 
 		// draw lines to storage and link
-		const storage = Game.getObjectById(creep.memory.storageId);
-		const link = Game.getObjectById(creep.memory.linkId);
+		const link = creep.memory.linkId ? Game.getObjectById(creep.memory.linkId) : null;
+		const storage = creep.memory.storageId ? Game.getObjectById(creep.memory.storageId) : null;
 
 		// FIXME: lots of repeated code here to find the correct colors
-		let storageColor = "#fa0";
-		if (creep.memory._lastWithdrawId === storage.id) {
-			storageColor = colorWithdraw;
-			if (creep.memory._lastDepositId === storage.id) {
-				storageColor = colorBadTransfer;
-			}
-		} else if (creep.memory._lastDepositId === storage.id) {
-			storageColor = colorDeposit;
-		}
-
 		let linkColor = "#ff0";
-		if (creep.memory._lastWithdrawId === link.id) {
-			linkColor = colorWithdraw;
-			if (creep.memory._lastDepositId === link.id) {
-				linkColor = colorBadTransfer;
+		if (link) {
+			if (creep.memory._lastWithdrawId === link.id) {
+				linkColor = colorWithdraw;
+				if (creep.memory._lastDepositId === link.id) {
+					linkColor = colorBadTransfer;
+				}
+			} else if (creep.memory._lastDepositId === link.id) {
+				linkColor = colorDeposit;
 			}
-		} else if (creep.memory._lastDepositId === link.id) {
-			linkColor = colorDeposit;
+
+			vis.line(assignedPos, link.pos, {
+				color: linkColor,
+				opacity: 0.7,
+			});
 		}
 
-		vis.line(assignedPos, storage.pos, {
-			color: storageColor,
-			opacity: 0.7,
-		});
-		vis.line(assignedPos, link.pos, {
-			color: linkColor,
-			opacity: 0.7,
-		});
+		let storageColor = "#fa0";
+		if (storage) {
+			if (creep.memory._lastWithdrawId === storage.id) {
+				storageColor = colorWithdraw;
+				if (creep.memory._lastDepositId === storage.id) {
+					storageColor = colorBadTransfer;
+				}
+			} else if (creep.memory._lastDepositId === storage.id) {
+				storageColor = colorDeposit;
+			}
+
+			vis.line(assignedPos, storage.pos, {
+				color: storageColor,
+				opacity: 0.7,
+			});
+		}
 
 		// draw lines to fill targets
-		for (const targetId of creep.memory.fillTargetIds) {
+		for (const targetId of creep.memory.fillTargetIds ?? []) {
 			const target = Game.getObjectById(targetId);
 			if (!target) {
 				creep.log("WARN: target", targetId, "does not exist");
