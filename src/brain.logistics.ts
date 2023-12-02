@@ -1,5 +1,5 @@
-import brainAutoPlanner from "./brain.autoplanner.js";
 import util, { isStoreStructure, isValidResource } from "./util";
+import brainAutoPlanner from "./brain.autoplanner";
 
 export class ResourceSink {
 	public resource: ResourceConstant;
