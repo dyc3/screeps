@@ -148,12 +148,9 @@ const roleRelay = {
 			creep.memory.assignedPos.y,
 			creep.memory.targetRoom
 		);
-		if (!creep.pos.isEqualTo(assignedPos)) {
-			const result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
-			if (result !== OK) {
-				console.log(creep.name, "MOVE TO ASSIGNED POS:", result);
-			}
-			return;
+		const result = cartographer.moveTo(creep, { pos: assignedPos, range: 0 }, { priority: 100 });
+		if (result !== OK) {
+			creep.log("MOVE TO ASSIGNED POS:", result);
 		}
 
 		if (assignedPos.roomName !== creep.memory.targetRoom) {
@@ -167,7 +164,7 @@ const roleRelay = {
 				},
 			});
 			if (foundLinks.length === 0) {
-				console.log(creep.name, "ERR: no link structures found");
+				creep.log("ERR: no link structures found");
 			} else {
 				creep.memory.linkId = foundLinks[0].id as Id<StructureLink>;
 			}
@@ -180,7 +177,7 @@ const roleRelay = {
 			if (foundStorage.length > 0) {
 				creep.memory.storageId = foundStorage[0].id as Id<StructureContainer | StructureStorage>;
 			} else {
-				console.log(creep.name, "WARN: no found storage");
+				creep.log("WARN: no found storage");
 			}
 		}
 		const link = creep.memory.linkId ? Game.getObjectById(creep.memory.linkId) : null;
