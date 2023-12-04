@@ -1,4 +1,5 @@
 import * as cartographer from "screeps-cartographer";
+import util from "../util";
 
 // FIXME: When new structures are built around relays, fillTargetIds does not get updated
 
@@ -266,6 +267,10 @@ const roleRelay = {
 					}
 			}
 		});
+		// creep.log(
+		// 	"targetIdsNotFull:",
+		// 	targetIdsNotFull.map(id => Game.getObjectById(id))
+		// );
 
 		const targetIdsOverFilled = _.filter(creep.memory.fillTargetIds, id => {
 			const struct = Game.getObjectById(id);
@@ -284,6 +289,11 @@ const roleRelay = {
 					return false;
 			}
 		});
+
+		// creep.log(
+		// 	"targetIdsOverFilled:",
+		// 	targetIdsOverFilled.map(id => Game.getObjectById(id))
+		// );
 
 		// if the root needs energy, put it in the link
 		if (rootNeedsEnergy && link) {
@@ -304,7 +314,7 @@ const roleRelay = {
 		// if fill targets aren't filled, fill them
 		else if (targetIdsNotFull.length > 0) {
 			// check if the creep is carrying energy, and pick some up if needed
-			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
+			if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
 				let fallbackToStorage = !link;
 
 				if (link && creep.withdraw(link, RESOURCE_ENERGY) !== OK) {
@@ -326,20 +336,18 @@ const roleRelay = {
 					continue;
 				}
 				if (target.structureType === STRUCTURE_TERMINAL) {
-					if (Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
-						creep.transfer(
-							target,
-							RESOURCE_ENERGY,
-							Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY]
-						);
-					} else {
-						continue;
-					}
+					const amount = Math.min(
+						Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY],
+						creep.store.getUsedCapacity(RESOURCE_ENERGY)
+					);
+					const result = creep.transfer(target, RESOURCE_ENERGY, amount);
+					// creep.log(`Filled terminal with ${amount}: ${util.errorCodeToString(result)}`);
 				} else {
 					creep.transfer(target, RESOURCE_ENERGY);
 				}
 				// creep.log("Filled target", target.structureType, target.id);
 				creep.memory._lastDepositId = target.id; // used for visualizeState
+				break;
 			}
 		}
 		// otherwise, fill the storage with energy from the link.
