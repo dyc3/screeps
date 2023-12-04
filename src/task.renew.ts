@@ -133,8 +133,6 @@ const taskRenew = {
 			} else {
 				return 700;
 			}
-		} else if (creep.memory.role === Role.NextRoomer) {
-			return 1000;
 		} else if (creep.memory.role === Role.Builder || creep.memory.role === Role.Scientist) {
 			if (
 				creep.memory.role === Role.Builder &&
