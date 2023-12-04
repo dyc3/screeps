@@ -8,6 +8,14 @@ import util from "./util";
 
 const taskRenew = {
 	findRenewTarget(creep: Creep | PowerCreep): StructureSpawn | StructurePowerSpawn | undefined {
+		// HACK: prevent relays from running away from their position to renew
+		if (creep instanceof Creep && creep.memory.role === Role.Relay && creep.memory.renewTarget) {
+			const closeSpawn = Game.getObjectById(creep.memory.renewTarget);
+			if (closeSpawn && creep.pos.isNearTo(closeSpawn)) {
+				return closeSpawn;
+			}
+		}
+
 		let spawn =
 			creep instanceof Creep
 				? util.getSpawn(creep.room)
