@@ -385,6 +385,7 @@ const roleRelay = {
 			}
 			if (struct.structureType === STRUCTURE_SPAWN) {
 				creep.memory.renewTarget = id as Id<StructureSpawn>;
+				break;
 			}
 		}
 	},
