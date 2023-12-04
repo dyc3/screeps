@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import * as cartographer from "screeps-cartographer";
 import { Role } from "roles/meta";
-import taskGather from "./task.gather.js";
-import util from "./util.js";
+import taskGather from "./task.gather";
+import util from "./util";
 
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
@@ -11,7 +11,8 @@ const taskRenew = {
 		let spawn =
 			creep instanceof Creep
 				? util.getSpawn(creep.room)
-				: _.first(util.getStructures(creep.room, STRUCTURE_POWER_SPAWN));
+				: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				  _.first(util.getStructures(creep.room!, STRUCTURE_POWER_SPAWN));
 		if (spawn) {
 			creep.memory.renewTarget = spawn.id;
 			// creep.memory._renewDebug = {
@@ -116,7 +117,7 @@ const taskRenew = {
 			travelTime += spawn.spawning.remainingTime;
 		}
 
-		return (creep.ticksToLive ?? 0) < travelTime + (creep.room !== spawn.room ? 100 : 40);
+		return (creep.ticksToLive ?? 0) < travelTime + (creep.room.name !== spawn.room.name ? 100 : 40);
 	},
 
 	/**
