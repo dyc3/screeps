@@ -1,8 +1,8 @@
 import * as cartographer from "screeps-cartographer";
 import util, { isOwnedStructure } from "../util.js";
 import { Role } from "./meta";
-import taskDismantle from "../task.dismantle.js";
-import taskGather from "../task.gather.js";
+import taskDismantle from "../task.dismantle";
+import taskGather from "../task.gather";
 
 const ENABLE_WALL_REPAIR = true;
 const WALL_REPAIR_HARD_LIMIT = 200000; // to disable, set to infinity
