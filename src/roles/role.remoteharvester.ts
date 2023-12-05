@@ -29,7 +29,7 @@ const roleRemoteHarvester = {
 					return room.find(FIND_HOSTILE_CREEPS).map(c => {
 						return {
 							pos: c.pos,
-							range: 5,
+							range: 10,
 						};
 					});
 				},
