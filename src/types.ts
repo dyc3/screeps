@@ -111,7 +111,10 @@ declare global {
 		excludeTransport?: Id<AnyStoreStructure>[];
 		aquireTarget?: Id<AnyStoreStructure | Tombstone | Ruin | Resource>;
 		transportTarget?: Id<AnyStoreStructure>;
-		_lastTransferTargetFail?: number;
+		/**
+		 * The last time this creep checked for work.
+		 */
+		lastCheckForWork?: number;
 		hasDedicatedLink?: boolean;
 		harvesting?: boolean;
 		dedicatedLinkId?: Id<StructureLink>;

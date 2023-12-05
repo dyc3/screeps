@@ -612,12 +612,7 @@ const roleManager = {
 		if (creep.memory.transporting) {
 			delete creep.memory.aquireTarget;
 
-			if (
-				// eslint-disable-next-line no-underscore-dangle
-				creep.memory._lastTransferTargetFail !== undefined &&
-				// eslint-disable-next-line no-underscore-dangle
-				Game.time - creep.memory._lastTransferTargetFail < 10
-			) {
+			if (creep.memory.lastCheckForWork !== undefined && Game.time - creep.memory.lastCheckForWork < 10) {
 				creep.log("Waiting before trying to find a new target to save CPU, because we failed last time.");
 				return;
 			}
@@ -629,11 +624,11 @@ const roleManager = {
 				}
 				creep.log("can't get a transport target");
 				// eslint-disable-next-line no-underscore-dangle
-				creep.memory._lastTransferTargetFail = Game.time;
+				creep.memory.lastCheckForWork = Game.time;
 				return;
 			}
 			// eslint-disable-next-line no-underscore-dangle
-			delete creep.memory._lastTransferTargetFail;
+			delete creep.memory.lastCheckForWork;
 			creep.room.visual.circle(transportTarget.pos, { stroke: "#00ff00", fill: "transparent", radius: 0.8 });
 			creep.log(`Transporting to ${transportTarget}`);
 			if (creep.pos.isNearTo(transportTarget)) {
