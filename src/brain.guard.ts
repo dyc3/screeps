@@ -408,6 +408,7 @@ export default {
 				if (task.guardType === "treasure") {
 					newCreepMem.keepAlive = true;
 				}
+				// @ts-expect-error this is accounted for
 				if (targetSpawn.spawnCreep(creepBody, creepName, { memory: newCreepMem }) === OK) {
 					console.log(`[guardians] Spawned new ${task.guardType} guardian for ${task.id}`);
 					task.assignedCreeps.push(creepName);

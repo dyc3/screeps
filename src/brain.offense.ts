@@ -27,6 +27,7 @@ export default {
 			vis.text(
 				`${task.strategyName}: state: ${task.state}, started: ${task.state === TASK_RUN}, creeps: ${
 					task.creeps.length
+					// @ts-expect-error this is fine
 				} strategy ${JSON.stringify(_.omit(task.strategy, "name"))}`,
 				25,
 				30 + i
@@ -37,6 +38,7 @@ export default {
 	},
 };
 
+// @ts-expect-error i want this to be global
 global.Offense = {
 	spawn(taskIdx: number, creepType: string, spawnName = "Spawn6") {
 		// HACK: kinda hardcoded spawn
@@ -66,6 +68,7 @@ global.Offense = {
 	create(strategyName: string, init = {}): void {
 		const task = new OffenseTask({
 			strategyName,
+			// @ts-expect-error this is jank, fix it if it changes
 			strategy: init,
 		});
 		Memory.offense.tasks.push(_.omit(task, "creeps"));
@@ -84,6 +87,7 @@ global.Offense = {
 			manualStart: false,
 		});
 		if (Memory.offense.tasks[taskIdx].strategyName === "LureHarrass") {
+			// @ts-expect-error this is jank, fix it if it changes
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				state: 0,
 				currentTargetId: "",
@@ -105,6 +109,7 @@ global.Offense = {
 			Memory.offense.tasks[taskIdx].strategyName === "LureHarrass" ||
 			Memory.offense.tasks[taskIdx].strategyName === "SimpleManual"
 		) {
+			// @ts-expect-error this is jank, fix it if it changes
 			Object.assign(Memory.offense.tasks[taskIdx].strategy, {
 				currentTargetId: target,
 			});

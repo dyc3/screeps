@@ -406,7 +406,7 @@ global.Debug = {
 		if (!harvestTarget) {
 			return `Harvester ${creep.name} has no vision on harvest target ${creep.memory.harvestTarget}`;
 		}
-		const renewTarget = Game.getObjectById(creep.memory.renewTarget);
+		const renewTarget = creep.memory.renewTarget ? Game.getObjectById(creep.memory.renewTarget) : null;
 		if (!renewTarget) {
 			return `Harvester ${creep.name} has no vision on renew target ${creep.memory.renewTarget}`;
 		}

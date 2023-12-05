@@ -69,7 +69,7 @@ declare global {
 		stage: number;
 		renewing: boolean;
 		renewForceAmount: number | undefined;
-		renewTarget: Id<StructureSpawn>;
+		renewTarget?: Id<StructureSpawn>;
 		_renewTravelTime: number;
 		_lastCheckTravelTime: number;
 
@@ -142,6 +142,8 @@ declare global {
 		storageTarget?: Id<AnyStoreStructure>;
 		storageTargetSecondary?: Id<AnyStoreStructure>;
 		mining?: boolean;
+		_lastCheckForCloseSpawn?: number;
+		_renewGather?: boolean;
 	}
 
 	interface PowerCreepMemory {
@@ -149,6 +151,7 @@ declare global {
 		renewTarget: Id<StructurePowerSpawn>;
 		_renewTravelTime: number;
 		_lastCheckTravelTime: number;
+		_lastCheckForCloseSpawn?: number;
 	}
 
 	interface RoomMemory {

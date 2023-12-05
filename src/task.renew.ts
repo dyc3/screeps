@@ -71,7 +71,7 @@ const taskRenew = {
 				creep.memory._lastCheckForCloseSpawn = Game.time;
 			}
 		}
-		spawn = Game.getObjectById(creep.memory.renewTarget);
+		spawn = Game.getObjectById(creep.memory.renewTarget as Id<StructureSpawn | StructurePowerSpawn>) ?? undefined;
 		if (spawn) {
 			return spawn;
 		}
@@ -125,7 +125,7 @@ const taskRenew = {
 			travelTime += spawn.spawning.remainingTime;
 		}
 
-		return (creep.ticksToLive ?? 0) < travelTime + (creep.room.name !== spawn.room.name ? 100 : 40);
+		return (creep.ticksToLive ?? 0) < travelTime + (creep.room?.name !== spawn.room.name ? 100 : 40);
 	},
 
 	/**
@@ -188,7 +188,7 @@ const taskRenew = {
 			// }
 			this.findRenewTarget(creep);
 		}
-		const renewTarget = Game.getObjectById(creep.memory.renewTarget);
+		const renewTarget = creep.memory.renewTarget ? Game.getObjectById(creep.memory.renewTarget) : null;
 
 		if (!renewTarget) {
 			creep.log("ERROR: No renew target found");
@@ -286,7 +286,7 @@ const taskRenew = {
 					case ERR_BUSY:
 						if ((renewTarget.spawning?.remainingTime ?? 0) > (creep.ticksToLive ?? 0) + 10) {
 							delete creep.memory.renewTarget;
-							delete creep.memory._renewDebug;
+							// delete creep.memory._renewDebug;
 						}
 						break;
 					default:
@@ -299,14 +299,14 @@ const taskRenew = {
 				creep.log("ERROR: renew target is the wrong type of spawn: ", renewTarget);
 			}
 		}
-		if ((creep.ticksToLive ?? 0) >= maxTicks) {
+		if ((creep.ticksToLive ?? 0) >= maxTicks && creep instanceof Creep) {
 			creep.memory.renewing = false;
 			delete creep.memory.renewForceAmount;
 		}
 
 		if (!creep.memory.renewing) {
 			delete creep.memory.renewTarget;
-			delete creep.memory._renewDebug;
+			// delete creep.memory._renewDebug;
 		}
 	},
 };
