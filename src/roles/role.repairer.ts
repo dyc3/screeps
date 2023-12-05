@@ -179,16 +179,6 @@ const roleRepairer = {
 						creep.log("rampart is in desired hits range, clearing repairTarget");
 						delete creep.memory.repairTarget;
 					}
-				} else {
-					const weakRamparts = creep.room.find(FIND_STRUCTURES, {
-						filter(struct) {
-							return struct.structureType === STRUCTURE_RAMPART && struct.hits < 3000;
-						},
-					});
-					if (weakRamparts.length > 0) {
-						creep.log("found weak rampart, clearing repairTarget to get a new one");
-						delete creep.memory.repairTarget;
-					}
 				}
 			} else if (!repairTarget) {
 				// console.log(creep.name,"repairTarget =",repairTarget);
@@ -215,9 +205,6 @@ const roleRepairer = {
 
 		if (creep.memory.repairing) {
 			const repairTarget = Game.getObjectById(creep.memory.repairTarget as Id<AnyStructure>);
-			// if (creep.memory.role === "repairer") {
-			// 	console.log(creep.name,"repairTarget:",repairTarget,repairTarget.hits+"/"+repairTarget.hitsMax,"dist:",creep.pos.getRangeTo(repairTarget));
-			// }
 			if (repairTarget) {
 				cartographer.moveTo(creep, { pos: repairTarget.pos, range: 3 }, { visualizePathStyle: {} });
 				creep.repair(repairTarget);
