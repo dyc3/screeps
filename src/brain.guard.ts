@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 import * as cartographer from "screeps-cartographer";
+import { JobRunner } from "./jobs";
 import { Role } from "roles/meta";
 import toolFriends from "./tool.friends.js";
 import util from "./util.js";
-import { JobRunner } from "jobs.js";
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER: { [i: number]: number } = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
 
