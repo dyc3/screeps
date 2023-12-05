@@ -64,6 +64,9 @@ function findDespositTarget(creep: Creep) {
 	return rooms[0]?.storage?.id;
 }
 
+/**
+ * This is quite CPU intensive. Ideally we'd be able to tap in to the repairer's logic somehow so we could reuse those results.
+ */
 function passiveMaintainRoads(creep: Creep) {
 	if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 		return;
@@ -83,13 +86,7 @@ function passiveMaintainRoads(creep: Creep) {
 			["desc", "asc"]
 		);
 		creep.repair(structs[0]);
-		return;
 	}
-
-	// FIXME: This gets really messy, we should plan the roads ahead of time.
-	// 		if (creep.memory.depositTarget && creep.room.name !== Game.getObjectById(creep.memory.depositTarget).room.name) {
-	// 			creep.pos.createConstructionSite(STRUCTURE_ROAD);
-	// 		}
 }
 
 const roleCarrier = {
@@ -174,7 +171,7 @@ const roleCarrier = {
 				}
 			} else {
 				if (creep.pos.isEqualTo(harvestPos)) {
-					creep.move([TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP][Math.floor(Math.random() * 4)]);
+					cartographer.moveTo(creep, harvestPos, { ...DEFAULT_MOVE_OPTS, flee: true });
 					return;
 				}
 
@@ -202,7 +199,7 @@ const roleCarrier = {
 						}
 					}
 				}
-				const dropped = Game.getObjectById(creep.memory.droppedEnergyId);
+				const dropped = creep.memory.droppedEnergyId ? Game.getObjectById(creep.memory.droppedEnergyId) : null;
 				if (!dropped) {
 					delete creep.memory.droppedEnergyId;
 				}
@@ -213,6 +210,7 @@ const roleCarrier = {
 				}
 			}
 
+			// this is CPU intensive (about 50% of the CPU for this creep)
 			if (creep.getActiveBodyparts(WORK) > 0) {
 				passiveMaintainRoads(creep);
 			}
