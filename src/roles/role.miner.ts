@@ -44,8 +44,8 @@ const roleMiner = {
 			);
 		});
 		for (const flag of fillFlags) {
-			const material = flag.name.split(":")[1];
-			if (creep.store[material] > 0) {
+			const material = flag.name.split(":")[1] as ResourceConstant;
+			if (creep.store.getUsedCapacity(material) > 0) {
 				const target = flag.pos
 					.lookFor(LOOK_STRUCTURES)
 					.filter(
@@ -54,7 +54,7 @@ const roleMiner = {
 							struct.structureType === STRUCTURE_TERMINAL ||
 							struct.structureType === STRUCTURE_FACTORY ||
 							struct.structureType === STRUCTURE_STORAGE
-					)[0];
+					)[0] as StructureStorage | StructureTerminal | StructureFactory | StructureLab | undefined;
 				if (!target) {
 					continue;
 				}
@@ -65,9 +65,9 @@ const roleMiner = {
 		}
 
 		if (!creep.memory.useSecondaryRoute) {
-			creep.memory.storageTarget = creep.room.storage.id;
+			creep.memory.storageTarget = creep.room.storage?.id;
 		} else {
-			creep.memory.storageTargetSecondary = creep.room.storage.id;
+			creep.memory.storageTargetSecondary = creep.room.storage?.id;
 		}
 		delete creep.memory.materialToStore;
 		return creep.room.storage;
@@ -96,8 +96,10 @@ const roleMiner = {
 
 		const totalCarry = creep.store.getUsedCapacity();
 
-		const mineralTarget = Game.getObjectById(creep.memory.mineralTarget);
-		const mineralTargetSecondary = Game.getObjectById(creep.memory.mineralTargetSecondary);
+		const mineralTarget = creep.memory.mineralTarget ? Game.getObjectById(creep.memory.mineralTarget) : null;
+		const mineralTargetSecondary = creep.memory.mineralTargetSecondary
+			? Game.getObjectById(creep.memory.mineralTargetSecondary)
+			: null;
 		if (!mineralTarget) {
 			console.log(creep.name, "no mineral target");
 			return;
@@ -111,9 +113,9 @@ const roleMiner = {
 		if (
 			mineralTargetSecondary &&
 			!creep.memory.useSecondaryRoute &&
-			mineralTarget.ticksToRegeneration > 0 &&
+			(mineralTarget.ticksToRegeneration ?? 0) > 0 &&
 			(mineralTargetSecondary.ticksToRegeneration === undefined ||
-				mineralTarget.ticksToRegeneration > mineralTargetSecondary.ticksToRegeneration) &&
+				(mineralTarget.ticksToRegeneration ?? 0) > (mineralTargetSecondary.ticksToRegeneration ?? 0)) &&
 			totalCarry === 0
 		) {
 			creep.memory.useSecondaryRoute = true;
@@ -121,9 +123,10 @@ const roleMiner = {
 			return;
 		} else if (
 			creep.memory.useSecondaryRoute &&
-			mineralTargetSecondary.ticksToRegeneration > 0 &&
+			mineralTargetSecondary &&
+			(mineralTargetSecondary.ticksToRegeneration ?? 0) > 0 &&
 			(mineralTarget.ticksToRegeneration === undefined ||
-				mineralTargetSecondary.ticksToRegeneration > mineralTarget.ticksToRegeneration) &&
+				(mineralTargetSecondary.ticksToRegeneration ?? 0) > mineralTarget.ticksToRegeneration) &&
 			totalCarry === 0
 		) {
 			creep.memory.useSecondaryRoute = false;
@@ -140,9 +143,9 @@ const roleMiner = {
 		if (
 			creep.memory.mining &&
 			(creep.store.getFreeCapacity() === 0 ||
-				((creep.memory.useSecondaryRoute
-					? mineralTargetSecondary.ticksToRegeneration
-					: mineralTarget.ticksToRegeneration) > 0 &&
+				((creep.memory.useSecondaryRoute && mineralTargetSecondary
+					? mineralTargetSecondary.ticksToRegeneration ?? 0
+					: mineralTarget.ticksToRegeneration ?? 0) > 0 &&
 					totalCarry > 0))
 		) {
 			creep.memory.mining = false;
@@ -150,10 +153,15 @@ const roleMiner = {
 		}
 
 		if (creep.memory.mining) {
-			switch (creep.harvest(creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget)) {
+			const target = creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget;
+			if (!target) {
+				creep.log("no target");
+				return;
+			}
+			switch (creep.harvest(target)) {
 				case ERR_NOT_IN_RANGE:
 				case ERR_NOT_ENOUGH_RESOURCES:
-					cartographer.moveTo(creep, creep.memory.useSecondaryRoute ? mineralTargetSecondary : mineralTarget);
+					cartographer.moveTo(creep, target);
 					break;
 				default:
 			}
@@ -166,12 +174,18 @@ const roleMiner = {
 				storageTarget = this.getTargetStorage(creep);
 			} else {
 				if (!creep.memory.useSecondaryRoute) {
-					storageTarget = Game.getObjectById(creep.memory.storageTarget);
+					storageTarget = creep.memory.storageTarget ? Game.getObjectById(creep.memory.storageTarget) : null;
 				} else {
-					storageTarget = Game.getObjectById(creep.memory.storageTargetSecondary);
+					storageTarget = creep.memory.storageTargetSecondary
+						? Game.getObjectById(creep.memory.storageTargetSecondary)
+						: null;
 				}
 			}
 
+			if (!storageTarget) {
+				creep.log("no storage target");
+				return;
+			}
 			if (creep.pos.isNearTo(storageTarget)) {
 				if (creep.memory.materialToStore) {
 					creep.transfer(

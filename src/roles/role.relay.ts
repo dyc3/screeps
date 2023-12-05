@@ -136,7 +136,7 @@ const roleRelay = {
 			overfilledStruct,
 			resource,
 			Math.min(
-				Math.max(0, overfilledStruct.store.getUsedCapacity(resource) - fillTargetAmount),
+				Math.max(0, (overfilledStruct.store.getUsedCapacity(resource) ?? 0) - fillTargetAmount),
 				creep.store.getFreeCapacity()
 			)
 		);

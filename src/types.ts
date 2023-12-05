@@ -136,6 +136,12 @@ declare global {
 		_gatherLastRun?: number;
 		forceGatherTarget?: Id<Source | Resource | AnyStoreStructure | Tombstone | Ruin>;
 		rememberGatherTarget?: boolean;
+		mineralTarget?: Id<Mineral>;
+		mineralTargetSecondary?: Id<Mineral>;
+		useSecondaryRoute?: boolean;
+		storageTarget?: Id<AnyStoreStructure>;
+		storageTargetSecondary?: Id<AnyStoreStructure>;
+		mining?: boolean;
 	}
 
 	interface PowerCreepMemory {

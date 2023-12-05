@@ -231,9 +231,9 @@ const roleCarrier = {
 				return;
 			}
 
-			if (creep.memory.delivering && _.sum(creep.store) === 0) {
+			if (creep.memory.delivering && creep.store.getUsedCapacity() === 0) {
 				creep.memory.delivering = false;
-			} else if (!creep.memory.delivering && _.sum(creep.store) >= creep.store.getCapacity()) {
+			} else if (!creep.memory.delivering && creep.store.getFreeCapacity() === 0) {
 				creep.memory.delivering = true;
 			}
 
