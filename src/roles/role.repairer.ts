@@ -5,7 +5,7 @@ import taskDismantle from "../task.dismantle";
 import taskGather from "../task.gather";
 
 const ENABLE_WALL_REPAIR = true;
-const WALL_REPAIR_HARD_LIMIT = 200000; // to disable, set to infinity
+const WALL_REPAIR_HARD_LIMIT = Infinity; // to disable, set to infinity
 
 /**
  * get number of repairers assigned to a room
@@ -196,7 +196,9 @@ const roleRepairer = {
 
 			if (!creep.memory.repairTarget) {
 				creep.memory.lastCheckForWork = Game.time;
+				return;
 			}
+			delete creep.memory.lastCheckForWork;
 
 			// if we don't have a lot of energy, refill before repairing
 			if (creep.store[RESOURCE_ENERGY] <= creep.store.getCapacity() * 0.1) {
