@@ -80,9 +80,10 @@ const roleScientist = {
 						}
 						if (targetResource === RESOURCE_ENERGY) {
 							if (
-								(brainAutoPlanner.isInRootModule(s.object) ||
+								((s.object instanceof Structure && brainAutoPlanner.isInRootModule(s.object)) ||
 									(s.object instanceof Structure && s.object.structureType === STRUCTURE_STORAGE)) &&
-								(brainAutoPlanner.isInRootModule(depositSink.object) ||
+								((depositSink.object instanceof Structure &&
+									brainAutoPlanner.isInRootModule(depositSink.object)) ||
 									(depositSink.object instanceof Structure &&
 										depositSink.object.structureType === STRUCTURE_STORAGE))
 							) {

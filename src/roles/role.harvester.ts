@@ -14,8 +14,8 @@ const roleHarvester = {
 		}
 		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
 		if (harvestTarget) {
-			let dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
-			if (!dedicatedLink && creep.room.controller.level >= 5) {
+			let dedicatedLink = creep.memory.dedicatedLinkId ? Game.getObjectById(creep.memory.dedicatedLinkId) : null;
+			if (!dedicatedLink && (creep.room.controller?.level ?? 0) >= 5) {
 				if (
 					!creep.memory.lastCheckForDedicatedLink ||
 					(creep.memory.lastCheckForDedicatedLink && Game.time - creep.memory.lastCheckForDedicatedLink > 100)
@@ -24,7 +24,7 @@ const roleHarvester = {
 						filter: struct => {
 							return struct.structureType === STRUCTURE_LINK;
 						},
-					})[0];
+					})[0] as StructureLink | null;
 					if (dedicatedLink) {
 						creep.memory.dedicatedLinkId = dedicatedLink.id;
 					} else {
@@ -109,7 +109,7 @@ const roleHarvester = {
 				structPriority[STRUCTURE_EXTENSION] = 3;
 				structPriority[STRUCTURE_TOWER] = 3;
 			}
-			if (creep.memory.dedicatedLinkId) {
+			if (creep.memory.dedicatedLinkId && harvestTarget) {
 				targets = targets.filter(struct => {
 					return harvestTarget.pos.inRangeTo(struct, 3);
 				});
@@ -124,6 +124,7 @@ const roleHarvester = {
 			}
 			targets.sort(function (a, b) {
 				if (a.structureType !== b.structureType) {
+					// @ts-expect-error this is fine, not causing problems. remove this comment if this line changes
 					return structPriority[a.structureType] - structPriority[b.structureType];
 				} else {
 					return creep.pos.getRangeTo(a) - creep.pos.getRangeTo(b);
@@ -187,11 +188,11 @@ const roleHarvester = {
 			creep.log("Can't determine harvest mode without harvestTarget");
 			return "wait";
 		}
-		if (harvestTarget.pos.getRangeTo(harvestTarget.room.storage) <= 2) {
+		if (harvestTarget.room.storage && harvestTarget.pos.getRangeTo(harvestTarget.room.storage) <= 2) {
 			return "direct";
 		}
 
-		const dedicatedLink = Game.getObjectById(creep.memory.dedicatedLinkId);
+		const dedicatedLink = creep.memory.dedicatedLinkId ? Game.getObjectById(creep.memory.dedicatedLinkId) : null;
 		if (dedicatedLink) {
 			return "link";
 		}
@@ -230,7 +231,7 @@ const roleHarvester = {
 	},
 
 	/** Meant to replace findTransferTargets **/
-	getTransferTarget(creep: Creep): AnyStoreStructure | undefined {
+	getTransferTarget(creep: Creep): AnyStoreStructure | null {
 		// check adjacent positions for empty extensions
 		if (!creep.memory.refreshFillTargets) {
 			creep.memory.refreshFillTargets = Game.time - 50;
@@ -265,11 +266,11 @@ const roleHarvester = {
 			return struct.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 		});
 		if (targetIdsNotFull.length > 0) {
-			return Game.getObjectById(targetIdsNotFull[0]);
+			return targetIdsNotFull[0] ? Game.getObjectById(targetIdsNotFull[0]) : null;
 		}
 
 		if (creep.memory.depositMode === "direct") {
-			return creep.room.storage;
+			return creep.room.storage ?? null;
 		}
 
 		if (creep.memory.depositMode === "link" && creep.memory.dedicatedLinkId) {
@@ -365,7 +366,7 @@ const roleHarvester = {
 				return targets[0];
 			}
 		}
-		return undefined;
+		return null;
 	},
 
 	passiveMaintainContainer(creep: Creep): void {
@@ -460,7 +461,7 @@ const roleHarvester = {
 		} else if (creep.memory.depositMode !== "link" && creep.memory.dedicatedLinkId) {
 			delete creep.memory.dedicatedLinkId;
 		} else if (creep.memory.depositMode === "link" && !creep.memory.dedicatedLinkId) {
-			const nearbyLinks = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, {
+			const nearbyLinks: StructureLink[] = harvestTarget.pos.findInRange(FIND_STRUCTURES, 2, {
 				filter: struct => {
 					return struct.structureType === STRUCTURE_LINK;
 				},
@@ -534,7 +535,7 @@ const roleHarvester = {
 				});
 			}
 		} else {
-			let target = Game.getObjectById(creep.memory.transferTarget);
+			let target = creep.memory.transferTarget ? Game.getObjectById(creep.memory.transferTarget) : null;
 			if (!target) {
 				target = this.getTransferTarget(creep);
 				if (!target) {
@@ -612,8 +613,8 @@ const roleHarvester = {
 			creep.memory.harvestPos.roomName
 		);
 
-		const harvestTarget = Game.getObjectById(creep.memory.harvestTarget);
-		const link = Game.getObjectById(creep.memory.dedicatedLinkId);
+		const harvestTarget = creep.memory.harvestTarget ? Game.getObjectById(creep.memory.harvestTarget) : null;
+		const link = creep.memory.dedicatedLinkId ? Game.getObjectById(creep.memory.dedicatedLinkId) : null;
 		if (harvestTarget) {
 			vis.line(harvestPos, harvestTarget.pos, {
 				color: "#ff0",
