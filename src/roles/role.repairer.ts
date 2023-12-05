@@ -186,8 +186,17 @@ const roleRepairer = {
 				delete creep.memory.repairTarget;
 			}
 		} else {
+			if (creep.memory.lastCheckForWork !== undefined && Game.time - creep.memory.lastCheckForWork < 15) {
+				creep.log("Waiting before trying to find a new target to save CPU, because we failed last time.");
+				return;
+			}
+
 			// find a repair target if we don't have one
 			this.findRepairTargetNew(creep);
+
+			if (!creep.memory.repairTarget) {
+				creep.memory.lastCheckForWork = Game.time;
+			}
 
 			// if we don't have a lot of energy, refill before repairing
 			if (creep.store[RESOURCE_ENERGY] <= creep.store.getCapacity() * 0.1) {
