@@ -35,7 +35,7 @@ const roleRepairer = {
 		}
 		let targets = room.find(FIND_STRUCTURES, {
 			filter: struct => {
-				if (isOwnedStructure(struct) && struct.my) {
+				if (isOwnedStructure(struct) && !struct.my) {
 					return false;
 				}
 				const flags = struct.pos.lookFor(LOOK_FLAGS);
@@ -154,9 +154,10 @@ const roleRepairer = {
 				creep.room.visual.circle(repairTarget.pos, { fill: "transparent", radius: 0.5, stroke: "#ffff00" });
 
 				if (creep.memory.role === "repairer" && repairTarget.room.name !== creep.memory.targetRoom) {
+					creep.log("repairTarget is in wrong room, clearing");
 					delete creep.memory.repairTarget;
 				} else if (repairTarget.hits === repairTarget.hitsMax) {
-					console.log(creep.name, "target fully repaired");
+					creep.log("target fully repaired");
 					delete creep.memory.repairTarget;
 				} else if (
 					repairTarget.structureType === STRUCTURE_WALL &&
@@ -165,6 +166,7 @@ const roleRepairer = {
 						repairTarget.hits >= 200000)
 				) {
 					if (Game.time % 10 === 0) {
+						creep.log("wall is in desired hits range, clearing repairTarget");
 						delete creep.memory.repairTarget;
 					}
 				} else if (
@@ -174,6 +176,7 @@ const roleRepairer = {
 						repairTarget.hits >= 200000)
 				) {
 					if (Game.time % 18 === 0) {
+						creep.log("rampart is in desired hits range, clearing repairTarget");
 						delete creep.memory.repairTarget;
 					}
 				} else {
@@ -183,11 +186,13 @@ const roleRepairer = {
 						},
 					});
 					if (weakRamparts.length > 0) {
+						creep.log("found weak rampart, clearing repairTarget to get a new one");
 						delete creep.memory.repairTarget;
 					}
 				}
 			} else if (!repairTarget) {
 				// console.log(creep.name,"repairTarget =",repairTarget);
+				creep.log("repairTarget is null, clearing");
 				delete creep.memory.repairTarget;
 			}
 		} else {
