@@ -1,5 +1,5 @@
 import * as cartographer from "screeps-cartographer";
-import brainLogistics, { ResourceSource } from "../brain.logistics";
+import brainLogistics, { ResourceSink, ResourceSource } from "../brain.logistics";
 import brainAutoPlanner from "../brain.autoplanner.js";
 import util from "../util.js";
 
@@ -427,7 +427,9 @@ const roleManager = {
 					}
 					if (
 						creep.memory.lastWithdrawStructure &&
-						brainAutoPlanner.isInRootModule(Game.getObjectById(creep.memory.lastWithdrawStructure)) &&
+						brainAutoPlanner.isInRootModule(
+							Game.getObjectById(creep.memory.lastWithdrawStructure) as Structure
+						) &&
 						s.object instanceof Structure &&
 						s.object.structureType === STRUCTURE_STORAGE
 					) {
@@ -453,7 +455,10 @@ const roleManager = {
 		sinks = _.sortByOrder(
 			sinks,
 			[
-				s => {
+				(s: ResourceSink) => {
+					if (!s.object) {
+						return Infinity;
+					}
 					switch (s.object.structureType) {
 						case STRUCTURE_TOWER:
 							return 1;
@@ -475,7 +480,7 @@ const roleManager = {
 							return 8;
 					}
 				},
-				s => creep.pos.getRangeTo(s.object),
+				(s: ResourceSink) => (s.object ? creep.pos.getRangeTo(s.object) : Infinity),
 			],
 			["asc", "asc"]
 		);

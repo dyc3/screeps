@@ -985,7 +985,7 @@ const brainAutoPlanner = {
 		}
 	},
 
-	isInRootModule(structure: Structure): boolean {
+	isInRootModule(structure: Structure | null | undefined): boolean {
 		if (!structure || !structure.room.memory.rootPos) {
 			return false;
 		}
