@@ -1,8 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
 import { getUpgraderQuota } from "../tool.creepupgrader";
-// @ts-expect-error hasn't been converted yet
-import taskGather from "../task.gather.js";
+import taskGather from "../task.gather";
 import util from "../util";
 
 // get number of upgraders assigned to a room
@@ -40,7 +39,7 @@ const roleUpgrader = {
 
 	run(creep: Creep): void {
 		if (!creep.memory.targetRoom) {
-			creep.memory.targetRoom = this.findTargetRoom(creep);
+			creep.memory.targetRoom = this.findTargetRoom();
 			console.log(creep.name, "targetRoom:", creep.memory.targetRoom);
 		}
 

@@ -120,8 +120,7 @@ import * as taskDepositMaterials from "./task.depositmaterials";
 import taskRenew from "./task.renew";
 
 import toolCreepUpgrader, { RoleMetadata } from "tool.creepupgrader";
-// @ts-expect-error hasn't been converted yet
-import toolRoadPlanner from "tool.roadplanner.js";
+import toolRoadPlanner from "tool.roadplanner";
 
 import brainAutoPlanner from "./brain.autoplanner";
 import brainGuard from "./brain.guard";
