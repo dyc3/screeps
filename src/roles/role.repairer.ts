@@ -91,7 +91,7 @@ const roleRepairer = {
 		targets = _.sortByOrder(
 			targets,
 			[
-				struct => {
+				(struct: AnyStructure) => {
 					switch (struct.structureType) {
 						case STRUCTURE_ROAD:
 							return 1;
@@ -103,8 +103,8 @@ const roleRepairer = {
 							return 0;
 					}
 				},
-				struct => struct.hits,
-				struct => struct.pos.getRangeTo(creep),
+				(struct: AnyStructure) => struct.hits,
+				(struct: AnyStructure) => struct.pos.getRangeTo(creep),
 			],
 			["asc", "asc", "asc"]
 		);
