@@ -3,6 +3,7 @@ import * as cartographer from "screeps-cartographer";
 import { Role } from "roles/meta";
 import toolFriends from "./tool.friends.js";
 import util from "./util.js";
+import { JobRunner } from "jobs.js";
 
 const MASS_ATTACK_DISTANCE_MULTIPLIER: { [i: number]: number } = { 0: 1, 1: 1, 2: 0.4, 3: 0.1 };
 
@@ -152,7 +153,7 @@ export default {
 		console.log(`[guard] searching ${roomsToSearch.length} rooms`);
 		// purely for debugging, we need vision to create a task
 		const inDanger = this.remoteMiningsInDanger();
-		if (inDanger.length) {
+		if (inDanger.length > 0) {
 			console.log(`[guard] remote minings in danger: ${inDanger.join(",")}`);
 		}
 
@@ -324,6 +325,10 @@ export default {
 		}
 		this.tasks.push(newTask);
 		Memory.guard.tasksMade++;
+
+		if (isRemoteMiningRoom) {
+			JobRunner.getInstance().forceRunNextTick("command-remote-mining");
+		}
 	},
 
 	/**
