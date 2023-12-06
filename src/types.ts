@@ -144,6 +144,7 @@ declare global {
 		mining?: boolean;
 		_lastCheckForCloseSpawn?: number;
 		_renewGather?: boolean;
+		stagingObjectId?: Id<AnyStructure>;
 	}
 
 	interface PowerCreepMemory {

@@ -30,7 +30,8 @@ class GuardTask implements GuardTaskSerialized {
 	public complete = false;
 	public assignedCreeps: string[] = [];
 	public neededCreeps = 1;
-	public _currentTarget: Id<AnyCreep> | Id<StructureKeeperLair> | undefined = undefined;
+	public _currentTarget: Id<AnyCreep> | Id<StructureKeeperLair | StructureInvaderCore | StructureTower> | undefined =
+		undefined;
 	/**
 	 * Whether or not the task is waiting for all creeps to be spawned.
 	 */
@@ -533,7 +534,9 @@ export default {
 			if (!task._currentTarget && task.targetRoom) {
 				if (task.guardType === "treasure") {
 					const hostileStructures = task.targetRoom.find(FIND_HOSTILE_STRUCTURES);
-					const towers = hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER);
+					const towers = hostileStructures.filter(
+						struct => struct.structureType === STRUCTURE_TOWER
+					) as StructureTower[];
 					if (towers.length > 0) {
 						task._currentTarget = towers[0].id;
 					} else {
@@ -563,13 +566,13 @@ export default {
 							hostiles = _.sortByOrder(
 								hostiles,
 								[
-									c => {
+									(c: Creep) => {
 										return c.owner.username !== "Source Keeper";
 									},
-									c => {
+									(c: Creep) => {
 										return c.getActiveBodyparts(HEAL);
 									},
-									c => {
+									(c: Creep) => {
 										return c.getActiveBodyparts(RANGED_ATTACK) + c.getActiveBodyparts(ATTACK);
 									},
 								],
@@ -590,7 +593,7 @@ export default {
 						}
 					}
 				} else if (task.guardType === "invader-subcore") {
-					const invaderCores = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
+					const invaderCores: StructureInvaderCore[] = task.targetRoom.find(FIND_HOSTILE_STRUCTURES, {
 						filter: struct => struct.structureType === STRUCTURE_INVADER_CORE,
 					});
 					if (invaderCores.length > 0) {
@@ -769,12 +772,21 @@ export default {
 								if (!creep.memory.stagingObjectId) {
 									creep.memory.stagingObjectId = util.getSpawn(
 										util.findClosestOwnedRooms(creep.pos)[0]
-									).id;
+									)?.id;
 								}
-								cartographer.moveTo(creep, Game.getObjectById(creep.memory.stagingObjectId), {
-									ensurePath: true,
-									avoidRooms: [task._targetRoom],
-								});
+								if (creep.memory.stagingObjectId) {
+									const stagingObject = Game.getObjectById(creep.memory.stagingObjectId);
+									if (stagingObject) {
+										cartographer.moveTo(creep, stagingObject, {
+											roomCallback(roomName) {
+												if (roomName === task._targetRoom) {
+													return false;
+												}
+												return true;
+											},
+										});
+									}
+								}
 							}
 						} else {
 							const minRange =
