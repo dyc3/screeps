@@ -336,14 +336,19 @@ const roleRelay = {
 					creep.log("WARN: target", id, "does not exist");
 					continue;
 				}
+				let result;
 				if (target.structureType === STRUCTURE_TERMINAL) {
 					const amount = Math.min(
 						Memory.terminalEnergyTarget - target.store[RESOURCE_ENERGY],
 						creep.store.getUsedCapacity(RESOURCE_ENERGY)
 					);
-					transfer(creep, target, RESOURCE_ENERGY, amount);
+					result = transfer(creep, target, RESOURCE_ENERGY, amount);
 				} else {
-					transfer(creep, target, RESOURCE_ENERGY);
+					result = transfer(creep, target, RESOURCE_ENERGY);
+				}
+				if (result === ERR_NOT_IN_RANGE) {
+					creep.memory._needFillTargetRefresh = true;
+					return;
 				}
 				// creep.log("Filled target", target.structureType, target.id);
 				creep.memory._lastDepositId = target.id; // used for visualizeState
