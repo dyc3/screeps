@@ -324,9 +324,10 @@ const roleRelay = {
 					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
 
-				if (storage && fallbackToStorage) {
-					withdraw(creep, storage, RESOURCE_ENERGY);
-					creep.memory._lastWithdrawId = storage.id; // used for visualizeState
+				const target = fallbackToStorage ? storage : link;
+				if (target) {
+					withdraw(creep, target, RESOURCE_ENERGY);
+					creep.memory._lastWithdrawId = target.id; // used for visualizeState
 				}
 			}
 
