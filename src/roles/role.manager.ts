@@ -704,7 +704,16 @@ const roleManager = {
 						}
 					}
 				} else {
-					creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+					if (
+						aquireTarget instanceof Structure &&
+						aquireTarget.structureType === STRUCTURE_STORAGE &&
+						aquireTarget.store.getFreeCapacity() > 0 &&
+						creep.store.getUsedCapacity() - creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0
+					) {
+						offloadNonEnergy(creep, aquireTarget);
+					} else {
+						creep.withdraw(aquireTarget, RESOURCE_ENERGY);
+					}
 				}
 			} else {
 				cartographer.moveTo(creep, aquireTarget, {
