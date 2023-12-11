@@ -114,7 +114,7 @@ const roleScientist = {
 				// kinda sorta avoid doing a bunch of small transfers
 				const sourcesTotal = _.sum(sources, s => s.amount);
 				// HACK: adding the random chance to sometimes not do this is faster than aggregating and sorting all the possible routes
-				if (sourcesTotal <= 50 && Math.random() < 0.1) {
+				if ((sourcesTotal <= 50 && Math.random() < 0.1) || sourcesTotal <= 5) {
 					continue;
 				}
 
