@@ -639,14 +639,7 @@ const roleManager = {
 			if (creep.pos.isNearTo(transportTarget)) {
 				if (transportTarget.structureType === STRUCTURE_STORAGE) {
 					if (creep.store.getUsedCapacity() - creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-						for (const resource of RESOURCES_ALL) {
-							if (resource === RESOURCE_ENERGY) {
-								continue;
-							}
-							if (creep.store[resource] > 0) {
-								creep.transfer(transportTarget, resource);
-							}
-						}
+						offloadNonEnergy(creep, transportTarget);
 					} else {
 						creep.transfer(transportTarget, RESOURCE_ENERGY);
 					}
@@ -721,6 +714,17 @@ const roleManager = {
 		}
 	},
 };
+
+function offloadNonEnergy(creep: Creep, structure: AnyStoreStructure): void {
+	for (const resource of RESOURCES_ALL) {
+		if (resource === RESOURCE_ENERGY) {
+			continue;
+		}
+		if (creep.store[resource] > 0) {
+			creep.transfer(structure, resource);
+		}
+	}
+}
 
 module.exports = roleManager;
 export default roleManager;
