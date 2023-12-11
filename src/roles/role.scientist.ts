@@ -280,7 +280,7 @@ const roleScientist = {
 						creep.withdraw(withdrawTarget, creep.memory.route.resource);
 						if (resourceAmount <= creep.store.getCapacity()) {
 							creep.log("withdraw target is empty, deleting withdraw target");
-							delete creep.memory.withdrawTargetId;
+							delete creep.memory.route.withdrawTargetId;
 						}
 					}
 				} else {
