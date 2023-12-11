@@ -158,12 +158,9 @@ const roleMiner = {
 				creep.log("no target");
 				return;
 			}
-			switch (creep.harvest(target)) {
-				case ERR_NOT_IN_RANGE:
-				case ERR_NOT_ENOUGH_RESOURCES:
-					cartographer.moveTo(creep, target);
-					break;
-				default:
+			cartographer.moveTo(creep, target);
+			if (creep.pos.isNearTo(target)) {
+				creep.harvest(target);
 			}
 		} else {
 			let storageTarget = null;
@@ -201,9 +198,8 @@ const roleMiner = {
 						}
 					}
 				}
-			} else {
-				cartographer.moveTo(creep, storageTarget);
 			}
+			cartographer.moveTo(creep, storageTarget);
 		}
 	},
 };
