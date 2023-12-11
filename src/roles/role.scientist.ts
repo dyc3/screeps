@@ -175,7 +175,7 @@ const roleScientist = {
 						lineStyle: "dotted",
 					});
 				} else {
-					creep.room.visual.circle(depositTarget.pos, {
+					depositTarget.room.visual.circle(depositTarget.pos, {
 						stroke: depositColor,
 						fill: "transparent",
 						radius: 0.8,
@@ -193,7 +193,7 @@ const roleScientist = {
 							lineStyle: "dotted",
 						});
 					} else {
-						creep.room.visual.circle(withdrawTarget.pos, {
+						withdrawTarget.room?.visual.circle(withdrawTarget.pos, {
 							stroke: withdrawColor,
 							fill: "transparent",
 							radius: 0.8,
