@@ -8,8 +8,8 @@ export function isOwnedStructure(struct: AnyStructure): struct is AnyOwnedStruct
 	return struct instanceof Structure && "owner" in struct;
 }
 
-export function isStoreStructure(struct: unknown): struct is AnyStoreStructure {
-	return struct instanceof Structure && "store" in struct;
+export function isStoreStructure(struct: unknown): struct is AnyStoreStructure | Tombstone | Ruin {
+	return (struct instanceof Structure || struct instanceof Ruin || struct instanceof Tombstone) && "store" in struct;
 }
 
 export function isValidResource(resource: string): resource is ResourceConstant {
