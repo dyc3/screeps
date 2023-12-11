@@ -160,7 +160,7 @@ const roleRelay = {
 			creep.log(`MOVE TO ASSIGNED POS: ${moveResult}`);
 		}
 
-		if (assignedPos.roomName !== creep.memory.targetRoom) {
+		if (assignedPos.roomName !== undefined && assignedPos.roomName !== creep.memory.targetRoom) {
 			creep.memory.targetRoom = assignedPos.roomName;
 		}
 
@@ -209,10 +209,10 @@ const roleRelay = {
 			const adjacentStructs = _.filter(
 				creep.room.lookForAtArea(
 					LOOK_STRUCTURES,
-					creep.pos.y - 1,
-					creep.pos.x - 1,
-					creep.pos.y + 1,
-					creep.pos.x + 1,
+					assignedPos.y - 1,
+					assignedPos.x - 1,
+					assignedPos.y + 1,
+					assignedPos.x + 1,
 					true
 				),
 				result =>
@@ -223,7 +223,7 @@ const roleRelay = {
 					result.structure.structureType !== STRUCTURE_WALL &&
 					result.structure.structureType !== STRUCTURE_LINK
 			) as LookForAtAreaResultArray<AnyStoreStructure>;
-			console.log(creep.name, "has", adjacentStructs.length, "adjacent targets");
+			creep.log("has", adjacentStructs.length, "adjacent targets");
 			const targets = [];
 			for (const look of adjacentStructs) {
 				targets.push(look.structure.id);
