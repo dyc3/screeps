@@ -33,7 +33,7 @@ const roleRemoteHarvester = {
 						};
 					});
 				},
-				avoidTargetGradient: 0.9,
+				avoidTargetGradient: 0.8,
 			});
 			return;
 		}

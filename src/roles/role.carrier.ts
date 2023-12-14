@@ -22,7 +22,7 @@ const DANGER_MOVE_OPTS = {
 			};
 		});
 	},
-	avoidTargetGradient: 0.9,
+	avoidTargetGradient: 0.8,
 };
 
 /** Used when planning multi room routes */
