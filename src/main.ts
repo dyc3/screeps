@@ -860,7 +860,7 @@ function doAutoTrading() {
 		try {
 			Game.rooms.W54S9?.terminal?.send(
 				RESOURCE_OXYGEN,
-				Game.rooms.W54S9.terminal.store[RESOURCE_ZYNTHIUM],
+				Game.rooms.W54S9.terminal.store[RESOURCE_OXYGEN],
 				"W55S9"
 			);
 		} catch (e) {
