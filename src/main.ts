@@ -1077,7 +1077,8 @@ function doWorkLabs() {
 					filter: (l: StructureLab) => {
 						return (
 							l.structureType === STRUCTURE_LAB &&
-							(!l.mineralType || _.contains(splitsInto, l.mineralType))
+							(!l.mineralType ||
+								(_.contains(splitsInto, l.mineralType) && l.store.getFreeCapacity(l.mineralType) >= 5))
 						);
 					},
 				});
