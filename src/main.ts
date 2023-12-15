@@ -205,8 +205,20 @@ function calculateDefcon(room: Room) {
 				0,
 		});
 		if (hostileCreeps.length > 0) {
-			console.log(room.name, "hostile creeps: ", hostileCreeps.length);
-			defcon = 2;
+			const canAnyHostilesPathToSpawns = canAnyPathToGoals(
+				room,
+				hostileCreeps,
+				spawns.map(s => ({ pos: s.pos, range: 3 }))
+			);
+
+			console.log(
+				room.name,
+				"hostile creeps: ",
+				hostileCreeps.length,
+				"canAnyHostilesPathToSpawns:",
+				canAnyHostilesPathToSpawns
+			);
+			defcon = canAnyHostilesPathToSpawns ? 2 : 1;
 		}
 	} else {
 		const hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
@@ -274,6 +286,62 @@ function calculateDefcon(room: Room) {
 	}
 
 	return defcon;
+}
+
+const hostileCreepMoveCostMatrixCache: Map<string, CostMatrix> = new Map();
+
+function canAnyPathToGoals(room: Room, hostileCreeps: Creep[], goals: cartographer.MoveTarget[]): boolean {
+	if (!hostileCreepMoveCostMatrixCache.has(room.name)) {
+		const terrain = room.getTerrain();
+		const structs = room.find(FIND_STRUCTURES, {
+			filter(s: Structure) {
+				return s.structureType !== STRUCTURE_ROAD && s.structureType !== STRUCTURE_CONTAINER;
+			},
+		});
+		const matrix = new PathFinder.CostMatrix();
+		for (const struct of structs) {
+			matrix.set(struct.pos.x, struct.pos.y, 255);
+		}
+		for (let y = 0; y <= 49; y++) {
+			for (let x = 0; x <= 49; x++) {
+				if (terrain.get(x, y) === TERRAIN_MASK_WALL) {
+					matrix.set(x, y, 255);
+				}
+			}
+		}
+		hostileCreepMoveCostMatrixCache.set(room.name, matrix);
+	}
+	const costMatrix = hostileCreepMoveCostMatrixCache.get(room.name);
+	if (!costMatrix) {
+		throw new Error("cost matrix not found");
+	}
+
+	for (const creep of hostileCreeps) {
+		const path = cartographer.cachePath(
+			`defcon-${room.name}-${creep.pos.x}-${creep.pos.y}-to-spawns`,
+			creep.pos,
+			goals,
+			{
+				keepTargetInRoom: true,
+				avoidObstacleStructures: true,
+				maxOpsPerRoom: 500,
+				roomCallback(roomName: string) {
+					if (roomName !== room.name) {
+						return costMatrix;
+					}
+					return false;
+				},
+				visualizePathStyle: {
+					stroke: "#ff0000",
+					opacity: 0.8,
+				},
+			}
+		);
+		if (path) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
