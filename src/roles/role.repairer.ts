@@ -159,27 +159,28 @@ const roleRepairer = {
 				} else if (repairTarget.hits === repairTarget.hitsMax) {
 					creep.log("target fully repaired");
 					delete creep.memory.repairTarget;
-				} else if (
-					repairTarget.structureType === STRUCTURE_WALL &&
-					((repairTarget.hits >= 70000 && repairTarget.hits <= 75000) ||
-						(repairTarget.hits >= 100000 && repairTarget.hits <= 105000) ||
-						repairTarget.hits >= 200000)
-				) {
-					if (Game.time % 10 === 0) {
-						creep.log("wall is in desired hits range, clearing repairTarget");
-						delete creep.memory.repairTarget;
-					}
-				} else if (
-					repairTarget.structureType === STRUCTURE_RAMPART &&
-					((repairTarget.hits >= 80000 && repairTarget.hits <= 85000) ||
-						(repairTarget.hits >= 105000 && repairTarget.hits <= 110000) ||
-						repairTarget.hits >= 200000)
-				) {
-					if (Game.time % 18 === 0) {
-						creep.log("rampart is in desired hits range, clearing repairTarget");
-						delete creep.memory.repairTarget;
-					}
 				}
+				// else if (
+				// 	repairTarget.structureType === STRUCTURE_WALL &&
+				// 	((repairTarget.hits >= 70000 && repairTarget.hits <= 75000) ||
+				// 		(repairTarget.hits >= 100000 && repairTarget.hits <= 105000) ||
+				// 		repairTarget.hits >= 200000)
+				// ) {
+				// 	if (Game.time % 10 === 0) {
+				// 		creep.log("wall is in desired hits range, clearing repairTarget");
+				// 		delete creep.memory.repairTarget;
+				// 	}
+				// } else if (
+				// 	repairTarget.structureType === STRUCTURE_RAMPART &&
+				// 	((repairTarget.hits >= 80000 && repairTarget.hits <= 85000) ||
+				// 		(repairTarget.hits >= 105000 && repairTarget.hits <= 110000) ||
+				// 		repairTarget.hits >= 200000)
+				// ) {
+				// 	if (Game.time % 18 === 0) {
+				// 		creep.log("rampart is in desired hits range, clearing repairTarget");
+				// 		delete creep.memory.repairTarget;
+				// 	}
+				// }
 			} else if (!repairTarget) {
 				// console.log(creep.name,"repairTarget =",repairTarget);
 				creep.log("repairTarget is null, clearing");
@@ -209,6 +210,18 @@ const roleRepairer = {
 		if (creep.memory.repairing && creep.store[RESOURCE_ENERGY] === 0) {
 			creep.memory.repairing = false;
 			creep.say("gathering");
+
+			// if we are repairing walls and ramparts, switch to a new target if we are out of energy
+			const repairTarget = Game.getObjectById(creep.memory.repairTarget as Id<AnyStructure>);
+			if (repairTarget) {
+				if (
+					repairTarget.structureType === STRUCTURE_WALL ||
+					(repairTarget.structureType === STRUCTURE_RAMPART && repairTarget.hits > 2000)
+				) {
+					// creep.log("WARN: repair target is wall but we are out of energy");
+					delete creep.memory.repairTarget;
+				}
+			}
 		} else if (!creep.memory.repairing && creep.store[RESOURCE_ENERGY] === creep.store.getCapacity()) {
 			creep.memory.repairing = true;
 			creep.say("repairing");
