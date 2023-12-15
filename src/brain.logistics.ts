@@ -199,10 +199,7 @@ function collectAllResourceSinks() {
 			console.log(`WARN: fill flag ${flag.name} has invalid resource ${resource}`);
 			continue;
 		}
-		const amount =
-			flagNameSplit.length > 2
-				? Math.min(parseInt(flagNameSplit[2], 10), struct.store.getFreeCapacity(resource) ?? 0)
-				: struct.store.getFreeCapacity(resource) ?? 0;
+		const amount = struct.store.getFreeCapacity(resource) ?? 0;
 
 		if (amount === 0) {
 			continue;
