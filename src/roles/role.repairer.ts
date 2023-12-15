@@ -153,7 +153,7 @@ const roleRepairer = {
 			if (repairTarget) {
 				creep.room.visual.circle(repairTarget.pos, { fill: "transparent", radius: 0.5, stroke: "#ffff00" });
 
-				if (creep.memory.role === "repairer" && repairTarget.room.name !== creep.memory.targetRoom) {
+				if (creep.memory.role === Role.Repairer && repairTarget.room.name !== creep.memory.targetRoom) {
 					creep.log("repairTarget is in wrong room, clearing");
 					delete creep.memory.repairTarget;
 				} else if (repairTarget.hits === repairTarget.hitsMax) {
