@@ -134,6 +134,20 @@ function collectAllResourceSources() {
 		});
 
 		for (const struct of sourceStructures) {
+			if (struct.structureType === STRUCTURE_LAB) {
+				// dont treat labs with fill flags as sources
+				const flags = struct.pos.lookFor(LOOK_FLAGS);
+				let hasFillFlag = false;
+				for (const flag of flags) {
+					if (flag.name.startsWith("fill") || flag.name.startsWith("unmake")) {
+						hasFillFlag = true;
+						break;
+					}
+				}
+				if (hasFillFlag) {
+					continue;
+				}
+			}
 			for (const resource in struct.store) {
 				if (struct.structureType === STRUCTURE_LAB && resource === RESOURCE_ENERGY) {
 					continue;
