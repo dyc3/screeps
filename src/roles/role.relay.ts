@@ -220,7 +220,7 @@ const roleRelay = {
 		if (creep.memory.isStorageModule && creep.room.memory.rootLink) {
 			// if the root module needs energy
 			const rootLink = Game.getObjectById(creep.room.memory.rootLink);
-			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 200) {
+			if (rootLink && rootLink.store[RESOURCE_ENERGY] < 400) {
 				rootNeedsEnergy = true;
 			}
 			// creep.log("rootNeedsEnergy:", rootNeedsEnergy);
