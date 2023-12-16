@@ -299,8 +299,6 @@ const roleRelay = {
 
 				if (link && link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 					fallbackToStorage = true;
-				} else if (link) {
-					creep.memory._lastWithdrawId = link.id; // used for visualizeState
 				}
 
 				const target = fallbackToStorage ? storage : link;
