@@ -51,24 +51,26 @@ const roleRelay = {
 				continue;
 			}
 
-			let color = "#fff";
+			const linestyle: LineStyle = {
+				color: "#fff",
+				opacity: 0.7,
+			};
 			if (creep.memory._lastWithdrawId === target.id) {
-				color = colorWithdraw;
+				linestyle.color = colorWithdraw;
+				linestyle.width = 0.2;
 				if (creep.memory._lastDepositId === target.id) {
-					color = colorBadTransfer;
+					linestyle.color = colorBadTransfer;
 				}
 			} else if (creep.memory._lastDepositId === target.id) {
-				color = colorDeposit;
+				linestyle.color = colorDeposit;
+				linestyle.width = 0.2;
 			} else if (targetId === creep.memory.linkId) {
-				color = linkColor;
+				linestyle.color = linkColor;
 			} else if (targetId === creep.memory.storageId) {
-				color = storageColor;
+				linestyle.color = storageColor;
 			}
 
-			vis.line(assignedPos, target.pos, {
-				color,
-				opacity: 0.7,
-			});
+			vis.line(assignedPos, target.pos, linestyle);
 		}
 
 		// draw assigned position on top
