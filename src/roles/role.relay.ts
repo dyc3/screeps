@@ -164,7 +164,7 @@ const roleRelay = {
 			creep.memory.targetRoom = assignedPos.roomName;
 		}
 
-		if (!creep.memory.linkId || !creep.memory.storageId) {
+		if (!creep.memory.linkId) {
 			const foundLinks = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
 					return s.structureType === STRUCTURE_LINK;
@@ -175,7 +175,8 @@ const roleRelay = {
 			} else {
 				creep.memory.linkId = foundLinks[0].id as Id<StructureLink>;
 			}
-
+		}
+		if (!creep.memory.storageId) {
 			const foundStorage = creep.pos.findInRange(FIND_STRUCTURES, 1, {
 				filter: s => {
 					return s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE;
