@@ -11,7 +11,7 @@ const roleRelay = {
 	 * Color key:
 	 * - Orange: storage
 	 * - Yellow: link
-	 * - Blue: other object with store
+	 * - White: other object with store
 	 * - Cyan: withdraw
 	 * - Green: deposit
 	 * - Red: bad transfer, withdraw is the same as deposit
@@ -32,54 +32,26 @@ const roleRelay = {
 			creep.memory.targetRoom
 		);
 
-		// draw lines to storage and link
-		const link = creep.memory.linkId ? Game.getObjectById(creep.memory.linkId) : null;
-		const storage = creep.memory.storageId ? Game.getObjectById(creep.memory.storageId) : null;
+		const linkColor = "#ff0";
+		const storageColor = "#fa0";
 
-		// FIXME: lots of repeated code here to find the correct colors
-		let linkColor = "#ff0";
-		if (link) {
-			if (creep.memory._lastWithdrawId === link.id) {
-				linkColor = colorWithdraw;
-				if (creep.memory._lastDepositId === link.id) {
-					linkColor = colorBadTransfer;
-				}
-			} else if (creep.memory._lastDepositId === link.id) {
-				linkColor = colorDeposit;
-			}
-
-			vis.line(assignedPos, link.pos, {
-				color: linkColor,
-				opacity: 0.7,
-			});
+		const ids = [...(creep.memory.fillTargetIds ?? [])];
+		if (creep.memory.linkId) {
+			ids.push(creep.memory.linkId);
 		}
-
-		let storageColor = "#fa0";
-		if (storage) {
-			if (creep.memory._lastWithdrawId === storage.id) {
-				storageColor = colorWithdraw;
-				if (creep.memory._lastDepositId === storage.id) {
-					storageColor = colorBadTransfer;
-				}
-			} else if (creep.memory._lastDepositId === storage.id) {
-				storageColor = colorDeposit;
-			}
-
-			vis.line(assignedPos, storage.pos, {
-				color: storageColor,
-				opacity: 0.7,
-			});
+		if (creep.memory.storageId) {
+			ids.push(creep.memory.storageId);
 		}
 
 		// draw lines to fill targets
-		for (const targetId of creep.memory.fillTargetIds ?? []) {
+		for (const targetId of ids) {
 			const target = Game.getObjectById(targetId);
 			if (!target) {
 				creep.log("WARN: target", targetId, "does not exist");
 				continue;
 			}
 
-			let color = "#00f";
+			let color = "#fff";
 			if (creep.memory._lastWithdrawId === target.id) {
 				color = colorWithdraw;
 				if (creep.memory._lastDepositId === target.id) {
@@ -87,6 +59,10 @@ const roleRelay = {
 				}
 			} else if (creep.memory._lastDepositId === target.id) {
 				color = colorDeposit;
+			} else if (targetId === creep.memory.linkId) {
+				color = linkColor;
+			} else if (targetId === creep.memory.storageId) {
+				color = storageColor;
 			}
 
 			vis.line(assignedPos, target.pos, {
