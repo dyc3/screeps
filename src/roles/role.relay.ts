@@ -327,6 +327,8 @@ const roleRelay = {
 				if (result === ERR_NOT_IN_RANGE) {
 					creep.memory._needFillTargetRefresh = true;
 					return;
+				} else if (result === ERR_FULL) {
+					continue;
 				}
 				// creep.log("Filled target", target.structureType, target.id);
 				creep.memory._lastDepositId = target.id; // used for visualizeState
