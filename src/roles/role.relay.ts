@@ -276,7 +276,7 @@ const roleRelay = {
 		// );
 
 		// if the root needs energy, put it in the link
-		if (rootNeedsEnergy && link) {
+		if (creep.memory.isStorageModule && rootNeedsEnergy && link) {
 			// check if the creep is carrying energy, and pick some up if needed
 			if (creep.store[RESOURCE_ENERGY] < creep.store.getCapacity()) {
 				if (targetIdsOverFilled.length > 0) {
