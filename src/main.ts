@@ -1245,7 +1245,8 @@ function satisfyClaimTargets() {
 	// remove satisfied targets
 	// HACK: sort in descending order first to avoid index shifting
 	for (const idx of satisfiedIdxs.sort((a, b) => b - a)) {
-		Memory.claimTargets.splice(idx, 1);
+		const removed = Memory.claimTargets.splice(idx, 1);
+		console.log("[satisfy-claim-targets] Satisfied target:", JSON.stringify(removed));
 	}
 
 	if (util.getCreeps(Role.Claimer).length > Memory.claimTargets.length) {
@@ -1258,37 +1259,43 @@ function satisfyClaimTargets() {
 	// spawn new claimers for the remaining targets
 	for (const target of Memory.claimTargets) {
 		// spawn new claimer
-		const spawnRoom = _.first(
-			util.findClosestOwnedRooms(
-				new RoomPosition(25, 25, target.room),
-				r => r.energyCapacityAvailable > 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8
-			)
+		const spawnRooms = util.findClosestOwnedRooms(
+			new RoomPosition(25, 25, target.room),
+			r => r.energyCapacityAvailable > 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8
 		);
-		if (!spawnRoom) {
+		if (spawnRooms.length === 0) {
 			console.log("WARN: All rooms don't have enough energy to spawn creeps");
 			continue;
 		}
-		console.log("Spawning claimer in room", spawnRoom.name, "targetting room", target.room);
-		const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
-		if (spawns.length === 0) {
-			console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
-			continue;
+
+		for (const spawnRoom of spawnRooms) {
+			console.log("Spawning claimer in room", spawnRoom.name, "targetting room", target.room);
+			const spawns = util.getStructures(spawnRoom, STRUCTURE_SPAWN).filter(s => !s.spawning);
+			if (spawns.length === 0) {
+				console.log("WARN: no spawns available in spawnRoom", spawnRoom.name);
+				continue;
+			}
+			const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
+			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
+			// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
+			if (target.mode === "claim") {
+				// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
+				claimerBody = [CLAIM, MOVE];
+			}
+			const result = targetSpawn.spawnCreep(claimerBody, `claimer_${Game.time.toString(16)}`, {
+				// @ts-expect-error this works, its fine
+				memory: {
+					role: Role.Claimer,
+					targetRoom: target.room,
+					mode: target.mode,
+				},
+			});
+			if (result === OK) {
+				break;
+			} else {
+				console.log("[satisfy-claim-targets] WARN: Failed to spawn claimer:", util.errorCodeToString(result));
+			}
 		}
-		const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-		let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-		// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
-		if (target.mode === "claim") {
-			// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
-			claimerBody = [CLAIM, MOVE];
-		}
-		targetSpawn.spawnCreep(claimerBody, `claimer_${Game.time.toString(16)}`, {
-			// @ts-expect-error this works, its fine
-			memory: {
-				role: Role.Claimer,
-				targetRoom: target.room,
-				mode: target.mode,
-			},
-		});
 	}
 }
 
