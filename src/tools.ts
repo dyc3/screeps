@@ -40,7 +40,12 @@ global.Market = {
 	 */
 	quickSellEnergy() {
 		const buyOrders = Game.market.getAllOrders(order => {
-			return order.type === ORDER_BUY && order.resourceType === RESOURCE_ENERGY && order.remainingAmount > 0;
+			return (
+				order.type === ORDER_BUY &&
+				order.resourceType === RESOURCE_ENERGY &&
+				order.remainingAmount > 0 &&
+				order.price >= 1
+			);
 		});
 
 		if (buyOrders.length === 0) {
