@@ -995,6 +995,64 @@ const brainAutoPlanner = {
 		const y = structure.pos.y;
 		return x <= rX + 2 && x >= rX - 2 && y <= rY && y >= rY - 4;
 	},
+
+	/**
+	 * Save the positions of desired structures to memory plans, overwriting any existing plans for the structure type.
+	 *
+	 * Saves plans for existing structures and construction sites.
+	 */
+	imprintPlans(room: Room | string, ...structureTypes: BuildableStructureConstant[]): void {
+		if (typeof room === "string") {
+			room = Game.rooms[room];
+		}
+		if (!room) {
+			throw new Error("room is undefined");
+		}
+		if (structureTypes.length === 0) {
+			throw new Error("no structure types provided");
+		}
+		const allStructures = room.find(FIND_STRUCTURES, {
+			filter: s => (structureTypes as StructureConstant[]).includes(s.structureType),
+		});
+		const allSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
+			filter: c => (structureTypes as StructureConstant[]).includes(c.structureType),
+		});
+		const allStructuresAndSites: (Structure | ConstructionSite)[] = [...allStructures, ...allSites];
+
+		const collected: {
+			[struct in BuildableStructureConstant]: { x: number; y: number }[];
+		} = {
+			extension: [],
+			rampart: [],
+			road: [],
+			spawn: [],
+			link: [],
+			constructedWall: [],
+			storage: [],
+			tower: [],
+			observer: [],
+			powerSpawn: [],
+			extractor: [],
+			lab: [],
+			terminal: [],
+			container: [],
+			nuker: [],
+			factory: [],
+		};
+
+		for (const struct of allStructuresAndSites) {
+			if (!(struct.structureType in collected)) {
+				collected[struct.structureType as BuildableStructureConstant] = [];
+			}
+			const list = collected[struct.structureType as BuildableStructureConstant];
+			list.push({ x: struct.pos.x, y: struct.pos.y });
+		}
+
+		for (const struct of structureTypes) {
+			room.memory.structures[struct] = collected[struct];
+			console.log(`${room.name}: imprinted ${collected[struct].length} ${struct} plans`);
+		}
+	},
 };
 
 // @ts-expect-error global augmentation
@@ -1007,6 +1065,8 @@ global.autoPlanner = {
 	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
 	// eslint-disable-next-line @typescript-eslint/unbound-method
 	getPlans: brainAutoPlanner.getPlansAtPosition,
+	// eslint-disable-next-line @typescript-eslint/unbound-method
+	imprintPlans: brainAutoPlanner.imprintPlans,
 };
 
 // @ts-expect-error global augmentation
