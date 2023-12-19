@@ -89,6 +89,9 @@ export function getRelayQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
+	if (room.controller.level >= 6) {
+		return 5;
+	}
 	const linkCount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][room.controller.level];
 	if (linkCount === 0) {
 		return 0;
