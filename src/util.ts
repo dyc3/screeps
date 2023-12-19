@@ -439,46 +439,41 @@ export const util = {
 		}
 		return a;
 	},
+
+	/**
+	 * Maximize the energy amount for an energy sale.
+	 *
+	 * @param sourceRoom The room where the energy is being sold from.
+	 * @param destRoom The room where the energy is being sold to.
+	 * @param threshold The maximum amount of energy that can be sold.
+	 * @param opLimit The maximum number of iterations to perform. The default should be large enough for most cases.
+	 */
+	maximizeEnergyTransactionAmount(sourceRoom: string, destRoom: string, threshold: number, opLimit = 20): number {
+		let low = 1;
+		let high = threshold;
+		let maxAmount = 0;
+		let loops = 0;
+
+		while (low <= high) {
+			const mid = Math.floor((low + high) / 2);
+			const currentCost = Game.market.calcTransactionCost(mid, sourceRoom, destRoom);
+			const total = mid + currentCost;
+
+			if (total <= threshold) {
+				maxAmount = mid;
+				low = mid + 1;
+			} else {
+				high = mid - 1;
+			}
+			loops++;
+			if (loops > opLimit) {
+				break;
+			}
+		}
+
+		return maxAmount;
+	},
 };
-
-/**
- * Maximize the energy amount for an energy sale.
- *
- * @param sourceRoom The room where the energy is being sold from.
- * @param destRoom The room where the energy is being sold to.
- * @param threshold The maximum amount of energy that can be sold.
- * @param opLimit The maximum number of iterations to perform. The default should be large enough for most cases.
- */
-export function maximizeEnergyTransactionAmount(
-	sourceRoom: string,
-	destRoom: string,
-	threshold: number,
-	opLimit = 20
-): number {
-	let low = 1;
-	let high = threshold;
-	let maxAmount = 0;
-	let loops = 0;
-
-	while (low <= high) {
-		const mid = Math.floor((low + high) / 2);
-		const currentCost = Game.market.calcTransactionCost(mid, sourceRoom, destRoom);
-		const total = mid + currentCost;
-
-		if (total <= threshold) {
-			maxAmount = mid;
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-		loops++;
-		if (loops > opLimit) {
-			break;
-		}
-	}
-
-	return maxAmount;
-}
 
 declare global {
 	interface Creep {

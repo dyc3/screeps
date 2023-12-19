@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import brainAutoPlanner from "brain.autoplanner";
-import util, { maximizeEnergyTransactionAmount } from "./util";
+import util from "./util";
 import { Role } from "roles/meta";
 /**
  * Tools for use in the screeps console.
@@ -83,7 +83,7 @@ global.Market = {
 				const amount = Math.min(
 					buy.remainingAmount,
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					maximizeEnergyTransactionAmount(room.name, buy.roomName!, room.terminal.store[RESOURCE_ENERGY])
+					util.maximizeEnergyTransactionAmount(room.name, buy.roomName!, room.terminal.store[RESOURCE_ENERGY])
 				);
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const cost = Game.market.calcTransactionCost(amount, room.name, buy.roomName!);

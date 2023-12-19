@@ -6,12 +6,20 @@ export const Game: {
 	spawns: any;
 	time: any;
 	map: any;
+	market: {
+		calcTransactionCost(amount: number, roomName1: string, roomName2: string): number;
+	};
 } = {
 	creeps: {},
 	rooms: {},
 	spawns: {},
 	time: 12345,
 	map: {},
+	market: {
+		calcTransactionCost(amount: number, roomName1: string, roomName2: string): number {
+			return 5000;
+		},
+	},
 };
 
 export const Memory: {

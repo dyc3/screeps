@@ -58,4 +58,11 @@ describe("util", () => {
 			assert.equal(got.y, expected.y);
 		});
 	}
+
+	for (const [sourceRoom, destRoom, threshold, expected] of [["W1N8", "W4N5", 10000, 5000]] as const) {
+		it(`should return the max energy amount for ${sourceRoom} => ${destRoom} with threshold ${threshold}`, () => {
+			const got = util.maximizeEnergyTransactionAmount(sourceRoom, destRoom, threshold);
+			assert.equal(got, expected);
+		});
+	}
 });
