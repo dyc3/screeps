@@ -128,7 +128,7 @@ import brainHighwayHarvesting from "./brain.highwayharvesting";
 import brainLogistics from "./brain.logistics";
 import brainOffense from "./brain.offense";
 
-import { RemoteMiningTarget, commandRemoteMining } from "./remotemining";
+import { RemoteMiningTarget, commandRemoteMining, visualizeMiningTargetLinks } from "./remotemining";
 import { ObserveQueue } from "./observequeue";
 import { OffenseStrategyOvermindRemoteMinerBait } from "strategies/Overmind.js";
 import PortalScanner from "intel/PortalScanner.js";
@@ -1816,6 +1816,7 @@ function main() {
 		visualize.doVisualize();
 		visualize.drawMapVision();
 		visualize.drawNukeRange();
+		visualizeMiningTargetLinks();
 	}
 }
 

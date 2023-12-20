@@ -377,3 +377,28 @@ export function remoteMiningDangerousRooms(): string[] {
 	// TODO: cache result for 1 tick
 	return _.filter(Memory.remoteMining.targets, target => target.danger > 1).map(target => target.roomName);
 }
+
+/**
+ * Draw map visuals connecting remote mining targets to their destination storages.
+ */
+export function visualizeMiningTargetLinks(): void {
+	for (const target of Memory.remoteMining.targets) {
+		const source = Game.getObjectById(target.id);
+		if (!source) {
+			continue;
+		}
+		for (const creepName of target.creepCarriers) {
+			const creep = Game.creeps[creepName];
+			if (!creep) {
+				continue;
+			}
+			const depositTarget = creep.memory.depositTarget ? Game.getObjectById(creep.memory.depositTarget) : null;
+			if (!depositTarget) {
+				continue;
+			}
+			Game.map.visual.line(source.pos, depositTarget.pos, {
+				color: "#ffff00",
+			});
+		}
+	}
+}
