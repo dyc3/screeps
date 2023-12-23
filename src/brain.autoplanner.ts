@@ -1067,6 +1067,7 @@ global.autoPlanner = {
 	getPlans: brainAutoPlanner.getPlansAtPosition,
 	// eslint-disable-next-line @typescript-eslint/unbound-method
 	imprintPlans: brainAutoPlanner.imprintPlans,
+	planRoom: brainAutoPlanner.planRoom.bind(brainAutoPlanner),
 };
 
 // @ts-expect-error global augmentation
