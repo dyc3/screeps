@@ -1,4 +1,4 @@
-import { JobRunner } from "jobs";
+import { JobRunner } from "../jobs";
 import { util } from "../util";
 
 const JOB_NAME = "work-factories";
