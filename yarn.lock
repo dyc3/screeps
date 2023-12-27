@@ -7,11 +7,6 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@aashutoshrathi/word-wrap@^1.2.3":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
-  integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
-
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.11.tgz#f4ad435aa263db935b8f10f2c552d23fb716a63f"
@@ -2238,6 +2233,11 @@ screeps-api@^1.11.0:
   optionalDependencies:
     bufferutil "^4.0.1"
     utf-8-validate "^5.0.2"
+
+screeps-cache@1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/screeps-cache/-/screeps-cache-1.0.12.tgz#5bb2351f282a96c853f621df621a6672efbf83b5"
+  integrity sha512-ogEm3K2Qwjbkk3nlAXNmWSqeElm2zWZOe2wYB9+pdDN7C1MLyO/ZLvx+sg8kNONr4BD0bH5kcgZOWZ1bQZmUPQ==
 
 screeps-cartographer@1.8.9:
   version "1.8.9"

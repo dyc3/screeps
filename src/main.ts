@@ -136,6 +136,7 @@ import PortalScanner from "intel/PortalScanner.js";
 import TmpDefense from "./tmpdefense";
 import { Job, JobRunner } from "jobs";
 import { registerJob as registerJobLabs } from "crafting/labs";
+import { Worker } from "roles/role.worker";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1491,6 +1492,9 @@ function main() {
 				case Role.Scout:
 					new Scout(creep).run();
 					break;
+				case Role.Worker:
+					new Worker(creep).run();
+					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");
 					console.log("Parsing role from name...");
@@ -1652,6 +1656,7 @@ profiler.registerObject(roleClaimer, "role.claimer");
 profiler.registerObject(roleMiner, "role.miner");
 profiler.registerObject(roleScientist, "role.scientist");
 profiler.registerClass(Scout, "Scout");
+profiler.registerClass(Worker, "Worker");
 profiler.registerObject(visualize, "visualize");
 profiler.registerObject(util, "util");
 profiler.registerObject(brainGuard, "brain.guard");

@@ -1,10 +1,9 @@
 import * as cartographer from "screeps-cartographer";
+import { CreepRole } from "./meta";
 
-export class Scout {
-	public creep: Creep;
-
+export class Scout extends CreepRole {
 	public constructor(creep: Creep) {
-		this.creep = creep;
+		super(creep);
 	}
 
 	public get targetRoom(): string | undefined {

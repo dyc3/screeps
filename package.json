@@ -67,6 +67,7 @@
 		"screeps-pathfinding": "^2.0.8",
 		"screeps-profiler": "^2.0.1",
 		"source-map": "~0.6.1",
-		"screeps-cartographer": "1.8.9"
+		"screeps-cartographer": "1.8.9",
+		"screeps-cache": "1.0.12"
 	}
 }

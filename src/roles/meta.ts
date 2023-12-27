@@ -24,4 +24,19 @@ export enum Role {
 	Healer = "healer",
 	TmpDefense = "tmpdefense",
 	Scout = "scout",
+	Worker = "worker",
+}
+
+export abstract class CreepRole {
+	public creep: Creep;
+
+	public constructor(creep: Creep) {
+		this.creep = creep;
+	}
+
+	protected log(message: string): void {
+		this.creep.log(message);
+	}
+
+	public abstract run(): void;
 }

@@ -4,7 +4,8 @@ import type { ObserveQueue } from "./observequeue";
 import type { OffenseTask } from "offense/task";
 import type { RemoteMiningTarget } from "./remotemining";
 import type { Role } from "./roles/meta";
-import { Route } from "roles/role.scientist";
+import type { Route } from "./roles/role.scientist";
+import type { WorkerTask } from "./roles/role.worker";
 
 declare global {
 	/*
@@ -145,6 +146,8 @@ declare global {
 		_lastCheckForCloseSpawn?: number;
 		_renewGather?: boolean;
 		stagingObjectId?: Id<AnyStructure>;
+
+		task?: WorkerTask;
 	}
 
 	interface PowerCreepMemory {
