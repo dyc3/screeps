@@ -107,7 +107,7 @@ export default {
 	tasks: [] as GuardTask[],
 
 	init(): void {
-		Memory.guard = _.defaults(Memory.guard, {
+		Memory.guard = _.defaults(Memory.guard ?? {}, {
 			tasks: [],
 			tasksMade: 0,
 			guardiansSpawned: 0,

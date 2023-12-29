@@ -8,7 +8,7 @@ const TASK_RUN = 1;
 
 export default {
 	run(): void {
-		Memory.offense = _.defaultsDeep(Memory.offense, {
+		Memory.offense = _.defaultsDeep(Memory.offense ?? {}, {
 			tasks: [],
 		});
 

@@ -1549,7 +1549,7 @@ function main() {
 	}
 
 	// HACK: keep area around spawn clear when there is a creep spawning and trying to get out
-	if (Game.spawns.Spawn2.spawning) {
+	if (Game.spawns.Spawn2?.spawning) {
 		cartographer.blockSquare(util.getPositionInDirection(Game.spawns.Spawn2.pos, BOTTOM));
 	}
 
