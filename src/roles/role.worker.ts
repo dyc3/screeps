@@ -1,3 +1,4 @@
+import * as cartographer from "screeps-cartographer";
 import { CreepRole } from "./meta";
 import taskGather from "../task.gather";
 
@@ -46,6 +47,8 @@ export class Worker extends CreepRole {
 			taskGather.run(this.creep);
 			return;
 		}
+
+		this.performTask();
 	}
 
 	public performTask(): void {
@@ -55,6 +58,15 @@ export class Worker extends CreepRole {
 		}
 
 		const target = Game.getObjectById(this.workerTask.target);
+		if (!target) {
+			this.log("Target invalid. Removing task.");
+			this.workerTask = undefined;
+			return;
+		}
+
+		const neededRange =
+			this.workerTask.task === WorkerTaskKind.Mine || this.workerTask.task === WorkerTaskKind.Dismantle ? 1 : 3;
+		cartographer.moveTo(this.creep, { pos: target.pos, range: neededRange });
 
 		switch (this.workerTask.task) {
 			case WorkerTaskKind.Upgrade:
@@ -68,6 +80,10 @@ export class Worker extends CreepRole {
 				break;
 			case WorkerTaskKind.Dismantle:
 				this.creep.dismantle(target as AnyStructure);
+				break;
+			case WorkerTaskKind.Mine:
+				this.creep.harvest(target as Mineral);
+				break;
 			default:
 				this.creep.say("help");
 				break;
