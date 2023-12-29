@@ -161,6 +161,10 @@ export function getOverseer(roomName: string): Overseer {
 export function runOverseers(): void {
 	const rooms = util.getOwnedRooms();
 	for (const room of rooms) {
-		getOverseer(room.name).run();
+		try {
+			getOverseer(room.name).run();
+		} catch (e) {
+			console.log(`Overseer: Error in room ${room.name}: ${e}`);
+		}
 	}
 }
