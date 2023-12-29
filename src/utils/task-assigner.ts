@@ -33,13 +33,21 @@ export class NaiveTaskAssigner<W extends Assignable<T>, T> {
 		return workers.map(w => w.task as T);
 	}
 
-	public assignTask(worker: W): void {
+	public assignTasks(): void {
 		const unassignedTasks = this.getUnassignedTasks();
 		if (unassignedTasks.length === 0) {
 			return;
 		}
-		const task = unassignedTasks[0];
-		worker.task = task;
+		for (const worker of this.workers) {
+			if (worker.task) {
+				continue;
+			}
+			const task = unassignedTasks.shift();
+			if (!task) {
+				return;
+			}
+			worker.task = task;
+		}
 	}
 }
 

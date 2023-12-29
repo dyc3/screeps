@@ -41,7 +41,21 @@ describe("TaskAssigner", () => {
 		]);
 	});
 
-	it("should ensure all workers are assigned a task", () => {});
+	it("should ensure all workers are assigned a task", () => {
+		const workers = [new MockWorker(), new MockWorker()];
+
+		const tasks: WorkerTask[] = [
+			{ task: WorkerTaskKind.Build, target: "1" as Id<ConstructionSite> },
+			{ task: WorkerTaskKind.Build, target: "2" as Id<ConstructionSite> },
+			{ task: WorkerTaskKind.Upgrade, target: "1" as Id<StructureController> },
+		];
+
+		const assigner = new NaiveTaskAssigner(workers, tasks);
+		assigner.assignTasks();
+		for (const worker of workers) {
+			assert.isDefined(worker.task);
+		}
+	});
 });
 
 describe("PairingComparator", () => {
