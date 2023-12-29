@@ -1,6 +1,51 @@
+import { NotImplementedException } from "utils/exceptions";
+
 const UNASSIGNED = -1;
 
+export abstract class Assignable<T> {
+	public abstract get task(): T | undefined;
+	public abstract set task(value: T | undefined);
+}
+
 /**
+ * Takes a prioritized list of tasks, and assigns them to workers.
+ */
+export class NaiveTaskAssigner<W extends Assignable<T>, T> {
+	private workers: W[];
+	private tasks: T[];
+
+	public constructor(workers: W[], tasks: T[]) {
+		this.workers = workers;
+		this.tasks = tasks;
+	}
+
+	public invalidateTaskCache(): void {
+		throw new NotImplementedException("invalidateTaskCache");
+	}
+
+	private getUnassignedTasks(): T[] {
+		const assigned = this.getAssignedTasks();
+		return this.tasks.filter(t => !assigned.find(a => _.isEqual(a, t)));
+	}
+
+	private getAssignedTasks(): T[] {
+		const workers = this.workers.filter(c => !!c.task);
+		return workers.map(w => w.task as T);
+	}
+
+	public assignTask(worker: W): void {
+		const unassignedTasks = this.getUnassignedTasks();
+		if (unassignedTasks.length === 0) {
+			return;
+		}
+		const task = unassignedTasks[0];
+		worker.task = task;
+	}
+}
+
+/**
+ * Unfinished.
+ *
  * Takes a list of workers `W` and tasks `T` and assigns workers to tasks.
  * All workers must be capable of all tasks.
  *
@@ -9,7 +54,7 @@ const UNASSIGNED = -1;
  * men -> tasks
  * women -> workers
  */
-export class TaskAssigner<W extends PairingComparator<T>, T extends PairingComparator<W>> {
+export class GaleShapleyTaskAssigner<W extends PairingComparator<T>, T extends PairingComparator<W>> {
 	private workers: W[];
 	private tasks: T[];
 

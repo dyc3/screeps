@@ -1,4 +1,5 @@
 import * as cartographer from "screeps-cartographer";
+import { Assignable } from "utils/task-assigner";
 import { CreepRole } from "./meta";
 import taskGather from "../task.gather";
 
@@ -15,7 +16,7 @@ export enum WorkerTaskKind {
 	Mine,
 }
 
-export class Worker extends CreepRole {
+export class Worker extends CreepRole implements Assignable<WorkerTask> {
 	public constructor(creep: Creep) {
 		super(creep);
 	}
@@ -28,16 +29,17 @@ export class Worker extends CreepRole {
 		this.creep.memory.targetRoom = roomName;
 	}
 
-	public get workerTask(): WorkerTask | undefined {
+	public get task(): WorkerTask | undefined {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return this.creep.memory.task;
 	}
 
-	private set workerTask(task: WorkerTask | undefined) {
+	private set task(task: WorkerTask | undefined) {
 		this.creep.memory.task = task;
 	}
 
 	public run(): void {
-		if (!this.workerTask) {
+		if (!this.task) {
 			this.log("No worker task.");
 			// TODO: ask for a task
 			return;
@@ -52,23 +54,23 @@ export class Worker extends CreepRole {
 	}
 
 	public performTask(): void {
-		if (!this.workerTask) {
+		if (!this.task) {
 			this.log("No worker task.");
 			return;
 		}
 
-		const target = Game.getObjectById(this.workerTask.target);
+		const target = Game.getObjectById(this.task.target);
 		if (!target) {
 			this.log("Target invalid. Removing task.");
-			this.workerTask = undefined;
+			this.task = undefined;
 			return;
 		}
 
 		const neededRange =
-			this.workerTask.task === WorkerTaskKind.Mine || this.workerTask.task === WorkerTaskKind.Dismantle ? 1 : 3;
+			this.task.task === WorkerTaskKind.Mine || this.task.task === WorkerTaskKind.Dismantle ? 1 : 3;
 		cartographer.moveTo(this.creep, { pos: target.pos, range: neededRange });
 
-		switch (this.workerTask.task) {
+		switch (this.task.task) {
 			case WorkerTaskKind.Upgrade:
 				this.creep.upgradeController(target as StructureController);
 				break;
@@ -89,4 +91,21 @@ export class Worker extends CreepRole {
 				break;
 		}
 	}
+
+	public forceTask(task: WorkerTask): void {
+		this.task = task;
+	}
+}
+
+/**
+ * A cache or workers by name.
+ */
+const workerHeapCache: Map<string, Worker> = new Map();
+
+export function hydrateWorker(creep: Creep): Worker {
+	if (!workerHeapCache.has(creep.name)) {
+		workerHeapCache.set(creep.name, new Worker(creep));
+	}
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return workerHeapCache.get(creep.name)!;
 }

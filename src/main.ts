@@ -136,7 +136,7 @@ import PortalScanner from "intel/PortalScanner.js";
 import TmpDefense from "./tmpdefense";
 import { Job, JobRunner } from "jobs";
 import { registerJob as registerJobLabs } from "crafting/labs";
-import { Worker } from "roles/role.worker";
+import { Worker, hydrateWorker } from "roles/role.worker";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1493,7 +1493,7 @@ function main() {
 					new Scout(creep).run();
 					break;
 				case Role.Worker:
-					new Worker(creep).run();
+					hydrateWorker(creep).run();
 					break;
 				default:
 					console.log(creep.name, "Err: No", creep.memory.role, "role to execute");

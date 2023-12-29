@@ -1,11 +1,47 @@
-import { Ordering, PairingComparator } from "utils/task-assigner";
+import { Assignable, NaiveTaskAssigner, Ordering, PairingComparator } from "utils/task-assigner";
 import { assert } from "chai";
+import { Worker, WorkerTask, WorkerTaskKind } from "roles/role.worker";
+
+class MockWorker implements Assignable<WorkerTask> {
+	private _task: WorkerTask | undefined;
+
+	public constructor() {
+		this.task = undefined;
+	}
+
+	public get task(): WorkerTask | undefined {
+		return this._task;
+	}
+	public set task(value: WorkerTask | undefined) {
+		this._task = value;
+	}
+
+	public forceTask(task: WorkerTask): void {
+		this.task = task;
+	}
+}
 
 describe("TaskAssigner", () => {
-	it("should ensure all workers are assigned a task", () => {
+	it("should filter out tasks that are already assigned", () => {
+		const workers = [new MockWorker(), new MockWorker()];
+		workers[0].forceTask({ task: WorkerTaskKind.Build, target: "1" as Id<ConstructionSite> });
 
+		const tasks: WorkerTask[] = [
+			{ task: WorkerTaskKind.Build, target: "1" as Id<ConstructionSite> },
+			{ task: WorkerTaskKind.Build, target: "2" as Id<ConstructionSite> },
+			{ task: WorkerTaskKind.Upgrade, target: "1" as Id<StructureController> },
+		];
 
+		const assigner = new NaiveTaskAssigner(workers, tasks);
+		// @ts-expect-error - private method
+		const unassignedTasks = assigner.getUnassignedTasks();
+		assert.deepEqual(unassignedTasks, [
+			{ task: WorkerTaskKind.Build, target: "2" as Id<ConstructionSite> },
+			{ task: WorkerTaskKind.Upgrade, target: "1" as Id<StructureController> },
+		]);
 	});
+
+	it("should ensure all workers are assigned a task", () => {});
 });
 
 describe("PairingComparator", () => {

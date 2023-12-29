@@ -28,12 +28,9 @@ export class Overseer {
 		return util.getCreeps(Role.Worker).filter(c => c.memory.targetRoom === this.roomName);
 	}
 
-	/**
-	 * Implements Gale-Shapley algorithm to stable match workers to tasks.
-	 */
 	private assignWorkerTasks(): void {
-		const workers = this.getCreeps();
-		const tasks = this.getWorkerTasks();
+		const workers = this.getCreeps().filter(c => !c.memory.task);
+		const tasks = this.getUnassignedTasks();
 	}
 
 	private countAssignedTasks(): Record<WorkerTaskKind, number> {
@@ -64,7 +61,9 @@ export class Overseer {
 		};
 	}
 
-	private getWorkerTasks(): WorkerTask[] {
+
+
+	private getAllWorkerTasks(): WorkerTask[] {
 		const tasks: WorkerTask[] = [this.upgradeTask()].concat(
 			this.buildTasks(),
 			this.repairTasks(),
