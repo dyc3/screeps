@@ -1,0 +1,43 @@
+version: "3"
+services:
+    screeps:
+        image: screepers/screeps-launcher
+        volumes:
+            - ./docker/config.yml:/screeps/config.yml:ro
+            - screeps-data:/screeps
+        ports:
+            - 21025:21025/tcp
+        environment:
+            MONGO_HOST: mongo
+            REDIS_HOST: redis
+        restart: unless-stopped
+
+    # mongo:
+    #     image: mongo
+    #     volumes:
+    #         - mongo-data:/data/db
+    #     restart: unless-stopped
+
+    redis:
+        image: redis
+        volumes:
+            - redis-data:/data
+        restart: unless-stopped
+
+    client:
+        image: node:16
+        working_dir: /home/root/client
+        command: sh -c 'npm install --log-level=error --no-progress laverdet/screeps-steamless-client && npx screeps-steamless-client --package /screeps.nw --host 0.0.0.0 --internal_backend http://screeps:21025 --backend http://localhost:21025'
+        environment:
+            SCREEPS_NW_PATH: ${HOME}/.steam/steam/steamapps/common/Screeps/package.nw
+        volumes:
+            - ${SCREEPS_NW_PATH}:/screeps.nw
+
+        ports:
+            - 8080:8080/tcp
+        restart: unless-stopped
+
+volumes:
+    redis-data:
+    mongo-data:
+    screeps-data:

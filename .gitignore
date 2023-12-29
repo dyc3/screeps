@@ -6,6 +6,8 @@ screeps-multimeter.json
 .screeps-multimeter.history
 .screeps.yaml
 
+docker/config.yml
+
 *.log
 
 .yarn/
