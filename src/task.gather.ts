@@ -1,7 +1,7 @@
 import * as cartographer from "screeps-cartographer";
 
 import util, { isStoreStructure } from "./util";
-import brainLogistics from "./brain.logistics.js";
+import brainLogistics from "./brain.logistics";
 
 const taskGather = {
 	getGatherTarget(creep: Creep): Source | Resource | AnyStoreStructure | Tombstone | Ruin | null {
