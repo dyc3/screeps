@@ -3,7 +3,7 @@ import taskGather from "../task.gather";
 
 export interface WorkerTask {
 	task: WorkerTaskKind;
-	target: Id<AnyStructure | ConstructionSite>;
+	target: Id<AnyStructure | ConstructionSite | Mineral>;
 }
 
 export enum WorkerTaskKind {
@@ -11,6 +11,7 @@ export enum WorkerTaskKind {
 	Build,
 	Repair,
 	Dismantle,
+	Mine,
 }
 
 export class Worker extends CreepRole {
@@ -64,6 +65,11 @@ export class Worker extends CreepRole {
 				break;
 			case WorkerTaskKind.Repair:
 				this.creep.repair(target as AnyStructure);
+				break;
+			case WorkerTaskKind.Dismantle:
+				this.creep.dismantle(target as AnyStructure);
+			default:
+				this.creep.say("help");
 				break;
 		}
 	}

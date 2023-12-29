@@ -43,6 +43,7 @@ export class Overseer {
 			[WorkerTaskKind.Build]: 0,
 			[WorkerTaskKind.Repair]: 0,
 			[WorkerTaskKind.Dismantle]: 0,
+			[WorkerTaskKind.Mine]: 0,
 		};
 		for (const worker of workers) {
 			if (!worker.memory.task) {
@@ -59,6 +60,7 @@ export class Overseer {
 			[WorkerTaskKind.Build]: 2,
 			[WorkerTaskKind.Repair]: 1,
 			[WorkerTaskKind.Dismantle]: 1,
+			[WorkerTaskKind.Mine]: 1,
 		};
 	}
 
@@ -117,6 +119,17 @@ export class Overseer {
 		}
 		const hitsAvg = hitsSum / walls.length;
 		return Math.max(hitsAvg * 1.05, 2000);
+	}
+
+	private miningTasks(): WorkerTask[] {
+		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][this.room.controller!.level] === 0) {
+			return [];
+		}
+
+		return this.room.find(FIND_MINERALS).map(source => ({
+			task: WorkerTaskKind.Mine,
+			target: source.id,
+		}));
 	}
 }
 
