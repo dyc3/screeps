@@ -1316,7 +1316,9 @@ function main() {
 	brainGuard.init();
 	brainHighwayHarvesting.init();
 
-	cartographer.preTick();
+	if (!Game.rooms.sim) {
+		cartographer.preTick();
+	}
 
 	try {
 		brainOffense.run();
