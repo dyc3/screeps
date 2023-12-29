@@ -137,6 +137,7 @@ import TmpDefense from "./tmpdefense";
 import { Job, JobRunner } from "jobs";
 import { registerJob as registerJobLabs } from "crafting/labs";
 import { Worker, hydrateWorker } from "roles/role.worker";
+import { runOverseers } from "room/overseer";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1348,6 +1349,8 @@ function main() {
 			}
 		}
 	}
+
+	runOverseers();
 
 	// do creep stuff
 	for (const name in Memory.creeps) {

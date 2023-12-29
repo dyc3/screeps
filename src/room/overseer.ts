@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CacheKey, memoryCacheGetter } from "screeps-cache";
-import { WorkerTask, WorkerTaskKind } from "../roles/role.worker";
+import { Worker, WorkerTask, WorkerTaskKind, hydrateWorker } from "../roles/role.worker";
+import { NaiveTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import util from "../util";
 
@@ -21,6 +22,10 @@ export class Overseer {
 	}
 
 	public run(): void {
+		if (!this.room) {
+			console.log(`Overseer: No vision for room ${this.roomName}`);
+			return;
+		}
 		this.assignWorkerTasks();
 	}
 
@@ -28,9 +33,13 @@ export class Overseer {
 		return util.getCreeps(Role.Worker).filter(c => c.memory.targetRoom === this.roomName);
 	}
 
+	private getWorkers(): Worker[] {
+		return this.getCreeps().map(hydrateWorker);
+	}
+
 	private assignWorkerTasks(): void {
-		const workers = this.getCreeps().filter(c => !c.memory.task);
-		const tasks = this.getUnassignedTasks();
+		const assigner = new NaiveTaskAssigner(this.getWorkers(), this.getAllWorkerTasks());
+		assigner.assignTasks();
 	}
 
 	private countAssignedTasks(): Record<WorkerTaskKind, number> {
@@ -60,8 +69,6 @@ export class Overseer {
 			[WorkerTaskKind.Mine]: 1,
 		};
 	}
-
-
 
 	private getAllWorkerTasks(): WorkerTask[] {
 		const tasks: WorkerTask[] = [this.upgradeTask()].concat(
@@ -139,4 +146,21 @@ export class Overseer {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function keyByClassAndRoomName(): CacheKey {
 	return (i: Overseer) => `${i.constructor.name}${i.roomName}`;
+}
+
+const overseerHeapCache = new Map<string, Overseer>();
+
+export function getOverseer(roomName: string): Overseer {
+	if (!overseerHeapCache.has(roomName)) {
+		overseerHeapCache.set(roomName, new Overseer(roomName));
+	}
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return overseerHeapCache.get(roomName)!;
+}
+
+export function runOverseers(): void {
+	const rooms = util.getOwnedRooms();
+	for (const room of rooms) {
+		getOverseer(room.name).run();
+	}
 }
