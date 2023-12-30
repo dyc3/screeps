@@ -28,10 +28,17 @@ export enum Role {
 }
 
 export abstract class CreepRole {
-	public creep: Creep;
+	public creepName: string;
 
-	public constructor(creep: Creep) {
-		this.creep = creep;
+	public constructor(creep: Creep | string) {
+		this.creepName = creep instanceof Creep ? creep.name : creep;
+
+		if (!this.creep) {
+			throw new Error(`Creep ${this.creepName} does not exist.`);
+		}
+	}
+	public get creep(): Creep {
+		return Game.creeps[this.creepName];
 	}
 
 	protected log(message: string): void {

@@ -17,7 +17,7 @@ export enum WorkerTaskKind {
 }
 
 export class Worker extends CreepRole implements Assignable<WorkerTask> {
-	public constructor(creep: Creep) {
+	public constructor(creep: Creep | string) {
 		super(creep);
 	}
 

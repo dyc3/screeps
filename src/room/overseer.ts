@@ -27,6 +27,18 @@ export class Overseer {
 			return;
 		}
 		this.assignWorkerTasks();
+
+		this.visualize();
+	}
+
+	public visualize(): void {
+		this.room.visual.text(`Overseer`, 20, 1, { align: "left" });
+		this.room.visual.text(`Workers: ${this.getCreeps().length}`, 20, 2, { align: "left" });
+		this.room.visual.text(`Assigned tasks:`, 20, 3, { align: "left" });
+		const counts = this.countAssignedTasks();
+		for (const [kind, count] of Object.entries(counts)) {
+			this.room.visual.text(`${kind}: ${count}`, 20, 4 + parseInt(kind, 10), { align: "left" });
+		}
 	}
 
 	private getCreeps(): Creep[] {
@@ -43,7 +55,7 @@ export class Overseer {
 	}
 
 	private countAssignedTasks(): Record<WorkerTaskKind, number> {
-		const workers = this.getCreeps().filter(c => !!c.memory.task);
+		const workers = this.getWorkers().filter(c => !!c.task);
 		const counts: Record<WorkerTaskKind, number> = {
 			[WorkerTaskKind.Upgrade]: 0,
 			[WorkerTaskKind.Build]: 0,
@@ -52,10 +64,10 @@ export class Overseer {
 			[WorkerTaskKind.Mine]: 0,
 		};
 		for (const worker of workers) {
-			if (!worker.memory.task) {
+			if (!worker.task) {
 				continue;
 			}
-			counts[worker.memory.task.task]++;
+			counts[worker.task.task]++;
 		}
 		return counts;
 	}
