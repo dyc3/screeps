@@ -59,7 +59,7 @@ export function commandRemoteMining(): void {
 	requestReservations();
 }
 
-function getHarvestTarget(id: Id<Source>): RemoteMiningTarget | undefined {
+export function getHarvestTarget(id: Id<Source>): RemoteMiningTarget | undefined {
 	return _.find(Memory.remoteMining.targets, target => target.id === id);
 }
 

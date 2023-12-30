@@ -3,6 +3,7 @@ import * as cartographer from "screeps-cartographer";
 import { Role } from "roles/meta";
 import taskGather from "./task.gather";
 import util from "./util";
+import { getHarvestTarget } from "remotemining";
 
 // FIXME: if the creep is not in a room with a spawn, then it defaults renewTarget to the first spawn, which is not necessarily the closest one
 
@@ -112,7 +113,8 @@ const taskRenew = {
 			!creep.memory._lastCheckTravelTime ||
 			Game.time - creep.memory._lastCheckTravelTime > 30
 		) {
-			const path = cartographer.cachePath(`renew-${creep.name}`, creep.pos, spawn.pos, { avoidCreeps: false });
+			const origin = creep instanceof Creep ? getOriginPosition(creep) : creep.pos;
+			const path = cartographer.cachePath(`renew-${creep.name}`, origin, spawn.pos, { avoidCreeps: false });
 			if (!path) {
 				creep.log("WARNING: no path found to renew target");
 				return false;
@@ -310,6 +312,23 @@ const taskRenew = {
 		}
 	},
 };
+
+function getOriginPosition(creep: Creep): RoomPosition {
+	if (creep.memory.harvestTarget) {
+		if (creep.memory.role === Role.Harvester) {
+			const pos = creep.room.memory.harvestPositions[creep.memory.harvestTarget];
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			return creep.room.getPositionAt(pos.x, pos.y)!;
+		}
+		if (creep.memory.role === Role.RemoteHarvester) {
+			const target = getHarvestTarget(creep.memory.harvestTarget);
+			if (target) {
+				return new RoomPosition(target.harvestPos.x, target.harvestPos.y, target.roomName);
+			}
+		}
+	}
+	return creep.pos;
+}
 
 module.exports = taskRenew;
 export default taskRenew;
