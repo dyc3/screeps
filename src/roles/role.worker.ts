@@ -17,6 +17,8 @@ export enum WorkerTaskKind {
 }
 
 export class Worker extends CreepRole implements Assignable<WorkerTask> {
+	private startedTaskAt = 0;
+
 	public constructor(creep: Creep | string) {
 		super(creep);
 	}
@@ -36,6 +38,7 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 
 	private set task(task: WorkerTask | undefined) {
 		this.creep.memory.task = task;
+		this.startedTaskAt = Game.time;
 	}
 
 	public get working(): boolean {
@@ -47,8 +50,11 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 
 	public run(): void {
 		if (!this.task) {
-			this.log("No worker task.");
-			// TODO: ask for a task
+			this.log("No worker task. Falling back to upgrade.");
+			this.task = {
+				task: WorkerTaskKind.Upgrade,
+				target: this.creep.room.controller!.id,
+			};
 			return;
 		}
 
@@ -128,6 +134,8 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 		}
 
 		switch (this.task.task) {
+			case WorkerTaskKind.Upgrade:
+				return Game.time - this.startedTaskAt > 40;
 			case WorkerTaskKind.Repair:
 				// eslint-disable-next-line no-case-declarations
 				const repairTarget = target as AnyStructure;
