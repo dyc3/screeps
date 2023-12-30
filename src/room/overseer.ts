@@ -37,7 +37,8 @@ export class Overseer {
 		this.room.visual.text(`Assigned tasks:`, 20, 3, { align: "left" });
 		const counts = this.countAssignedTasks();
 		for (const [kind, count] of Object.entries(counts)) {
-			this.room.visual.text(`${kind}: ${count}`, 20, 4 + parseInt(kind, 10), { align: "left" });
+			const kindNum = parseInt(kind, 10);
+			this.room.visual.text(`${WorkerTaskKind[kindNum]}: ${count}`, 20, 4 + kindNum, { align: "left" });
 		}
 	}
 
