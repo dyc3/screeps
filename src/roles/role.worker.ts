@@ -2,6 +2,7 @@ import * as cartographer from "screeps-cartographer";
 import { Assignable } from "utils/task-assigner";
 import { CreepRole } from "./meta";
 import taskGather from "../task.gather";
+import util from "../util";
 
 export interface WorkerTask {
 	task: WorkerTaskKind;
@@ -77,20 +78,23 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			return;
 		}
 
-		this.performTask();
+		const result = this.performTask();
+		if (result !== OK) {
+			this.log(`Task failed with result ${util.errorCodeToString(result)}.`);
+		}
 	}
 
-	public performTask(): void {
+	public performTask(): ScreepsReturnCode {
 		if (!this.task) {
 			this.log("No worker task.");
-			return;
+			return ERR_NOT_FOUND;
 		}
 
 		const target = Game.getObjectById(this.task.target);
 		if (!target) {
 			this.log("Target invalid. Removing task.");
 			this.task = undefined;
-			return;
+			return ERR_NOT_FOUND;
 		}
 
 		const neededRange =
@@ -99,23 +103,18 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 
 		switch (this.task.task) {
 			case WorkerTaskKind.Upgrade:
-				this.creep.upgradeController(target as StructureController);
-				break;
+				return this.creep.upgradeController(target as StructureController);
 			case WorkerTaskKind.Build:
-				this.creep.build(target as ConstructionSite);
-				break;
+				return this.creep.build(target as ConstructionSite);
 			case WorkerTaskKind.Repair:
-				this.creep.repair(target as AnyStructure);
-				break;
+				return this.creep.repair(target as AnyStructure);
 			case WorkerTaskKind.Dismantle:
-				this.creep.dismantle(target as AnyStructure);
-				break;
+				return this.creep.dismantle(target as AnyStructure);
 			case WorkerTaskKind.Mine:
-				this.creep.harvest(target as Mineral);
-				break;
+				return this.creep.harvest(target as Mineral);
 			default:
 				this.creep.say("help");
-				break;
+				return ERR_NOT_FOUND;
 		}
 	}
 
