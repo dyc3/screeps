@@ -52,6 +52,12 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			return;
 		}
 
+		if (this.isTaskDone()) {
+			this.log("Task done.");
+			this.task = undefined;
+			return;
+		}
+
 		if (this.working && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 			this.working = false;
 			this.creep.say("🔄 gather");
@@ -109,6 +115,30 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 
 	public forceTask(task: WorkerTask): void {
 		this.task = task;
+	}
+
+	private isTaskDone(): boolean {
+		if (!this.task) {
+			return true;
+		}
+
+		const target = Game.getObjectById(this.task.target);
+		if (!target) {
+			return true;
+		}
+
+		switch (this.task.task) {
+			case WorkerTaskKind.Repair:
+				// eslint-disable-next-line no-case-declarations
+				const repairTarget = target as AnyStructure;
+				return repairTarget.hits === repairTarget.hitsMax;
+			case WorkerTaskKind.Mine:
+				// eslint-disable-next-line no-case-declarations
+				const mineralTarget = target as Mineral;
+				return mineralTarget.mineralAmount === 0;
+			default:
+				return false;
+		}
 	}
 }
 
