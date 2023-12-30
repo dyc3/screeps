@@ -139,6 +139,11 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			case WorkerTaskKind.Repair:
 				// eslint-disable-next-line no-case-declarations
 				const repairTarget = target as AnyStructure;
+				// HACK: temporary fix for ramparts and walls
+				// FIXME: needs a reference to the room's overseer
+				if (repairTarget.structureType === STRUCTURE_WALL || repairTarget.structureType === STRUCTURE_RAMPART) {
+					return repairTarget.hits > 10000;
+				}
 				return repairTarget.hits === repairTarget.hitsMax;
 			case WorkerTaskKind.Mine:
 				// eslint-disable-next-line no-case-declarations
