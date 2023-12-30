@@ -32,8 +32,9 @@ export class Overseer {
 	}
 
 	public visualize(): void {
+		const tasks = this.getAllWorkerTasks();
 		this.room.visual.text(`Overseer`, 20, 1, { align: "left" });
-		this.room.visual.text(`Workers: ${this.getCreeps().length}`, 20, 2, { align: "left" });
+		this.room.visual.text(`Workers: ${this.getCreeps().length} - Tasks: ${tasks.length}`, 20, 2, { align: "left" });
 		this.room.visual.text(`Assigned tasks:`, 20, 3, { align: "left" });
 		const counts = this.countAssignedTasks();
 		for (const [kind, count] of Object.entries(counts)) {
