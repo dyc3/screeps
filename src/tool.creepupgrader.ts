@@ -79,7 +79,7 @@ export function getManagerQuota(room: Room): number {
 	if (!room.controller) {
 		return 0;
 	}
-	if (room.controller.my && room.controller.level >= 4) {
+	if (room.controller.my) {
 		return 1;
 	}
 	return 0;
