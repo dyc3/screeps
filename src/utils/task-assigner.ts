@@ -19,10 +19,6 @@ export class NaiveTaskAssigner<W extends Assignable<T>, T> {
 		this.tasks = tasks;
 	}
 
-	public invalidateTaskCache(): void {
-		throw new NotImplementedException("invalidateTaskCache");
-	}
-
 	private getUnassignedTasks(): T[] {
 		const assigned = this.getAssignedTasks();
 		return this.tasks.filter(t => !assigned.find(a => _.isEqual(a, t)));
