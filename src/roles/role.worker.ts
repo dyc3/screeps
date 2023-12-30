@@ -3,6 +3,7 @@ import { Assignable } from "utils/task-assigner";
 import { CreepRole } from "./meta";
 import taskGather from "../task.gather";
 import util from "../util";
+import { Overseer, getOverseer } from "room/overseer";
 
 export interface WorkerTask {
 	task: WorkerTaskKind;
@@ -47,6 +48,10 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 	}
 	private set working(working: boolean) {
 		this.creep.memory.working = working;
+	}
+
+	private get overseer(): Overseer {
+		return getOverseer(this.targetRoom!);
 	}
 
 	public run(): void {
@@ -138,10 +143,8 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			case WorkerTaskKind.Repair:
 				// eslint-disable-next-line no-case-declarations
 				const repairTarget = target as AnyStructure;
-				// HACK: temporary fix for ramparts and walls
-				// FIXME: needs a reference to the room's overseer
 				if (repairTarget.structureType === STRUCTURE_WALL || repairTarget.structureType === STRUCTURE_RAMPART) {
-					return repairTarget.hits > 10000;
+					return repairTarget.hits > (this.overseer.wallRepairThreshold ?? 2000);
 				}
 				return repairTarget.hits === repairTarget.hitsMax;
 			case WorkerTaskKind.Mine:

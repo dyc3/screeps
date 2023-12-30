@@ -162,7 +162,7 @@ export class Overseer {
 	}
 
 	@memoryCacheGetter(keyByClassAndRoomName, (i: Overseer) => i.calcWallRepairThreshold())
-	private wallRepairThreshold?: number;
+	public wallRepairThreshold?: number;
 
 	/**
 	 * If any wall or rampart is below this threatshold, it will be repaired.
