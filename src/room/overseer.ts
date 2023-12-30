@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CacheKey, memoryCacheGetter } from "screeps-cache";
 import { Worker, WorkerTask, WorkerTaskKind, hydrateWorker } from "../roles/role.worker";
-import { NaiveTaskAssigner, Ordering } from "../utils/task-assigner";
+import { NaiveTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import util from "../util";
 
