@@ -716,7 +716,7 @@ function doCreepSpawning() {
 					role.quotaPerRoom ? `, target room: ${room?.name}` : ""
 				})`
 			);
-			const body = role.stages[hiStage];
+			let body = role.stages[hiStage];
 			if (role.name === Role.Upgrader && room?.controller && room.controller.level <= 5 && hiStage > 2) {
 				// HACK: make sure the upgraders aren't getting fatigued, which would slow down upgrading new rooms
 				const result = targetSpawn.spawnCreep(body.concat([MOVE, MOVE]), newCreepName, {
@@ -732,7 +732,7 @@ function doCreepSpawning() {
 				// HACK: if the harvester is going to another room, do not spawn the super optimized creep because it will be ultimately less effective.
 				if (targetSpawn.room.name !== newCreepMemory.targetRoom) {
 					console.log("[spawning] spawning harvester with extra move");
-					body.push(...([MOVE, MOVE, MOVE, MOVE, MOVE] as BodyPartConstant[]));
+					body = [...body, ...[MOVE, MOVE, MOVE, MOVE, MOVE]];
 				}
 				// @ts-expect-error this is valid, caused by bad creep memory definitions
 				const result = targetSpawn.spawnCreep(body, newCreepName, { memory: newCreepMemory });
