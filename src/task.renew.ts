@@ -317,8 +317,10 @@ function getOriginPosition(creep: Creep): RoomPosition {
 	if (creep.memory.harvestTarget) {
 		if (creep.memory.role === Role.Harvester) {
 			const pos = creep.room.memory.harvestPositions[creep.memory.harvestTarget];
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			return creep.room.getPositionAt(pos.x, pos.y)!;
+			if (pos) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				return creep.room.getPositionAt(pos.x, pos.y)!;
+			}
 		}
 		if (creep.memory.role === Role.RemoteHarvester) {
 			const target = getHarvestTarget(creep.memory.harvestTarget);
