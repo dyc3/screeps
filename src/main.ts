@@ -1094,15 +1094,17 @@ function satisfyClaimTargets() {
 	const claimers = util.getCreeps(Role.Claimer);
 	const satisfiedIdxs = [];
 	for (let t = 0; t < Memory.claimTargets.length; t++) {
-		if (util.isTreasureRoom(Memory.claimTargets[t].room) || util.isHighwayRoom(Memory.claimTargets[t].room)) {
+		const target = Memory.claimTargets[t];
+		if (util.isTreasureRoom(target.room) || util.isHighwayRoom(target.room)) {
 			console.log(
 				"[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (Treasure/Highway room detected)"
 			);
 			satisfiedIdxs.push(t);
 			continue;
 		}
-		const room = Game.rooms[Memory.claimTargets[t].room];
-		if (Memory.claimTargets[t].mode === "reserve" && room) {
+
+		const room = Game.rooms[target.room];
+		if (target.mode === "reserve" && room) {
 			if (!room.controller) {
 				console.log(
 					"[satisfy-claim-targets] WARN: Can't satisfy target without a controller. (No controller found)"
@@ -1117,7 +1119,7 @@ function satisfyClaimTargets() {
 			);
 			if (foundInvaderCore) {
 				console.log(
-					`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${Memory.claimTargets[t].room})`
+					`[satisfy-claim-targets] WARN: Can't satisfy target if there's an invader core (${target.room})`
 				);
 				satisfiedIdxs.push(t);
 				continue;
@@ -1126,21 +1128,19 @@ function satisfyClaimTargets() {
 			if (reserv) {
 				if (reserv.username !== global.WHOAMI && room.controller.upgradeBlocked > 20) {
 					console.log(
-						`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${Memory.claimTargets[t].room})`
+						`[satisfy-claim-targets] WARN: Can't satisfy target if we can't attack the controller (${target.room})`
 					);
 					satisfiedIdxs.push(t);
 					continue;
 				} else if (reserv.username === global.WHOAMI && reserv.ticksToEnd > 2000) {
-					console.log(
-						`[satisfy-claim-targets] Already plenty satisfied reservation (${Memory.claimTargets[t].room})`
-					);
+					console.log(`[satisfy-claim-targets] Already plenty satisfied reservation (${target.room})`);
 					satisfiedIdxs.push(t);
 					continue;
 				}
 			}
 		}
 		for (const creep of claimers) {
-			if (creep.memory.targetRoom === Memory.claimTargets[t].room) {
+			if (creep.memory.targetRoom === target.room) {
 				satisfiedIdxs.push(t);
 				break;
 			}
@@ -1161,8 +1161,17 @@ function satisfyClaimTargets() {
 		return;
 	}
 
+	const ownedRooms = util.getOwnedRooms();
+
 	// spawn new claimers for the remaining targets
 	for (const target of Memory.claimTargets) {
+		if (target.mode === "claim" && Game.gcl.level >= ownedRooms.length) {
+			console.log(
+				"[satisfy-claim-targets] WARN: Can't claim room yet, GCL level is too low. Keeping target in queue."
+			);
+			continue;
+		}
+
 		// spawn new claimer
 		const spawnRooms = util.findClosestOwnedRooms(
 			new RoomPosition(25, 25, target.room),
