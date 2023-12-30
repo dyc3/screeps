@@ -1,45 +1,57 @@
 import { Role } from "./roles/meta";
 import util from "./util";
 
+const SPACES_AROUND_SOURCE_CACHE = new Map<string, number>();
+
 const toolEnergySource = {
 	// adjusted: adjust harvester count for if containers/storage/links are nearby
 	getMaxHarvesters(energySource: Source, adjusted = false): number {
-		return 1;
-		// if (util.getOwnedRooms().length > 1) {
-		// 	return 1;
-		// }
-		// const terrain = Game.map.getRoomTerrain(energySource.pos.roomName);
-		// let count = 0;
-		// for (let y = energySource.pos.y - 1; y <= energySource.pos.y + 1; y++) {
-		// 	for (let x = energySource.pos.x - 1; x <= energySource.pos.x + 1; x++) {
-		// 		const thisterrain = terrain.get(x, y);
-		// 		// eslint-disable-next-line no-bitwise
-		// 		if ((thisterrain & (TERRAIN_MASK_WALL | TERRAIN_MASK_LAVA)) > 0) {
-		// 			continue;
-		// 		}
-		// 		count++;
-		// 	}
-		// }
-		// if (adjusted) {
-		// 	if (
-		// 		energySource.pos.findInRange(FIND_STRUCTURES, 2, {
-		// 			filter: struct =>
-		// 				struct.structureType === STRUCTURE_CONTAINER ||
-		// 				struct.structureType === STRUCTURE_LINK ||
-		// 				struct.structureType === STRUCTURE_STORAGE,
-		// 		}).length > 0
-		// 	) {
-		// 		count = 1;
-		// 	}
-		// }
-		// return count > 2 ? 2 : count;
+		if (util.getOwnedRooms().length > 1) {
+			return 1;
+		}
+		let count = this.countFreeSpacesAroundSource(energySource);
+		if (adjusted) {
+			if (
+				energySource.pos.findInRange(FIND_STRUCTURES, 2, {
+					filter: struct =>
+						struct.structureType === STRUCTURE_CONTAINER ||
+						struct.structureType === STRUCTURE_LINK ||
+						struct.structureType === STRUCTURE_STORAGE,
+				}).length > 0
+			) {
+				count = 1;
+			}
+		}
+		return count > 2 ? 2 : count;
+	},
+
+	countFreeSpacesAroundSource(energySource: Source): number {
+		if (SPACES_AROUND_SOURCE_CACHE.has(energySource.id)) {
+			return SPACES_AROUND_SOURCE_CACHE.get(energySource.id) ?? 1;
+		}
+		const terrain = Game.map.getRoomTerrain(energySource.pos.roomName);
+		let count = 0;
+		for (let y = energySource.pos.y - 1; y <= energySource.pos.y + 1; y++) {
+			for (let x = energySource.pos.x - 1; x <= energySource.pos.x + 1; x++) {
+				const thisterrain = terrain.get(x, y);
+				// eslint-disable-next-line no-bitwise
+				if ((thisterrain & (TERRAIN_MASK_WALL | TERRAIN_MASK_LAVA)) > 0) {
+					continue;
+				}
+				count++;
+			}
+		}
+		SPACES_AROUND_SOURCE_CACHE.set(energySource.id, count);
+		return count;
 	},
 
 	getHarvesters(energySource: Source): number {
 		let count = 0;
-		const harvesters = util.getCreeps(Role.Harvester);
+		const harvesters = util.getCreeps(Role.Harvester, Role.Worker);
 		for (const harvester of harvesters) {
 			if (harvester.memory.harvestTarget === energySource.id) {
+				count++;
+			} else if (harvester.memory.gatherTarget === energySource.id && !harvester.memory.working) {
 				count++;
 			}
 		}

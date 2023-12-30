@@ -2,6 +2,7 @@ import * as cartographer from "screeps-cartographer";
 
 import util, { isStoreStructure } from "./util";
 import brainLogistics from "./brain.logistics";
+import toolEnergySource from "tool.energysource";
 
 const taskGather = {
 	getGatherTarget(creep: Creep): Source | Resource | AnyStoreStructure | Tombstone | Ruin | null {
@@ -51,7 +52,9 @@ const taskGather = {
 				creep.room.storage.store[RESOURCE_ENERGY] <= 0
 			) {
 				const source = creep.pos.findClosestByPath(FIND_SOURCES, {
-					filter: s => s.energy > 0,
+					filter: s =>
+						s.energy > 0 &&
+						toolEnergySource.countFreeSpacesAroundSource(s) > toolEnergySource.getHarvesters(s),
 				});
 				if (source) {
 					creep.memory.gatherTarget = source.id;
@@ -91,9 +94,12 @@ const taskGather = {
 				creep.log(`Don't know how to grab ${gatherTarget}`);
 			}
 		} else {
-			let opts = {};
+			const opts: cartographer.MoveOpts = {};
 			if (creep.room.name === gatherTarget.room?.name) {
-				opts = { maxRooms: 1 };
+				opts.maxRooms = 1;
+			}
+			if (gatherTarget instanceof Source) {
+				opts.avoidCreeps = true;
 			}
 			cartographer.moveTo(creep, gatherTarget, opts);
 		}
