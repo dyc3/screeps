@@ -1178,7 +1178,7 @@ function satisfyClaimTargets() {
 		// spawn new claimer
 		const spawnRooms = util.findClosestOwnedRooms(
 			new RoomPosition(25, 25, target.room),
-			r => r.energyCapacityAvailable >= 1300 && r.energyAvailable >= r.energyCapacityAvailable * 0.8
+			r => (target.mode === "claim" && r.energyAvailable >= 650) || r.energyCapacityAvailable >= 1300
 		);
 		if (spawnRooms.length === 0) {
 			console.log("WARN: All rooms don't have enough energy to spawn creeps");
