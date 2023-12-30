@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CacheKey, memoryCacheGetter } from "screeps-cache";
 import { Worker, WorkerTask, WorkerTaskKind, hydrateWorker } from "../roles/role.worker";
-import { NaiveTaskAssigner } from "../utils/task-assigner";
+import { NaiveTaskAssigner, Ordering } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import util from "../util";
 
@@ -51,7 +51,9 @@ export class Overseer {
 	}
 
 	private assignWorkerTasks(): void {
-		const assigner = new NaiveTaskAssigner(this.getWorkers(), this.getAllWorkerTasks());
+		const tasks = this.getAllWorkerTasks();
+		const sortedTasks = this.sortTasksByPriority(tasks);
+		const assigner = new NaiveTaskAssigner(this.getWorkers(), sortedTasks);
 		assigner.assignTasks();
 	}
 
@@ -81,6 +83,33 @@ export class Overseer {
 			[WorkerTaskKind.Dismantle]: 1,
 			[WorkerTaskKind.Mine]: 1,
 		};
+	}
+
+	private getBuildPriority(task: WorkerTask): number {
+		if (task.task !== WorkerTaskKind.Build) {
+			return 0;
+		}
+		const site = Game.getObjectById(task.target as Id<ConstructionSite>);
+		switch (site?.structureType) {
+			case STRUCTURE_SPAWN:
+				return 4;
+			case STRUCTURE_TOWER:
+				return 3;
+			case STRUCTURE_EXTENSION:
+				return 2;
+			case STRUCTURE_ROAD:
+				return -1;
+			default:
+				return (site?.progress ?? 0) / (site?.progressTotal ?? 1);
+		}
+	}
+
+	private sortTasksByPriority(tasks: WorkerTask[]): WorkerTask[] {
+		return _.sortByOrder(
+			tasks,
+			[(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0)],
+			["desc"]
+		);
 	}
 
 	private getAllWorkerTasks(): WorkerTask[] {
