@@ -54,7 +54,7 @@ const taskGather = {
 				const source = creep.pos.findClosestByPath(FIND_SOURCES, {
 					filter: s =>
 						s.energy > 0 &&
-						toolEnergySource.countFreeSpacesAroundSource(s) > toolEnergySource.getHarvesters(s),
+						toolEnergySource.countFreeSpacesAroundSource(s) > toolEnergySource.getHarvestersAndGatherers(s),
 				});
 				if (source) {
 					creep.memory.gatherTarget = source.id;

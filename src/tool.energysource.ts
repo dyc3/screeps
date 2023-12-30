@@ -6,23 +6,24 @@ const SPACES_AROUND_SOURCE_CACHE = new Map<string, number>();
 const toolEnergySource = {
 	// adjusted: adjust harvester count for if containers/storage/links are nearby
 	getMaxHarvesters(energySource: Source, adjusted = false): number {
-		if (util.getOwnedRooms().length > 1) {
-			return 1;
-		}
-		let count = this.countFreeSpacesAroundSource(energySource);
-		if (adjusted) {
-			if (
-				energySource.pos.findInRange(FIND_STRUCTURES, 2, {
-					filter: struct =>
-						struct.structureType === STRUCTURE_CONTAINER ||
-						struct.structureType === STRUCTURE_LINK ||
-						struct.structureType === STRUCTURE_STORAGE,
-				}).length > 0
-			) {
-				count = 1;
-			}
-		}
-		return count > 2 ? 2 : count;
+		return 1;
+		// if (util.getOwnedRooms().length > 1) {
+		// 	return 1;
+		// }
+		// let count = this.countFreeSpacesAroundSource(energySource);
+		// if (adjusted) {
+		// 	if (
+		// 		energySource.pos.findInRange(FIND_STRUCTURES, 2, {
+		// 			filter: struct =>
+		// 				struct.structureType === STRUCTURE_CONTAINER ||
+		// 				struct.structureType === STRUCTURE_LINK ||
+		// 				struct.structureType === STRUCTURE_STORAGE,
+		// 		}).length > 0
+		// 	) {
+		// 		count = 1;
+		// 	}
+		// }
+		// return count > 2 ? 2 : count;
 	},
 
 	countFreeSpacesAroundSource(energySource: Source): number {
@@ -46,6 +47,17 @@ const toolEnergySource = {
 	},
 
 	getHarvesters(energySource: Source): number {
+		let count = 0;
+		const harvesters = util.getCreeps(Role.Harvester, Role.Worker);
+		for (const harvester of harvesters) {
+			if (harvester.memory.harvestTarget === energySource.id) {
+				count++;
+			}
+		}
+		return count;
+	},
+
+	getHarvestersAndGatherers(energySource: Source): number {
 		let count = 0;
 		const harvesters = util.getCreeps(Role.Harvester, Role.Worker);
 		for (const harvester of harvesters) {
