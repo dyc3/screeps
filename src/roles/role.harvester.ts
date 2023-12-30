@@ -543,17 +543,15 @@ const roleHarvester = {
 						Object.keys(Game.creeps).length !== util.getCreeps(Role.Harvester).length
 					) {
 						creep.log("no transfer targets available, returning to harvestPos to keep harvesting...");
+						cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 1000 });
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
-						} else {
-							cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 						}
 						creep.memory.depositMode = this.getDepositMode(creep);
 					} else if (creep.memory.depositMode === "drop") {
+						cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 1000 });
 						if (creep.pos.isEqualTo(harvestPos)) {
 							creep.harvest(harvestTarget);
-						} else {
-							cartographer.moveTo(creep, { pos: harvestPos, range: 0 });
 						}
 					} else {
 						creep.memory.depositMode = this.getDepositMode(creep);
