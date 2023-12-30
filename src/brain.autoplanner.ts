@@ -336,7 +336,7 @@ const brainAutoPlanner = {
 				}
 			);
 			if (pathToControllerResult.incomplete) {
-				console.error("FAILED TO FIND PATH from controller to rootPos");
+				console.log("FAILED TO FIND PATH from controller to rootPos");
 				return;
 			}
 
@@ -439,6 +439,11 @@ const brainAutoPlanner = {
 				["desc", "desc"]
 			);
 
+			if (adjacent.length === 0) {
+				console.log("WARN: no adjacent positions found for source", source.id);
+				continue;
+			}
+
 			const harvestPos = adjacent[0];
 			console.log("Harvest position:", harvestPos);
 			room.memory.harvestPositions[source.id] = { x: harvestPos.x, y: harvestPos.y };
@@ -496,7 +501,7 @@ const brainAutoPlanner = {
 				}
 			);
 			if (pathingResult.incomplete) {
-				console.error(
+				console.log(
 					"FAILED TO FIND PATH from rootPos",
 					rootPos.x,
 					",",
@@ -1057,16 +1062,11 @@ const brainAutoPlanner = {
 
 // @ts-expect-error global augmentation
 global.autoPlanner = {
-	// eslint-disable-next-line @typescript-eslint/unbound-method
-	addPlans: brainAutoPlanner.addPlansAtPosition,
-	// eslint-disable-next-line @typescript-eslint/unbound-method
-	removePlans: brainAutoPlanner.removePlansAtPosition,
-	// eslint-disable-next-line @typescript-eslint/unbound-method
-	planHarvestPositions: brainAutoPlanner.planHarvestPositions,
-	// eslint-disable-next-line @typescript-eslint/unbound-method
-	getPlans: brainAutoPlanner.getPlansAtPosition,
-	// eslint-disable-next-line @typescript-eslint/unbound-method
-	imprintPlans: brainAutoPlanner.imprintPlans,
+	addPlans: brainAutoPlanner.addPlansAtPosition.bind(brainAutoPlanner),
+	removePlans: brainAutoPlanner.removePlansAtPosition.bind(brainAutoPlanner),
+	planHarvestPositions: brainAutoPlanner.planHarvestPositions.bind(brainAutoPlanner),
+	getPlans: brainAutoPlanner.getPlansAtPosition.bind(brainAutoPlanner),
+	imprintPlans: brainAutoPlanner.imprintPlans.bind(brainAutoPlanner),
 	planRoom: brainAutoPlanner.planRoom.bind(brainAutoPlanner),
 };
 
