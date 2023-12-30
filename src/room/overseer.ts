@@ -152,7 +152,8 @@ export class Overseer {
 
 	private doesStructureNeedRepair(structure: AnyStructure): boolean {
 		if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-			return structure.hits < (this.wallRepairThreshold ?? 0);
+			return false;
+			// return structure.hits < (this.wallRepairThreshold ?? 0);
 		}
 		if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
 			return structure.hits < structure.hitsMax * 0.5;
