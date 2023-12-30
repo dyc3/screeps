@@ -38,6 +38,13 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 		this.creep.memory.task = task;
 	}
 
+	public get working(): boolean {
+		return this.creep.memory.working ?? false;
+	}
+	private set working(working: boolean) {
+		this.creep.memory.working = working;
+	}
+
 	public run(): void {
 		if (!this.task) {
 			this.log("No worker task.");
@@ -45,7 +52,15 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			return;
 		}
 
-		if (this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+		if (this.working && this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+			this.working = false;
+			this.creep.say("🔄 gather");
+		} else if (!this.working && this.creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+			this.working = true;
+			this.creep.say("🚧 work");
+		}
+
+		if (!this.working) {
 			taskGather.run(this.creep);
 			return;
 		}

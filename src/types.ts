@@ -148,6 +148,7 @@ declare global {
 		stagingObjectId?: Id<AnyStructure>;
 
 		task?: WorkerTask;
+		working?: boolean;
 	}
 
 	interface PowerCreepMemory {
