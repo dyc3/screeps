@@ -870,6 +870,10 @@ function doCreepSpawning() {
 					}
 					// 	let targetRoom = rooms[Math.floor(Math.random() * rooms.length)];
 					const targetRoom = otherRooms[0];
+					if (!targetRoom) {
+						console.log("WARN: No other rooms to spawn creeps in.");
+						continue;
+					}
 					spawns = util
 						.getStructures(targetRoom, STRUCTURE_SPAWN)
 						.filter(s => !s.spawning && s.isActive())
