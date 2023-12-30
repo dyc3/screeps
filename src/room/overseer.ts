@@ -147,11 +147,14 @@ export class Overseer {
 	}
 
 	private doesStructureNeedRepair(structure: AnyStructure): boolean {
-		const isWallOrRampart =
-			structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART;
-		return (
-			structure.hits < structure.hitsMax && (!isWallOrRampart || structure.hits < (this.wallRepairThreshold ?? 0))
-		);
+		if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+			return structure.hits < (this.wallRepairThreshold ?? 0);
+		}
+		if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
+			return structure.hits < structure.hitsMax * 0.5;
+		}
+
+		return structure.hits < structure.hitsMax;
 	}
 
 	@memoryCacheGetter(keyByClassAndRoomName, (i: Overseer) => i.calcWallRepairThreshold())
