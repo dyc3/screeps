@@ -190,6 +190,13 @@ export class Overseer {
 			target: source.id,
 		}));
 	}
+
+	public workerQuota(): number {
+		if (this.room.energyCapacityAvailable < 1200) {
+			return 3;
+		}
+		return 4;
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

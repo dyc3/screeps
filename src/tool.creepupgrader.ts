@@ -1,3 +1,4 @@
+import { getOverseer } from "room/overseer";
 import { Role } from "./roles/meta";
 import toolEnergySource from "./tool.energysource";
 import util from "./util";
@@ -184,7 +185,9 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 	},
 	[Role.Worker]: {
 		name: Role.Worker,
-		quota: () => 3,
+		quota: (room: Room) => {
+			return getOverseer(room.name).workerQuota();
+		},
 		quotaPerRoom: true,
 		stages: [
 			[WORK, CARRY, MOVE, MOVE],
