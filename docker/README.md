@@ -14,10 +14,12 @@ version: latest
 mods:
   - screepsmod-auth
   - screepsmod-admin-utils
+  - screepsmod-mongo
   - screepsmod-map-tool
 ```
 
-I haven't been able to get it working with mongodb yet. The container won't start for me.
+Using Mongodb is optional, but can give you way faster tick rates.
+~~I haven't been able to get it working with mongodb yet. The container won't start for me.~~ Mongodb works if you use `mongo:5` instead of latest. No idea why every other version gives "Operation not permitted."
 
 2. Find your local screeps install. You'll need the path to the `package.nw` file.
 It's probably in `~/.steam/steam/steamapps/common/Screeps`

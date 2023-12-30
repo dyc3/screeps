@@ -12,11 +12,11 @@ services:
             REDIS_HOST: redis
         restart: unless-stopped
 
-    # mongo:
-    #     image: mongo
-    #     volumes:
-    #         - mongo-data:/data/db
-    #     restart: unless-stopped
+    mongo:
+        image: mongo:5
+        volumes:
+            - mongo-data:/data/db
+        restart: unless-stopped
 
     redis:
         image: redis
