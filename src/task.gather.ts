@@ -28,7 +28,7 @@ const taskGather = {
 		let sources = brainLogistics.findSources({
 			resource: RESOURCE_ENERGY,
 			roomName: creep.memory.targetRoom,
-			filter: s => s.amount > 30,
+			filter: s => s.amount >= creep.store.getFreeCapacity(RESOURCE_ENERGY),
 		});
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		sources = _.sortByOrder(sources, [s => creep.pos.getRangeTo(s.object!)], ["asc"]);
