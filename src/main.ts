@@ -1168,7 +1168,7 @@ function satisfyClaimTargets() {
 
 	// spawn new claimers for the remaining targets
 	for (const target of Memory.claimTargets) {
-		if (target.mode === "claim" && Game.gcl.level >= ownedRooms.length) {
+		if (target.mode === "claim" && Game.gcl.level <= ownedRooms.length) {
 			console.log(
 				"[satisfy-claim-targets] WARN: Can't claim room yet, GCL level is too low. Keeping target in queue."
 			);
