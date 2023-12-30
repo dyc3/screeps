@@ -55,14 +55,10 @@ const toolEnergySource = {
 		if (!room.controller) {
 			return 0;
 		}
-		if (util.getOwnedRooms().length === 1 && room.controller.level < 4) {
-			return 3;
-		} else {
-			if (room.memory.harvestPositions) {
-				return Object.keys(room.memory.harvestPositions).length;
-			}
-			return 2;
+		if (room.memory.harvestPositions) {
+			return Object.keys(room.memory.harvestPositions).length;
 		}
+		return 2;
 	},
 
 	drawAssignedCounts(): void {
