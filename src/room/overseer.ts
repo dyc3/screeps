@@ -108,8 +108,11 @@ export class Overseer {
 	private sortTasksByPriority(tasks: WorkerTask[]): WorkerTask[] {
 		return _.sortByOrder(
 			tasks,
-			[(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0)],
-			["desc"]
+			[
+				(t: WorkerTask) => t.task === WorkerTaskKind.Upgrade,
+				(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0),
+			],
+			["desc", "desc"]
 		);
 	}
 
