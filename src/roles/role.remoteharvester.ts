@@ -35,6 +35,7 @@ const roleRemoteHarvester = {
 					});
 				},
 				avoidTargetGradient: 0.8,
+				avoidSourceKeepers: false,
 			});
 			return;
 		}
