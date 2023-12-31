@@ -21,20 +21,25 @@ export class Overseer {
 		return Game.rooms[this.roomName];
 	}
 
+	private taskCountCached = 0;
+
 	public run(): void {
 		if (!this.room) {
 			console.log(`Overseer: No vision for room ${this.roomName}`);
 			return;
 		}
-		this.assignWorkerTasks();
+		if (this.doAnyWorkersNeedTasks()) {
+			this.assignWorkerTasks();
+		}
 
 		this.visualize();
 	}
 
 	public visualize(): void {
-		const tasks = this.getAllWorkerTasks();
 		this.room.visual.text(`Overseer`, 20, 1, { align: "left" });
-		this.room.visual.text(`Workers: ${this.getCreeps().length} - Tasks: ${tasks.length}`, 20, 2, { align: "left" });
+		this.room.visual.text(`Workers: ${this.getCreeps().length} - Tasks: ${this.taskCountCached}`, 20, 2, {
+			align: "left",
+		});
 		this.room.visual.text(`Assigned tasks:`, 20, 3, { align: "left" });
 		const counts = this.countAssignedTasks();
 		for (const [kind, count] of Object.entries(counts)) {
@@ -53,6 +58,7 @@ export class Overseer {
 
 	private assignWorkerTasks(): void {
 		const tasks = this.getAllWorkerTasks();
+		this.taskCountCached = tasks.length;
 		const sortedTasks = this.sortTasksByPriority(tasks);
 		const assigner = new NaiveTaskAssigner(this.getWorkers(), sortedTasks);
 		assigner.assignTasks();
@@ -123,6 +129,16 @@ export class Overseer {
 			// this.miningTasks()
 		);
 		return tasks;
+	}
+
+	private doAnyWorkersNeedTasks(): boolean {
+		const workers = this.getWorkers();
+		for (const worker of workers) {
+			if (!worker.task) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private upgradeTask(): WorkerTask {
