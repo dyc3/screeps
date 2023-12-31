@@ -119,8 +119,8 @@ export class Overseer {
 	private getAllWorkerTasks(): WorkerTask[] {
 		const tasks: WorkerTask[] = [this.upgradeTask()].concat(
 			this.buildTasks(),
-			this.repairTasks(),
-			this.miningTasks()
+			this.repairTasks()
+			// this.miningTasks()
 		);
 		return tasks;
 	}
