@@ -1,4 +1,5 @@
 import * as cartographer from "screeps-cartographer";
+import { util } from "../util";
 
 const roleRemoteHarvester = {
 	run(creep: Creep): void {
@@ -40,14 +41,17 @@ const roleRemoteHarvester = {
 
 		// console.log(creep.name, "observe result:", observer.observeRoom(creep.memory.harvestTarget.roomName));
 		if (creep.room.name !== harvestTarget.roomName) {
-			cartographer.moveTo(
+			const result = cartographer.moveTo(
 				creep,
 				{
 					pos: new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName),
 					range: 1,
 				},
-				{ avoidCreeps: false, priority: 10 }
+				{ avoidCreeps: false, priority: 10, avoidSourceKeepers: !util.isTreasureRoom(harvestTarget.roomName) }
 			);
+			if (result !== OK) {
+				creep.log(`moveTo failed with result ${util.errorCodeToString(result)} at ${creep.pos}`);
+			}
 			return;
 		}
 
@@ -70,7 +74,11 @@ const roleRemoteHarvester = {
 			harvestTarget.roomName
 		);
 		if (!creep.pos.isEqualTo(harvestPos)) {
-			cartographer.moveTo(creep, { pos: harvestPos, range: 0 }, { priority: 10 });
+			cartographer.moveTo(
+				creep,
+				{ pos: harvestPos, range: 0 },
+				{ priority: 10, avoidSourceKeepers: !util.isTreasureRoom(harvestTarget.roomName) }
+			);
 			return;
 		}
 
