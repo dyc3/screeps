@@ -652,7 +652,11 @@ export default {
 
 				if (!task.currentTarget && creep.room.name !== task._targetRoom && !task.targetRoom) {
 					console.log(`[guard] no vision of ${task._targetRoom}, moving to center`);
-					cartographer.moveTo(creep, { pos: new RoomPosition(25, 25, task._targetRoom), range: 10 });
+					cartographer.moveTo(
+						creep,
+						{ pos: new RoomPosition(25, 25, task._targetRoom), range: 10 },
+						{ avoidSourceKeepers: task.guardType !== "treasure" }
+					);
 					continue;
 				}
 
@@ -767,7 +771,9 @@ export default {
 							if (remoteMiningTarget && remoteMiningTarget.dangerPos) {
 								const danger = remoteMiningTarget.dangerPos[2];
 								const dangerPos = new RoomPosition(danger.x, danger.y, danger.roomName);
-								cartographer.moveTo(creep, dangerPos);
+								cartographer.moveTo(creep, dangerPos, {
+									avoidSourceKeepers: task.guardType !== "treasure",
+								});
 							} else {
 								if (!creep.memory.stagingObjectId) {
 									creep.memory.stagingObjectId = util.getSpawn(
@@ -778,6 +784,7 @@ export default {
 									const stagingObject = Game.getObjectById(creep.memory.stagingObjectId);
 									if (stagingObject) {
 										cartographer.moveTo(creep, stagingObject, {
+											avoidSourceKeepers: task.guardType !== "treasure",
 											roomCallback(roomName) {
 												if (roomName === task._targetRoom) {
 													return false;
@@ -800,6 +807,7 @@ export default {
 									{ pos: task.currentTarget.pos, range: minRange },
 									{
 										avoidCreeps: true,
+										avoidSourceKeepers: task.guardType !== "treasure",
 									}
 								);
 							}
@@ -831,13 +839,18 @@ export default {
 								{ pos: task.currentTarget.pos, range: minRange },
 								{
 									avoidCreeps: true,
+									avoidSourceKeepers: task.guardType !== "treasure",
 								}
 							);
 						}
 					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
 						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							cartographer.moveTo(creep, { pos: task.currentTarget.pos, range: 2 });
+							cartographer.moveTo(
+								creep,
+								{ pos: task.currentTarget.pos, range: 2 },
+								{ avoidSourceKeepers: task.guardType !== "treasure" }
+							);
 						}
 					} else if (
 						task.guardType === "invader-subcore" &&
