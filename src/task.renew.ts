@@ -315,7 +315,7 @@ const taskRenew = {
 
 function getOriginPosition(creep: Creep): RoomPosition {
 	if (creep.memory.harvestTarget) {
-		if (creep.memory.role === Role.Harvester) {
+		if (creep.memory.role === Role.Harvester && creep.room.memory.harvestPositions) {
 			const pos = creep.room.memory.harvestPositions[creep.memory.harvestTarget];
 			if (pos) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -324,7 +324,7 @@ function getOriginPosition(creep: Creep): RoomPosition {
 		}
 		if (creep.memory.role === Role.RemoteHarvester) {
 			const target = getHarvestTarget(creep.memory.harvestTarget);
-			if (target) {
+			if (target && target.harvestPos) {
 				return new RoomPosition(target.harvestPos.x, target.harvestPos.y, target.roomName);
 			}
 		}
