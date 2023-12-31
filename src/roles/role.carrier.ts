@@ -166,11 +166,15 @@ const roleCarrier = {
 				if (creep.pos.isNearTo(depositTarget)) {
 					creep.transfer(depositTarget, RESOURCE_ENERGY);
 				} else {
-					cartographer.moveTo(creep, depositTarget, DEFAULT_MOVE_OPTS);
+					cartographer.moveTo(creep, depositTarget, { ...DEFAULT_MOVE_OPTS, avoidSourceKeepers: false });
 				}
 			} else {
 				if (creep.pos.isEqualTo(harvestPos)) {
-					cartographer.moveTo(creep, harvestPos, { ...DEFAULT_MOVE_OPTS, flee: true });
+					cartographer.moveTo(creep, harvestPos, {
+						...DEFAULT_MOVE_OPTS,
+						flee: true,
+						avoidSourceKeepers: false,
+					});
 					return;
 				}
 
@@ -184,7 +188,7 @@ const roleCarrier = {
 							harvestTarget.dangerPos[harvestTarget.danger].y,
 							harvestTarget.dangerPos[harvestTarget.danger].roomName
 						);
-						cartographer.moveTo(creep, dangerPos, DANGER_MOVE_OPTS);
+						cartographer.moveTo(creep, dangerPos, { ...DANGER_MOVE_OPTS, avoidSourceKeepers: false });
 					}
 					return;
 				}
@@ -203,7 +207,7 @@ const roleCarrier = {
 					delete creep.memory.droppedEnergyId;
 				}
 				if (!creep.pos.isNearTo(harvestPos)) {
-					cartographer.moveTo(creep, harvestPos, DEFAULT_MOVE_OPTS);
+					cartographer.moveTo(creep, harvestPos, { ...DEFAULT_MOVE_OPTS, avoidSourceKeepers: false });
 				} else if (dropped) {
 					creep.pickup(dropped);
 				}
