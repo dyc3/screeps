@@ -82,6 +82,11 @@ function allocateCreeps(): AllocateResult {
 		if (target.paused) {
 			continue;
 		}
+		// HACK: idk whybut for some reason creepCarriers is sometimes undefined
+		if (target.creepCarriers === undefined) {
+			target.creepCarriers = [];
+		}
+
 		if (target.creepHarvester) {
 			const creep = Game.creeps[target.creepHarvester];
 			if (!creep) {
