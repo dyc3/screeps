@@ -120,11 +120,10 @@ const roleCarrier = {
 			}
 
 			if (!creep.memory.delivering && creep.room.name !== harvestTarget.roomName && harvestTarget.danger === 0) {
-				cartographer.moveTo(
-					creep,
-					new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName),
-					DEFAULT_MOVE_OPTS
-				);
+				cartographer.moveTo(creep, new RoomPosition(harvestTarget.x, harvestTarget.y, harvestTarget.roomName), {
+					...DEFAULT_MOVE_OPTS,
+					avoidSourceKeepers: !util.isTreasureRoom(harvestTarget.roomName),
+				});
 				return;
 			} else if (!creep.memory.delivering && harvestTarget.danger > 0 && harvestTarget.dangerPos) {
 				const dangerPos = new RoomPosition(
