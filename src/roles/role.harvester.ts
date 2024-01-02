@@ -209,7 +209,7 @@ const roleHarvester = {
 			if (
 				Object.keys(Game.creeps).length <= 3 ||
 				(harvestTarget.room.controller?.level ?? 0) < 2 ||
-				util.getCreeps(Role.Manager).length === 0
+				util.getCreeps(Role.Manager).filter(c => c.memory.targetRoom === creep.memory.targetRoom).length === 0
 			) {
 				return "recovery";
 			}
