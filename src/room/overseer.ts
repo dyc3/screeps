@@ -209,11 +209,10 @@ export class Overseer {
 	}
 
 	public workerQuota(): number {
+		if (this.room.energyCapacityAvailable < 1200) {
+			return 4;
+		}
 		return 3;
-		// if (this.room.energyCapacityAvailable < 1200) {
-		// 	return 3;
-		// }
-		// return 4;
 	}
 }
 
