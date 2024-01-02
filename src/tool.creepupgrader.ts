@@ -165,24 +165,6 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 			[WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE],
 		],
 	},
-	[Role.Manager]: {
-		name: Role.Manager,
-		quota: getManagerQuota,
-		quotaPerRoom: true,
-		stages: [
-			[CARRY, CARRY, MOVE, MOVE],
-			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
-			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
-			// [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-			// [WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-		],
-	},
-	[Role.Relay]: {
-		name: Role.Relay,
-		quota: getRelayQuota,
-		quotaPerRoom: true,
-		stages: [[CARRY, CARRY, CARRY, CARRY, MOVE]],
-	},
 	[Role.Worker]: {
 		name: Role.Worker,
 		quota: (room: Room) => {
@@ -251,6 +233,24 @@ const roles: Partial<Record<Role, RoleMetadata>> = {
 				MOVE,
 			],
 		],
+	},
+	[Role.Manager]: {
+		name: Role.Manager,
+		quota: getManagerQuota,
+		quotaPerRoom: true,
+		stages: [
+			[CARRY, CARRY, MOVE, MOVE],
+			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
+			[CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE],
+			// [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+			// [WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+		],
+	},
+	[Role.Relay]: {
+		name: Role.Relay,
+		quota: getRelayQuota,
+		quotaPerRoom: true,
+		stages: [[CARRY, CARRY, CARRY, CARRY, MOVE]],
 	},
 	// [Role.Upgrader]: {
 	// 	name: Role.Upgrader,
