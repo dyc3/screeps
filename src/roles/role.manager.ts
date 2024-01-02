@@ -589,10 +589,16 @@ const roleManager = {
 				this.findTargetRoom(creep);
 			}
 
-			// if (creep.room.name !== creep.memory.targetRoom) {
-			// 	cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
-			// 	return;
-			// }
+			if (creep.memory.targetRoom && creep.room.name !== creep.memory.targetRoom) {
+				cartographer.moveTo(
+					creep,
+					{ pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 20 },
+					{
+						visualizePathStyle: {},
+					}
+				);
+				return;
+			}
 		}
 
 		if (
