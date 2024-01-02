@@ -83,9 +83,15 @@ export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W
 
 	public assignTasks(): void {
 		const unassignedTasks = this.getUnassignedTasks();
+		let hasAssignedUpgradeTask = false;
 
 		for (const worker of this.workers) {
 			if (worker.task) {
+				continue;
+			}
+			if (!hasAssignedUpgradeTask && this.upgradeTask) {
+				worker.task = this.upgradeTask;
+				hasAssignedUpgradeTask = true;
 				continue;
 			}
 			if (this.focusBuildTask) {
