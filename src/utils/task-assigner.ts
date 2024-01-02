@@ -7,16 +7,24 @@ export abstract class Assignable<T> {
 	public abstract set task(value: T | undefined);
 }
 
-/**
- * Takes a prioritized list of tasks, and assigns them to workers.
- */
-export class NaiveTaskAssigner<W extends Assignable<T>, T> {
-	private workers: W[];
-	private tasks: T[];
+export abstract class Assigner<W extends Assignable<T>, T> {
+	protected workers: W[];
+	protected tasks: T[];
 
-	public constructor(workers: W[], tasks: T[]) {
+	protected constructor(workers: W[], tasks: T[]) {
 		this.workers = workers;
 		this.tasks = tasks;
+	}
+
+	public abstract assignTasks(): void;
+}
+
+/**
+ * Takes a prioritized list of tasks, and assigns them to workers. All tasks must be unique, no duplicates allowed.
+ */
+export class NaiveTaskAssigner<W extends Assignable<T>, T> extends Assigner<W, T> {
+	public constructor(workers: W[], tasks: T[]) {
+		super(workers, tasks);
 	}
 
 	private getUnassignedTasks(): T[] {
