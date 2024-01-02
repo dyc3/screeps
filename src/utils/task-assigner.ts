@@ -82,13 +82,18 @@ export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W
 	}
 
 	public assignTasks(): void {
-		const unassignedTasks = this.getUnassignedTasks();
+		const unassignedTasks = this.tasks;
 		let hasAssignedUpgradeTask = false;
 
 		for (const worker of this.workers) {
-			if (worker.task) {
+			if (unassignedTasks.length > 0) {
+				const task = unassignedTasks.shift();
+				worker.task = task;
 				continue;
+			} else {
+				worker.task = this.upgradeTask;
 			}
+
 			if (!hasAssignedUpgradeTask && this.upgradeTask) {
 				worker.task = this.upgradeTask;
 				hasAssignedUpgradeTask = true;
@@ -98,13 +103,7 @@ export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W
 				worker.task = this.focusBuildTask;
 				continue;
 			}
-
-			if (unassignedTasks.length > 0) {
-				const task = unassignedTasks.shift();
-				worker.task = task;
-			} else {
-				worker.task = this.upgradeTask;
-			}
+			worker.task = this.upgradeTask;
 		}
 	}
 }
