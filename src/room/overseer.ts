@@ -63,8 +63,11 @@ export class Overseer {
 		// const assigner = new NaiveTaskAssigner(this.getWorkers(), sortedTasks);
 		const assigner = new OverseerTaskAssigner(this.getWorkers(), sortedTasks);
 		assigner.setUpgradeTask(this.upgradeTask());
-		for (const task of this.buildTasks()) {
-			assigner.setFocusBuildTask(task);
+		for (const task of sortedTasks) {
+			if (task.task === WorkerTaskKind.Build) {
+				assigner.setFocusBuildTask(task);
+				break;
+			}
 		}
 		assigner.assignTasks();
 	}
