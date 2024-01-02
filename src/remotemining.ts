@@ -82,6 +82,16 @@ function allocateCreeps(): AllocateResult {
 		if (target.paused) {
 			continue;
 		}
+		const room = Game.rooms[target.roomName];
+		if (room && room.controller!.reservation && room.controller!.reservation.username !== global.WHOAMI) {
+			// don't allocate creeps to rooms that are currently not reserved by us
+			continue;
+		}
+		// HACK: idk whybut for some reason creepCarriers is sometimes undefined
+		if (target.creepCarriers === undefined) {
+			target.creepCarriers = [];
+		}
+
 		if (target.creepHarvester) {
 			const creep = Game.creeps[target.creepHarvester];
 			if (!creep) {
