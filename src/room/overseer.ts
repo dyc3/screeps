@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CacheKey, memoryCacheGetter } from "screeps-cache";
 import { Worker, WorkerTask, WorkerTaskKind, hydrateWorker } from "../roles/role.worker";
-import { NaiveTaskAssigner } from "../utils/task-assigner";
+import { NaiveTaskAssigner, OverseerTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import util from "../util";
 
@@ -60,7 +60,12 @@ export class Overseer {
 		const tasks = this.getAllWorkerTasks();
 		this.taskCountCached = tasks.length;
 		const sortedTasks = this.sortTasksByPriority(tasks);
-		const assigner = new NaiveTaskAssigner(this.getWorkers(), sortedTasks);
+		// const assigner = new NaiveTaskAssigner(this.getWorkers(), sortedTasks);
+		const assigner = new OverseerTaskAssigner(this.getWorkers(), sortedTasks);
+		assigner.setUpgradeTask(this.upgradeTask());
+		for (const task of this.buildTasks()) {
+			assigner.setFocusBuildTask(task);
+		}
 		assigner.assignTasks();
 	}
 
@@ -80,16 +85,6 @@ export class Overseer {
 			counts[worker.task.task]++;
 		}
 		return counts;
-	}
-
-	private get taskLimits(): Record<WorkerTaskKind, number> {
-		return {
-			[WorkerTaskKind.Upgrade]: 1,
-			[WorkerTaskKind.Build]: 2,
-			[WorkerTaskKind.Repair]: 1,
-			[WorkerTaskKind.Dismantle]: 1,
-			[WorkerTaskKind.Mine]: 1,
-		};
 	}
 
 	private getBuildPriority(task: WorkerTask): number {

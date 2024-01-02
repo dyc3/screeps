@@ -55,6 +55,54 @@ export class NaiveTaskAssigner<W extends Assignable<T>, T> extends Assigner<W, T
 	}
 }
 
+export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W, T> {
+	private upgradeTask: T | undefined;
+	private focusBuildTask: T | undefined;
+
+	public constructor(workers: W[], tasks: T[]) {
+		super(workers, tasks);
+	}
+
+	private getUnassignedTasks(): T[] {
+		const assigned = this.getAssignedTasks();
+		return this.tasks.filter(t => !assigned.find(a => _.isEqual(a, t)));
+	}
+
+	private getAssignedTasks(): T[] {
+		const workers = this.workers.filter(c => !!c.task);
+		return workers.map(w => w.task as T);
+	}
+
+	public setUpgradeTask(task: T): void {
+		this.upgradeTask = task;
+	}
+
+	public setFocusBuildTask(task: T): void {
+		this.focusBuildTask = task;
+	}
+
+	public assignTasks(): void {
+		const unassignedTasks = this.getUnassignedTasks();
+
+		for (const worker of this.workers) {
+			if (worker.task) {
+				continue;
+			}
+			if (this.focusBuildTask) {
+				worker.task = this.focusBuildTask;
+				continue;
+			}
+
+			if (unassignedTasks.length > 0) {
+				const task = unassignedTasks.shift();
+				worker.task = task;
+			} else {
+				worker.task = this.upgradeTask;
+			}
+		}
+	}
+}
+
 /**
  * Unfinished.
  *
