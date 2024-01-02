@@ -122,7 +122,7 @@ export class Overseer {
 
 	private getAllWorkerTasks(): WorkerTask[] {
 		const tasks: WorkerTask[] = [this.upgradeTask()].concat(
-			this.buildTasks(),
+			this.buildTasks().slice(0, 1),
 			this.repairTasks()
 			// this.miningTasks()
 		);
@@ -148,10 +148,11 @@ export class Overseer {
 	}
 
 	private buildTasks(): WorkerTask[] {
-		return this.room.find(FIND_MY_CONSTRUCTION_SITES).map(site => ({
+		const tasks = this.room.find(FIND_MY_CONSTRUCTION_SITES).map(site => ({
 			task: WorkerTaskKind.Build,
 			target: site.id,
 		}));
+		return _.sortByOrder(tasks, [(t: WorkerTask) => this.getBuildPriority(t)], ["desc"]);
 	}
 
 	private repairTasks(): WorkerTask[] {
