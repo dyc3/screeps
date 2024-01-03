@@ -138,7 +138,7 @@ import { Job, JobRunner } from "jobs";
 import { registerJob as registerJobLabs } from "crafting/labs";
 import { Worker, hydrateWorker } from "roles/role.worker";
 import { Overseer, runOverseers } from "room/overseer";
-import { NaiveTaskAssigner } from "utils/task-assigner";
+import { NaiveTaskAssigner, OverseerTaskAssigner } from "utils/task-assigner";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1669,6 +1669,7 @@ profiler.registerClass(Scout, "Scout");
 profiler.registerClass(Worker, "Worker");
 profiler.registerClass(Overseer, "Overseer");
 profiler.registerClass(NaiveTaskAssigner, "NaiveTaskAssigner");
+profiler.registerClass(OverseerTaskAssigner, "OverseerTaskAssigner");
 profiler.registerObject(visualize, "visualize");
 profiler.registerObject(util, "util");
 profiler.registerObject(brainGuard, "brain.guard");
