@@ -7,6 +7,11 @@ import type { Role } from "./roles/meta";
 import type { Route } from "./roles/role.scientist";
 import type { WorkerTask } from "./roles/role.worker";
 
+export interface ClaimTarget {
+	room: string;
+	mode: "claim" | "reserve";
+}
+
 declare global {
 	/*
     Example types, expand on these or remove them and add your own.
@@ -29,10 +34,7 @@ declare global {
 		expansionTarget: string | undefined;
 		terminalEnergyTarget: number;
 		factoryEnergyTarget: number;
-		claimTargets: {
-			room: string;
-			mode: "claim" | "reserve";
-		}[];
+		claimTargets: ClaimTarget[];
 		jobLastRun: { [jobName: string]: number };
 		forceCreepSpawn?: boolean; // TODO: deprecate this? maybe there's a better way to implemnt this kind of thing
 		creepSpawnLog: string[];
