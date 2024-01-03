@@ -136,6 +136,7 @@ import PortalScanner from "intel/PortalScanner.js";
 import TmpDefense from "./tmpdefense";
 import { Job, JobRunner } from "jobs";
 import { registerJob as registerJobLabs } from "crafting/labs";
+import { blockSpawnAdjacentsIfSpawning } from "room/spawning";
 
 global.WHOAMI = "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1569,6 +1570,7 @@ function main() {
 	if (Game.spawns.Spawn2?.spawning) {
 		cartographer.blockSquare(util.getPositionInDirection(Game.spawns.Spawn2.pos, BOTTOM));
 	}
+	blockSpawnAdjacentsIfSpawning();
 
 	cartographer.reconcileTraffic();
 
