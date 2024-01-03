@@ -197,8 +197,12 @@ const roleCarrier = {
 					if (creep.pos.isNearTo(harvestPos)) {
 						const tombstones = harvestPos.findInRange(FIND_TOMBSTONES, 2);
 						if (tombstones.length > 0 && tombstones[0].store[RESOURCE_ENERGY] > 0) {
-							creep.withdraw(tombstones[0], RESOURCE_ENERGY);
-							return;
+							const result = creep.withdraw(tombstones[0], RESOURCE_ENERGY);
+							if (result === OK) {
+								return;
+							} else {
+								creep.log("ERR: can't withdraw from tombstone", util.errorCodeToString(result));
+							}
 						}
 					}
 				}
@@ -209,7 +213,10 @@ const roleCarrier = {
 				if (!creep.pos.isNearTo(harvestPos)) {
 					cartographer.moveTo(creep, harvestPos, { ...DEFAULT_MOVE_OPTS, avoidSourceKeepers: false });
 				} else if (dropped) {
-					creep.pickup(dropped);
+					const result = creep.pickup(dropped);
+					if (result !== OK) {
+						creep.log("ERR: can't pickup dropped energy", util.errorCodeToString(result));
+					}
 				}
 			}
 
