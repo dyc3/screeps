@@ -91,7 +91,7 @@ global.move = (creep: string, direction: DirectionConstant) => {
 };
 
 import "./tools";
-import "./types";
+import { ClaimTarget } from "./types";
 import _ from "lodash";
 import { Scout } from "roles/role.scout";
 import util from "./util";
@@ -1190,12 +1190,7 @@ function satisfyClaimTargets() {
 				continue;
 			}
 			const targetSpawn = spawns[Math.floor(Math.random() * spawns.length)];
-			let claimerBody = [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
-			// let claimerBody = [CLAIM, CLAIM, MOVE, MOVE];
-			if (target.mode === "claim") {
-				// claimerBody = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, CLAIM, MOVE, MOVE, MOVE, MOVE]
-				claimerBody = [CLAIM, MOVE];
-			}
+			const claimerBody = buildClaimer(target, spawnRoom.energyAvailable);
 			const result = targetSpawn.spawnCreep(claimerBody, `claimer_${Game.time.toString(16)}`, {
 				// @ts-expect-error this works, its fine
 				memory: {
@@ -1211,6 +1206,19 @@ function satisfyClaimTargets() {
 			}
 		}
 	}
+}
+
+function buildClaimer(claimTarget: ClaimTarget, energyAvailable: number): BodyPartConstant[] {
+	if (claimTarget.mode === "claim") {
+		return [CLAIM, MOVE];
+	}
+	const pairTotal = BODYPART_COST[CLAIM] + BODYPART_COST[MOVE];
+	const numPairs = util.clamp(Math.floor(energyAvailable / pairTotal), 3, 6);
+	const body: BodyPartConstant[] = [];
+	for (let i = 0; i < numPairs; i++) {
+		body.push(CLAIM, MOVE);
+	}
+	return body;
 }
 
 runner.registerJob({
