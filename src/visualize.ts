@@ -130,18 +130,25 @@ export default {
 			const baseY = Math.max(bottomRowCreepInfo, bottomRowSpawnInfo) + 1;
 			let row = 0;
 			for (const source of Memory.remoteMining.targets) {
-				vis.text(
-					`${source.roomName}: harvester: ${source.creepHarvester ?? "none"} carriers: ${
-						source.creepCarriers ? source.creepCarriers.length : 0
-					}/${source.neededCarriers} danger: ${source.danger}`,
-					baseX,
-					baseY + row * 0.6,
-					{
-						align: "left",
-						font: 0.5,
-						color: source.danger > 0 ? "#fa0" : "#fff",
+				const color = (() => {
+					if (source.paused) {
+						return "#888";
 					}
-				);
+					if (source.danger > 0) {
+						return "#fa0";
+					}
+					return "#fff";
+				})();
+				const text = source.paused
+					? `paused` + (source.pausedUntil ? ` (${source.pausedUntil - Game.time} remaining)` : "")
+					: `harvester: ${source.creepHarvester ?? "none"} carriers: ${
+							source.creepCarriers ? source.creepCarriers.length : 0
+					  }/${source.neededCarriers} danger: ${source.danger}`;
+				vis.text(`${source.roomName}: ${text}`, baseX, baseY + row * 0.6, {
+					align: "left",
+					font: 0.5,
+					color,
+				});
 				row++;
 			}
 		} catch (e) {
