@@ -197,6 +197,10 @@ const taskRenew = {
 			return;
 		}
 
+		if (creep.hits < creep.hitsMax && creep instanceof Creep && creep.getActiveBodyparts(HEAL) > 0) {
+			creep.heal(creep);
+		}
+
 		const maxTicks = creep instanceof Creep ? this.getMaxTicks(creep, renewTarget) : 1000;
 
 		let renewCost = 0;
