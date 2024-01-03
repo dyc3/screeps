@@ -1,3 +1,4 @@
+import { WorkerTask, WorkerTaskKind } from "roles/role.worker";
 import { NotImplementedException } from "utils/exceptions";
 
 const UNASSIGNED = -1;
@@ -55,12 +56,28 @@ export class NaiveTaskAssigner<W extends Assignable<T>, T> extends Assigner<W, T
 	}
 }
 
-export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W, T> {
+export class OverseerTaskAssigner<W extends Assignable<T>, T extends WorkerTask> extends Assigner<W, T> {
 	private upgradeTask: T | undefined;
 	private focusBuildTask: T | undefined;
 
 	public constructor(workers: W[], tasks: T[]) {
 		super(workers, tasks);
+	}
+
+	private preprocessTasks(): void {
+		for (const task of this.tasks) {
+			if (this.upgradeTask && this.focusBuildTask) {
+				break;
+			}
+			if (!this.upgradeTask && task.task === WorkerTaskKind.Upgrade) {
+				this.upgradeTask = task;
+				continue;
+			}
+			if (!this.focusBuildTask && task.task === WorkerTaskKind.Build) {
+				this.focusBuildTask = task;
+				continue;
+			}
+		}
 	}
 
 	private getUnassignedTasks(): T[] {
@@ -73,37 +90,57 @@ export class OverseerTaskAssigner<W extends Assignable<T>, T> extends Assigner<W
 		return workers.map(w => w.task as T);
 	}
 
-	public setUpgradeTask(task: T): void {
-		this.upgradeTask = task;
-	}
-
-	public setFocusBuildTask(task: T): void {
-		this.focusBuildTask = task;
+	private isTaskAssigned(task: T): boolean {
+		return !!this.workers.find(w => _.isEqual(w.task, task));
 	}
 
 	public assignTasks(): void {
-		const unassignedTasks = this.tasks;
-		let hasAssignedUpgradeTask = false;
+		this.preprocessTasks();
 
-		for (const worker of this.workers) {
-			if (unassignedTasks.length > 0) {
-				const task = unassignedTasks.shift();
-				worker.task = task;
-				continue;
-			} else {
-				worker.task = this.upgradeTask;
-			}
+		const unassignedTasks = [...this.tasks];
 
-			if (!hasAssignedUpgradeTask && this.upgradeTask) {
-				worker.task = this.upgradeTask;
-				hasAssignedUpgradeTask = true;
+		const unassignedWorkers = this.workers.filter(w => !w.task);
+
+		while (unassignedTasks.length > 0) {
+			const task = unassignedTasks.shift();
+			if (!task) {
+				return;
+			}
+			if (this.isTaskAssigned(task)) {
 				continue;
 			}
-			if (this.focusBuildTask) {
-				worker.task = this.focusBuildTask;
-				continue;
+			const worker = unassignedWorkers.shift();
+			if (!worker) {
+				return;
 			}
-			worker.task = this.upgradeTask;
+			worker.task = task;
+			if (task.task === WorkerTaskKind.Build) {
+				unassignedTasks.unshift(task);
+			}
+		}
+
+		if (this.focusBuildTask || this.upgradeTask) {
+			while (unassignedWorkers.length > 0) {
+				if (this.focusBuildTask) {
+					const worker = unassignedWorkers.shift();
+					if (!worker) {
+						return;
+					}
+					worker.task = this.focusBuildTask;
+					continue;
+				}
+				if (this.upgradeTask) {
+					const worker = unassignedWorkers.shift();
+					if (!worker) {
+						return;
+					}
+					worker.task = this.upgradeTask;
+					continue;
+				}
+				break;
+			}
+		} else {
+			console.log("WARN: No upgrade or build task.");
 		}
 	}
 }
