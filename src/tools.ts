@@ -247,6 +247,7 @@ global.Logistics = {
 
 		console.log(`hungryRooms: ${hungryRooms}`);
 		console.log(`overflowingRooms: ${overflowingRooms}`);
+		const overflowingCount = overflowingRooms.length;
 
 		let roomsFed = 0;
 		const feedLog = [];
@@ -263,15 +264,11 @@ global.Logistics = {
 				continue;
 			}
 
-			// TODO: find actual maximum we can send instead of this approximation
-			const needAmount = receiver.terminal.store.getFreeCapacity(RESOURCE_ENERGY);
-			// Game.market.calcTransactionCost
-			const cost = Game.market.calcTransactionCost(needAmount, receiver.name, sender.name);
-			const totalNeeded = needAmount + cost;
-			let toSend = needAmount;
-			if (totalNeeded > sender.terminal.store.getUsedCapacity(RESOURCE_ENERGY)) {
-				toSend -= cost;
-			}
+			const toSend = util.maximizeEnergyTransactionAmount(
+				sender.name,
+				receiver.name,
+				sender.terminal.store[RESOURCE_ENERGY]
+			);
 			const result = sender.terminal.send(RESOURCE_ENERGY, toSend, receiver.name);
 			feedLog.push(`[${toSend} energy ${sender.name} -> ${receiver.name}; ${util.errorCodeToString(result)}]`);
 			if (result === OK) {
@@ -279,9 +276,9 @@ global.Logistics = {
 			}
 		}
 
-		return `Fed ${roomsFed}/${hungryRooms.length} hungry rooms. (hungry: ${hungryRooms.length}, overflow: ${
-			overflowingRooms.length
-		}) ${feedLog.join(" ")}`;
+		return `Fed ${roomsFed}/${hungryRooms.length} hungry rooms. (hungry: ${
+			hungryRooms.length
+		}, overflow: ${overflowingCount}) ${feedLog.join(" ")}`;
 	},
 };
 
