@@ -801,7 +801,20 @@ export default {
 								creep.getActiveBodyparts(RANGED_ATTACK) > 0
 									? 2
 									: 1;
-							if (!creep.pos.inRangeTo(task.currentTarget, minRange)) {
+							const range = creep.pos.getRangeTo(task.currentTarget);
+							if (creep.hits < creep.hitsMax * 0.75 || range < minRange) {
+								creep.say("ouch");
+								cartographer.moveTo(
+									creep,
+									{ pos: task.currentTarget.pos, range: 4 },
+									{
+										avoidCreeps: true,
+										avoidSourceKeepers: task.guardType !== "treasure",
+										flee: true,
+										priority: 1,
+									}
+								);
+							} else {
 								cartographer.moveTo(
 									creep,
 									{ pos: task.currentTarget.pos, range: minRange },
@@ -845,13 +858,11 @@ export default {
 						}
 					} else if (task.guardType === "treasure" && task.currentTarget instanceof StructureKeeperLair) {
 						console.log("[guard] waiting by keeper lair");
-						if (!creep.pos.inRangeTo(task.currentTarget, 2)) {
-							cartographer.moveTo(
-								creep,
-								{ pos: task.currentTarget.pos, range: 2 },
-								{ avoidSourceKeepers: task.guardType !== "treasure" }
-							);
-						}
+						cartographer.moveTo(
+							creep,
+							{ pos: task.currentTarget.pos, range: 3 },
+							{ avoidSourceKeepers: task.guardType !== "treasure" }
+						);
 					} else if (
 						task.guardType === "invader-subcore" &&
 						task.currentTarget instanceof StructureInvaderCore
