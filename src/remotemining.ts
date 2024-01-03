@@ -21,6 +21,7 @@ export interface RemoteMiningTarget {
 	keeperLairId: Id<StructureKeeperLair> | undefined;
 	/** Indicates that the target should not be operated on. */
 	paused: boolean;
+	pausedUntil: number | undefined;
 }
 
 export function commandRemoteMining(): void {
@@ -30,7 +31,12 @@ export function commandRemoteMining(): void {
 	for (let t = 0; t < Memory.remoteMining.targets.length; t++) {
 		const target = Memory.remoteMining.targets[t];
 		if (target.paused) {
-			continue;
+			if ((target.pausedUntil ?? 0) < Game.time) {
+				target.paused = false;
+				target.pausedUntil = undefined;
+			} else {
+				continue;
+			}
 		}
 
 		// Determine the danger level for this source
@@ -42,6 +48,13 @@ export function commandRemoteMining(): void {
 		}
 
 		target.danger = evaluateDanger(target);
+		if (target.danger === 2) {
+			const duration = shouldTargetsInRoomPause(room);
+			if (duration) {
+				target.paused = true;
+				target.pausedUntil = Game.time + duration;
+			}
+		}
 	}
 
 	if (creepAllocation.neededHarvesters > 0) {
@@ -303,11 +316,8 @@ function evaluateDanger(target: RemoteMiningTarget): number {
 		const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
 		const foundInvaderCore = _.first(
 			hostileStructures.filter(struct => struct.structureType === STRUCTURE_INVADER_CORE)
-		);
-		if (
-			foundInvaderCore &&
-			hostileStructures.filter(struct => struct.structureType === STRUCTURE_TOWER).length > 0
-		) {
+		) as StructureInvaderCore | undefined;
+		if (foundInvaderCore && foundInvaderCore.level > 0 && (foundInvaderCore.ticksToDeploy ?? 0) < 80) {
 			return 2;
 		}
 
@@ -337,6 +347,26 @@ function evaluateDanger(target: RemoteMiningTarget): number {
 	}
 
 	return 0;
+}
+
+/**
+ * If targets in the room should pause, return the number of ticks to pause for.
+ * @returns The number of ticks to pause targets for, or `undefined` if targets should not pause.
+ */
+function shouldTargetsInRoomPause(room: Room): number | undefined {
+	const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES);
+	const foundInvaderCore = _.first(
+		hostileStructures.filter(struct => struct.structureType === STRUCTURE_INVADER_CORE)
+	) as StructureInvaderCore | undefined;
+	if (foundInvaderCore && foundInvaderCore.level > 0 && (foundInvaderCore.ticksToDeploy ?? 0) < 80) {
+		const collapseEffect = _.find(foundInvaderCore.effects, effect => effect.effect === EFFECT_COLLAPSE_TIMER);
+		if (!collapseEffect) {
+			console.log("[remote-mining] Found main invader core, it's spawning in. We'll have to evacuate soon.");
+			return 80;
+		}
+		return collapseEffect.ticksRemaining;
+	}
+	return undefined;
 }
 
 /**
