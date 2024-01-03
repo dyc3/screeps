@@ -231,7 +231,7 @@ const taskRenew = {
 			}
 		}
 
-		cartographer.moveTo(creep, renewTarget, {
+		const moveOpts: cartographer.MoveOpts = {
 			visualizePathStyle: {},
 			avoidTargets: roomName => {
 				// FIXME: this code is duplicated in commandEnergyRelays job, and should be moved to a common place
@@ -260,6 +260,11 @@ const taskRenew = {
 				}
 				return [];
 			},
+		};
+		cartographer.moveTo(creep, renewTarget, moveOpts, {
+			...moveOpts,
+			avoidSourceKeepers: false,
+			avoidCreeps: false,
 		});
 
 		if ((creep.ticksToLive ?? 0) < maxTicks) {
