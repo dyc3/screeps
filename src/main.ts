@@ -140,7 +140,7 @@ import { Worker, hydrateWorker } from "roles/role.worker";
 import { Overseer, runOverseers } from "room/overseer";
 import { NaiveTaskAssigner, OverseerTaskAssigner } from "utils/task-assigner";
 
-global.WHOAMI = "Segmentation_Fault";
+global.WHOAMI = util.getOwnedRooms()[0].controller?.owner?.username ?? "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
 global.DROPPED_ENERGY_GATHER_MINIMUM = 100;
 
