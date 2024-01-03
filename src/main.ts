@@ -139,6 +139,7 @@ import { registerJob as registerJobLabs } from "crafting/labs";
 import { Worker, hydrateWorker } from "roles/role.worker";
 import { Overseer, runOverseers } from "room/overseer";
 import { NaiveTaskAssigner, OverseerTaskAssigner } from "utils/task-assigner";
+import { blockSpawnAdjacentsIfSpawning } from "room/spawning";
 
 global.WHOAMI = util.getOwnedRooms()[0].controller?.owner?.username ?? "Segmentation_Fault";
 global.CONTROLLER_UPGRADE_RANGE = 3;
@@ -1583,6 +1584,7 @@ function main() {
 	if (Game.spawns.Spawn2?.spawning) {
 		cartographer.blockSquare(util.getPositionInDirection(Game.spawns.Spawn2.pos, BOTTOM));
 	}
+	blockSpawnAdjacentsIfSpawning();
 
 	cartographer.reconcileTraffic();
 
