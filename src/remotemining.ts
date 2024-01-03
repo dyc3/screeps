@@ -83,7 +83,7 @@ function allocateCreeps(): AllocateResult {
 			continue;
 		}
 		const room = Game.rooms[target.roomName];
-		if (room && room.controller!.reservation && room.controller!.reservation.username !== global.WHOAMI) {
+		if (room && room.controller?.reservation && room.controller?.reservation.username !== global.WHOAMI) {
 			// don't allocate creeps to rooms that are currently not reserved by us
 			continue;
 		}
