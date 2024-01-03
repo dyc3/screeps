@@ -586,7 +586,7 @@ export default {
 									struct.structureType === STRUCTURE_KEEPER_LAIR &&
 									_.find(Memory.remoteMining.targets, target => target.keeperLairId === struct.id)
 							) as StructureKeeperLair[];
-							if (keeperLairs) {
+							if (keeperLairs.length > 0) {
 								keeperLairs.sort((a, b) => (a.ticksToSpawn ?? 0) - (b.ticksToSpawn ?? 0));
 								task._currentTarget = keeperLairs[0].id;
 							}
