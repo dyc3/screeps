@@ -19,10 +19,10 @@ const roleClaimer = {
 		cartographer.moveTo(creep, claimTarget);
 
 		if (claimTarget.reservation && claimTarget.reservation.username !== global.WHOAMI) {
-			console.log(creep.name, "WARN: controller is already reserved by somebody else");
+			creep.log(`WARN: controller is already reserved by somebody else: ${global.WHOAMI}`);
 			creep.attackController(claimTarget);
 		} else if (!claimTarget.my && claimTarget.owner) {
-			console.log(creep.name, "WARN: controller is already owned by somebody else");
+			creep.log("WARN: controller is already owned by somebody else");
 			creep.attackController(claimTarget);
 		} else {
 			if (creep.memory.mode === "claim") {
