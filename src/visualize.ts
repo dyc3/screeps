@@ -28,20 +28,17 @@ export default {
 					align: "left",
 					font: 0.5,
 				});
-				vis.rect(baseX + 4, baseY - 0.4 + row, 5 * percentQuota, 0.6, {
-					fill: count <= quota ? "#0084f0" : "#f02800",
-				});
-				vis.rect(baseX + 4, baseY - 0.4 + row, 5, 0.6, {
-					fill: "transparent",
-					stroke: "#ffffff",
-					strokeWidth: 0.08,
-					opacity: 1,
-				});
-
-				vis.text(`${count}/${quota}`, baseX + 4 + 5 / 2, baseY + row + 0.1, {
-					align: "center",
-					font: 0.5,
-					color: count <= quota ? "#fff" : "#ff8888",
+				drawProgressBar(vis, percentQuota, baseX + 4, baseY + row - 0.4, 5, 0.6, {
+					label: `${count}/${quota}`,
+					labelStyle: {
+						color: count <= quota ? "#fff" : "#ff8888",
+					},
+					borderStyle: {
+						opacity: 1,
+					},
+					fillStyle: {
+						fill: count <= quota ? "#0084f0" : "#f02800",
+					},
 				});
 
 				row++;
@@ -338,3 +335,55 @@ export default {
 		}
 	},
 };
+
+export interface ProgressBarOptions {
+	label?: string;
+	labelStyle?: TextStyle;
+	/**
+	 * The style of the border/background fill of the progress bar.
+	 */
+	borderStyle?: PolyStyle;
+	/**
+	 * The style of the bar itself.
+	 */
+	fillStyle?: PolyStyle;
+}
+
+/**
+ * Renders a progress bar.
+ *
+ * TODO: replace with `screeps-viz` package.
+ *
+ * @param progress A value between 0 and 1.
+ */
+export function drawProgressBar(
+	vis: RoomVisual,
+	progress: number,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	options: ProgressBarOptions = {}
+): void {
+	options = _.defaultsDeep(options, {
+		labelStyle: {
+			align: "center",
+			font: 0.5,
+		},
+		borderStyle: {
+			fill: "transparent",
+			stroke: "#ffffff",
+			strokeWidth: 0.08,
+		},
+		fillStyle: {
+			fill: "#0084f0",
+		},
+	});
+
+	const barWidth = width * progress;
+	vis.rect(x, y, width, height, options.borderStyle);
+	vis.rect(x, y, barWidth, height, options.fillStyle);
+	if (options.label) {
+		vis.text(options.label, x + width / 2, y + height / 2 + 0.1, options.labelStyle);
+	}
+}
