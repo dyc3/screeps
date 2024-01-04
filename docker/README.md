@@ -30,7 +30,7 @@ It's probably in `~/.steam/steam/steamapps/common/Screeps`
 SCREEPS_NW_PATH="~/.steam/steam/steamapps/common/Screeps/package.nw" docker-compose up
 ```
 
-4. Open `http://localhost:8080` in your browser.
+4. Open `http://localhost:9444` in your browser.
 5. Log in with your steam account, set a password at `http://localhost:21025/authmod/password/`
 6. Set credentials for `local` in both `.screeps.yml` and `screeps.json` in the root of this repo.
 ```json
