@@ -588,11 +588,6 @@ const roleManager = {
 			if (!creep.memory.targetRoom) {
 				this.findTargetRoom(creep);
 			}
-
-			// if (creep.room.name !== creep.memory.targetRoom) {
-			// 	cartographer.moveTo(creep, new RoomPosition(25, 25, creep.memory.targetRoom), { visualizePathStyle:{}, range: 8, });
-			// 	return;
-			// }
 		}
 
 		if (
@@ -683,6 +678,19 @@ const roleManager = {
 					delete creep.memory.lastDepositStructure;
 				}
 				creep.log("can't get a aquire target");
+				if (
+					creep.memory.targetRoom &&
+					creep.room.name !== creep.memory.targetRoom &&
+					!Game.rooms[creep.memory.targetRoom]
+				) {
+					cartographer.moveTo(
+						creep,
+						{ pos: new RoomPosition(25, 25, creep.memory.targetRoom), range: 23 },
+						{
+							visualizePathStyle: {},
+						}
+					);
+				}
 				return;
 			}
 			creep.room.visual.circle(aquireTarget.pos, { stroke: "#ff0000", fill: "transparent", radius: 0.8 });
