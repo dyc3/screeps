@@ -123,25 +123,47 @@ export default {
 
 		// draw info about remote mining
 		try {
-			const baseX = 8;
-			const baseY = Math.max(bottomRowCreepInfo, bottomRowSpawnInfo) + 1;
-			let row = 0;
+			interface RemoteMiningLine {
+				text: string;
+				color: string;
+			}
+			let nominalTargets = 0;
+			const lines: RemoteMiningLine[] = [];
 			for (const source of Memory.remoteMining.targets) {
-				const color = (() => {
-					if (source.paused) {
-						return "#888";
-					}
-					if (source.danger > 0) {
-						return "#fa0";
-					}
-					return "#fff";
-				})();
+				const isNominal =
+					source.creepHarvester &&
+					source.creepCarriers &&
+					source.creepCarriers.length === source.neededCarriers &&
+					source.danger === 0;
+				if (isNominal) {
+					nominalTargets++;
+					continue;
+				}
+
 				const text = source.paused
 					? `paused` + (source.pausedUntil ? ` (${source.pausedUntil - Game.time} remaining)` : "")
 					: `harvester: ${source.creepHarvester ?? "none"} carriers: ${
 							source.creepCarriers ? source.creepCarriers.length : 0
 					  }/${source.neededCarriers} danger: ${source.danger}`;
-				vis.text(`${source.roomName}: ${text}`, baseX, baseY + row * 0.6, {
+				const line = `${source.roomName}: ${text}`;
+				lines.push({
+					text: line,
+					color: source.paused ? "#888" : source.danger > 0 ? "#fa0" : "#fff",
+				});
+			}
+			if (nominalTargets > 0) {
+				lines.unshift({
+					text: `nominal remote mining targets: ${nominalTargets}`,
+					color: "#888",
+				});
+			}
+
+			const baseX = 8;
+			const baseY = Math.max(bottomRowCreepInfo, bottomRowSpawnInfo) + 1;
+			let row = 0;
+			for (const line of lines) {
+				const color = line.color;
+				vis.text(line.text, baseX, baseY + row * 0.6, {
 					align: "left",
 					font: 0.5,
 					color,
