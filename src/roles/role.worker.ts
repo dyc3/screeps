@@ -68,6 +68,11 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			return;
 		}
 
+		if (this.targetRoom && this.creep.room.name !== this.targetRoom) {
+			cartographer.moveTo(this.creep, { pos: new RoomPosition(25, 25, this.targetRoom), range: 23 });
+			return;
+		}
+
 		if (!this.task) {
 			this.log("No worker task. Falling back to upgrade.");
 			this.task = {
