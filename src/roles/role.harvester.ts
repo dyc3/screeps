@@ -409,6 +409,12 @@ const roleHarvester = {
 		}
 		const targetRoom = harvestTarget.room;
 
+		if (!targetRoom.memory.harvestPositions) {
+			creep.log("ERROR: targetRoom.memory.harvestPositions invalid, need harvest positions");
+			creep.say("error");
+			return;
+		}
+
 		const { x, y } = targetRoom.memory.harvestPositions[harvestTarget.id];
 		const harvestPos = targetRoom.getPositionAt(x, y);
 		if (!harvestPos) {
