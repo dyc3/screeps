@@ -1337,6 +1337,7 @@ function main() {
 	try {
 		brainOffense.run();
 	} catch (e) {
+		console.log("Failed to run brainOffense");
 		util.printException(e);
 	}
 
