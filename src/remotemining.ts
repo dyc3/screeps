@@ -21,7 +21,7 @@ export interface RemoteMiningTarget {
 	keeperLairId: Id<StructureKeeperLair> | undefined;
 	/** Indicates that the target should not be operated on. */
 	paused: boolean;
-	pausedUntil: number | undefined;
+	pausedUntil?: number;
 }
 
 export function commandRemoteMining(): void {
