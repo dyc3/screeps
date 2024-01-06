@@ -201,6 +201,9 @@ export class Overseer {
 	}
 
 	public workerQuota(): number {
+		if (this.room.controller?.level === 8) {
+			return 2;
+		}
 		if (this.room.energyCapacityAvailable < 1200) {
 			return 4;
 		}
