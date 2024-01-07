@@ -4,6 +4,7 @@ import {
 	Worker,
 	WorkerTask,
 	WorkerTaskBuild,
+	WorkerTaskFortify,
 	WorkerTaskKind,
 	WorkerTaskMine,
 	WorkerTaskRepair,
@@ -13,6 +14,8 @@ import {
 import { OverseerTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import { util } from "../util";
+
+const MIN_WALL_HITS = 2000;
 
 export class Overseer {
 	public roomName: string;
@@ -80,6 +83,7 @@ export class Overseer {
 			[WorkerTaskKind.Upgrade]: 0,
 			[WorkerTaskKind.Build]: 0,
 			[WorkerTaskKind.Repair]: 0,
+			[WorkerTaskKind.Fortify]: 0,
 			[WorkerTaskKind.Dismantle]: 0,
 			[WorkerTaskKind.Mine]: 0,
 		};
@@ -92,7 +96,7 @@ export class Overseer {
 		return counts;
 	}
 
-	private getBuildPriority(task: WorkerTask): number {
+	private getBuildPriority(task: WorkerTaskBuild): number {
 		if (task.task !== WorkerTaskKind.Build) {
 			return 0;
 		}
@@ -117,15 +121,16 @@ export class Overseer {
 			[
 				(t: WorkerTask) => t.task === WorkerTaskKind.Upgrade,
 				(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0),
+				(t: WorkerTask) => t.task !== WorkerTaskKind.Fortify,
 			],
-			["desc", "desc"]
+			["desc", "desc", "desc"]
 		);
 	}
 
 	private getAllWorkerTasks(): WorkerTask[] {
-		const tasks: WorkerTask[] = [this.upgradeTask()].concat(
-			this.buildTasks().slice(0, 1),
-			this.repairTasks()
+		const tasks: WorkerTask[] = [this.upgradeTask() as WorkerTask].concat(
+			this.buildTasks().slice(0, 1) as WorkerTask[],
+			this.repairAndFortifyTasks() as WorkerTask[]
 			// this.miningTasks()
 		);
 		return tasks;
@@ -150,27 +155,40 @@ export class Overseer {
 	}
 
 	private buildTasks(): WorkerTaskBuild[] {
-		const tasks = this.room.find(FIND_MY_CONSTRUCTION_SITES).map(site => ({
-			task: WorkerTaskKind.Build,
-			target: site.id,
-		}));
-		return _.sortByOrder(tasks, [(t: WorkerTask) => this.getBuildPriority(t)], ["desc"]);
+		const tasks = this.room.find(FIND_MY_CONSTRUCTION_SITES).map(site => {
+			const task: WorkerTaskBuild = {
+				task: WorkerTaskKind.Build,
+				target: site.id,
+			};
+			return task;
+		});
+		return _.sortByOrder(tasks, [(t: WorkerTaskBuild) => this.getBuildPriority(t)], ["desc"]);
 	}
 
-	private repairTasks(): WorkerTaskRepair[] {
+	private repairAndFortifyTasks(): (WorkerTaskRepair | WorkerTaskFortify)[] {
 		return this.room
 			.find(FIND_STRUCTURES)
 			.filter(s => this.doesStructureNeedRepair(s))
-			.map(structure => ({
-				task: WorkerTaskKind.Repair,
-				target: structure.id,
-			}));
+			.map(structure =>
+				structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART
+					? {
+							task: WorkerTaskKind.Fortify,
+							target: structure.id as WorkerTaskFortify["target"],
+					  }
+					: {
+							task: WorkerTaskKind.Repair,
+							target: structure.id as WorkerTaskRepair["target"],
+					  }
+			);
 	}
 
 	private doesStructureNeedRepair(structure: AnyStructure): boolean {
-		if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+		if (structure.hits === structure.hitsMax) {
 			return false;
-			// return structure.hits < (this.wallRepairThreshold ?? 0);
+		}
+
+		if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+			return structure.hits < (this.wallRepairThreshold ?? MIN_WALL_HITS);
 		}
 		if (structure.structureType === STRUCTURE_ROAD || structure.structureType === STRUCTURE_CONTAINER) {
 			return structure.hits < structure.hitsMax * 0.5;
@@ -195,7 +213,7 @@ export class Overseer {
 			hitsSum += wall.hits;
 		}
 		const hitsAvg = hitsSum / walls.length;
-		return Math.max(hitsAvg * 1.05, 2000);
+		return Math.max(hitsAvg * 1.05, MIN_WALL_HITS);
 	}
 
 	private miningTasks(): WorkerTaskMine[] {
