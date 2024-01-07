@@ -196,7 +196,10 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 
 		switch (this.task.task) {
 			case WorkerTaskKind.Upgrade:
-				return Game.time - this.startedTaskAt > 40 || this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0;
+				return (
+					this.hasWorkedAtLeastOnce &&
+					(Game.time - this.startedTaskAt > 40 || this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0)
+				);
 			case WorkerTaskKind.Repair:
 				// eslint-disable-next-line no-case-declarations
 				const repairTarget = target as AnyStructure;
