@@ -122,8 +122,18 @@ export class Overseer {
 				(t: WorkerTask) => t.task === WorkerTaskKind.Upgrade,
 				(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0),
 				(t: WorkerTask) => t.task !== WorkerTaskKind.Fortify,
+				(t: WorkerTask) => {
+					if (t.task === WorkerTaskKind.Fortify) {
+						const structure = Game.getObjectById(t.target);
+						if (!structure) {
+							return 0;
+						}
+						return structure.structureType === STRUCTURE_RAMPART && structure.hits < MIN_WALL_HITS;
+					}
+					return 0;
+				},
 			],
-			["desc", "desc", "desc"]
+			["desc", "desc", "desc", "desc"]
 		);
 	}
 
