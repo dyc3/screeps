@@ -2,12 +2,42 @@ import * as cartographer from "screeps-cartographer";
 import { Assignable } from "utils/task-assigner";
 import { CreepRole } from "./meta";
 import taskGather from "../task.gather";
-import util from "../util";
+import { util } from "../util";
 import { Overseer, getOverseer } from "room/overseer";
+import type { AnyDestructibleStructure } from "utils/types";
 
-export interface WorkerTask {
-	task: WorkerTaskKind;
-	target: Id<AnyStructure | ConstructionSite | Mineral>;
+export type WorkerTask = WorkerTaskUpgrade | WorkerTaskBuild | WorkerTaskRepair | WorkerTaskDismantle | WorkerTaskMine;
+
+// TODO: maybe turn these into classes? or maybe just use `creep-tasks` package? https://github.com/bencbartlett/creep-tasks
+
+export interface WorkerTaskUpgrade {
+	task: WorkerTaskKind.Upgrade;
+	target: Id<StructureController>;
+}
+
+export interface WorkerTaskBuild {
+	task: WorkerTaskKind.Build;
+	target: Id<ConstructionSite>;
+}
+
+export interface WorkerTaskRepair {
+	task: WorkerTaskKind.Repair;
+	target: Id<
+		Exclude<
+			AnyOwnedStructure & AnyDestructibleStructure,
+			StructureInvaderCore | StructurePowerBank | StructureWall | StructureRampart
+		>
+	>;
+}
+
+export interface WorkerTaskDismantle {
+	task: WorkerTaskKind.Dismantle;
+	target: Id<AnyDestructibleStructure>;
+}
+
+export interface WorkerTaskMine {
+	task: WorkerTaskKind.Mine;
+	target: Id<Mineral>;
 }
 
 export enum WorkerTaskKind {

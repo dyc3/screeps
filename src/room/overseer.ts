@@ -1,9 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CacheKey, memoryCacheGetter } from "screeps-cache";
-import { Worker, WorkerTask, WorkerTaskKind, hydrateWorker } from "../roles/role.worker";
+import {
+	Worker,
+	WorkerTask,
+	WorkerTaskBuild,
+	WorkerTaskKind,
+	WorkerTaskMine,
+	WorkerTaskRepair,
+	WorkerTaskUpgrade,
+	hydrateWorker,
+} from "../roles/role.worker";
 import { OverseerTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
-import util from "../util";
+import { util } from "../util";
 
 export class Overseer {
 	public roomName: string;
@@ -87,7 +96,7 @@ export class Overseer {
 		if (task.task !== WorkerTaskKind.Build) {
 			return 0;
 		}
-		const site = Game.getObjectById(task.target as Id<ConstructionSite>);
+		const site = Game.getObjectById(task.target);
 		switch (site?.structureType) {
 			case STRUCTURE_SPAWN:
 				return 4;
@@ -132,7 +141,7 @@ export class Overseer {
 		return false;
 	}
 
-	private upgradeTask(): WorkerTask {
+	private upgradeTask(): WorkerTaskUpgrade {
 		return {
 			task: WorkerTaskKind.Upgrade,
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -140,7 +149,7 @@ export class Overseer {
 		};
 	}
 
-	private buildTasks(): WorkerTask[] {
+	private buildTasks(): WorkerTaskBuild[] {
 		const tasks = this.room.find(FIND_MY_CONSTRUCTION_SITES).map(site => ({
 			task: WorkerTaskKind.Build,
 			target: site.id,
@@ -148,7 +157,7 @@ export class Overseer {
 		return _.sortByOrder(tasks, [(t: WorkerTask) => this.getBuildPriority(t)], ["desc"]);
 	}
 
-	private repairTasks(): WorkerTask[] {
+	private repairTasks(): WorkerTaskRepair[] {
 		return this.room
 			.find(FIND_STRUCTURES)
 			.filter(s => this.doesStructureNeedRepair(s))
@@ -189,7 +198,7 @@ export class Overseer {
 		return Math.max(hitsAvg * 1.05, 2000);
 	}
 
-	private miningTasks(): WorkerTask[] {
+	private miningTasks(): WorkerTaskMine[] {
 		if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][this.room.controller!.level] === 0) {
 			return [];
 		}
