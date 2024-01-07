@@ -6,7 +6,13 @@ import { util } from "../util";
 import { Overseer, getOverseer } from "room/overseer";
 import type { AnyDestructibleStructure } from "utils/types";
 
-export type WorkerTask = WorkerTaskUpgrade | WorkerTaskBuild | WorkerTaskRepair | WorkerTaskDismantle | WorkerTaskMine;
+export type WorkerTask =
+	| WorkerTaskUpgrade
+	| WorkerTaskBuild
+	| WorkerTaskRepair
+	| WorkerTaskFortify
+	| WorkerTaskDismantle
+	| WorkerTaskMine;
 
 // TODO: maybe turn these into classes? or maybe just use `creep-tasks` package? https://github.com/bencbartlett/creep-tasks
 
@@ -30,6 +36,11 @@ export interface WorkerTaskRepair {
 	>;
 }
 
+export interface WorkerTaskFortify {
+	task: WorkerTaskKind.Fortify;
+	target: Id<StructureWall | StructureRampart>;
+}
+
 export interface WorkerTaskDismantle {
 	task: WorkerTaskKind.Dismantle;
 	target: Id<AnyDestructibleStructure>;
@@ -44,6 +55,7 @@ export enum WorkerTaskKind {
 	Upgrade,
 	Build,
 	Repair,
+	Fortify,
 	Dismantle,
 	Mine,
 }
@@ -148,6 +160,8 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 				return this.creep.build(target as ConstructionSite);
 			case WorkerTaskKind.Repair:
 				return this.creep.repair(target as AnyStructure);
+			case WorkerTaskKind.Fortify:
+				return this.creep.repair(target as AnyStructure);
 			case WorkerTaskKind.Dismantle:
 				return this.creep.dismantle(target as AnyStructure);
 			case WorkerTaskKind.Mine:
@@ -178,10 +192,12 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			case WorkerTaskKind.Repair:
 				// eslint-disable-next-line no-case-declarations
 				const repairTarget = target as AnyStructure;
-				if (repairTarget.structureType === STRUCTURE_WALL || repairTarget.structureType === STRUCTURE_RAMPART) {
-					return repairTarget.hits > (this.overseer.wallRepairThreshold ?? 2000);
-				}
 				return repairTarget.hits === repairTarget.hitsMax;
+			case WorkerTaskKind.Fortify:
+				return (
+					(target as StructureWall | StructureRampart).hits > (this.overseer.wallRepairThreshold ?? 2000) ||
+					this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+				);
 			case WorkerTaskKind.Mine:
 				// eslint-disable-next-line no-case-declarations
 				const mineralTarget = target as Mineral;
