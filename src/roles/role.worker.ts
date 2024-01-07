@@ -63,6 +63,11 @@ export enum WorkerTaskKind {
 export class Worker extends CreepRole implements Assignable<WorkerTask> {
 	private startedTaskAt = 0;
 
+	/**
+	 * Has the worker done at least one round of work?
+	 */
+	private hasWorkedAtLeastOnce = false;
+
 	public constructor(creep: Creep | string) {
 		super(creep);
 	}
@@ -83,6 +88,7 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 	private set task(task: WorkerTask | undefined) {
 		this.creep.memory.task = task;
 		this.startedTaskAt = Game.time;
+		this.hasWorkedAtLeastOnce = false;
 	}
 
 	public get working(): boolean {
@@ -105,6 +111,12 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			this.creep.say("🚧 work");
 		}
 
+		if (this.task && this.isTaskDone()) {
+			this.log("Task done.");
+			this.task = undefined;
+			return;
+		}
+
 		if (!this.working) {
 			taskGather.run(this.creep);
 			return;
@@ -124,15 +136,11 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 			return;
 		}
 
-		if (this.isTaskDone()) {
-			this.log("Task done.");
-			this.task = undefined;
-			return;
-		}
-
 		const result = this.performTask();
 		if (result !== OK) {
 			this.log(`Task failed with result ${util.errorCodeToString(result)}.`);
+		} else {
+			this.hasWorkedAtLeastOnce = true;
 		}
 	}
 
@@ -195,8 +203,8 @@ export class Worker extends CreepRole implements Assignable<WorkerTask> {
 				return repairTarget.hits === repairTarget.hitsMax;
 			case WorkerTaskKind.Fortify:
 				return (
-					(target as StructureWall | StructureRampart).hits > (this.overseer.wallRepairThreshold ?? 2000) ||
-					this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0
+					// (target as StructureWall | StructureRampart).hits > (this.overseer.wallRepairThreshold ?? 2000) ||
+					this.creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0 && this.hasWorkedAtLeastOnce
 				);
 			case WorkerTaskKind.Mine:
 				// eslint-disable-next-line no-case-declarations
