@@ -11,7 +11,7 @@ import {
 	WorkerTaskUpgrade,
 	hydrateWorker,
 } from "../roles/role.worker";
-import { OverseerTaskAssigner } from "../utils/task-assigner";
+import { Ordering, OverseerTaskAssigner } from "../utils/task-assigner";
 import { Role } from "../roles/meta";
 import { util } from "../util";
 
@@ -123,17 +123,21 @@ export class Overseer {
 				(t: WorkerTask) => (t.task === WorkerTaskKind.Build ? this.getBuildPriority(t) : 0),
 				(t: WorkerTask) => t.task !== WorkerTaskKind.Fortify,
 				(t: WorkerTask) => {
+					// Using the Ordering enum for readability. Safe because this one is evaluated in ascending order.
 					if (t.task === WorkerTaskKind.Fortify) {
 						const structure = Game.getObjectById(t.target);
 						if (!structure) {
-							return 0;
+							return Ordering.Less;
 						}
-						return structure.structureType === STRUCTURE_RAMPART && structure.hits < MIN_WALL_HITS;
+						if (structure.structureType === STRUCTURE_RAMPART && structure.hits < MIN_WALL_HITS) {
+							return Ordering.More;
+						}
+						return structure.hits;
 					}
-					return 0;
+					return Ordering.Same;
 				},
 			],
-			["desc", "desc", "desc", "desc"]
+			["desc", "desc", "desc", "asc"]
 		);
 	}
 
