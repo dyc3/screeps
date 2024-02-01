@@ -16,13 +16,15 @@ function doWorkFactories() {
 		// FIXME: make this more dynamic
 		// right now, everything is hard coded
 
-		const productionTargets: (CommodityConstant | RESOURCE_ENERGY)[] = [
+		const productionTargets: (CommodityConstant | MineralConstant | RESOURCE_ENERGY)[] = [
+			RESOURCE_OXYGEN,
+
 			RESOURCE_UTRIUM_BAR,
 			RESOURCE_ZYNTHIUM_BAR,
 			RESOURCE_LEMERGIUM_BAR,
 			RESOURCE_KEANIUM_BAR,
 			RESOURCE_REDUCTANT,
-			RESOURCE_OXIDANT,
+			// RESOURCE_OXIDANT,
 			RESOURCE_PURIFIER,
 			RESOURCE_GHODIUM_MELT,
 
