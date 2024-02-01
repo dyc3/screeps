@@ -170,6 +170,19 @@ const brainAutoPlanner = {
 		// . r r r r r .
 		let rootPos: Pos | undefined = room.memory.rootPos;
 
+		// if we are spawning for the very first time, trust the spawn position as the root
+		if (
+			!rootPos &&
+			room.controller.level === 1 &&
+			Object.keys(Game.spawns).length === 1 &&
+			util.getOwnedRooms().length === 1
+		) {
+			console.log("First spawn, trusting spawn position as root");
+			const spawn = Object.values(Game.spawns)[0];
+			rootPos = { x: spawn.pos.x, y: spawn.pos.y };
+			room.memory.rootPos = rootPos;
+		}
+
 		if (!rootPos) {
 			// first, valid 6x6 areas
 			let goodRootPositions = [];
