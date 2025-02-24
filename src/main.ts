@@ -398,33 +398,31 @@ function doLinkTransfers() {
 					room.memory.rootLink = rootLinkPos.lookFor(LOOK_STRUCTURES, rootLinkPos)[0].id;
 				} catch (e) {
 					console.log("WARN: no root link found in room", room.name);
-					continue;
 				}
 			}
 			const rootLink = Game.getObjectById(room.memory.rootLink as Id<StructureLink>);
-			if (!rootLink) {
+			if (rootLink) {
+				if (
+					rootLink.store.getUsedCapacity(RESOURCE_ENERGY) <
+					rootLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
+				) {
+					console.log(room.name, "[link-transfer] rootLink below threshold");
+					for (const link of links) {
+						if (link.id === rootLink.id) {
+							continue;
+						}
+						if (link.cooldown > 0 || link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+							continue;
+						}
+						console.log("[link-transfer] transfer from", link.pos, "to rootLink");
+						link.transferEnergy(rootLink);
+						break; // only transfer energy from one link per tick
+					}
+					continue;
+				}
+			} else {
 				console.log("can't find root link id:", room.memory.rootLink);
 				delete room.memory.rootLink;
-				continue;
-			}
-
-			if (
-				rootLink.store.getUsedCapacity(RESOURCE_ENERGY) <
-				rootLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
-			) {
-				console.log(room.name, "[link-transfer] rootLink below threshold");
-				for (const link of links) {
-					if (link.id === rootLink.id) {
-						continue;
-					}
-					if (link.cooldown > 0 || link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-						continue;
-					}
-					console.log("[link-transfer] transfer from", link.pos, "to rootLink");
-					link.transferEnergy(rootLink);
-					break; // only transfer energy from one link per tick
-				}
-				continue;
 			}
 
 			if (!room.memory.storageLink) {
@@ -443,19 +441,25 @@ function doLinkTransfers() {
 				delete room.memory.storageLink;
 				continue;
 			}
-
+			if (storageLink.structureType !== STRUCTURE_LINK) {
+				console.log("[link-transfer] storage link is not a link");
+				delete room.memory.storageLink;
+				continue;
+			}
+			
 			if (
 				storageLink.store.getUsedCapacity(RESOURCE_ENERGY) <
 				storageLink.store.getCapacity(RESOURCE_ENERGY) - LINK_ENERGY_CAPACITY_THRESHOLD
 			) {
 				for (const link of links) {
-					if (link.id === storageLink.id || link.id === rootLink.id) {
+					if (link.id === storageLink.id || (rootLink && link.id === rootLink.id)) {
 						continue;
 					}
 					if (link.cooldown > 0 || link.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
 						continue;
 					}
-					link.transferEnergy(storageLink);
+					const result = link.transferEnergy(storageLink);
+					console.log("[link-transfer] transfered to storage link:", util.errorCodeToString(result));
 					break; // only transfer energy from one link per tick
 				}
 			}
