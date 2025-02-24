@@ -213,7 +213,9 @@ const roleRelay = {
 
 		if (!creep.memory.fillTargetIds || creep.memory.fillTargetIds.length === 0) {
 			creep.log("can't find adjacent targets.");
-			return;
+			if (!creep.memory.isStorageModule) {
+				return;
+			}
 		}
 
 		let rootNeedsEnergy = false;
