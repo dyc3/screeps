@@ -1040,22 +1040,22 @@ const brainAutoPlanner = {
 		const collected: {
 			[struct in BuildableStructureConstant]: { x: number; y: number }[];
 		} = {
-			extension: [],
-			rampart: [],
-			road: [],
-			spawn: [],
-			link: [],
-			constructedWall: [],
-			storage: [],
-			tower: [],
-			observer: [],
-			powerSpawn: [],
-			extractor: [],
-			lab: [],
-			terminal: [],
-			container: [],
-			nuker: [],
-			factory: [],
+			[STRUCTURE_EXTENSION]: [],
+			[STRUCTURE_RAMPART]: [],
+			[STRUCTURE_ROAD]: [],
+			[STRUCTURE_SPAWN]: [],
+			[STRUCTURE_LINK]: [],
+			[STRUCTURE_WALL]: [],
+			[STRUCTURE_STORAGE]: [],
+			[STRUCTURE_TOWER]: [],
+			[STRUCTURE_OBSERVER]: [],
+			[STRUCTURE_POWER_SPAWN]: [],
+			[STRUCTURE_EXTRACTOR]: [],
+			[STRUCTURE_LAB]: [],
+			[STRUCTURE_TERMINAL]: [],
+			[STRUCTURE_CONTAINER]: [],
+			[STRUCTURE_NUKER]: [],
+			[STRUCTURE_FACTORY]: [],
 		};
 
 		for (const struct of allStructuresAndSites) {
