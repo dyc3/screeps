@@ -14,7 +14,7 @@ export interface RemoteMiningTarget {
 	/** Creep name of the harvester. */
 	creepHarvester: string | undefined;
 	/** Creep names of the carriers. */
-	creepCarriers: string[];
+	creepCarriers: string[] | undefined;
 	neededCarriers: number;
 	danger: number;
 	dangerPos: { [danger: number]: RoomPosition } | undefined;
@@ -96,7 +96,7 @@ function allocateCreeps(): AllocateResult {
 			continue;
 		}
 		const room = Game.rooms[target.roomName];
-		if (room && room.controller!.reservation && room.controller!.reservation.username !== global.WHOAMI) {
+		if (room?.controller?.reservation && room.controller!.reservation.username !== global.WHOAMI) {
 			// don't allocate creeps to rooms that are currently not reserved by us
 			continue;
 		}
@@ -206,10 +206,12 @@ export function cleanUpInvalidAllocations(): void {
 		if (!creep) {
 			target.creepHarvester = undefined;
 		}
-		for (const carrier of target.creepCarriers) {
-			const creepCarrier = Game.creeps[carrier];
-			if (!creepCarrier) {
-				target.creepCarriers = _.without(target.creepCarriers, carrier);
+		if (target.creepCarriers) {
+			for (const carrier of target.creepCarriers) {
+				const creepCarrier = Game.creeps[carrier];
+				if (!creepCarrier) {
+					target.creepCarriers = _.without(target.creepCarriers, carrier);
+				}
 			}
 		}
 	}
@@ -230,7 +232,7 @@ export function cleanUpAllocationInconsistencies(): void {
 				delete creep.memory.harvestTarget;
 			}
 		} else if (creep.memory.role === Role.Carrier) {
-			if (!target.creepCarriers.includes(creep.name)) {
+			if (target.creepCarriers && !target.creepCarriers.includes(creep.name)) {
 				delete creep.memory.harvestTarget;
 			}
 		}
@@ -387,8 +389,7 @@ function requestReservations() {
 			console.log("[remote mining] ERR: can't find controller");
 		}
 		if (
-			controller &&
-			controller.reservation &&
+			controller?.reservation &&
 			controller.reservation.username === global.WHOAMI &&
 			controller.reservation.ticksToEnd > 400
 		) {
@@ -427,7 +428,7 @@ export function visualizeMiningTargetLinks(): void {
 		if (!source) {
 			continue;
 		}
-		for (const creepName of target.creepCarriers) {
+		for (const creepName of target.creepCarriers ?? []) {
 			const creep = Game.creeps[creepName];
 			if (!creep) {
 				continue;
